@@ -3,7 +3,7 @@ function toggle(sec){
 	eSec = sec.nextElementSibling ;
 	secStatus = eSec.style.display == "none" ;
 	eSec.style.display = secStatus ? "block" : "none" ;
-	eSec.previousElementSibling.firstElementChild.src = secStatus ? "img/opened.jpg" : "img/closed.jpg" ;
+	eSec.previousElementSibling.firstElementChild.src = secStatus ? "../img/opened.jpg" : "../img/closed.jpg" ;
 }
 
 
@@ -48,6 +48,6 @@ function toggleOLD(secName){
 	document.getElementById(secName).style.visibility = 'hidden' ; 
  }
  function START() {
-	 setTimeout( toggleAll , 1500 ) ; 
+	 setTimeout( toggleAll , 2000 ) ; 
 	 // setTimeout( hide('Skills')  , 50000 ) ; 
  }
