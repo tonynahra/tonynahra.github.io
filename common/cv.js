@@ -10,10 +10,10 @@ function toggle(sec){
 function toggleOLD(secName){
 	 if ( document.getElementById(secName).style.display==''){
 		 document.getElementById(secName).style.display = 'none' ;
-		 document.getElementById(secName+'Button').src = 'img/closed.jpg' ;
+		 document.getElementById(secName+'Button').src = '../img/closed.jpg' ;
 	 } else {
 		 document.getElementById(secName).style.display = '' ;
-		 document.getElementById(secName+'Button').src = 'img/opened.jpg' ;
+		 document.getElementById(secName+'Button').src = '../img/opened.jpg' ;
 	 }
 	secName = "msg" ;
 	document.getElementById(secName).style.visibility = 'hidden' ;
@@ -26,7 +26,7 @@ function toggleOLD(secName){
     var SUBs = document.querySelectorAll(".SUB");
     [].forEach.call(SUBs, function(SUB) {
 		SUB.style.display = Oper ? "none" : "block" ;
-		SUB.previousElementSibling.firstElementChild.src = Oper ? "img/closed.jpg" : "img/opened.jpg" ;
+		SUB.previousElementSibling.firstElementChild.src = Oper ? "../img/closed.jpg" : "../img/opened.jpg" ;
     });
 	document.getElementById("togAll").innerHTML = Oper ? "Expand All" : "Collapse All" ;
  }
