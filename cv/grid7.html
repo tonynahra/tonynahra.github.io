@@ -6,7 +6,7 @@
 </style>
 </head>
 <body >
-
+<input type="text" id="COL" >
 <div id="wrapper" ></div>
 
 <script type="module" >
@@ -37,6 +37,7 @@ new Grid({
               const columnsHeadTmp = resp.shift() ;
               window.columnsHead =  [...columnsHeadTmp] ;
               // console.log(columnsHeadTmp) ;
+              document.getElementById("COL").value = columnsHeadTmp.join() ;
               console.log(window.columnsHead) ;
               resolve({
                 data : resp.map( card => [
@@ -63,7 +64,7 @@ new Grid({
   },
 
 
-}).updateConfig({ columns: window.columnsHead }).render(document.getElementById('wrapper'));
+}).updateConfig({ columns: document.getElementById("COL").value.split() }).render(document.getElementById('wrapper'));
 
 // .updateConfig({ columns: columnsHead })
 
