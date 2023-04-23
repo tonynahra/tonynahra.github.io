@@ -43,7 +43,11 @@ new Grid({
         
     card.title, 
     card.key, 
-    '<b>' + card.code +'</b>'
+    html(
+      "<div style='padding: 2px; border: 1px solid #ccc;border-radius: 4px;'>" +
+         card.code  +
+      "</div>"
+    )
 
     ]),
     handle: (res) => {
