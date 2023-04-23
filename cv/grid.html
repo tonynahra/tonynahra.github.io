@@ -2,6 +2,9 @@
     
     <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 <title>Tony Nahra</title>
+<style>
+    #wrapper { background: #bbb; padding: 20px;    }
+</style>
 </head>
 <body >
 
@@ -15,14 +18,30 @@
         html
     } from "../common/gridjs.js";
 
-    new Grid({
-  data: [
-    ['Mike', 33, 'mike@murphy.com'],
-    ['John', 82, 'john@conway.com'],
-    ['Sara', 26, 'sara@keegan.com']
+
+const grid = new Grid({
+  columns: [
+   {
+     name: 'Name',
+     formatter: (cell) => cell.firstName
+   }, 
+   'Email',
+   'Phone Number'
   ],
-  columns: ['Name', 'Age', 'Email']
+  search: {
+    selector: (cell, rowIndex, cellIndex) => cellIndex === 0 ? cell.firstName : cell
+  },
+  data: [
+    [{ firstName: 'John', lastName: 'MP' }, 'john@example.com', '(353) 01 222 3333'],
+    [{ firstName: 'Mark', lastName: 'Blue' }, 'mark@gmail.com',   '(01) 22 888 4444'],
+    [{ firstName: 'Eoin', lastName: 'Kavanagh' }, 'eo3n@yahoo.com',   '(05) 10 878 5554'],
+    [{ firstName: 'Megan', lastName: 'Niesen' }, 'nis900@gmail.com',   '313 333 1923']
+  ]
 }).render(document.getElementById('wrapper'));
+
+
+
+
 </script>
 
 </body>
