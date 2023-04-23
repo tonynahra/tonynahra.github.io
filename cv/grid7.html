@@ -15,7 +15,7 @@
         html
     } from "../common/gridjs.js";
 
-var window.columnsHead =["A","B","C"];
+var columnsHead =["A","B","C"];
 
 new Grid({
 
@@ -36,7 +36,7 @@ new Grid({
               const resp = JSON.parse(this.response);
               const columnsHeadTmp = resp.shift() ;
               window.columnsHead =  [...columnsHeadTmp] ;
-              console.log(columnsHeadTmp) ;
+              // console.log(columnsHeadTmp) ;
               console.log(window.columnsHead) ;
               resolve({
                 data : resp.map( card => [
