@@ -1,0 +1,52 @@
+<head>
+<link href="../common/mermaid.min.css" rel="stylesheet" />
+<title>Tony Nahra</title>
+<style>
+    #wrapper { background: #bbb; padding: 20px;    }
+</style>
+</head>
+<body >
+
+<div id="wrapper" ></div>
+
+<script type="module" >
+     import {
+        Grid,
+        html
+    } from "../common/gridjs.js";
+
+new Grid({
+
+
+  search: true ,
+  pagination: {
+    limit: 5,
+    summary: true
+  },
+  server: {
+    url: '../data/src4.json',
+    then: data => data.map( card => [
+    card[0], 
+    card[1], 
+    html(
+      "<a href='https://nahra.net?REF=" + card[2] + "' target='N' >" +
+         card[2]  +
+      "</a>"
+    )
+
+    ]),
+    handle: (res) => {
+      // no matching records found
+      if (res.status === 404) return {data: []};
+      if (res.ok) return res.json();
+      
+      throw Error('oh no :(');
+    },
+  }
+
+}).render(document.getElementById('wrapper'));
+
+
+</script>
+
+</body>
