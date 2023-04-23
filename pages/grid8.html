@@ -39,6 +39,7 @@ new Grid({
               // console.log(columnsHeadTmp) ;
               document.getElementById("COL").value = columnsHeadTmp.join() ;
               console.log(window.columnsHead) ;
+
               resolve({
                 data : resp.map( card => [
                     card[0], 
@@ -55,6 +56,8 @@ new Grid({
             } else {
               reject();
             }
+
+            
           }
         };
         xhttp.open("GET", opts.url, true);
@@ -64,7 +67,10 @@ new Grid({
   },
 
 
-}).updateConfig({ columns: window.columnsHead }).render(document.getElementById('wrapper'));
+}).render(document.getElementById('wrapper'));
+
+
+Grid.updateConfig({ columns: window.columnsHead }).
 
 // .updateConfig({ columns: document.getElementById("COL").value.split(",") })
 // .updateConfig({ columns: columnsHead })
