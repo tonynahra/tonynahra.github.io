@@ -35,7 +35,7 @@ new Grid({
             if (this.status === 200) {
               const resp = JSON.parse(this.response);
               const columnsHeadTmp = resp.shift() ;
-              columnsHead = columnsHeadTmp ;
+              columnsHead =  Array.from(columnsHeadTmp) ;
               console.log(columnsHeadTmp) ;
               console.log(columnsHead) ;
               resolve({
