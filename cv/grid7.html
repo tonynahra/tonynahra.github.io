@@ -35,9 +35,9 @@ new Grid({
             if (this.status === 200) {
               const resp = JSON.parse(this.response);
               const columnsHeadTmp = resp.shift() ;
-              columnsHead =  [...columnsHeadTmp] ;
+              window.columnsHead =  [...columnsHeadTmp] ;
               console.log(columnsHeadTmp) ;
-              console.log(columnsHead) ;
+              console.log(window.columnsHead) ;
               resolve({
                 data : resp.map( card => [
                     card[0], 
