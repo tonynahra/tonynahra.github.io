@@ -1,0 +1,42 @@
+<head>
+    
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<title>Tony Nahra</title>
+<style>
+    #wrapper { background: #bbb; padding: 20px;    }
+</style>
+</head>
+<body >
+
+
+<div id="wrapper" ></div>
+
+
+<script type="module" >
+     import {
+        Grid,
+        html
+    } from "../common/gridjs.js";
+
+new Grid({
+  columns: ['Name', 'Language', 'Released At', 'Artist'],
+  search: {
+    selector: (data, rowIndex, cellIndex) => cellIndex === 0 ? data.name : data
+  },
+  server: {
+    url: '../data/src.json',
+    then: data => data.data.map(card => [card.name, card.lang, card.released_at, card.artist]),
+    handle: (res) => {
+      // no matching records found
+      if (res.status === 404) return {data: []};
+      if (res.ok) return res.json();
+      
+      throw Error('oh no :(');
+    },
+  } 
+}).render(document.getElementById('wrapper'));
+
+
+</script>
+
+</body>
