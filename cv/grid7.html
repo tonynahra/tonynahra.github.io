@@ -23,30 +23,7 @@ new Grid({
     limit: 5,
     summary: true
   },
-  server: {
-    url: '../data/src5.json',
-    then:
-    data => data.slice(1).map( card => [
-    card[0], 
-    card[1], 
-    html(
-      "<a href='https://nahra.net?REF=" + card[2] + "' target='N' >" +
-         card[2]  +
-      "</a>"
-    )
-
-    ]),
-    handle: (res) => {
-      // no matching records found
-      if (res.status === 404) return {data: []};
-      if (res.ok) return res.json();
-      
-      throw Error('oh no :(');
-    },
-  }
-
-
-  server: {
+    server: {
     url: '../data/src5.json',
     data: (opts) => {
       return new Promise((resolve, reject) => {
@@ -55,7 +32,7 @@ new Grid({
           if (this.readyState === 4) {
             if (this.status === 200) {
               const resp = JSON.parse(this.response);
-              columns = resp.shift() ;  
+              columnsHead = resp.shift() ;  
               resolve({
                 data => resp.map( card => [
                     card[0], 
@@ -83,6 +60,8 @@ new Grid({
 
 
 
+}).updateConfig({
+  columns: columnsHead
 }).render(document.getElementById('wrapper'));
 
 
