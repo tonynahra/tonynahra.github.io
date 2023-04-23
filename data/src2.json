@@ -1,0 +1,72 @@
+[
+    {    
+        "title": "Main Page" ,    
+        "key": "1,HOME",
+        "shift": false,
+        "code": "49,36",
+        "URL": "SwitchBoard.html"
+    },
+    {
+        "title": "Watch List" ,
+        "key": "2,W",
+        "shift": false,
+        "code": "50,87",
+        "URL": "InvestTrackerTrend.php"
+    },
+    {
+        "title": "Trending Tracked" ,
+        "key": "3,T",
+        "shift": false,
+        "code": "51,84",
+        "URL": "InvestTrackerTrend.php?SRC=TRK"
+    },
+    {
+        "title": "Trending Today" ,
+        "key": "3,T",
+        "shift": false,
+        "code": "51,84",
+        "URL": "InvestTrackerTrend.php?SRC=TDY"
+    },
+    
+    {
+        "title": "Trending New" ,
+        "key": "4",
+        "shift": false,
+        "code": "52",
+        "URL": "InvestTrackerTrend.php?SRC=NEW"
+    },
+
+    {
+        "title": "Down" ,
+        "key": "5,D",
+        "shift": false,
+        "code": "53,68",
+        "URL": "Down.php"
+    },
+
+    {
+        "title": "Track Bottom" ,
+        "key": "7,B",
+        "shift": false,
+        "code": "55,66",
+        "URL": "InvestTrackerBottom.php"
+    },
+    {
+        "title": "Track Top" ,
+        "key": "8",
+        "shift": false,
+        "code": "78",
+        "URL": "InvestTrackerTop.php"
+    },
+    
+
+    {
+        "title": "Feeder" ,
+        "key": "9",
+        "shift": false,
+        "code": "78",
+        "URL": "InvestTracker2.php"
+    }
+
+    
+]

@@ -19,13 +19,11 @@
     } from "../common/gridjs.js";
 
 new Grid({
-  columns: ['Name', 'Language', 'Released At', 'Artist'],
-  search: {
-    selector: (data, rowIndex, cellIndex) => cellIndex === 0 ? data.name : data
-  },
+  columns: ['Title', 'Key', 'Code', 'URL'],
+  search: ture ,
   server: {
     url: '../data/src.json',
-    then: data => data.data.map(card => [card.name, card.lang, card.released_at, card.artist]),
+    then: data => data.data.map(card => [card.title, card.key, card.code, card.URL]),
     handle: (res) => {
       // no matching records found
       if (res.status === 404) return {data: []};
