@@ -1,0 +1,28 @@
+<head>
+    
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<title>Tony Nahra</title>
+</head>
+<body >
+
+
+<div id="wrapper" ></div>
+
+
+<script type="module" >
+     import {
+        Grid,
+        html
+    } from "../common/gridjs.js";
+
+    new Grid({
+  data: [
+    ['Mike', 33, 'mike@murphy.com'],
+    ['John', 82, 'john@conway.com'],
+    ['Sara', 26, 'sara@keegan.com']
+  ],
+  columns: ['Name', 'Age', 'Email']
+}).render(document.getElementById('wrapper'));
+</script>
+
+</body>
