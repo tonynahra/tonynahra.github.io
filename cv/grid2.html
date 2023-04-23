@@ -20,10 +20,22 @@
 
 new Grid({
   columns: ['Title', 'Key', 'Code', 'URL'],
+
+  columns: [{
+     id: 'title',
+     name: 'Title'
+  }, {
+     id: 'key',
+     name: 'Key'
+  }, {
+     id: 'code',
+     name: 'Code'
+  }],
+
   search: true ,
   server: {
-    url: '../data/src.json',
-    then: data => data.map(card => [card.title, card.key, card.code, card.URL]),
+    url: '../data/src2.json',
+    then: data => data.map( card => [card.title, card.key, card.code]),
     handle: (res) => {
       // no matching records found
       if (res.status === 404) return {data: []};
