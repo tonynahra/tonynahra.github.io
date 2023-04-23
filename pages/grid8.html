@@ -69,8 +69,13 @@ new Grid({
 
 }).render(document.getElementById('wrapper'));
 
+setTimeout(() => {
+    grid.updateConfig({
+    columns: document.getElementById("COL").value.split(",") 
+    }).forceRender();
+}, 2000);
 
-Grid.updateConfig({ columns: window.columnsHead }).
+
 
 // .updateConfig({ columns: document.getElementById("COL").value.split(",") })
 // .updateConfig({ columns: columnsHead })
