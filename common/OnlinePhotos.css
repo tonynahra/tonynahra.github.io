@@ -2,3 +2,4 @@
 .warning-bar {
   visibility: hidden;
 }
+#warning { display: none ; }
