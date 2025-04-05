@@ -1,4 +1,5 @@
-##Survey Analysis
+Survey Analysis
+===============
 ```sql
 ALTER PROCEDURE [CP_Survey_Analysis] 
 @ClientID smallint, 
@@ -38,7 +39,9 @@ ORDER BY
   Activity_Responses.UserResponse    
 ```
 
-##LMS pulling licensed tutorials
+
+LMS pulling licensed tutorials
+==============================
 ```sql
 USE [XPOL_070421] GO 
 SET 
