@@ -1,3 +1,4 @@
+```sql
 ALTER PROCEDURE [CP_Survey_Analysis] 
 @ClientID smallint, 
 @ModID varchar(10), 
@@ -34,3 +35,4 @@ HAVING
 ORDER BY 
   Activity_Responses.QuestionNumber, 
   Activity_Responses.UserResponse
+```
