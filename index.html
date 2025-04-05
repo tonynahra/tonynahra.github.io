@@ -22,6 +22,10 @@
    color: #ddd;
   }
 </style>
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="/common/image-modal.js"></script>
+<link rel="stylesheet" href="/common/imageModal.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 </head>
 <body >
 
@@ -59,17 +63,29 @@
 <center>
 <br />
 <hr />  
-<img src="/img/Rudy_AI_project.jpg" height="700" />
+<img src="/img/Rudy_AI_project.jpg" height="700" class='image-popup' />
 <hr />
-<img src="/img/Rudy_ICPC.jpg" height="700" />
+<img src="/img/Rudy_ICPC.jpg" height="700" class='image-popup' />
 
 <hr />
-<img src="/img/Epic_Certificate.jpg" height="700" />
+<img src="/img/Epic_Certificate.jpg" height="700" class='image-popup' />
 
 
 
 <br /><br /><hr />
   <h3>Tony Nahra</h3>
+
+
+	<div id="image-modal-popup">
+			<div id="image-modal-container">
+				<div id="image-modal-dialog">
+					<img id="image-modal-image" src=""></img>
+					<div id="image-modal-loader"></div>
+					<div id="image-modal-close-button"></div>
+				</div>
+			</div>
+		</div>
+  
 </center>
   
 </div>
