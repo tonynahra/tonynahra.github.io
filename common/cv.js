@@ -5,8 +5,6 @@ function toggle(sec){
 	eSec.style.display = secStatus ? "block" : "none" ;
 	eSec.previousElementSibling.firstElementChild.src = secStatus ? "../img/opened.png" : "../img/closed.png" ;
 }
-
-
 function toggleOLD(secName){
 	 if ( document.getElementById(secName).style.display==''){
 		 document.getElementById(secName).style.display = 'none' ;
@@ -43,11 +41,16 @@ function toggleOLD(secName){
 	 document.getElementById(secName).style.visibility = 'hidden' ;
  }
 
- function noMsg(){
+function noMsg(){
 	secName = "msg" ;
 	document.getElementById(secName).style.visibility = 'hidden' ; 
- }
- function START() {
+}
+
+function toggleSkills() {
+	toggle('Skills') ;
+}
+
+function START() {
 	 setTimeout( toggleAll , 2000 ) ; 
-	 setTimeout( toggle('Skills')  , 2500 ) ; 
- }
+	 setTimeout( toggleSkills , 2500 ) ; 
+}
