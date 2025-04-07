@@ -47,7 +47,9 @@ function noMsg(){
 }
 
 function toggleSkills() {
-	toggle('Skills') ;
+	// toggle('Skills') ;
+	document.getElementById('Skills').style.display = '' ;
+	document.getElementById('SkillsButton').src = '../img/opened.png' ;
 }
 
 function START() {
