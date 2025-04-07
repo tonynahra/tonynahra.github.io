@@ -49,5 +49,5 @@ function toggleOLD(secName){
  }
  function START() {
 	 setTimeout( toggleAll , 2000 ) ; 
-	 // setTimeout( hide('Skills')  , 50000 ) ; 
+	 setTimeout( toggle('Skills')  , 50000 ) ; 
  }
