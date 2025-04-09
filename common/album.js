@@ -138,3 +138,12 @@ window.onload = function ()
 		////// $("#image-modal-popup").fadeOut();
 	}
 }
+
+function loadImages() {
+	var il = "" ;
+	IA = IMG.split(",");
+	for ( i=0;i<IA.length;i++) {
+		il += "<div><img src='" + IA[i] + "'  class='image-popup' /></div>\r\n" ;
+	}
+	document.getElementById("ct").innerHTML = il ;
+}	
