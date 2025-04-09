@@ -26,7 +26,7 @@ window.onload = function ()
 				} else {
 					document.getElementById('prv').disabled = false ;
 				}
-				if ( i < 1 ) { 
+				if ( i < 0 ) { 
 					setTimeout(() => {
 					document.getElementById('prv').disabled = true ;
 					}, 100);
