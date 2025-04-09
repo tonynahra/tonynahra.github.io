@@ -88,7 +88,7 @@
     bottom: 0;
     right: 0;
     left: 0;
-	background: #000 url(../images/loader.gif) center center no-repeat;
+	background: #000 url(/common/loader.gif) center center no-repeat;
 
 	/* set 'background-size' to 'auto' if your loading animation is smaller than the dimensions specified below */
 	background-size: contain;
@@ -111,7 +111,7 @@
 
 	/* I am using an image for the button here, but you can just use text if you want to. */
 	background-size: contain;
-	background: url(../images/close-button.gif) no-repeat;
+	background: url(/common/close-button.gif) no-repeat;
 	width: 50px;
 	height: 50px;
 }
