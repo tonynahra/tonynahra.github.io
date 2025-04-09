@@ -1,0 +1,29 @@
+
+.prv { text-align: left ; font-size: 130%; }
+.nxt { text-align: right ; font-size: 130%; }
+.cls { font-size: 130%; }
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-auto-rows: 250px;
+  grid-gap: 45px;
+  SKIP-grid-auto-flow: dense;
+    
+}
+.container img {
+  width: 100%;
+  height: 100%;
+}
+.horizontal{
+  grid-column: span 2;
+}
+.vertical {
+  grid-row: span 2;
+}
+.big{
+  grid-column: span 2;
+  grid-row: span 2;
+}
+img { box-shadow:  0 5px 10px 0 rgba(0, 0, 0, 0.2), 0 7px 23px 0 rgba(0, 0, 0, 0.19); }
+body { margin: 10px 100px 100px 100px ; }	
