@@ -1,7 +1,7 @@
 
-.prv { text-align: left ; font-size: 130%; }
-.nxt { text-align: right ; font-size: 130%; }
-.cls { font-size: 130%; }
+.prv { text-align: left ; font-size: 130%; margin: 10px; }
+.nxt { text-align: right ; font-size: 130%; margin: 10px; }
+.cls { font-size: 130%; margin: 10px; }
 
 .container {
   display: grid;
