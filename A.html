@@ -13,7 +13,9 @@ function CA(itm) {
   console.log( document.getElementById("S").value ) ;
   C( document.getElementById("S").value ) ;
 }
-  
+function s() {
+  C(defaultFldr);	
+}
 function C(dFldr) {
       console.log('CNT: ' + ghJSON.tree.length);
     for ( i=1 ; i <= ( ghJSON.tree.length -1 ) ; i++  ) {
@@ -121,13 +123,13 @@ function(err, data) {
     display: list-item;
     margin-left : 1em; 
   }
-  select-SKIP { font-size: 200% ; }	
+  select { font-size: 250% ; border-radius: 15px; }	
   #albums { display: inline-block ; }
 </style>
 </head>
 
 <body>
-<h1>Tony Nahra : <div id='albums' >ALBUMS</div> </h1>
+<h1>Tony Nahra : <div id='albums' >ALBUMS</div> <button onclick='s()'>Shuffle</button> </h1>
 <hr />	
        <div id='photos' ></div>
       
