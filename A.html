@@ -8,13 +8,14 @@
 defaultFldr = "Mississppi" ;
 const excluded = ["photos", "lib"];
 const extAllowed =[".png",".jpg"];
-var iCnt = 0 ;	
+var iCnt = 0 ;
+var CurImg = 0 ;
 function z(e){
   console.log(e.src);
   for ( i=0 ; i< iCnt ; i++ ) {
-	 console.log( i + ">>>" + e.src + "==" + document.getElementsByTagName("img")[i].src ) ;
       if ( e.src == document.getElementsByTagName("img")[i].src ) {
-	      console.log( "FOUND: " + i ) ;
+	      CurImg = i ;
+	      break;
       }	      
   }
   document.getElementById("FULL").style.display = "block" ;
@@ -22,9 +23,18 @@ function z(e){
   document.getElementById("FULL").style.height = "100%" ;
   document.getElementById("FULL").style.top = "0px" ;
   document.getElementById("FULL").style.left = "0px" ;	
-  document.getElementById("FULL").innerHTML = "<img src='" + e.src + "' style='height:90%; width: auto;' onclick='clsFull()' ><br><button onclick='prev()'><<<</button> <button onclick='clsFull()'>Close</button> <button onclick='nxt()'>>>></button>" ;
+  document.getElementById("FULL").innerHTML = "<img src='" + e.src + "' style='width:90%; height: auto;' onclick='clsFull()' ><br><button onclick='prev()'><<<</button> <button onclick='clsFull()'>Close</button> <button onclick='nxt()'>>>></button>" ;
 
 }
+function prev(){
+   ni = document.hetElementsByTagName("img")[CurImg-1] ;
+   z(ni);	
+}
+function nxt(){
+   ni = document.hetElementsByTagName("img")[CurImg+1] ;
+   z(ni);	
+}	
+	
 function clsFull(){
   console.log("closing");	
   document.getElementById("FULL").innerHTML = "" ;
