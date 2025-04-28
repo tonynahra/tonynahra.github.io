@@ -17,7 +17,8 @@ function z(e){
 	      console.log( "FOUND: " + i ) ;
       }	      
   }
-	
+  document.getElementById("FULL").innerHTML = "<img src='" + e.src + "' style='width:100%; height:100%' >" ;
+  document.getElementById("FULL").style.display = "block" ;
 }
 function CA(itm) {
   defaultFldr = document.getElementById("S").value ;	
@@ -136,6 +137,7 @@ function(err, data) {
   button { font-size: 105% ; }		
   select { font-size: 120% ; border-radius: 15px; padding-left: 10px; }	
   #albums { display: inline-block ; }
+  #FULL { top: 1px; left: 1px; width: 100%; height: 100%; display:none ; }	
 </style>
 </head>
 
@@ -143,5 +145,6 @@ function(err, data) {
 <h1>Tony Nahra : <div id='albums' >ALBUMS</div> <button onclick='s()'>Shuffle</button> </h1>
 <hr />	
        <div id='photos' ></div>
-      
+
+	<div id=FULL ></div>
 </body>
