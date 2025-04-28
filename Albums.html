@@ -27,7 +27,7 @@ function C(dFldr) {
          if ( !PTH.includes(".") && !PTH.startsWith("img") && !excluded.includes(PTH) ) {
                alb.push(PTH.replace("photos/" , "") ) ;
          } else {
-            if ( PTH.includes(".jpg") && PTH.startsWith("photos/"+dFldr+"/")  )
+            if ( PTH.toUpperCase().includes(".jpg") && PTH.startsWith("photos/"+dFldr+"/")  )
                imgStr += "<img src='/personal/" + PTH + "' >" ;   
          }
            
