@@ -8,14 +8,9 @@
 defaultFldr = "Mississppi" ;
 const excluded = ["photos", "lib"];
 const extIncluded =[".png",".jpg"];
-
-
-var element = document.querySelector('img');
-element.addEventListener("click", function(e) {
-    console.log('clicked:' + e.src );
-    console.log('clicked:' + e.src );	
-}, false);
-	
+function z(e){
+  console.log(e.src);
+}
 function CA(itm) {
   defaultFldr = document.getElementById("S").value ;	
   C( defaultFldr ) ;
@@ -40,7 +35,7 @@ function C(dFldr) {
             if ( PTH.startsWith("photos/"+dFldr+"/") ) {
 		fEXT = PTH.slice(-4).toLowerCase();     
 	  	if ( extIncluded.includes(fEXT) )	    
-               		imgA.push( "<img src='/personal/" + PTH + "' >" ) ;   
+               		imgA.push( "<img src='/personal/" + PTH + "' onclick='z(this)' >" ) ;   
 	    }
          }
            
