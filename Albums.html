@@ -27,8 +27,10 @@ function C(dFldr) {
          if ( !PTH.includes(".") && !PTH.startsWith("img") && !excluded.includes(PTH) ) {
                alb.push(PTH.replace("photos/" , "") ) ;
          } else {
-            if ( PTH.toUpperCase().includes(".jpg") && PTH.startsWith("photos/"+dFldr+"/")  )
-               imgStr += "<img src='/personal/" + PTH + "' >" ;   
+            if ( PTH.startsWith("photos/"+dFldr+"/") ) {
+	  	if ( PTH.includes(".jpg") || PTH.includes(".JPG") )	    
+               		imgStr += "<img src='/personal/" + PTH + "' >" ;   
+	    }
          }
            
       }
