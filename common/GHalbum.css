@@ -1,0 +1,29 @@
+body {
+       margin: 0px 30px; 
+       background: #999; 
+       font-family: Verdana, Georgia, 'Times New Roman', Times, serif; 
+  
+	background: url(/common/texture_05.jpg) no-repeat center center fixed;
+	-webkit-background-size: cover; /* For WebKit*/
+	-moz-background-size: cover;    /* Mozilla*/
+	-o-background-size: cover;      /* Opera*/
+	background-size: cover;         /* Generic*/  
+      }
+  img  { 
+	width: 300px ; margin: 10px; padding: 5px;
+	border:2px solid #fff;
+	background: #fff; border-radius:15px; 
+        box-shadow:  0 8px 12px 0 rgba(0, 0, 0, 0.3), 0 11px 27px 0 rgba(0, 0, 0, 0.22);   
+     }
+  h1 {
+    font-size: 220%;	  
+    text-shadow: 1px 1px #ccc;
+   }
+  h2 {
+    display: list-item;
+    margin-left : 1em; 
+  }
+  button { font-size: 115% ; }		
+  select { font-size: 120% ; border-radius: 15px; padding-left: 10px; }	
+  #albums { display: inline-block ; }
+  #FULL { position: absolute; top: 0px; left: 0px; width: 0px; height: 0px; display:none ; align: middle; vertical-align: center; text-align: center; margin: auto; background: #666; }	
