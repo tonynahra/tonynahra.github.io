@@ -19,7 +19,7 @@ function z(e){
       }	      
   }
   if ( CurImg == 0 ) { prevDis = " disabled " ; } else { prevDis = "" ; }	
-  if ( CurImg == iCnt ) { nxtDis = " disabled " ; } else { nxtDis = "" ; }
+  if ( CurImg == (iCnt-1) ) { nxtDis = " disabled " ; } else { nxtDis = "" ; }
   document.getElementById("FULL").style.display = "block" ;
   document.getElementById("FULL").style.width = "100%" ;
   document.getElementById("FULL").style.height = "100%" ;
@@ -158,7 +158,7 @@ function(err, data) {
     display: list-item;
     margin-left : 1em; 
   }
-  button { font-size: 105% ; }		
+  button { font-size: 115% ; }		
   select { font-size: 120% ; border-radius: 15px; padding-left: 10px; }	
   #albums { display: inline-block ; }
   #FULL { position: absolute; top: 0px; left: 0px; width: 0px; height: 0px; display:none ; align: middle; vertical-align: center; text-align: center; margin: auto; background: #666; }	
