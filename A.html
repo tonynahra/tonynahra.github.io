@@ -7,9 +7,17 @@
 
 defaultFldr = "Mississppi" ;
 const excluded = ["photos", "lib"];
-const extIncluded =[".png",".jpg"];
+const extAllowed =[".png",".jpg"];
+var iCnt = 0 ;	
 function z(e){
   console.log(e.src);
+  for ( i=0 ; i< iCnt ; i++ ) {
+	 console.log( i + ">>>" + e.src + "==" + document.getElementsByTagName("img")[i].src ) ;
+      if ( e.src == document.getElementsByTagName("img")[i].src ) {
+	      console.log( "FOUND: " + i ) ;
+      }	      
+  }
+	
 }
 function CA(itm) {
   defaultFldr = document.getElementById("S").value ;	
@@ -27,6 +35,7 @@ function C(dFldr) {
 
      imgStr = "" ;
      imgA = [] ;
+     iCnt=0;	
      for ( i=1 ; i <= ( ghJSON.tree.length - 1 ) ; i++ ) {
          PTH = ghJSON.tree[i].path ;
          if ( !PTH.includes(".") && !PTH.startsWith("img") && !excluded.includes(PTH) ) {
@@ -34,8 +43,10 @@ function C(dFldr) {
          } else {
             if ( PTH.startsWith("photos/"+dFldr+"/") ) {
 		fEXT = PTH.slice(-4).toLowerCase();     
-	  	if ( extIncluded.includes(fEXT) )	    
+	  	if ( extAllowed.includes(fEXT) ) {
+			iCnt++ ;
                		imgA.push( "<img src='/personal/" + PTH + "' onclick='z(this)' >" ) ;   
+		}	
 	    }
          }
            
