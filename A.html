@@ -1,11 +1,10 @@
-
 <head>
-	<title>Photo Album</title>
+<title>Photo Album</title>
 <script>
 
 // https://api.github.com/repositories/643587168/git/trees/main?recursive=1
 
-defaultFldr = "Mississppi" ;
+defaultFldr = "Kids" ;
 const excluded = ["photos", "lib"];
 const extAllowed =[".png",".jpg"];
 var iCnt = 0 ;
@@ -38,7 +37,6 @@ function nxt(){
 }	
 	
 function clsFull(){
-  console.log("closing");	
   document.getElementById("FULL").innerHTML = "" ;
   document.getElementById("FULL").style.display = "none" ;
   document.getElementById("FULL").style.width = "1px" ;
@@ -52,12 +50,6 @@ function s() {
   C(defaultFldr);	
 }
 function C(dFldr) {
-      console.log('CNT: ' + ghJSON.tree.length);
-    for ( i=1 ; i <= ( ghJSON.tree.length -1 ) ; i++  ) {
-          console.log( "Cnt: " + i + ".." +  ghJSON.tree[i].path ) ;
-    }
-
-
      imgStr = "" ;
      imgA = [] ;
      iCnt=0;	
@@ -78,10 +70,7 @@ function C(dFldr) {
       }
   shuffleArray(imgA);
   imgStr = imgA.join("");
-	console.log( imgStr ) ;
         document.getElementById("photos").innerHTML = imgStr ;
-        console.log( "=====****=========ALB==========****====" ) ;
-        console.log('ALB CNT: ' + alb.length);
 }
 
 function shuffleArray(array) {
@@ -100,7 +89,6 @@ function showSel(dFldr) {
             if ( defaultFldr == alb[i] ) { SEL = " selected " ; } else { SEL = "" ; }
 	        albLinks += "<option value='" + alb[i] + "' " + SEL + " >" + alb[i] + "</option>" ;	
         }
-	console.log( "<select id='S' onchange='CA()' >" + albLinks + "</select>" );
 	document.getElementById("albums").innerHTML = "<select id=S onchange='CA(this)' >" + albLinks + "</select>" ;
 }
   
@@ -169,6 +157,5 @@ function(err, data) {
 <h1>Tony Nahra : <div id='albums' >ALBUMS</div> <button onclick='s()'>Shuffle</button> </h1>
 <hr />	
        <div id='photos' ></div>
-
 	<div id=FULL ></div>
 </body>
