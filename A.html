@@ -17,7 +17,7 @@ function z(e){
 	      console.log( "FOUND: " + i ) ;
       }	      
   }
-  document.getElementById("FULL").innerHTML = "<img src='" + e.src + "' style='width:100%; height:100%' onclick='close()' >" ;
+  document.getElementById("FULL").innerHTML = "<img src='" + e.src + "' style='width:90%; height:90%;' onclick='close()' >" ;
   document.getElementById("FULL").style.display = "block" ;
   document.getElementById("FULL").style.width = "100%" ;
   document.getElementById("FULL").style.height = "100%" ;
@@ -25,6 +25,7 @@ function z(e){
   document.getElementById("FULL").style.left = "0px" ;	
 }
 function close(){
+  console.log("closing");	
   document.getElementById("FULL").innerHTML = "" ;
   document.getElementById("FULL").style.display = "none" ;
   document.getElementById("FULL").style.width = "1px" ;
@@ -147,7 +148,7 @@ function(err, data) {
   button { font-size: 105% ; }		
   select { font-size: 120% ; border-radius: 15px; padding-left: 10px; }	
   #albums { display: inline-block ; }
-  #FULL { position: absolute; top: 0px; left: 0px; width: 0px; height: 0px; display:none ; }	
+  #FULL { position: absolute; top: 0px; left: 0px; width: 0px; height: 0px; display:none ; align: middle; vertical-align: center; }	
 </style>
 </head>
 
