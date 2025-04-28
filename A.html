@@ -7,7 +7,7 @@
 
 defaultFldr = "Mississppi" ;
 const excluded = ["photos", "lib"];
-
+const extIncluded =[".png",".jpg"];
 function CA(itm) {
   defaultFldr = document.getElementById("S").value ;	
   C( defaultFldr ) ;
@@ -30,7 +30,8 @@ function C(dFldr) {
                alb.push(PTH.replace("photos/" , "") ) ;
          } else {
             if ( PTH.startsWith("photos/"+dFldr+"/") ) {
-	  	if ( PTH.includes(".jpg") || PTH.includes(".JPG") )	    
+		fEXT = PTH.slice(-4).toLowerCase();     
+	  	if ( extIncluded.includes(fEXT) )	    
                		imgA.push( "<img src='/personal/" + PTH + "' >" ) ;   
 	    }
          }
