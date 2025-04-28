@@ -17,14 +17,15 @@ function z(e){
 	      console.log( "FOUND: " + i ) ;
       }	      
   }
-  document.getElementById("FULL").innerHTML = "<img src='" + e.src + "' style='width:90%; height:90%;' onclick='close()' >" ;
   document.getElementById("FULL").style.display = "block" ;
   document.getElementById("FULL").style.width = "100%" ;
   document.getElementById("FULL").style.height = "100%" ;
   document.getElementById("FULL").style.top = "0px" ;
   document.getElementById("FULL").style.left = "0px" ;	
+  document.getElementById("FULL").innerHTML = "<img src='" + e.src + "' style='width:90%; height:90%;' onclick='clsFull()' >" ;
+
 }
-function close(){
+function clsFull(){
   console.log("closing");	
   document.getElementById("FULL").innerHTML = "" ;
   document.getElementById("FULL").style.display = "none" ;
