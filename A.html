@@ -8,6 +8,13 @@
 defaultFldr = "Mississppi" ;
 const excluded = ["photos", "lib"];
 const extIncluded =[".png",".jpg"];
+
+
+var element = document.querySelector('img');                            ^
+element.addEventListener("click", function(e) {
+    console.log('clicked:' + e.src );
+}, false);
+	
 function CA(itm) {
   defaultFldr = document.getElementById("S").value ;	
   C( defaultFldr ) ;
