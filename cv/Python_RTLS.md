@@ -9,19 +9,6 @@ tags["LastDate"] = tags["LastDate"].apply(pd.to_datetime)
 
 dataset = pd.DataFrame(tags)
 
-def DateRange(X):
-    if X > 365 :
-        return "X"
-    elif X > 280:
-        return "X"
-    elif X > 30 :
-        return "X"
-    elif X < 7 :
-        return "X"
-    else:
-        return "X"
-
-    
 def DateRange1Month(X):
     if X < 30 :
         return "X"
