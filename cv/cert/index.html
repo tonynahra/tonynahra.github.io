@@ -171,21 +171,6 @@
     
   </center>
 <script>
-function fadeOutEffect(ID)
-{
- var fadeTarget = document.getElementById(ID);
- var fadeEffect = setInterval(function() {
-  if (fadeTarget.style.opacity < 0.1)
-  {
-   clearInterval(fadeEffect);
-  }
-  else
-  {
-   fadeTarget.style.opacity -= 0.1;
-  }
- }, 200);
-}
-	
    function show(Cat){
 	const links = document.querySelectorAll('a');
 	links.forEach(link => { link.style.fontWeight = 'normal'; link.style.backgroundColor = "white"; });
@@ -204,9 +189,7 @@ function fadeOutEffect(ID)
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
 		    div.style.display = '';
 		} else {	
-		    // div.style.display = 'none';
-		    console.log(div.id);	
-		    fadeOutEffect(div.getAttribute('category'));
+		    div.style.display = 'none';
 		}
 	});
   }
