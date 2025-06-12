@@ -174,12 +174,15 @@ function show(Cat){
 		console.log("category:[" + div.getAttribute('category') + "]" ) ;	
 		if (div.getAttribute('DoNotTouch') == 'true' ) {
 		    // do nothing
+			console.log("OP1:[" + div.getAttribute('category') + "]" ) ;
 		} else if (div.getAttribute('category')===undefined) {
 		    // div.style.display = '';		
+			console.log("OP2:[" + div.getAttribute('category') + "]" ) ;
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
 		    console.log("Hiding :[" + div.getAttribute('category') + "]" ) ;	
 		    div.style.display = '';
 		} else {
+			console.log("OPelse:[" + div.getAttribute('category') + "]" ) ;			
 		    div.style.display = 'none';
 		}
 	});
