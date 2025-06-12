@@ -175,11 +175,11 @@ function show(Cat){
 		    // do nothing
 		} else if (div.getAttribute('category')===undefined) {
 		    // div.style.display = '';		
-		} else if (!div.getAttribute('category')?.includes(Cat) && (Cat != 'ALL') ) {
+		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
 		    console.log("category:[" + div.getAttribute('category') + "]" ) ;	
-		    div.style.display = 'none';
-		} else {
 		    div.style.display = '';
+		} else {
+		    div.style.display = 'none';
 		}
 	});
 
