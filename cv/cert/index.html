@@ -178,6 +178,9 @@ function show(Cat){
 		} else if (div.getAttribute('category')===undefined) {
 		    // div.style.display = '';		
 			console.log("OP2:[" + div.getAttribute('category') + "]" ) ;
+		} else if (div.getAttribute('category')==null) {
+				    // div.style.display = '';		
+					console.log("OPnull:[" + div.getAttribute('category') + "]" ) ;			
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
 		    console.log("Hiding :[" + div.getAttribute('category') + "]" ) ;	
 		    div.style.display = '';
