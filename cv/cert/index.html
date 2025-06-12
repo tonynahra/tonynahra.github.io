@@ -171,12 +171,13 @@ function show(Cat){
 	const allDivs = document.querySelectorAll('div');
 	
 	allDivs.forEach(div => {
+		console.log("category:[" + div.getAttribute('category') + "]" ) ;	
 		if (div.getAttribute('DoNotTouch') == 'true' ) {
 		    // do nothing
 		} else if (div.getAttribute('category')===undefined) {
 		    // div.style.display = '';		
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
-		    console.log("category:[" + div.getAttribute('category') + "]" ) ;	
+		    console.log("Hiding :[" + div.getAttribute('category') + "]" ) ;	
 		    div.style.display = '';
 		} else {
 		    div.style.display = 'none';
