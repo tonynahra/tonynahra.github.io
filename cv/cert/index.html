@@ -29,12 +29,18 @@ div {
   transition-behavior: allow-discrete;
 }
 div.show {
-  opacity: 0;
-  transition: opacity 0.5s linear;
+  display: block;
+  transition-property: display, opacity, max-height;
+  transition-duration: 1.25s;
+  transition-timing-function: ease-in-out;
+  transition-behavior: allow-discrete;
 }
 div.hide {
-  opacity: 0;
-  transition: opacity 0.5s linear;
+  display: none;
+  transition-property: display, opacity, max-height;
+  transition-duration: 1.25s;
+  transition-timing-function: ease-in-out;
+  transition-behavior: allow-discrete;
 }
 </style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
