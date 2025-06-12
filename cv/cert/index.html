@@ -172,9 +172,9 @@ function show(Cat){
 	
 	allDivs.forEach(div => {
 		if (div.getAttribute('DoNotTouch') == 'true' ) {
-			// do nothing
+		    // do nothing
 		} else if (div.getAttribute('category')===undefined) {
-		    div.style.display = '';		
+		    // div.style.display = '';		
 		} else if (!div.getAttribute('category')?.includes(Cat) && (Cat != 'ALL') ) {
 		    div.style.display = 'none';
 		} else {
