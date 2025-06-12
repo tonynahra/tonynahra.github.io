@@ -10,7 +10,10 @@ div {
   opacity: 1;
   transition: opacity 0.5s linear;
 }
-
+.hide {
+  opacity: 1;
+  transition: opacity 0.5s linear;
+}
 div.hide {
   opacity: 0;
 }
@@ -197,7 +200,8 @@ div.hide {
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
 		    div.style.display = '';
 		} else {	
-		    div.style.display = 'none';
+		    // div.style.display = 'none';
+		    div.classList.toggle('hide');
 		}
 	});
   }
