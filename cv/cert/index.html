@@ -10,14 +10,14 @@ div {
   opacity: 1;
   transition: opacity 0.5s linear;
 }
-div.hide {
+.hide_simple {
   display: none;
 }
-div.show {
+.show {
   display: block;
 }
 
-.hide_BAD {
+.hide {
   display: none;
   max-height: 0;
   transition-property: display, opacity, max-height;
@@ -207,11 +207,11 @@ div.show {
 		} else if (div.getAttribute('category')==null) {
 		    // div.style.display = '';			
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
-		    div.style.display = '';
-		    // div.classList.toggle('hide');
+		    // div.style.display = '';
+		    div.classList.add('show');
 		} else {	
-		    div.style.display = 'none';
-		    // div.classList.toggle('hide');
+		    // div.style.display = 'none';
+		    div.classList.add('hide');
 		}
 	});
   }
