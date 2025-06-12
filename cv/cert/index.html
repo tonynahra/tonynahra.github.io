@@ -171,7 +171,8 @@
     
   </center>
 <script>
-function show(Cat){
+$(document).ready(function() {
+   function show(Cat){
 	const links = document.querySelectorAll('a');
 	links.forEach(link => { link.style.fontWeight = 'normal'; link.style.backgroundColor = "white"; });
 
@@ -189,9 +190,11 @@ function show(Cat){
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
 		    div.style.display = '';
 		} else {	
-		    div.style.display = 'none';
+		    // div.style.display = 'none';
+		    $("#"+div.id).fadeOut(1000);
 		}
 	});
-}  
+  }
+});
 </script>
 </body>
