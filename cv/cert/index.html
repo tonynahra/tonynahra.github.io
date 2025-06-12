@@ -172,15 +172,15 @@ function show(Cat){
 	
 	allDivs.forEach(div => {
 		
-	if (div.getAttribute('keep')=='true') {	  
+	if (Cat=='ALL') {	  
 	    div.style.display = 'block';		
 	} else if (div.getAttribute('category')===undefined) {
-	    div.style.display = '';		
+	    // div.style.display = '';		
 	} else if (!div.getAttribute('category')?.includes(Cat)) {
 	    div.style.display = 'none';
-	  } else {
+	} else {
 	    div.style.display = '';
-	  }
+	}
 	});
 
 }
