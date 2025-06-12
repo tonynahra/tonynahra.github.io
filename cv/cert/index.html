@@ -169,33 +169,20 @@
 <script>
 function show(Cat){
 	const allDivs = document.querySelectorAll('div');
-	
 	allDivs.forEach(div => {
 		console.log("category:[" + div.getAttribute('category') + "]" ) ;	
 		if (div.getAttribute('DoNotTouch') == 'true' ) {
 		    // do nothing
-			console.log("OP1:[" + div.getAttribute('category') + "]" ) ;
 		} else if (div.getAttribute('category')===undefined) {
 		    // div.style.display = '';		
-			console.log("OP2:[" + div.getAttribute('category') + "]" ) ;
 		} else if (div.getAttribute('category')==null) {
-				    // div.style.display = '';		
-					console.log("OPnull:[" + div.getAttribute('category') + "]" ) ;			
+		    // div.style.display = '';			
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
 		    div.style.display = '';
 		} else {	
 		    div.style.display = 'none';
 		}
 	});
-
-}
-function show_OLD(Cat) {
-   if ( Cat=='ALL') {
-    document.querySelectorAll('div').forEach(div => {div.style.display = 'block';});
-   } else {
-    document.querySelectorAll('div').forEach(div => {div.style.display = 'none';});
-    document.querySelectorAll('div[category*="'+Cat+'"]').forEach(div => {div.style.display = 'block';});
-   }
-}    
+}  
 </script>
 </body>
