@@ -171,9 +171,21 @@
     
   </center>
 <script>
-$(document).ready(function() {
-  console.log("jQuery started");	
-});
+function fadeOutEffect(ID)
+{
+ var fadeTarget = document.getElementById(ID);
+ var fadeEffect = setInterval(function() {
+  if (fadeTarget.style.opacity < 0.1)
+  {
+   clearInterval(fadeEffect);
+  }
+  else
+  {
+   fadeTarget.style.opacity -= 0.1;
+  }
+ }, 200);
+}
+	
    function show(Cat){
 	const links = document.querySelectorAll('a');
 	links.forEach(link => { link.style.fontWeight = 'normal'; link.style.backgroundColor = "white"; });
@@ -193,7 +205,8 @@ $(document).ready(function() {
 		    div.style.display = '';
 		} else {	
 		    // div.style.display = 'none';
-		    $("#"+div.id).fadeOut(1000);
+		    console.log(div.id);	
+		    fadeOutEffect(div.id);
 		}
 	});
   }
