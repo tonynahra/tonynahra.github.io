@@ -168,7 +168,9 @@
   </center>
 <script>
 function show(Cat){
-	console.log( "OBJ:" + this.id ) ;
+	const links = document.querySelectorAll('a');
+	links.forEach(link => { link.style.fontWeight = 'normal'; });
+	document.getElementById(Cat).style.fontWeight = 'bold' ;
 	const allDivs = document.querySelectorAll('div');
 	allDivs.forEach(div => {
 		console.log("category:[" + div.getAttribute('category') + "]" ) ;	
