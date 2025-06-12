@@ -169,10 +169,10 @@
 <script>
 function show(Cat) {
    if ( Cat=='ALL') {
-    document.querySelectorAll('div').forEach(img => {div.style.display = 'block';});
+    document.querySelectorAll('div').forEach(div => {div.style.display = 'block';});
    } else {
-    document.querySelectorAll('div').forEach(img => {div.style.display = 'none';});
-    document.querySelectorAll('div[category*="'+Cat+'"]').forEach(img => {div.style.display = '';});
+    document.querySelectorAll('div').forEach(div => {div.style.display = 'none';});
+    document.querySelectorAll('div[category*="'+Cat+'"]').forEach(div => {div.style.display = 'block';});
    }
 }    
 </script>
