@@ -167,7 +167,21 @@
     
   </center>
 <script>
-function show(Cat) {
+function show(Cat){
+	const allDivs = document.querySelectorAll('div');
+	
+	allDivs.forEach(div => {
+	  if (!div.getAttribute('data-include')?.includes(Cat)) {
+	    div.style.display = 'none';
+	  } else if (div.getAttribute('category')==undefined) {	  
+	    div.style.display = 'block';
+	  } else {
+	    div.style.display = '';
+	  }
+	});
+
+}
+function show_OLD(Cat) {
    if ( Cat=='ALL') {
     document.querySelectorAll('div').forEach(div => {div.style.display = 'block';});
    } else {
