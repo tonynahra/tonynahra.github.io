@@ -10,7 +10,7 @@
 	<h2>Certification</h2>
 <a href="#" onclick="show('ALL');" >Show All</a> | <a href="#" onclick="show('Data');" >Data</a> | <a href="#" onclick="show('PM');" >Project Management</a> | <a href="#" onclick="show('AI');" >AI/LLM</a>
 <hr>	  
-<div class="container" id="ct" keep=true >
+<div class="container" id="ct" keep='true' >
 <div>  
 <img src="/img/Epic_Certificate.jpg" class='image-popup' />
         </div>
@@ -171,8 +171,11 @@ function show(Cat){
 	const allDivs = document.querySelectorAll('div');
 	
 	allDivs.forEach(div => {
-	if (div.getAttribute('keep')==true) {	  
+		
+	if (div.getAttribute('keep')=='true') {	  
 	    div.style.display = 'block';		
+	} else if (div.getAttribute('category')===Undefined) {
+	    div.style.display = '';		
 	} else if (!div.getAttribute('category')?.includes(Cat)) {
 	    div.style.display = 'none';
 	  } else {
