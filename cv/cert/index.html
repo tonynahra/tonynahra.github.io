@@ -6,17 +6,13 @@
 <style>
  a { margin:5px ; padding: 10px; border-radius: 5px; }
  hr { margin: 20px 10px ; }
-div {
-  opacity: 1;
-  transition: opacity 0.5s linear;
-}
+
 .hide_simple {
   display: none;
 }
 .show {
   display: block;
-  max-height: 100%;
-  transition-property: display, opacity, max-height;
+  transition-property: display, opacity;
   transition-duration: 1.25s;
   transition-timing-function: ease-in-out;
   transition-behavior: allow-discrete;
@@ -24,8 +20,7 @@ div {
 
 .hide {
   display: none;
-  max-height: 0%;
-  transition-property: display, opacity, max-height;
+  transition-property: display, opacity;
   transition-duration: 1.25s;
   transition-timing-function: ease-in-out;
   transition-behavior: allow-discrete;
