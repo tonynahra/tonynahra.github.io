@@ -176,6 +176,7 @@ function show(Cat){
 		} else if (div.getAttribute('category')===undefined) {
 		    // div.style.display = '';		
 		} else if (!div.getAttribute('category')?.includes(Cat) && (Cat != 'ALL') ) {
+		    console.log("category:[" + div.getAttribute('category') + "]" ) ;	
 		    div.style.display = 'none';
 		} else {
 		    div.style.display = '';
