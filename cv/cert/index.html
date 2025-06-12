@@ -171,16 +171,13 @@ function show(Cat){
 	const allDivs = document.querySelectorAll('div');
 	
 	allDivs.forEach(div => {
-		
-	if (Cat=='ALL') {	  
-	    div.style.display = 'block';		
-	} else if (div.getAttribute('category')===undefined) {
-	    // div.style.display = '';		
-	} else if (!div.getAttribute('category')?.includes(Cat)) {
-	    div.style.display = 'none';
-	} else {
-	    div.style.display = '';
-	}
+		if (div.getAttribute('category')===undefined) {
+		    div.style.display = '';		
+		} else if (!div.getAttribute('category')?.includes(Cat) && Cat != 'ALL' ) {
+		    div.style.display = 'none';
+		} else {
+		    div.style.display = '';
+		}
 	});
 
 }
