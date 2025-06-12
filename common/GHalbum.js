@@ -24,11 +24,30 @@ function z(e){
 
 }
 function prev(){
-   ni = document.getElementsByTagName("img")[CurImg-1] ;
-   z(ni);	
+   // ni = document.getElementsByTagName("img")[CurImg-1] ;
+   // z(ni);	
+   const elements = document.getElementsByName("img");	
+   for (let i = CurImg-1; i > 0; i--) {
+	  const element = elements[i];
+	  if (element.offsetParent !== null) {
+	    ni = element ;
+	    break;
+	  }
+  }
+  z(ni); 
 }
 function nxt(){
-   ni = document.getElementsByTagName("img")[CurImg+1] ;
+   // ni = document.getElementsByTagName("img")[CurImg+1] ;
+   // z(ni);	
+   const elements = document.getElementsByName("img");
+   for (let i = CurImg; i <  elements.length; i++) {	
+	  const element = elements[i];
+	  if (element.offsetParent !== null) {
+	    ni = element ;
+	    break;
+	  }
+  }
+	
    z(ni);	
 }	
 	
