@@ -207,11 +207,11 @@ div.show {
 		} else if (div.getAttribute('category')==null) {
 		    // div.style.display = '';			
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
-		    // div.style.display = '';
-		    div.classList.toggle('hide');
+		    div.style.display = '';
+		    // div.classList.toggle('hide');
 		} else {	
-		    // div.style.display = 'none';
-		    div.classList.toggle('hide');
+		    div.style.display = 'none';
+		    // div.classList.toggle('hide');
 		}
 	});
   }
