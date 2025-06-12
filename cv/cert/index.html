@@ -158,7 +158,7 @@
 					<br />
 						<button class="prv" id="prv" ><<<</button>&nbsp;&nbsp;&nbsp;<button class="cls" >Close</button>&nbsp;&nbsp;&nbsp;<button id="nxt" class="nxt" >>>></button>
 
-					<div id="image-modal-loader" style="display:none;" ></div>
+					<div id="image-modal-loader" style="display:none;" DoNotTouch='true' ></div>
 					<div id="image-modal-close-button"></div>
 			
 				</div>
@@ -171,9 +171,11 @@ function show(Cat){
 	const allDivs = document.querySelectorAll('div');
 	
 	allDivs.forEach(div => {
-		if (div.getAttribute('category')===undefined) {
+		if (div.getAttribute('DoNotTouch') == 'true' ) {
+			// do nothing
+		} else if (div.getAttribute('category')===undefined) {
 		    div.style.display = '';		
-		} else if (!div.getAttribute('category')?.includes(Cat) && Cat != 'ALL' ) {
+		} else if (!div.getAttribute('category')?.includes(Cat) && (Cat != 'ALL') ) {
 		    div.style.display = 'none';
 		} else {
 		    div.style.display = '';
