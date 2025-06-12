@@ -10,7 +10,7 @@
 .hide_simple {
   display: none;
 }
-.show {
+.show_old {
   display: block;
   transition-property: display, opacity;
   transition-duration: 1.25s;
@@ -18,14 +18,30 @@
   transition-behavior: allow-discrete;
 }
 
-.hide {
-  display: none;
-  transition-property: display, opacity;
-  transition-duration: 1.25s;
-  transition-timing-function: ease-in-out;
-  transition-behavior: allow-discrete;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
-	
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.hide {
+  animation: fadeOut 2s ease-out forwards;
+}
+.show {
+  animation: fadeIn 2s ease-out forwards;
+}	
 </style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <span id="next" style="display:none;" ></span>
