@@ -17,18 +17,15 @@ div {
   display: block;
 }
 
- .hide {
-    animation: fadeOut 2s forwards;
-  }
+ @keyframes slideaway {
+  from { display: block; }
+  to { transform: translateY(40px); opacity: 0;}
+}
 
-  @keyframes fadeOut {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
-  }
+.hide {
+  animation: slideaway 200ms;
+  display: none;
+}
 	
 </style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
