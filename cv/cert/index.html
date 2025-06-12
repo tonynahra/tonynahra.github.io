@@ -26,16 +26,16 @@
 <div category='AI' >
 <img src="/img/AzureAI.png"  class='image-popup' />    
 </div>
-<div category='Data' >
+<div category='PM' >
 <img src="/img/Agile_Atlas.png"  class='image-popup'/>    
 </div>
 <div category='Data' >
 <img src="/img/Agile_Jira.png"  class='image-popup'  />    
 </div>	    
-<div category='Data' >
+<div category='PM' >
 <img src="/img/ITIL.png"  class='image-popup' />    
         </div>
-<div category='Data' >
+<div category='PM' >
 <img src="/img/PMskills.png"  class='image-popup' />    
 </div>
 <div category='Data'>
@@ -143,7 +143,7 @@
 	<div category='PM' >
 <img src="/img/ITIL_CompTIA.png"  class='image-popup' />    
         </div>
-	<div category='Programming' >
+	<div category='Programming,PM' >
 <img src="/img/Testing_CompTIA.png"  class='image-popup' />    
         </div>	    
 	<div category='Data' >
@@ -172,7 +172,7 @@ function show(Cat){
 	links.forEach(link => { link.style.fontWeight = 'normal'; link.style.backgroundColor = "white"; });
 
 	document.getElementById(Cat).style.fontWeight = 'bold' ;
-	document.getElementById(Cat).style.backgroundColor = "lightyellow";
+	document.getElementById(Cat).style.backgroundColor = "lightgray";
 	const allDivs = document.querySelectorAll('div');
 	allDivs.forEach(div => {
 		console.log("category:[" + div.getAttribute('category') + "]" ) ;	
