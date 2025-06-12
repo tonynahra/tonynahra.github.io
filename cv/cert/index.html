@@ -213,10 +213,10 @@ div {
 		    // div.style.display = '';			
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
 		    // div.style.display = '';
-		    div.classList.add('show');
+		    div.classList.replace('hide','show');
 		} else {	
 		    // div.style.display = 'none';
-		    div.classList.add('hide');
+		    div.classList.replace('show','hide');
 		}
 	});
   }
