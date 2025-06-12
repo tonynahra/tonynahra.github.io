@@ -6,7 +6,7 @@
 <style>
  a { margin:5px ; padding: 10px; border-radius: 5px; }
  hr { margin: 20px 10px ; }
-
+div { align: center; vertical-align:center; }
 .hide_simple {
   display: none;
 }
@@ -22,12 +22,14 @@
   from {
     opacity: 0;
     display: none ;
-	  max-height: 0%;
+    max-height: 0%;
+    max-width: 0%;
   }
   to {
     opacity: 1;
     display: block ;
     max-height: 100%;
+    max-width: 100%;
   }
 }
 
@@ -36,11 +38,13 @@
     opacity: 1;
 	  display: block ;
 	  max-height: 100%;
+	    max-width: 100%;
   }
   to {
     opacity: 0;
 	  display: none ;
 	  max-height: 0%;
+	    max-width: 0%;
   }
 }
 
