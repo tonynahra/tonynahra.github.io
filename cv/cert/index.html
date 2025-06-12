@@ -4,13 +4,13 @@
 <link rel="stylesheet" href="/common/album.css">
 <link rel="stylesheet" href="/common/imageModal.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<div id="next" style="display:none;" ></div>
+<span id="next" style="display:none;" ></span>
 <body style='font-family: Verdana, Arial;' >
   <center>
 	<h2>Certification</h2>
 <a href="#" onclick="show('ALL');" >Show All</a> | <a href="#" onclick="show('Data');" >Data</a> | <a href="#" onclick="show('PM');" >Project Management</a> | <a href="#" onclick="show('AI');" >AI/LLM</a>
 <hr>	  
-<div class="container" id="ct" >
+<div class="container" id="ct" keep=true >
 <div>  
 <img src="/img/Epic_Certificate.jpg" class='image-popup' />
         </div>
@@ -171,10 +171,10 @@ function show(Cat){
 	const allDivs = document.querySelectorAll('div');
 	
 	allDivs.forEach(div => {
-	  if (!div.getAttribute('data-include')?.includes(Cat)) {
+	if (div.getAttribute('keep')==true) {	  
+	    div.style.display = 'block';		
+	} else if (!div.getAttribute('category')?.includes(Cat)) {
 	    div.style.display = 'none';
-	  } else if (div.getAttribute('category')==undefined) {	  
-	    div.style.display = 'block';
 	  } else {
 	    div.style.display = '';
 	  }
