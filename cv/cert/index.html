@@ -247,12 +247,18 @@ div { text-align: center; vertical-align:center;  margin: auto; }
 		    // div.style.display = '';			
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
 		    // div.style.display = '';
-		    div.classList.add('show');	
-		    div.classList.replace('hide','show');
+		    if (div.classList.contains('hide')) {
+		      div.classList.replace('hide','show');	    
+		    } else {	    
+		      div.classList.add('show');	
+		    }	    
 		} else {	
 		    // div.style.display = 'none';
-		    div.classList.add('hide');
-		    div.classList.replace('show','hide');
+		    if (div.classList.contains('show')) {	
+		        div.classList.replace('show','hide');
+		    } else {
+			div.classList.add('hide');    
+		    }		    
 		}
 	});
   }
