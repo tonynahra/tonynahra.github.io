@@ -233,9 +233,9 @@ div { text-align: center; vertical-align:center;  margin: auto; }
    function show(Cat){
 	const links = document.querySelectorAll('a');
 	links.forEach(link => { link.style.fontWeight = 'normal'; link.style.backgroundColor = "white"; });
-
 	document.getElementById(Cat).style.fontWeight = 'bold' ;
 	document.getElementById(Cat).style.backgroundColor = "lightgray";
+	   
 	const allDivs = document.querySelectorAll('div');
 	allDivs.forEach(div => {
 		console.log("category:[" + div.getAttribute('category') + "]" ) ;	
@@ -247,6 +247,7 @@ div { text-align: center; vertical-align:center;  margin: auto; }
 		    // div.style.display = '';			
 		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
 		    // div.style.display = '';
+		    div.classList.add('show');	
 		    div.classList.replace('hide','show');
 		} else {	
 		    // div.style.display = 'none';
