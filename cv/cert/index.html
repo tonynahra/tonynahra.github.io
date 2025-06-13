@@ -18,6 +18,17 @@ div { text-align: center; vertical-align:center;  margin: auto; }
   transition-behavior: allow-discrete;
 }
 
+@keyframes Start {
+  from {
+    transform: scale(0);
+    zoom: 0;
+  }
+  to {
+    transform: scale(1);
+    zoom: 1;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -63,7 +74,7 @@ div { text-align: center; vertical-align:center;  margin: auto; }
   animation: fadeIn 1s ease-in forwards;
 }
 img {
-  animation: fadeIn 1s ease-in forwards;
+  animation: Start 1s ease-in forwards;
 }	
 </style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
