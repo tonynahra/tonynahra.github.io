@@ -66,6 +66,7 @@ window.onload = function ()
 			document.getElementById('next').innerText = nextN ;
 			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
+			console.log( "nextBeyond prv:" + nextBeyond );
 			if ( nextBeyond == false ) { 
 				setTimeout(() => {
 					document.getElementById('prv').disabled = true ;
