@@ -43,6 +43,7 @@ window.onload = function ()
 	$(".prv").on({
 		'click': function(){
 			// nextN = parseInt(document.getElementById('next').innerText)-1 ;	
+			console.log( "current:" + parseInt(document.getElementById('next').innerText );
 			nextN = -1 ;
 			for ( let i=(parseInt(document.getElementById('next').innerText)-1) ; i > 0 ; i-- ) {
 				console.log( i + ">>>[" + document.querySelectorAll('div')[i].className + "]" ) ;
@@ -68,6 +69,7 @@ window.onload = function ()
 		'click': function(){
 			// nextN = parseInt(document.getElementById('next').innerText)+1 ;
 			nextN = -1 ;
+			console.log( "current:" + parseInt(document.getElementById('next').innerText );
 			for ( i=(parseInt(document.getElementById('next').innerText)+1) ; i < imgTot ; i++ ) {
 				console.log( i + ">>>[" + document.querySelectorAll('div')[i].className + "]" ) ;
 				if ( document.querySelectorAll('div')[i].className != 'hide' ) {
