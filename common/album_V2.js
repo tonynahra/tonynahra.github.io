@@ -6,10 +6,7 @@ window.onload = function ()
 		url = document.getElementsByTagName('img')[nextN].src ;
 		loadImageModal(url);
 	}
-
-	//******************************************************
-	// Handle "click" event on image that contains "image-popup class.
-	//******************************************************
+	
 	$(".image-popup").on({
 		'click': function() {
 			url=$(this).attr("src");
@@ -179,7 +176,7 @@ curN = parseInt(document.getElementById('next').innerText) ;
 			if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
 			   if ( i < curN ) noBefore = false ;
 			   if ( i > curN ) noAfter  = false ;	
-			console.log( i + "noBefore noAfter :[" + noBefore  +"-" + noAfter  +  "]" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value );	
+			// console.log( i + "noBefore noAfter :[" + noBefore  +"-" + noAfter  +  "]" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value );	
 
 			}
 		}
@@ -187,9 +184,10 @@ curN = parseInt(document.getElementById('next').innerText) ;
 		document.getElementsByClassName('prv')[0].disabled = false ; 
 		document.getElementsByClassName('nxt')[0].disabled = false ;
 
-		console.log( "noBefore noAfter :[" + noBefore  +"-" + noAfter  +  "]" );
 		if ( noBefore ) document.getElementsByClassName('prv')[0].disabled = true ; 
 		if ( noAfter )  document.getElementsByClassName('nxt')[0].disabled = true ;
+		
+		console.log( "noBefore noAfter :[" + noBefore  +"-" + noAfter  +  "]" );
 		
 	}
 
