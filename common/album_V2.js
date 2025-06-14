@@ -13,7 +13,8 @@ window.onload = function ()
 	$(".image-popup").on({
 		'click': function() {
 			url=$(this).attr("src");
-			imgTot = document.getElementsByTagName('img').length ;
+			imgTot = document.querySelectorAll('.image-popup').length ;
+			console.log( "imgTot:[" + imgTot + "]" ) ;
             for ( i=0 ; i < imgTot ; i++ ) {
               tmp =   document.getElementsByTagName('img')[i].src ;
               if (tmp.indexOf(url) > 1 ) {
@@ -60,6 +61,7 @@ window.onload = function ()
 				}	
 			}
 			console.log( "nextN prv:" + nextN );
+			console.log( "nextBeyond prv:" + nextBeyond );
 			document.getElementsByClassName('nxt')[0].disabled = false ;
 			document.getElementById('next').innerText = nextN ;
 			url = document.getElementsByTagName('img')[nextN].src ;
@@ -92,6 +94,7 @@ window.onload = function ()
 				}	
 			}				
 			console.log( "nextN nxt:" + nextN );
+			console.log( "nextBeyond prv:" + nextBeyond );
 			if ( nextBeyond > -1 ) { 
 				setTimeout(() => {
 					document.getElementById('nxt').disabled = true ;
