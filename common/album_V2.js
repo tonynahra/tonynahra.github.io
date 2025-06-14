@@ -47,14 +47,14 @@ window.onload = function ()
 			curN = parseInt(document.getElementById('next').innerText) ;
 			console.log( "current:[" + curN +"]" );
 			nextN = -1 ;
-			nextBeyond = -1 ;
+			nextBeyond = false ;
 			for ( let i= (curN-1) ; i >= 0 ; i-- ) {
 				console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value + "]" ) ;
 				if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
 				   if ( nextN == -1 ) {
 					   nextN = i ;
 				   } else {
-					   nextBeyond = i ;
+					   nextBeyond = true ;
 					   break ;
 				   }
 				   	
@@ -66,7 +66,7 @@ window.onload = function ()
 			document.getElementById('next').innerText = nextN ;
 			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
-			if ( nextBeyond == -1 ) { 
+			if ( nextBeyond ) { 
 				setTimeout(() => {
 					document.getElementById('prv').disabled = true ;
 				}, 300);
@@ -78,7 +78,7 @@ window.onload = function ()
 		'click': function(){
 			// nextN = parseInt(document.getElementById('next').innerText)+1 ;
 			nextN = -1 ;
-			nextBeyond = -1 ;
+			nextBeyond = false ;
 			curN = parseInt(document.getElementById('next').innerText) ;
 			console.log( "current:[" + curN +"]" );
 			for ( i=(curN+1) ; i < imgTot ; i++ ) {
@@ -87,7 +87,7 @@ window.onload = function ()
    				   if ( nextN == -1 ) {
 					   nextN = i ;
 				   } else {
-					   nextBeyond = i ;
+					   nextBeyond = true ;
 					   break ;
 				   }
 
@@ -95,7 +95,7 @@ window.onload = function ()
 			}				
 			console.log( "nextN nxt:" + nextN );
 			console.log( "nextBeyond prv:" + nextBeyond );
-			if ( nextBeyond == -1 ) { 
+			if ( nextBeyond ) { 
 				setTimeout(() => {
 					document.getElementById('nxt').disabled = true ;
 				}, 300);
