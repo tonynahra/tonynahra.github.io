@@ -44,7 +44,7 @@ window.onload = function ()
 		'click': function(){
 		//	nextN = parseInt(document.getElementById('next').innerText)-1 ;	
 			
-url = $('img').prevAll().filter(function() {return $(this).css('display') === 'block';}).first();
+url = $('div').prevAll().filter(function() {return $(this).css('display') === 'block';}).first();
 console.log( url );			
 		//	document.getElementsByClassName('nxt')[0].disabled = false ;
 		//	document.getElementById('next').innerText = nextN ;
@@ -69,7 +69,7 @@ console.log( url );
 		//	document.getElementsByClassName('prv')[0].disabled = false ;
 		//	document.getElementById('next').innerText = nextN ;
 
-url = $('img').nextAll().filter(function() {return $(this).css('display') === 'block';}).first();
+url = $('div').nextAll().filter(function() {return $(this).css('display') === 'block';}).first();
 console.log( url );
 			
 		//	url = document.getElementsByTagName('img')[nextN].src ;
