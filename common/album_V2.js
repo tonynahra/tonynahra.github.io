@@ -23,7 +23,7 @@ window.onload = function ()
 			nextN = -1 ;
 			noMore = true ;
 			for ( let i= (curN-1) ; i >= 0 ; i-- ) {
-				console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value + "]" ) ;
+				// console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value + "]" ) ;
 				if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
 				   if ( nextN == -1 ) {
 					   nextN = i ;
