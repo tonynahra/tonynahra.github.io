@@ -11,28 +11,6 @@ window.onload = function ()
 		'click': function() {
 			url=$(this).attr("src");
 			imgTot = document.querySelectorAll('.image-popup').length ;
-			console.log( "imgTot:[" + imgTot + "]" ) ;
-            for ( i=0 ; i < imgTot ; i++ ) {
-              tmp =   document.getElementsByTagName('img')[i].src ;
-              if (tmp.indexOf(url) > 1 ) {
-				document.getElementById("next").innerText = i ;
-				
-				if ( i > imgTot - 3 ) { 
-					setTimeout(() => {
-		//			document.getElementById('nxt').disabled = true ;
-				}, 100);
-				} else {
-		//			document.getElementById('prv').disabled = false ;
-				}
-				if ( i < 1 ) { 
-					setTimeout(() => {
-		//			document.getElementById('prv').disabled = true ;
-					}, 100);
-				} else {
-		//			document.getElementById('nxt').disabled = false ;
-				}
-			  }
-            }
 			loadImageModal(url);
 		}
 	});
@@ -40,7 +18,6 @@ window.onload = function ()
 
 	$(".prv").on({
 		'click': function(){
-			// nextN = parseInt(document.getElementById('next').innerText)-1 ;	
 			curN = parseInt(document.getElementById('next').innerText) ;
 			console.log( "current:[" + curN +"]" );
 			nextN = -1 ;
@@ -62,11 +39,6 @@ window.onload = function ()
 			document.getElementById('next').innerText = nextN ;
 
 			if ( noMore ) document.getElementById('prv').disabled = true ;
-			// if ( !nextBeyond ) { 
-			//	setTimeout(() => {
-			//		document.getElementById('prv').disabled = true ;
-			//	}, 300);
-			// }
 			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
 		}
@@ -74,13 +46,11 @@ window.onload = function ()
 
 	$(".nxt").on({
 		'click': function(){
-			// nextN = parseInt(document.getElementById('next').innerText)+1 ;
 			nextN = -1 ;
 			noMore = true ;
 			curN = parseInt(document.getElementById('next').innerText) ;
 			console.log( "current:[" + curN +"]" );
 			for ( i=(curN+1) ; i < imgTot ; i++ ) {
-				console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value + "]" ) ;
 				if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
    				   if ( nextN == -1 ) {
 					   nextN = i ;
@@ -88,18 +58,10 @@ window.onload = function ()
 					   noMore = false ;
 					   break ;
 				   }
-
 				}	
 			}				
-			console.log( "nextN nxt:" + nextN );
-			console.log( "nextBeyond prv:" + nextBeyond );
 
 			if ( noMore ) document.getElementById('nxt').disabled = true ;
-			// if ( !nextBeyond ) { 
-			//	setTimeout(() => {
-			//		document.getElementById('nxt').disabled = true ;
-			//	}, 300);
-			// }
 			document.getElementsByClassName('prv')[0].disabled = false ;
 			document.getElementById('next').innerText = nextN ;
 			url = document.getElementsByTagName('img')[nextN].src ;
@@ -141,9 +103,6 @@ window.onload = function ()
 		}
 	}
 
-	//******************************************************
-	// Load the image 
-	//******************************************************
 	function loadImageModal(url) {
 		
 		$("#image-modal-popup").fadeIn();
@@ -153,7 +112,6 @@ window.onload = function ()
 			//// $("#image-modal-image").hide();
 		}
 		
-		// If enabled, show loading animation while the image is loading in the background
 		if (waitForImageLoadedEventBeforeDisplaying)
 		{
 			$("#image-modal-loader").show();			
@@ -168,16 +126,13 @@ window.onload = function ()
 			$("#image-modal-image").show();
 		}
 
-curN = parseInt(document.getElementById('next').innerText) ;
-			console.log( "current 178:[" + curN +"]" + imgTot );
+		curN = parseInt(document.getElementById('next').innerText) ;
 		noBefore = true ;
 		noAfter  = true ;
 		for ( i=0 ; i < imgTot ; i++ ) {
 			if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
 			   if ( i < curN ) noBefore = false ;
-			   if ( i > curN ) noAfter  = false ;	
-			// console.log( i + "noBefore noAfter :[" + noBefore  +"-" + noAfter  +  "]" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value );	
-
+			   if ( i > curN ) noAfter  = false ;
 			}
 		}
 			
@@ -186,14 +141,10 @@ curN = parseInt(document.getElementById('next').innerText) ;
 
 		if ( noBefore ) document.getElementsByClassName('prv')[0].disabled = true ; 
 		if ( noAfter )  document.getElementsByClassName('nxt')[0].disabled = true ;
-		
-		console.log( "noBefore noAfter :[" + noBefore  +"-" + noAfter  +  "]" );
-		
 	}
 
 	function closeImagePopup() 
 	{
-		// I use fade animation. If you don't want it, just call jQuery's hide() 
 		////// $("#image-modal-popup").fadeOut();
 	}
 }
