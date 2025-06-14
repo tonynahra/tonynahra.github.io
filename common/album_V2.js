@@ -128,6 +128,7 @@ window.onload = function ()
 
 		curN = parseInt(document.getElementById('next').innerText) ;
 		imgTot = document.querySelectorAll('.image-popup').length ;
+			console.log(  "/" + curN + "/imgTot:" + imgTot ) ;
 		noBefore = true ;
 		noAfter  = true ;
 		for ( i=0 ; i < imgTot ; i++ ) {
@@ -142,6 +143,7 @@ window.onload = function ()
 		document.getElementsByClassName('prv')[0].disabled = false ; 
 		document.getElementsByClassName('nxt')[0].disabled = false ;
 
+		console.log( "Final:" + noBefore + "/" + noAfter ) ;
 		if ( noBefore ) document.getElementsByClassName('prv')[0].disabled = true ; 
 		if ( noAfter )  document.getElementsByClassName('nxt')[0].disabled = true ;
 	}
