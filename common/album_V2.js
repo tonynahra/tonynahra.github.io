@@ -43,14 +43,20 @@ window.onload = function ()
 	$(".prv").on({
 		'click': function(){
 			// nextN = parseInt(document.getElementById('next').innerText)-1 ;	
-			curN = document.getElementById('next').innerText ;
+			curN = parseInt(document.getElementById('next').innerText) ;
 			console.log( "current:[" + curN +"]" );
 			nextN = -1 ;
-			for ( let i=(parseInt(document.getElementById('next').innerText)-1) ; i > 0 ; i-- ) {
-				console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].className + "]" ) ;
-				if ( document.querySelectorAll('.image-popup')[i].className != 'hide' ) {
-				   nextN = i ;
-				   break;	
+			nextBeyond = -1 ;
+			for ( let i= (curN-1) ; i > 0 ; i-- ) {
+				console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value + "]" ) ;
+				if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
+				   if ( nextN == -1 ) {
+					   nextN = i ;
+				   } else {
+					   nextBeyond = i ;
+					   break ;
+				   }
+				   	
 				}	
 			}
 			console.log( "nextN prv:" + nextN );
@@ -58,7 +64,7 @@ window.onload = function ()
 			document.getElementById('next').innerText = nextN ;
 			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
-			if ( nextN < 1 ) { 
+			if ( nextBeyond > -1 ) { 
 				setTimeout(() => {
 					document.getElementById('prv').disabled = true ;
 				}, 300);
@@ -70,17 +76,23 @@ window.onload = function ()
 		'click': function(){
 			// nextN = parseInt(document.getElementById('next').innerText)+1 ;
 			nextN = -1 ;
-			curN = document.getElementById('next').innerText ;
+			nextBeyond = -1 ;
+			curN = parseInt(document.getElementById('next').innerText) ;
 			console.log( "current:[" + curN +"]" );
 			for ( i=(curN+1) ; i < imgTot ; i++ ) {
-				console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].className + "]" ) ;
-				if ( document.querySelectorAll('.image-popup')[i].className != 'hide' ) {
-				   nextN = i ;
-				   break;
+				console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value + "]" ) ;
+				if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
+   				   if ( nextN == -1 ) {
+					   nextN = i ;
+				   } else {
+					   nextBeyond = i ;
+					   break ;
+				   }
+
 				}	
 			}				
 			console.log( "nextN nxt:" + nextN );
-			if ( nextN > ( document.getElementsByClassName('.image-popup').length - 3 ) ) { 
+			if ( nextBeyond > -1 ) { 
 				setTimeout(() => {
 					document.getElementById('nxt').disabled = true ;
 				}, 300);
