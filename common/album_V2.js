@@ -44,12 +44,13 @@ window.onload = function ()
 		'click': function(){
 			// nextN = parseInt(document.getElementById('next').innerText)-1 ;	
 			nextN = -1 ;
-			for ( i=parseInt(document.getElementById('next').innerText)-1 ; i > -1 ; i-- ) {
+			for ( var i=parseInt(document.getElementById('next').innerText)-1 ; i > -1 ; i-- ) {
 				if ( document.querySelectorAll('div')[i].style.display != 'none' ) {
-				   nextN = i ;	
+				   nextN = i ;
+				   break;	
 				}	
 			}
-			
+			console.log( "nextN prv:" + nextN );
 			document.getElementsByClassName('nxt')[0].disabled = false ;
 			document.getElementById('next').innerText = nextN ;
 			url = document.getElementsByTagName('img')[nextN].src ;
@@ -68,10 +69,11 @@ window.onload = function ()
 			nextN = -1 ;
 			for ( i=parseInt(document.getElementById('next').innerText)+1 ; i < imgTot ; i++ ) {
 				if ( document.querySelectorAll('div')[i].style.display != 'none' ) {
-				   nextN = i ;	
+				   nextN = i ;
+				   break;
 				}	
 			}				
-			
+			console.log( "nextN nxt:" + nextN );
 			if ( nextN > ( document.getElementsByTagName('img').length - 3 ) ) { 
 				setTimeout(() => {
 					document.getElementById('nxt').disabled = true ;
