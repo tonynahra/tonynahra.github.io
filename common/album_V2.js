@@ -42,13 +42,17 @@ window.onload = function ()
 
 	$(".prv").on({
 		'click': function(){
-		//	nextN = parseInt(document.getElementById('next').innerText)-1 ;	
+			// nextN = parseInt(document.getElementById('next').innerText)-1 ;	
+			nextN = -1 ;
+			for ( i=parseInt(document.getElementById('next').innerText)-1 ; i > -1 ; i-- ) {
+				if ( document.querySelectorAll('div')[i].style.display != 'none' ) {
+				   nextN = i ;	
+				}	
+			}
 			
-url = $('div').prevAll().filter(function() {return $(this).css('display') === 'block';}).first();
-console.log( url );			
-		//	document.getElementsByClassName('nxt')[0].disabled = false ;
-		//	document.getElementById('next').innerText = nextN ;
-		//	url = document.getElementsByTagName('img')[nextN].src ;
+			document.getElementsByClassName('nxt')[0].disabled = false ;
+			document.getElementById('next').innerText = nextN ;
+			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
 			if ( nextN < 1 ) { 
 				setTimeout(() => {
@@ -60,19 +64,22 @@ console.log( url );
 
 	$(".nxt").on({
 		'click': function(){
-		//	nextN = parseInt(document.getElementById('next').innerText)+1 ;
-		//	if ( nextN > ( document.getElementsByTagName('img').length - 3 ) ) { 
-		//		setTimeout(() => {
-		//			document.getElementById('nxt').disabled = true ;
-		//		}, 300);
-		//	}
-		//	document.getElementsByClassName('prv')[0].disabled = false ;
-		//	document.getElementById('next').innerText = nextN ;
-
-url = $('div').nextAll().filter(function() {return $(this).css('display') === 'block';}).first();
-console.log( url );
+			// nextN = parseInt(document.getElementById('next').innerText)+1 ;
+			nextN = -1 ;
+			for ( i=parseInt(document.getElementById('next').innerText)+1 ; i < imgTot ; i++ ) {
+				if ( document.querySelectorAll('div')[i].style.display != 'none' ) {
+				   nextN = i ;	
+				}	
+			}				
 			
-		//	url = document.getElementsByTagName('img')[nextN].src ;
+			if ( nextN > ( document.getElementsByTagName('img').length - 3 ) ) { 
+				setTimeout(() => {
+					document.getElementById('nxt').disabled = true ;
+				}, 300);
+			}
+			document.getElementsByClassName('prv')[0].disabled = false ;
+			document.getElementById('next').innerText = nextN ;
+			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
 		}
 	});
