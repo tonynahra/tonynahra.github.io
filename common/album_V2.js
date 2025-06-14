@@ -66,7 +66,7 @@ window.onload = function ()
 			document.getElementById('next').innerText = nextN ;
 			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
-			if ( nextBeyond ) { 
+			if ( !nextBeyond ) { 
 				setTimeout(() => {
 					document.getElementById('prv').disabled = true ;
 				}, 300);
@@ -95,7 +95,7 @@ window.onload = function ()
 			}				
 			console.log( "nextN nxt:" + nextN );
 			console.log( "nextBeyond prv:" + nextBeyond );
-			if ( nextBeyond ) { 
+			if ( !nextBeyond ) { 
 				setTimeout(() => {
 					document.getElementById('nxt').disabled = true ;
 				}, 300);
