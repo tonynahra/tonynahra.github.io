@@ -68,7 +68,7 @@ window.onload = function ()
 			loadImageModal(url);
 			if ( !nextBeyond ) { 
 				setTimeout(() => {
-					document.getElementById('prv').disabled = true ;
+	//				document.getElementById('prv').disabled = true ;
 				}, 300);
 			}
 		}
