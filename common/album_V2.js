@@ -64,14 +64,13 @@ window.onload = function ()
 			console.log( "nextBeyond prv:" + nextBeyond );
 			document.getElementsByClassName('nxt')[0].disabled = false ;
 			document.getElementById('next').innerText = nextN ;
-			url = document.getElementsByTagName('img')[nextN].src ;
-			loadImageModal(url);
-			console.log( "nextBeyond prv:" + nextBeyond );
 			if ( nextBeyond == false ) { 
 				setTimeout(() => {
 					document.getElementById('prv').disabled = true ;
 				}, 300);
 			}
+			url = document.getElementsByTagName('img')[nextN].src ;
+			loadImageModal(url);
 		}
 	});
 
