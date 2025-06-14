@@ -42,10 +42,13 @@ window.onload = function ()
 
 	$(".prv").on({
 		'click': function(){
-			nextN = parseInt(document.getElementById('next').innerText)-1 ;			
-			document.getElementsByClassName('nxt')[0].disabled = false ;
-			document.getElementById('next').innerText = nextN ;
-			url = document.getElementsByTagName('img')[nextN].src ;
+		//	nextN = parseInt(document.getElementById('next').innerText)-1 ;	
+			
+url = $('img').prevAll().filter(function() {return $(this).css('display') === 'block';}).first();
+console.log( url );			
+		//	document.getElementsByClassName('nxt')[0].disabled = false ;
+		//	document.getElementById('next').innerText = nextN ;
+		//	url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
 			if ( nextN < 1 ) { 
 				setTimeout(() => {
@@ -57,14 +60,18 @@ window.onload = function ()
 
 	$(".nxt").on({
 		'click': function(){
-			nextN = parseInt(document.getElementById('next').innerText)+1 ;
-			if ( nextN > ( document.getElementsByTagName('img').length - 3 ) ) { 
-				setTimeout(() => {
-					document.getElementById('nxt').disabled = true ;
-				}, 300);
-			}
-			document.getElementsByClassName('prv')[0].disabled = false ;
-			document.getElementById('next').innerText = nextN ;
+		//	nextN = parseInt(document.getElementById('next').innerText)+1 ;
+		//	if ( nextN > ( document.getElementsByTagName('img').length - 3 ) ) { 
+		//		setTimeout(() => {
+		//			document.getElementById('nxt').disabled = true ;
+		//		}, 300);
+		//	}
+		//	document.getElementsByClassName('prv')[0].disabled = false ;
+		//	document.getElementById('next').innerText = nextN ;
+
+url = $('img').nextAll().filter(function() {return $(this).css('display') === 'block';}).first();
+console.log( url );
+			
 			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
 		}
@@ -137,4 +144,37 @@ window.onload = function ()
 		// I use fade animation. If you don't want it, just call jQuery's hide() 
 		////// $("#image-modal-popup").fadeOut();
 	}
+}
+
+function show(Cat){
+	const links = document.querySelectorAll('a');
+	links.forEach(link => { link.style.fontWeight = 'normal'; link.style.backgroundColor = "white"; });
+	document.getElementById(Cat).style.fontWeight = 'bold' ;
+	document.getElementById(Cat).style.backgroundColor = "lightgray";
+	   
+	const allDivs = document.querySelectorAll('div');
+	allDivs.forEach(div => {
+		console.log("category:[" + div.getAttribute('category') + "]" ) ;	
+		if (div.getAttribute('DoNotTouch') == 'true' ) {
+		    // do nothing
+		} else if (div.getAttribute('category')===undefined) {
+		    // div.style.display = '';		
+		} else if (div.getAttribute('category')==null) {
+		    // div.style.display = '';			
+		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
+		    // div.style.display = '';
+		    if (div.classList.contains('hide')) {
+		      div.classList.replace('hide','show');	    
+		    } else {	    
+		      div.classList.add('show');	
+		    }	    
+		} else {	
+		    // div.style.display = 'none';
+		    if (div.classList.contains('show')) {	
+		        div.classList.replace('show','hide');
+		    } else {
+			div.classList.add('hide');    
+		    }		    
+		}
+	});
 }
