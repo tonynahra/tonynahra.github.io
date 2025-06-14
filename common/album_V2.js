@@ -12,8 +12,7 @@ window.onload = function ()
 		    url=$(this).attr("src");
 		    imgTot = document.querySelectorAll('.image-popup').length ;
 	            for ( i=0 ; i < imgTot ; i++ ) {
-	                tmp =   document.getElementsByTagName('img')[i].src ;
-			console.log( url + "***" + tmp ) ;	    
+	                tmp =   document.getElementsByTagName('img')[i].src ;    
 	                if (tmp.indexOf(url) > 1 ) {
 			   document.getElementById("next").innerText = i ;
 			   break;
@@ -27,11 +26,9 @@ window.onload = function ()
 	$(".prv").on({
 		'click': function(){
 			curN = parseInt(document.getElementById('next').innerText) ;
-			console.log( "current:[" + curN +"]" );
 			nextN = -1 ;
 			noMore = true ;
 			for ( let i= (curN-1) ; i >= 0 ; i-- ) {
-				// console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value + "]" ) ;
 				if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
 				   if ( nextN == -1 ) {
 					   nextN = i ;
@@ -114,7 +111,6 @@ window.onload = function ()
 	function loadImageModal(url) {
 		
 		$("#image-modal-popup").fadeIn();
-console.log("000");
 		if (fadeInImageEnabled)
 		{
 			//// $("#image-modal-image").hide();
@@ -133,10 +129,7 @@ console.log("000");
 			$("#image-modal-image").attr("src",url);
 			$("#image-modal-image").show();
 		}
-console.log("001");
 		curN = parseInt(document.getElementById('next').innerText) ;
-		// imgTot = document.querySelectorAll('.image-popup').length ;
-			console.log(  "/" + curN + "/imgTot:" + imgTot ) ;
 		noBefore = true ;
 		noAfter  = true ;
 		for ( i=0 ; i < imgTot ; i++ ) {
@@ -145,13 +138,10 @@ console.log("001");
 			   if ( i < curN ) noBefore = false ;
 			   if ( i > curN ) noAfter  = false ;
 			}
-				console.log( "i=" + i + "/" + noBefore + "/" + noAfter + ":" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value ) ;
 		}
 			
 		document.getElementsByClassName('prv')[0].disabled = false ; 
 		document.getElementsByClassName('nxt')[0].disabled = false ;
-
-		console.log( "Final:" + noBefore + "/" + noAfter ) ;
 		if ( noBefore ) document.getElementsByClassName('prv')[0].disabled = true ; 
 		if ( noAfter )  document.getElementsByClassName('nxt')[0].disabled = true ;
 	}
