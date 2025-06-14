@@ -22,17 +22,17 @@ window.onload = function ()
 				
 				if ( i > imgTot - 3 ) { 
 					setTimeout(() => {
-					document.getElementById('nxt').disabled = true ;
+		//			document.getElementById('nxt').disabled = true ;
 				}, 100);
 				} else {
-					document.getElementById('prv').disabled = false ;
+		//			document.getElementById('prv').disabled = false ;
 				}
 				if ( i < 1 ) { 
 					setTimeout(() => {
-					document.getElementById('prv').disabled = true ;
+		//			document.getElementById('prv').disabled = true ;
 					}, 100);
 				} else {
-					document.getElementById('nxt').disabled = false ;
+		//			document.getElementById('nxt').disabled = false ;
 				}
 			  }
             }
