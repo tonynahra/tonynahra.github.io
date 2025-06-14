@@ -106,7 +106,7 @@ window.onload = function ()
 	function loadImageModal(url) {
 		
 		$("#image-modal-popup").fadeIn();
-
+console.log("000");
 		if (fadeInImageEnabled)
 		{
 			//// $("#image-modal-image").hide();
@@ -125,9 +125,9 @@ window.onload = function ()
 			$("#image-modal-image").attr("src",url);
 			$("#image-modal-image").show();
 		}
-
+console.log("001");
 		curN = parseInt(document.getElementById('next').innerText) ;
-		imgTot = document.querySelectorAll('.image-popup').length ;
+		// imgTot = document.querySelectorAll('.image-popup').length ;
 			console.log(  "/" + curN + "/imgTot:" + imgTot ) ;
 		noBefore = true ;
 		noAfter  = true ;
