@@ -131,10 +131,12 @@ window.onload = function ()
 		noBefore = true ;
 		noAfter  = true ;
 		for ( i=0 ; i < imgTot ; i++ ) {
+
 			if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
 			   if ( i < curN ) noBefore = false ;
 			   if ( i > curN ) noAfter  = false ;
 			}
+						console.log( i + "/" + noBefore + "/" + noAfter ) ;
 		}
 			
 		document.getElementsByClassName('prv')[0].disabled = false ; 
