@@ -30,6 +30,7 @@ body { margin: 10px 100px 100px 100px ; }
  a { margin:5px ; padding: 10px; border-radius: 5px; }
  hr { margin: 20px 10px ; }
 div { text-align: center; vertical-align:center;  margin: auto; }
+p   { line-height:40px;margin-bottom:15px;border-bottom: dotted;padding:10px; border-color:lightgray; }
 
 @keyframes Start {
   from {
