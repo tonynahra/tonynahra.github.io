@@ -1,16 +1,15 @@
 window.onload = function () 
 {
-
 	function openNext() {
 		nextN = parseInt(document.getElementById('next').innerText) ;
 		url = document.getElementsByTagName('img')[nextN].src ;
 		loadImageModal(url);
 	}
 	
-	$(".image-popup").on({
+	$(".i").on({
 		'click': function() {
 		    url=$(this).attr("src");
-		    imgTot = document.querySelectorAll('.image-popup').length ;
+		    imgTot = document.querySelectorAll('.i').length ;
 	            for ( i=0 ; i < imgTot ; i++ ) {
 	                tmp =   document.getElementsByTagName('img')[i].src ;    
 	                if (tmp.indexOf(url) > 1 ) {
@@ -29,20 +28,18 @@ window.onload = function ()
 			nextN = -1 ;
 			noMore = true ;
 			for ( let i= (curN-1) ; i >= 0 ; i-- ) {
-				if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
+				if ( document.querySelectorAll('.i')[i].parentNode.classList.value != 'hide' ) {
 				   if ( nextN == -1 ) {
 					   nextN = i ;
 				   } else {
 					   nextBeyond = false ;
 					   break ;
-				   }
-				   	
+				   }				   	
 				}	
 			}
 
 			document.getElementsByClassName('nxt')[0].disabled = false ;
 			document.getElementById('next').innerText = nextN ;
-
 			if ( noMore ) document.getElementById('prv').disabled = true ;
 			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
@@ -56,7 +53,7 @@ window.onload = function ()
 			curN = parseInt(document.getElementById('next').innerText) ;
 			console.log( "current:[" + curN +"]" );
 			for ( i=(curN+1) ; i < imgTot ; i++ ) {
-				if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
+				if ( document.querySelectorAll('.i')[i].parentNode.classList.value != 'hide' ) {
    				   if ( nextN == -1 ) {
 					   nextN = i ;
 				   } else {
@@ -87,14 +84,11 @@ window.onload = function ()
 		}
 	});
 
-
-
 	var waitForImageLoadedEventBeforeDisplaying=false;
 	var fadeInImageEnabled=true;
 
 	function onImageLoaded() 
-	{
-		
+	{		
 		document.getElementsByClassName('prv')[0].disabled = false ; 
 		document.getElementsByClassName('nxt')[0].disabled = false ;
 		imageWidth	 = this.width;
@@ -108,8 +102,7 @@ window.onload = function ()
 		}
 	}
 
-	function loadImageModal(url) {
-		
+	function loadImageModal(url) {	
 		$("#image-modal-popup").fadeIn();
 		if (fadeInImageEnabled)
 		{
@@ -133,13 +126,12 @@ window.onload = function ()
 		noBefore = true ;
 		noAfter  = true ;
 		for ( i=0 ; i < imgTot ; i++ ) {
-
-			if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
+			if ( document.querySelectorAll('.i')[i].parentNode.classList.value != 'hide' ) {
 			   if ( i < curN ) noBefore = false ;
 			   if ( i > curN ) noAfter  = false ;
 			}
 		}
-			
+
 		document.getElementsByClassName('prv')[0].disabled = false ; 
 		document.getElementsByClassName('nxt')[0].disabled = false ;
 		if ( noBefore ) document.getElementsByClassName('prv')[0].disabled = true ; 
