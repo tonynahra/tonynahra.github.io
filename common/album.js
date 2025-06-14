@@ -7,9 +7,6 @@ window.onload = function ()
 		loadImageModal(url);
 	}
 
-	//******************************************************
-	// Handle "click" event on image that contains "image-popup class.
-	//******************************************************
 	$(".image-popup").on({
 		'click': function() {
 			url=$(this).attr("src");
