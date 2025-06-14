@@ -137,7 +137,7 @@ console.log("001");
 			   if ( i < curN ) noBefore = false ;
 			   if ( i > curN ) noAfter  = false ;
 			}
-						console.log( i + "/" + noBefore + "/" + noAfter + ":" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value ) ;
+				console.log( "i=" + i + "/" + noBefore + "/" + noAfter + ":" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value ) ;
 		}
 			
 		document.getElementsByClassName('prv')[0].disabled = false ; 
