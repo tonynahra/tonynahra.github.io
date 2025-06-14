@@ -127,6 +127,7 @@ window.onload = function ()
 		}
 
 		curN = parseInt(document.getElementById('next').innerText) ;
+		imgTot = document.querySelectorAll('.image-popup').length ;
 		noBefore = true ;
 		noAfter  = true ;
 		for ( i=0 ; i < imgTot ; i++ ) {
