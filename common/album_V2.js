@@ -48,7 +48,7 @@ window.onload = function ()
 			console.log( "current:[" + curN +"]" );
 			nextN = -1 ;
 			nextBeyond = -1 ;
-			for ( let i= (curN-1) ; i > 0 ; i-- ) {
+			for ( let i= (curN-1) ; i >= 0 ; i-- ) {
 				console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value + "]" ) ;
 				if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
 				   if ( nextN == -1 ) {
@@ -68,7 +68,7 @@ window.onload = function ()
 			loadImageModal(url);
 			if ( nextBeyond > -1 ) { 
 				setTimeout(() => {
-					document.getElementById('prv').disabled = true ;
+		//			document.getElementById('prv').disabled = true ;
 				}, 300);
 			}
 		}
@@ -97,7 +97,7 @@ window.onload = function ()
 			console.log( "nextBeyond prv:" + nextBeyond );
 			if ( nextBeyond > -1 ) { 
 				setTimeout(() => {
-					document.getElementById('nxt').disabled = true ;
+		//			document.getElementById('nxt').disabled = true ;
 				}, 300);
 			}
 			document.getElementsByClassName('prv')[0].disabled = false ;
