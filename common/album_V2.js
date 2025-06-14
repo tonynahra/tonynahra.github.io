@@ -60,8 +60,7 @@ window.onload = function ()
 				   	
 				}	
 			}
-			console.log( "nextN prv:" + nextN );
-			console.log( "nextBeyond prv:" + nextBeyond );
+
 			document.getElementsByClassName('nxt')[0].disabled = false ;
 			document.getElementById('next').innerText = nextN ;
 
@@ -189,8 +188,8 @@ curN = parseInt(document.getElementById('next').innerText) ;
 		document.getElementsByClassName('nxt')[0].disabled = false ;
 
 		console.log( "noBefore noAfter :[" + noBefore  +"-" + noAfter  +  "]" );
-		// if ( noBefore ) document.getElementsByClassName('prv')[0].disabled = true ; 
-		//  if ( noAfter )  document.getElementsByClassName('nxt')[0].disabled = true ;
+		if ( noBefore ) document.getElementsByClassName('prv')[0].disabled = true ; 
+		if ( noAfter )  document.getElementsByClassName('nxt')[0].disabled = true ;
 		
 	}
 
