@@ -45,7 +45,7 @@ window.onload = function ()
 			// nextN = parseInt(document.getElementById('next').innerText)-1 ;	
 			nextN = -1 ;
 			for ( let i=parseInt(document.getElementById('next').innerText)-1 ; i > -1 ; i-- ) {
-				console.log( i + ">>>[" + document.querySelectorAll('div')[i].style.display + "]" ) ;
+				console.log( i + ">>>[" + document.querySelectorAll('div')[i].className + "]" ) ;
 				if ( document.querySelectorAll('div')[i].className != 'hide' ) {
 				   nextN = i ;
 				   break;	
@@ -69,7 +69,7 @@ window.onload = function ()
 			// nextN = parseInt(document.getElementById('next').innerText)+1 ;
 			nextN = -1 ;
 			for ( i=parseInt(document.getElementById('next').innerText)+1 ; i < imgTot ; i++ ) {
-				console.log( i + ">>>[" + document.querySelectorAll('div')[i].style.display + "]" ) ;
+				console.log( i + ">>>[" + document.querySelectorAll('div')[i].className + "]" ) ;
 				if ( document.querySelectorAll('div')[i].className != 'hide' ) {
 				   nextN = i ;
 				   break;
