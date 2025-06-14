@@ -143,8 +143,6 @@ window.onload = function ()
 		{		
 			$("#image-modal-image").fadeIn();
 		}
-		curN = parseInt(document.getElementById('next').innerText) ;
-			console.log( "current 146:[" + curN +"]" );
 	}
 
 	//******************************************************
@@ -176,6 +174,19 @@ window.onload = function ()
 
 curN = parseInt(document.getElementById('next').innerText) ;
 			console.log( "current 178:[" + curN +"]" );
+		noBefore = true ;
+		noAfter  = true ;
+		for ( i=0 ; i < imgTot ; i++ ) {
+			if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
+   			   if ( i < curN ) NoBefore = false ;
+			   if ( i > curN ) NoAfter  = false ;	
+			}
+		}
+			
+		document.getElementsByClassName('prv')[0].disabled = false ; 
+		document.getElementsByClassName('nxt')[0].disabled = false ;
+		if ( noBefore ) document.getElementsByClassName('prv')[0].disabled = true ; 
+		if ( noAfter )  document.getElementsByClassName('nxt')[0].disabled = true ;
 		
 	}
 
