@@ -178,15 +178,19 @@ curN = parseInt(document.getElementById('next').innerText) ;
 		noAfter  = true ;
 		for ( i=0 ; i < imgTot ; i++ ) {
 			if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
-   			   if ( i < curN ) noBefore = false ;
+			   if ( i < curN ) noBefore = false ;
 			   if ( i > curN ) noAfter  = false ;	
+			console.log( i + "noBefore noAfter :[" + noBefore  +"-" + noAfter  +  "]" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value );	
+
 			}
 		}
 			
 		document.getElementsByClassName('prv')[0].disabled = false ; 
 		document.getElementsByClassName('nxt')[0].disabled = false ;
-		if ( noBefore ) document.getElementsByClassName('prv')[0].disabled = true ; 
-		if ( noAfter )  document.getElementsByClassName('nxt')[0].disabled = true ;
+
+		console.log( "noBefore noAfter :[" + noBefore  +"-" + noAfter  +  "]" );
+		// if ( noBefore ) document.getElementsByClassName('prv')[0].disabled = true ; 
+		//  if ( noAfter )  document.getElementsByClassName('nxt')[0].disabled = true ;
 		
 	}
 
