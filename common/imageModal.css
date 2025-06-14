@@ -115,7 +115,7 @@
 
 	/* I am using an image for the button here, but you can just use text if you want to. */
 	background-size: contain;
-	background: url(/common/close-button.gif) no-repeat;
+	// background: url(/common/close-button.gif) no-repeat;
 	width: 50px;
 	height: 50px;
 }
