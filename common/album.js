@@ -16,6 +16,7 @@ window.onload = function ()
 			imgTot = document.getElementsByTagName('img').length ;
             for ( i=0 ; i < imgTot ; i++ ) {
               tmp =   document.getElementsByTagName('img')[i].src ;
+	console.log( url + "***" + tmp ) ;	    
               if (tmp.indexOf(url) > 1 ) {
 				document.getElementById("next").innerText = i ;
 				
