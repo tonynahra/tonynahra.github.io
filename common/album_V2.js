@@ -47,14 +47,14 @@ window.onload = function ()
 			curN = parseInt(document.getElementById('next').innerText) ;
 			console.log( "current:[" + curN +"]" );
 			nextN = -1 ;
-			nextBeyond = false ;
+			noMore = true ;
 			for ( let i= (curN-1) ; i >= 0 ; i-- ) {
 				console.log( i + ">>>[" + document.querySelectorAll('.image-popup')[i].parentNode.classList.value + "]" ) ;
 				if ( document.querySelectorAll('.image-popup')[i].parentNode.classList.value != 'hide' ) {
 				   if ( nextN == -1 ) {
 					   nextN = i ;
 				   } else {
-					   nextBeyond = true ;
+					   nextBeyond = false ;
 					   break ;
 				   }
 				   	
@@ -64,11 +64,13 @@ window.onload = function ()
 			console.log( "nextBeyond prv:" + nextBeyond );
 			document.getElementsByClassName('nxt')[0].disabled = false ;
 			document.getElementById('next').innerText = nextN ;
-			if ( !nextBeyond ) { 
-				setTimeout(() => {
-					document.getElementById('prv').disabled = true ;
-				}, 300);
-			}
+
+			if ( noMore ) document.getElementById('prv').disabled = true ;
+			// if ( !nextBeyond ) { 
+			//	setTimeout(() => {
+			//		document.getElementById('prv').disabled = true ;
+			//	}, 300);
+			// }
 			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
 		}
@@ -78,7 +80,7 @@ window.onload = function ()
 		'click': function(){
 			// nextN = parseInt(document.getElementById('next').innerText)+1 ;
 			nextN = -1 ;
-			nextBeyond = false ;
+			noMore = true ;
 			curN = parseInt(document.getElementById('next').innerText) ;
 			console.log( "current:[" + curN +"]" );
 			for ( i=(curN+1) ; i < imgTot ; i++ ) {
@@ -87,7 +89,7 @@ window.onload = function ()
    				   if ( nextN == -1 ) {
 					   nextN = i ;
 				   } else {
-					   nextBeyond = true ;
+					   noMore = false ;
 					   break ;
 				   }
 
@@ -95,11 +97,13 @@ window.onload = function ()
 			}				
 			console.log( "nextN nxt:" + nextN );
 			console.log( "nextBeyond prv:" + nextBeyond );
-			if ( !nextBeyond ) { 
-				setTimeout(() => {
-					document.getElementById('nxt').disabled = true ;
-				}, 300);
-			}
+
+			if ( noMore ) document.getElementById('nxt').disabled = true ;
+			// if ( !nextBeyond ) { 
+			//	setTimeout(() => {
+			//		document.getElementById('nxt').disabled = true ;
+			//	}, 300);
+			// }
 			document.getElementsByClassName('prv')[0].disabled = false ;
 			document.getElementById('next').innerText = nextN ;
 			url = document.getElementsByTagName('img')[nextN].src ;
