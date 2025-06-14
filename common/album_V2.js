@@ -72,7 +72,7 @@ console.log( url );
 url = $('img').nextAll().filter(function() {return $(this).css('display') === 'block';}).first();
 console.log( url );
 			
-			url = document.getElementsByTagName('img')[nextN].src ;
+		//	url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
 		}
 	});
