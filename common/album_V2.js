@@ -66,9 +66,9 @@ window.onload = function ()
 			document.getElementById('next').innerText = nextN ;
 			url = document.getElementsByTagName('img')[nextN].src ;
 			loadImageModal(url);
-			if ( nextBeyond > -1 ) { 
+			if ( nextBeyond == -1 ) { 
 				setTimeout(() => {
-		//			document.getElementById('prv').disabled = true ;
+					document.getElementById('prv').disabled = true ;
 				}, 300);
 			}
 		}
@@ -95,9 +95,9 @@ window.onload = function ()
 			}				
 			console.log( "nextN nxt:" + nextN );
 			console.log( "nextBeyond prv:" + nextBeyond );
-			if ( nextBeyond > -1 ) { 
+			if ( nextBeyond == -1 ) { 
 				setTimeout(() => {
-		//			document.getElementById('nxt').disabled = true ;
+					document.getElementById('nxt').disabled = true ;
 				}, 300);
 			}
 			document.getElementsByClassName('prv')[0].disabled = false ;
