@@ -64,7 +64,7 @@ window.onload = function ()
 			console.log( "nextBeyond prv:" + nextBeyond );
 			document.getElementsByClassName('nxt')[0].disabled = false ;
 			document.getElementById('next').innerText = nextN ;
-			if ( nextBeyond == false ) { 
+			if ( !nextBeyond ) { 
 				setTimeout(() => {
 					document.getElementById('prv').disabled = true ;
 				}, 300);
