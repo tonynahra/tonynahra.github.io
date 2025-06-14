@@ -9,9 +9,17 @@ window.onload = function ()
 	
 	$(".image-popup").on({
 		'click': function() {
-			url=$(this).attr("src");
-			imgTot = document.querySelectorAll('.image-popup').length ;
-			loadImageModal(url);
+		    url=$(this).attr("src");
+		    imgTot = document.querySelectorAll('.image-popup').length ;
+	            for ( i=0 ; i < imgTot ; i++ ) {
+	                tmp =   document.getElementsByTagName('img')[i].src ;
+			console.log( url + "***" + tmp ) ;	    
+	                if (tmp.indexOf(url) > 1 ) {
+			   document.getElementById("next").innerText = i ;
+			   break;
+		        }
+		    }
+		    loadImageModal(url);
 		}
 	});
 	
