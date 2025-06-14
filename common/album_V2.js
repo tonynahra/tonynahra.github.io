@@ -173,7 +173,7 @@ window.onload = function ()
 		}
 
 curN = parseInt(document.getElementById('next').innerText) ;
-			console.log( "current 178:[" + curN +"]" );
+			console.log( "current 178:[" + curN +"]" + imgTot );
 		noBefore = true ;
 		noAfter  = true ;
 		for ( i=0 ; i < imgTot ; i++ ) {
