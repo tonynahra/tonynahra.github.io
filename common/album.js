@@ -138,3 +138,36 @@ window.onload = function ()
 		////// $("#image-modal-popup").fadeOut();
 	}
 }
+
+function show(Cat){
+	const links = document.querySelectorAll('a');
+	links.forEach(link => { link.style.fontWeight = 'normal'; link.style.backgroundColor = "white"; });
+	document.getElementById(Cat).style.fontWeight = 'bold' ;
+	document.getElementById(Cat).style.backgroundColor = "lightgray";
+	   
+	const allDivs = document.querySelectorAll('div');
+	allDivs.forEach(div => {
+		console.log("category:[" + div.getAttribute('category') + "]" ) ;	
+		if (div.getAttribute('DoNotTouch') == 'true' ) {
+		    // do nothing
+		} else if (div.getAttribute('category')===undefined) {
+		    // div.style.display = '';		
+		} else if (div.getAttribute('category')==null) {
+		    // div.style.display = '';			
+		} else if (div.getAttribute('category')?.includes(Cat) || (Cat == 'ALL') ) {
+		    // div.style.display = '';
+		    if (div.classList.contains('hide')) {
+		      div.classList.replace('hide','show');	    
+		    } else {	    
+		      div.classList.add('show');	
+		    }	    
+		} else {	
+		    // div.style.display = 'none';
+		    if (div.classList.contains('show')) {	
+		        div.classList.replace('show','hide');
+		    } else {
+			div.classList.add('hide');    
+		    }		    
+		}
+	});
+}
