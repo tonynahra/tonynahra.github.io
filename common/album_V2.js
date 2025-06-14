@@ -143,6 +143,8 @@ window.onload = function ()
 		{		
 			$("#image-modal-image").fadeIn();
 		}
+		curN = parseInt(document.getElementById('next').innerText) ;
+			console.log( "current 146:[" + curN +"]" );
 	}
 
 	//******************************************************
@@ -171,6 +173,10 @@ window.onload = function ()
 			$("#image-modal-image").attr("src",url);
 			$("#image-modal-image").show();
 		}
+
+curN = parseInt(document.getElementById('next').innerText) ;
+			console.log( "current 178:[" + curN +"]" );
+		
 	}
 
 	function closeImagePopup() 
