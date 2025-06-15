@@ -1,0 +1,33 @@
+Hello,
+
+Thank you for considering my application. My name is Tony Nahra, and I am an advanced full
+stack developer with extensive experience in the healthcare field. My work has been deployed
+on numerous websites, reaching millions of users globally.
+
+In my current role within the UIowa Healthcare, I have focused on enhancing team efficiency
+through automation. I successfully developed numerous Python scripts that automate the
+generation of weekly tasks and reports. I would be happy to demonstrate this during an interview.
+
+In my previous role, I designed and developed a proprietary database-driven Learning
+Management System (LMS) tightly integrated with an interactive tutorial engine I also created.
+This system was specifically built for healthcare and integrated seamlessly with CERNER
+Millennium.
+
+Beyond my general CV, I would like to highlight my strong database and data management
+skills. I have created over 1000 complex SQL stored procedures, views, and web services to
+deliver content effectively to customer portals. Furthermore, I developed user-friendly UI
+interfaces for data visualization, usage charting, and the generation of periodic client reports. My
+proficiency extends to data analysis and I have developed VBA add-ins for Excel. These add-ins
+enabled the retrieval of SQL data and its transformation into OLAP pivot tables, facilitating
+in-depth data analysis and reporting. I have used Tableau, Python and HTML5 UI libraries and I
+included some samples in the documents section.
+
+I also would like to add that I attended numerous internal training courses on Epic Reporting Workbench,
+Clarity, SlicerDicer and more. I am Epic and Oracle certified.
+
+Based on my experience and accomplishments, I am confident that I meet and exceed the
+requirements for this position. I am eager to learn more about this opportunity and present my
+project portfolio in person. Thank you for your time and consideration.
+
+Sincerely,
+Tony Nahra
