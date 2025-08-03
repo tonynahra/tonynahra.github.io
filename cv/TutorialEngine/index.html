@@ -8,7 +8,19 @@
   p { margin-bottom: 25px; } 
   img { box-shadow:  0 5px 10px 0 rgba(0, 0, 0, 0.2), 0 7px 23px 0 rgba(0, 0, 0, 0.19); }
   hr { margin: 20px 10px ; }
-  div { text-align: center; vertical-align:center;  margin: auto; }  
+  div { text-align: center; vertical-align:center;  margin: auto; }
+  .container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-auto-rows: 250px;
+  grid-gap: 45px;
+  SKIP-grid-auto-flow: dense;
+      
+  }
+  .container img {
+    width: 100%;
+    height: 100%;
+  }
 </style>
 </head>
 
@@ -65,18 +77,18 @@ Technical Demonstrations:
 </p>
   
 <hr />
-<p>
+<div class="container" id="ct1" keep='true' >
 <div ><img src="XPOL00.jpg" width="500" class='i' /></div>
 <div ><img src="XPOL01.jpg" width="500"  class='i' /></div>
 <div ><img src="XPOL02.jpg" width="500"  class='i' /></div>  
 <div ><img src="XPOL03.jpg" width="500"  class='i' /></div>
-</p>
+</div>
 
-<p>
+<div class="container" id="ct2" keep='true' >
 <div ><img src="XPOL10.jpg" width="500"  class='i' /></div>
 <div ><img src="XPOL11.jpg" width="500"  class='i' /></div>
 <div ><img src="XPOL12.jpg" width="500"  class='i' /></div>  
-</p>
+</div>
 
 <hr />
   <a href="/" >Home</a>
