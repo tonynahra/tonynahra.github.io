@@ -1,3 +1,4 @@
+```python
 from typing import Text
 from moviepy.editor import *
 import os
@@ -165,5 +166,6 @@ class CreateVideo(object):
 
 final_clip = concatenate_videoclips(videoclips)
 final_clip.write_videofile(get_code(infonode) + ".mp4", fps=24)
+```
 
 upload_video.do_upload(CreateVideo(args))
