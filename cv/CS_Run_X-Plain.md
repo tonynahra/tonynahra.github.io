@@ -101,7 +101,6 @@ namespace X_PLAIN
             WMP.URL = mp3Path;
         }
 
-
         public void FavoriteChange(object sender, MouseEventArgs e)
         {
             Console.WriteLine("***ModulePath:" + ModulePath);
@@ -127,12 +126,7 @@ namespace X_PLAIN
                 {
                     file.WriteLine(line);
                 }
-
-
         }
-
-
-
 
         private void loadModule( bool FirstRun )
         {
@@ -147,7 +141,6 @@ namespace X_PLAIN
 
                 // Favorite.Image = Image.FromFile( folderPath + "common/FavOff.png" );
 
-                
                 xmldoc.Load(Tutorialfile);
                 TUT = xmldoc.SelectNodes("//s");
 
@@ -179,31 +172,22 @@ namespace X_PLAIN
                 string sPath = folderPath + "/" + ModulePath + "/mobile/slides/m_" + (TUT[ModulePointer] as XmlElement).GetAttribute("f") + ext;
                 pictureBox1.Image = Image.FromFile(sPath);
 
-
                 string mp3Path = folderPath + "/" + ModulePath + "/mobile/sound/m_s" + (TUT[ModulePointer] as XmlElement).GetAttribute("f") + ".mp3";
 
                 WMP.URL = mp3Path;
                 timer1.Start();
-
             }
             else
             {
                 // webBrowser1.DocumentText = "<button ID=HOME >Home</button>&nbsp;&nbsp;<button ID=BACK >Back</button><br><br><h1>Tutorial Missing!</h1>";
                 Console.WriteLine("Error: Tutorial is missing ( could not find folder)  ");
             }
-
         }
-
-
-
-
 
         private void pauseAudio(object sender, EventArgs e)
         {
             WMP.Ctlcontrols.pause();
         }
-
-
 
         private void AudioRepeat(object sender, EventArgs e)
         {
@@ -216,13 +200,9 @@ namespace X_PLAIN
         {
             WMP.Ctlcontrols.stop();
             // loadXML("", "", true);
-            
             // TutorialGroup.Visible = false;
             this.Hide();
-
         }
-
-
 
         private void UserClick(object sender, MouseEventArgs e)
         {
@@ -234,7 +214,6 @@ namespace X_PLAIN
             COORD.Text = string.Format("X: {0} - Y: {1} ", xPcnt, yPcnt);
             if (nextOp == -99)
             {
-
                 Console.WriteLine("TOT:" + (TUT[ModulePointer] as XmlElement).GetAttribute("f") + "~" + (TUT[ModulePointer] as XmlElement).GetAttribute("p"));
                 // (n as XmlElement).GetAttribute("id") 
 
@@ -274,7 +253,6 @@ namespace X_PLAIN
                     showFB(FB);
                     NavNext.Enabled = true;
                     Console.WriteLine(FB + ":FB:" + BN.ToString() + " ... nextOp=" + nextOp.ToString());
-
                 }
             }
         }
