@@ -16,19 +16,19 @@ def DateRange1Month(X):
         return ""
     
 def DateRange3Month(X):
-    if X > 30 and X < 180 :
+    if X >= 30 and X < 180 :
         return "X"
     else:
         return ""
     
 def DateRange12Month(X):
-    if X > 180 and X < 365 :
+    if X >= 180 and X < 365 :
         return "X"
     else:
         return ""
     
 def DateRangeInYear(X):
-    if X > 365 :
+    if X >= 365 :
         return "X"
     else:
         return ""
