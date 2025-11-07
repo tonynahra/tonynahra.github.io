@@ -1,0 +1,201 @@
+/* --- 1. Basic & Font Styles --- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f8f9fa;
+    color: #212529;
+    margin: 0;
+    padding: 0;
+    /* Added for smooth scrolling */
+    scroll-behavior: smooth;
+}
+
+/* --- 2. Two-Column Grid Layout --- */
+.page-container {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+/* --- 3. Sticky Sidebar Navigation --- */
+#sidebar-nav {
+    position: sticky;
+    top: 20px;
+    align-self: start;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-right: 1px solid #e9ecef;
+    padding-right: 20px;
+}
+
+#sidebar-nav h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #343a40;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Adds space above the "About" title */
+#sidebar-nav .nav-section-spacer {
+    margin-top: 1.5rem;
+}
+
+#sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#sidebar-nav li {
+    margin-bottom: 0.5rem;
+}
+
+/* Styles the separator under "Top of Page" */
+#sidebar-nav li.nav-separator {
+    border-bottom: 1px solid #e9ecef; 
+    padding-bottom: 8px; 
+    margin-bottom: 8px;
+}
+
+#sidebar-nav a {
+    font-size: 0.9rem;
+    color: #495057;
+    text-decoration: none;
+    display: block;
+    padding: 4px 0;
+    line-height: 1.4;
+    border-radius: 4px;
+}
+
+#sidebar-nav a:hover {
+    color: #0056b3;
+    background-color: #e6f2ff;
+}
+
+/* --- 4. Main Article Content --- */
+main {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px 40px;
+}
+
+header {
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+}
+
+h1 {
+    color: #212529;
+    font-size: 2.2em;
+    line-height: 1.2;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 1.0em;
+    color: #6c757d;
+    font-style: italic;
+}
+
+h2 {
+    font-size: 1.8em;
+    color: #212529;
+    margin-top: 40px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+h3 {
+    font-size: 1.3em;
+    color: #343a40;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    /* Added for smooth scroll offset */
+    scroll-margin-top: 20px; 
+}
+
+p { margin-bottom: 15px; }
+
+a {
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: 500;
+}
+a:hover { text-decoration: underline; }
+
+ol {
+    list-style-type: none;
+    counter-reset: pillar-counter;
+    padding-left: 0;
+}
+
+ol li {
+    position: relative;
+    counter-increment: pillar-counter;
+    margin-bottom: 30px;
+    padding-left: 35px;
+}
+
+ol li::before {
+    content: counter(pillar-counter) ".";
+    position: absolute;
+    left: 0;
+    top: 2px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #495057;
+}
+
+ul {
+    margin-top: 15px;
+    padding-left: 20px;
+}
+ul li { margin-bottom: 8px; }
+
+/* NEW: Adjusts spacing of the fixed <ul> lists */
+ol li ul {
+    margin-top: -10px;
+    margin-bottom: 15px;
+}
+
+blockquote {
+    font-style: italic;
+    font-size: 1.1em;
+    color: #495057;
+    margin: 30px 0;
+    padding: 15px 20px;
+    border-left: 5px solid #ced4da;
+    background-color: #f8f9fa;
+    border-radius: 0 5px 5px 0;
+}
+
+/* --- 5. Responsive Mobile Styles --- */
+@media (max-width: 960px) {
+    .page-container {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+        margin: 10px auto;
+    }
+
+    #sidebar-nav {
+        position: static;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid #e9ecef;
+        padding-right: 0;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    main {
+        padding: 15px 20px;
+    }
+}
