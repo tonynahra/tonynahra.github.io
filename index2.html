@@ -6,13 +6,11 @@
     <title>Tony Nahra | Software Engineer & Data Professional</title>
     
     <link rel="stylesheet" href="common/mainPage.css">
-    
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="/common/image-modal.js"></script>
     <link rel="stylesheet" href="/common/imageModal.css">
-
 </head>
 <body>
 
@@ -28,82 +26,53 @@
 
         <section class="main-content-grid">
             
-<div class="profile-summary">
-    <img src="img/TONY_2025_00.png" alt="Tony Nahra Profile Picture" class="profile-photo">
-    
-    <div class="contact-links">
-        <h2>Connect & Resources</h2>
-        
-        <a href="/cv" class="link-item">Curriculum Vitae</a>
-        <a href="https://www.linkedin.com/in/TonyNahra" class="link-item">LinkedIn Profile</a>
-        <a href="https://x.com/NahraFamily" class="link-item">X.com / Twitter</a>
-        <a href="https://www.nahra.net" class="link-item">Family Website</a>
-        
-        <section class="youtube-section">
-            <h2>YouTube Interests</h2>
-            <p class="posts-intro">A collection of tech, hobbies, and personal playlists.</p>
-            
-            <div id="youtube-wrapper" class="collapsible-content">
-                <a href="/personal/" class="link-item">View All Playlists</a> 
-                <a href="youtube_page.html?PLjfDEkXKdbvhdEK9dGFwSnmNnxS7QQWbQ,Programming,2c3e50" class="link-item">Programming Tutorials</a>
-                <a href="youtube_page.html?PLxxxx_xxxx,Data_Science,007acc" class="link-item">Data Science Trends</a>
-                <a href="youtube_page.html?PLyyyy_yyyy,Hobbies,e74c3c" class="link-item">Personal Hobbies</a>
+            <div class="profile-summary">
+                
+                <div class="contact-links">
+                    <h2>Connect & Resources</h2>
+                    
+                    <a href="#" class="link-item nav-link active-nav" data-page="posts.html">
+                        Technical Posts
+                    </a>
+                    
+                    <a href="#" class="link-item nav-link" data-page="certificates.html">
+                        Certifications & Achievements
+                    </a>
+
+                    <a href="/cv" class="link-item">Curriculum Vitae</a>
+                    <a href="https://www.linkedin.com/in/TonyNahra" class="link-item">LinkedIn Profile</a>
+                    <a href="https://x.com/NahraFamily" class="link-item">X.com / Twitter</a>
+                    <a href="https://www.nahra.net" class="link-item">Family Website</a>
+                    
+                    <section class="youtube-section">
+                        <h2>YouTube Interests</h2>
+                        <p class="posts-intro">A collection of tech, hobbies, and personal playlists.</p>
+                        
+                        <div id="youtube-wrapper" class="collapsible-content">
+                            <a href="#" class="link-item nav-link" data-page="youtube_page.html?PLjfDEkXKdbvhdEK9dGFwSnmNnxS7QQWbQ,Programming,2c3e50">Programming Tutorials</a>
+                            <a href="#" class="link-item nav-link" data-page="youtube_page.html?PLxxxx_xxxx,Data_Science,007acc">Data Science Trends</a>
+                            <a href="#" class="link-item nav-link" data-page="youtube_page.html?PLyyyy_yyyy,Hobbies,e74c3c">Personal Hobbies</a>
+                            <a href="#" class="link-item nav-link" data-page="youtube_page.html?PLzzzz_zzzz,More_Stuff,8e44ad">More Stuff</a>
+                            <a href="#" class="link-item nav-link" data-page="youtube_page.html?PLwwww_wwww,Other_Content,95a5a6">Other Content</a>
+                            </div>
+                        
+                        <button class="expand-button" data-target="youtube-wrapper" data-max="3">Show More (2)</button>
+                    </section>
+                    
+                    <h3 class="family-heading">Family on LinkedIn</h3>
+                    <ul class="kid-links">
+                        <li><a href='https://www.linkedin.com/in/ralph-nahra-2284044a/' >Ralph</a></li>
+                        <li><a href='https://www.linkedin.com/in/rudolph-nahra-a97490209/' >Rudolph</a></li>
+                        <li><a href='https://www.linkedin.com/in/nancy-nahra/' >Nancy</a></li>
+                    </ul>
                 </div>
-            
-            <button class="expand-button" data-target="youtube-wrapper" data-max="3">Show More (5+)</button>
-        </section>
-        
-        <h3 class="family-heading">Family on LinkedIn</h3>
-        <ul class="kid-links">
-            <li><a href='https://www.linkedin.com/in/ralph-nahra-2284044a/' >Ralph</a></li>
-            <li><a href='https://www.linkedin.com/in/rudolph-nahra-a97490209/' >Rudolph</a></li>
-            <li><a href='https://www.linkedin.com/in/nancy-nahra/' >Nancy</a></li>
-        </ul>
-    </div>
-</div>
-            
-            <div class="posts-and-certificates">
-                
-                <section class="posts-section">
-                    <h2>My Technical Posts</h2>
-                    <p class="posts-intro">A collection of my technical deep dives, tutorials, and project insights.</p>
-                    
-                    <div id="posts-wrapper" class="collapsible-content">
-                        <ul class="post-list">
-                            <li><a href="post1-url.html">**2025-01-20** - Setting up a Modern Python Environment with Poetry</a></li>
-                            <li><a href="post2-url.html">**2025-02-15** - DP-600 Study Guide: Best Practices for Power BI/Fabric</a></li>
-                            <li><a href="post3-url.html">**2025-03-10** - Decoding Oracle's Latest AI Features in 23ai</a></li>
-                            <li class="hidden-item"><a href="post4-url.html">**2025-04-05** - GitHub Actions: Automating Your CI/CD Pipelines</a></li>
-                            <li class="hidden-item"><a href="post5-url.html">**2025-05-01** - Kubernetes vs. Docker Swarm: A Production Comparison</a></li>
-                            <li class="placeholder"><span>*More posts coming soon!*</span></li>
-                        </ul>
-                    </div>
-                    
-                    <button class="expand-button" data-target="posts-wrapper" data-max="3">Show More (3)</button>
-                </section>
-                
-                <section class="certificates-section">
-                    <h2>Professional Certifications</h2>
-                    <div class="certificates-grid">
-                        <img src="/img/Epic_Certificate.jpg" alt="Epic Certificate" class='image-popup' />
-                        <img src="/img/DP-600.png" alt="DP-600 Certificate" class='image-popup' />
-                        <img src="/img/Oracle_23ai.png" alt="Oracle 23ai Certificate" class='image-popup' />
-                        <img src="/img/Oracle_DSP.png" alt="Oracle DSP Certificate" class='image-popup' />
-                        <img src="/img/ITIL.png" alt="ITIL Certificate" class='image-popup' />
-                        <img src="/img/PowerBI_MS.png" alt="PowerBI MS Certificate" class='image-popup' />
-                        <img src="/img/PowerBI.png" alt="PowerBI Certificate" class='image-popup' />
-                        <img src="/img/PowerBI_DAX.png" alt="PowerBI DAX Certificate" class='image-popup' />
-                        <img src="/img/SS_DWH.png" alt="SS DWH Certificate" class='image-popup' />
-                        <img src="/img/SQL_WinFx.png" alt="SQL WinFx Certificate" class='image-popup' />
-                        <img src="/img/SQL_DS.png" alt="SQL DS Certificate" class='image-popup' />
-                        <img src="/img/BigQuery.png" alt="BigQuery Certificate" class='image-popup' />
-                        <img src="/img/DS_Tableau.png" alt="DS Tableau Certificate" class='image-popup' />
-                        <img src="/img/CS_cert.png" alt="CS Certificate" class='image-popup' />
-                        <img src="/img/Rudy_AI_project.jpg" alt="Rudy AI Project" class='image-popup' />
-                        <img src="/img/Rudy_ICPC.jpg" alt="Rudy ICPC" class='image-popup' />
-                    </div>
-                </section>
-                
+            </div>
+
+            <div id="content-area" class="dynamic-content-area">
+                <div class="content-loader">
+                    <div class="spinner"></div> 
+                    <p>Loading Content...</p>
+                </div>
             </div>
             
         </section>
