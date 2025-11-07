@@ -12,6 +12,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="/common/image-modal.js"></script>
     <link rel="stylesheet" href="/common/imageModal.css">
+
 </head>
 <body>
 
@@ -35,7 +36,21 @@
                     <a href="/cv" class="link-item">Curriculum Vitae</a>
                     <a href="https://www.linkedin.com/in/TonyNahra" class="link-item">LinkedIn Profile</a>
                     <a href="https://x.com/NahraFamily" class="link-item">X.com / Twitter</a>
-                    <a href="/personal/" class="link-item">Interests on Youtube</a>
+                    
+                    <section class="youtube-section">
+                        <h2>YouTube Interests</h2>
+                        <p class="posts-intro">A collection of tech, hobbies, and personal playlists.</p>
+                        
+                        <div id="youtube-wrapper" class="collapsible-content">
+                            <a href="/personal/" class="link-item">View All Playlists</a> 
+                            <a href="youtube_page.html?PLjfDEkXKdbvhdEK9dGFwSnmNnxS7QQWbQ,Programming,2c3e50" class="link-item">Programming Tutorials</a>
+                            <a href="youtube_page.html?PLxxxx_xxxx,Data_Science,007acc" class="link-item">Data Science Trends</a>
+                            <a href="youtube_page.html?PLyyyy_yyyy,Hobbies,e74c3c" class="link-item">Personal Hobbies</a>
+                            </div>
+                        
+                        <button class="expand-button" data-target="youtube-wrapper" data-max="3">Show More (5+)</button>
+                    </section>
+                    
                     <a href="https://www.nahra.net" class="link-item">Family Website</a>
                     
                     <h3 class="family-heading">Family on LinkedIn</h3>
@@ -52,14 +67,19 @@
                 <section class="posts-section">
                     <h2>My Technical Posts</h2>
                     <p class="posts-intro">A collection of my technical deep dives, tutorials, and project insights.</p>
-                    <ul class="post-list">
-                        <li class="placeholder">
-                            <span>*First post link coming soon!*</span>
-                        </li>
-                        <li class="placeholder">
-                            <span>*Plan to add one post per month.*</span>
-                        </li>
-                    </ul>
+                    
+                    <div id="posts-wrapper" class="collapsible-content">
+                        <ul class="post-list">
+                            <li><a href="post1-url.html">**2025-01-20** - Setting up a Modern Python Environment with Poetry</a></li>
+                            <li><a href="post2-url.html">**2025-02-15** - DP-600 Study Guide: Best Practices for Power BI/Fabric</a></li>
+                            <li><a href="post3-url.html">**2025-03-10** - Decoding Oracle's Latest AI Features in 23ai</a></li>
+                            <li class="hidden-item"><a href="post4-url.html">**2025-04-05** - GitHub Actions: Automating Your CI/CD Pipelines</a></li>
+                            <li class="hidden-item"><a href="post5-url.html">**2025-05-01** - Kubernetes vs. Docker Swarm: A Production Comparison</a></li>
+                            <li class="placeholder"><span>*More posts coming soon!*</span></li>
+                        </ul>
+                    </div>
+                    
+                    <button class="expand-button" data-target="posts-wrapper" data-max="3">Show More (3)</button>
                 </section>
                 
                 <section class="certificates-section">
@@ -103,5 +123,7 @@
             </div>
         </div>
     </div>
+    
+    <script src="common/mainPage.js"></script> 
 </body>
 </html>
