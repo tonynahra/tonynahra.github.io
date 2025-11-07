@@ -137,14 +137,20 @@ ol {
     padding-left: 0;
 }
 
-ol li {
+/* THIS IS THE FIX: 
+  Changed "ol li" to "ol > li" to select ONLY direct children.
+*/
+ol > li {
     position: relative;
     counter-increment: pillar-counter;
     margin-bottom: 30px;
     padding-left: 35px;
 }
 
-ol li::before {
+/* THIS IS THE FIX: 
+  Changed "ol li::before" to "ol > li::before".
+*/
+ol > li::before {
     content: counter(pillar-counter) ".";
     position: absolute;
     left: 0;
@@ -154,17 +160,30 @@ ol li::before {
     color: #495057;
 }
 
-ul {
-    margin-top: 15px;
-    padding-left: 20px;
-}
-ul li { margin-bottom: 8px; }
-
-/* NEW: Adjusts spacing of the fixed <ul> lists */
-ol li ul {
+/* This rule now correctly targets the sub-lists (bullets)
+  and ensures they have the default disc style.
+*/
+ol > li ul {
+    list-style-type: disc; /* Explicitly set to bullets */
     margin-top: -10px;
     margin-bottom: 15px;
+    padding-left: 40px; /* Adjust left padding for bullets */
 }
+
+/* This rule ensures sub-list items DON'T have the custom numbering.
+*/
+ol > li ul li {
+    margin-bottom: 8px;
+    padding-left: 0; /* Resets padding from the parent li */
+    position: static; /* Resets position */
+}
+
+/* This rule ensures sub-list items DON'T have a "::before" number.
+*/
+ol > li ul li::before {
+    content: none; /* Removes any counter content */
+}
+
 
 blockquote {
     font-style: italic;
