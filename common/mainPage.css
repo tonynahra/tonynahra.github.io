@@ -1,193 +1,63 @@
-/* --- CSS Variables for Easy Theme Changes --- */
-:root {
-    --bg-dark: #1f2833; /* Dark slate/near-black background */
-    --bg-medium: #2c3e50; /* Slightly lighter background for sections */
-    --text-light: #c5c8c6; /* Light gray for main text */
-    --text-accent: #66fcf1; /* Cyan/aqua for a tech/neon accent */
-    --text-primary: #ffffff; /* Pure white for headings */
-    --font-heading: 'Inter', sans-serif;
-    --font-body: 'Inter', sans-serif;
-    --font-code: 'IBM Plex Mono', monospace;
+/* ... (Keep all existing styles from previous response) ... */
+
+/* --- Dynamic Content Area --- */
+.dynamic-content-area {
+    min-height: 60vh; /* Ensures the area has space even if content is loading */
 }
 
-/* --- Global Reset and Body Styling --- */
-body {
-    margin: 0;
-    padding: 0;
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    font-family: var(--font-body);
-    line-height: 1.6;
-    min-height: 100vh;
-}
-
-body::before {
-    content: none !important;
-}
-
-/* --- Layout Container --- */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px 25px;
-}
-
-/* --- Typography (Headings & Tagline) --- */
-h1, h2, h3 {
-    font-family: var(--font-heading);
+/* Nav Link Styling for Active State */
+.nav-link.active-nav {
     color: var(--text-primary);
-    font-weight: 700;
+    background-color: var(--bg-medium);
+    border-radius: 4px;
+    padding: 8px 10px;
+    border-left: 3px solid var(--text-accent);
 }
 
-h1 {
-    font-size: 2.8rem;
-    margin-bottom: 0.25rem;
-    color: var(--text-accent);
-}
-
-.tagline {
-    font-family: var(--font-code);
-    font-size: 1.1rem;
-    color: var(--text-light);
-    margin-top: 0;
-}
-
-.header-divider {
-    border: 0;
-    height: 1px;
-    background-image: linear-gradient(to right, var(--text-accent), var(--bg-dark));
-    margin: 20px 0 40px 0;
-}
-
-/* --- Links (General) --- */
-a, a:visited {
-    color: var(--text-accent);
+.nav-link.active-nav:hover {
     text-decoration: none;
-    transition: color 0.3s;
 }
 
-a:hover {
-    color: var(--text-primary);
-    text-decoration: underline;
-}
-
-/* --- Main Content Grid (Responsive Layout) --- */
-.main-content-grid {
+/* --- Card View & Toggle Button Styles --- */
+.card-list {
     display: grid;
-    gap: 40px;
-    grid-template-columns: 1fr;
-}
-
-@media (min-width: 900px) {
-    .main-content-grid {
-        grid-template-columns: 350px 1fr; 
-    }
-}
-
-/* --- Profile/Links Section Styling --- */
-.profile-summary {
-    background: var(--bg-medium);
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    height: fit-content;
-}
-
-.profile-photo {
-    width: 100%;
-    max-width: 250px;
-    height: auto;
-    display: block;
-    margin: 0 auto 20px;
-    border-radius: 50%;
-    border: 3px solid var(--text-accent);
-    box-shadow: 0 0 15px rgba(102, 252, 241, 0.5);
-}
-
-.contact-links {
-    padding-top: 20px;
-    border-top: 1px solid var(--bg-dark);
-}
-
-.link-item {
-    display: block;
-    font-size: 1.05rem;
-    padding: 8px 0;
-    border-bottom: 1px dashed var(--bg-dark);
-}
-
-.kid-links {
-    list-style: none;
-    padding: 0;
-    margin-top: 10px;
-    font-family: var(--font-code);
-}
-.kid-links li {
-    display: inline-block;
-    margin-right: 15px;
-}
-.family-heading {
-    margin-top: 20px;
-    font-size: 1.2rem;
-    color: var(--text-light);
-}
-
-
-/* --- Posts and YouTube Sections (Collapsible) --- */
-.posts-section, .youtube-section {
-    padding-bottom: 20px;
-}
-
-.posts-intro {
-    font-family: var(--font-code);
-    font-style: italic;
-    color: var(--text-light);
-    margin-top: -15px; /* Pull it up closer to the heading */
-}
-
-/* The wrapper that contains the expandable list */
-.collapsible-content {
-    /* Set a height limit to create the initial 'collapse' effect */
-    max-height: 500px; /* Adjust this value as needed for initial view */
-    overflow: hidden;
-    transition: max-height 0.5s ease-in-out;
-}
-
-.collapsible-content.expanded {
-    max-height: 2000px; /* Large enough to show all content when expanded */
-}
-
-/* Styles for the post list itself */
-.post-list {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
     list-style: none;
     padding: 0;
 }
 
-.post-list li {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--bg-medium);
+.card-item {
+    background-color: var(--bg-medium);
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-left: 3px solid var(--text-accent);
+    transition: transform 0.3s;
 }
 
-.post-list li a {
-    font-size: 1.15rem;
-    color: var(--text-light);
+.card-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
-.post-list li a:hover {
+.card-item h3 {
+    margin-top: 0;
     color: var(--text-accent);
-    text-decoration: none;
 }
 
-.placeholder span {
-    color: var(--bg-medium);
-    font-style: italic;
-    font-family: var(--font-code);
+.card-item p {
+    font-size: 0.95rem;
 }
 
-/* Styles for the toggle button */
-.expand-button {
+.hidden-card-item {
+    display: none !important;
+}
+
+.toggle-card-button {
+    /* Reuse expand-button styles for consistency */
     display: block;
-    margin: 10px auto 20px auto;
+    margin: 20px auto 40px auto;
     padding: 10px 20px;
     background-color: var(--bg-medium);
     color: var(--text-accent);
@@ -199,59 +69,29 @@ a:hover {
     transition: background-color 0.3s, color 0.3s;
 }
 
-.expand-button:hover {
+.toggle-card-button:hover {
     background-color: var(--text-accent);
     color: var(--bg-dark);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-.expand-button.expanded::after {
-    content: " \25B2"; /* Unicode for an upward-pointing triangle */
-}
-
-.expand-button:not(.expanded)::after {
-    content: " \25BC"; /* Unicode for a downward-pointing triangle */
-}
-
-/* Hides items that exceed the initial view and are managed by JS */
-.hidden-item {
-    display: none;
-}
-
-
-/* --- Certificates Section Styling --- */
-.certificates-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    padding-top: 20px;
-}
-
-.certificates-grid img {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: 4px;
-    opacity: 0.8;
-    transition: opacity 0.3s, transform 0.3s;
-    cursor: pointer;
-    border: 1px solid var(--bg-medium);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.certificates-grid img:hover {
-    opacity: 1;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 252, 241, 0.3);
-}
-
-/* --- Footer --- */
-.site-footer {
+/* --- Loading Spinner Styles --- */
+.content-loader {
     text-align: center;
-    padding: 20px 0;
-    margin-top: 40px;
-    border-top: 1px solid var(--bg-medium);
-    font-size: 0.9rem;
-    color: var(--bg-medium);
-    font-family: var(--font-code);
+    padding: 100px 0;
+    color: var(--text-light);
+}
+
+.spinner {
+    border: 5px solid var(--bg-medium); 
+    border-top: 5px solid var(--text-accent); 
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
