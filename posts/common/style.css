@@ -43,7 +43,7 @@ body {
 
 /* UPDATED: Increased top margin to add space */
 #sidebar-nav .nav-section-spacer {
-    margin-top: 1.5rem; 
+    margin-top: 2rem; 
 }
 
 #sidebar-nav ul {
@@ -105,12 +105,12 @@ h1 {
     line-height: 1.5;
 }
 
-/* NEW: Style for the byline */
+/* Style for the byline */
 .byline {
     font-size: 0.9em;
     color: #6c757d;
     font-style: italic;
-    margin-top: -10px; /* Pulls it up closer to the subtitle */
+    margin-top: -10px; 
     padding-bottom: 10px;
 }
 
