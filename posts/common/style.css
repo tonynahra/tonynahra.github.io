@@ -6,7 +6,6 @@ body {
     color: #212529;
     margin: 0;
     padding: 0;
-    /* Added for smooth scrolling */
     scroll-behavior: smooth;
 }
 
@@ -36,14 +35,15 @@ body {
     font-weight: 600;
     color: #343a40;
     margin-top: 0;
-    margin-bottom: 1rem;
+    /* UPDATED: Reduced bottom margin to pull link up */
+    margin-bottom: 0.5rem; 
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-/* UPDATED: Reduced the margin-top to close the gap */
+/* UPDATED: Increased top margin to add space */
 #sidebar-nav .nav-section-spacer {
-    margin-top: 0.75rem;
+    margin-top: 1.5rem; 
 }
 
 #sidebar-nav ul {
@@ -56,7 +56,6 @@ body {
     margin-bottom: 0.5rem;
 }
 
-/* Styles the separator under "Top of Page" */
 #sidebar-nav li.nav-separator {
     border-bottom: 1px solid #e9ecef; 
     padding-bottom: 8px; 
@@ -103,9 +102,18 @@ h1 {
     font-size: 1.0em;
     color: #6c757d;
     font-style: italic;
-    /* Added to make the new single line wrap nicely */
-    line-height: 1.5; 
+    line-height: 1.5;
 }
+
+/* NEW: Style for the byline */
+.byline {
+    font-size: 0.9em;
+    color: #6c757d;
+    font-style: italic;
+    margin-top: -10px; /* Pulls it up closer to the subtitle */
+    padding-bottom: 10px;
+}
+
 
 h2 {
     font-size: 1.8em;
@@ -120,7 +128,6 @@ h3 {
     color: #343a40;
     margin-top: 25px;
     margin-bottom: 10px;
-    /* Added for smooth scroll offset */
     scroll-margin-top: 20px; 
 }
 
@@ -139,7 +146,6 @@ ol {
     padding-left: 0;
 }
 
-/* This rule styles ONLY the direct <li> children (1, 2, 3...) */
 ol > li {
     position: relative;
     counter-increment: pillar-counter;
@@ -147,7 +153,6 @@ ol > li {
     padding-left: 35px;
 }
 
-/* This rule adds the number ONLY to the direct <li> children */
 ol > li::before {
     content: counter(pillar-counter) ".";
     position: absolute;
@@ -158,22 +163,19 @@ ol > li::before {
     color: #495057;
 }
 
-/* This rule styles the nested <ul> (the bullets) */
 ol > li ul {
-    list-style-type: disc; /* Use standard bullets */
+    list-style-type: disc; 
     margin-top: -10px;
     margin-bottom: 15px;
     padding-left: 40px; 
 }
 
-/* This rule styles the nested <li> (the bullet items) */
 ol > li ul li {
     margin-bottom: 8px;
     padding-left: 0; 
     position: static; 
 }
 
-/* This rule ensures the nested <li> items DON'T get a number */
 ol > li ul li::before {
     content: none; 
 }
