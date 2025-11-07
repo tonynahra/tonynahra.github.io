@@ -18,10 +18,9 @@ body {
     color: var(--text-light);
     font-family: var(--font-body);
     line-height: 1.6;
-    min-height: 100vh; /* Ensure full page coverage */
+    min-height: 100vh;
 }
 
-/* Remove the old background image for a cleaner look */
 body::before {
     content: none !important;
 }
@@ -43,7 +42,7 @@ h1, h2, h3 {
 h1 {
     font-size: 2.8rem;
     margin-bottom: 0.25rem;
-    color: var(--text-accent); /* Use the accent color for the main name */
+    color: var(--text-accent);
 }
 
 .tagline {
@@ -76,34 +75,33 @@ a:hover {
 .main-content-grid {
     display: grid;
     gap: 40px;
-    grid-template-columns: 1fr; /* Default to single column for mobile */
+    grid-template-columns: 1fr;
 }
 
 @media (min-width: 900px) {
     .main-content-grid {
-        /* Two columns: 1 for profile/links, 2 for posts/certs */
         grid-template-columns: 350px 1fr; 
     }
 }
 
-/* --- Profile Section Styling --- */
+/* --- Profile/Links Section Styling --- */
 .profile-summary {
     background: var(--bg-medium);
     padding: 25px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    height: fit-content; /* Only take up necessary vertical space */
+    height: fit-content;
 }
 
 .profile-photo {
-    width: 100%; /* Make the image responsive within its container */
+    width: 100%;
     max-width: 250px;
     height: auto;
     display: block;
     margin: 0 auto 20px;
-    border-radius: 50%; /* Circular image for a modern look */
+    border-radius: 50%;
     border: 3px solid var(--text-accent);
-    box-shadow: 0 0 15px rgba(102, 252, 241, 0.5); /* Glowing border effect */
+    box-shadow: 0 0 15px rgba(102, 252, 241, 0.5);
 }
 
 .contact-links {
@@ -111,7 +109,7 @@ a:hover {
     border-top: 1px solid var(--bg-dark);
 }
 
-.link-item, .kid-links a {
+.link-item {
     display: block;
     font-size: 1.05rem;
     padding: 8px 0;
@@ -122,7 +120,7 @@ a:hover {
     list-style: none;
     padding: 0;
     margin-top: 10px;
-    font-family: var(--font-code); /* Code font for these specific links */
+    font-family: var(--font-code);
 }
 .kid-links li {
     display: inline-block;
@@ -135,17 +133,31 @@ a:hover {
 }
 
 
-/* --- Posts Section Styling (Future-Proofing) --- */
-.posts-section {
-    padding-bottom: 40px;
+/* --- Posts and YouTube Sections (Collapsible) --- */
+.posts-section, .youtube-section {
+    padding-bottom: 20px;
 }
 
 .posts-intro {
     font-family: var(--font-code);
     font-style: italic;
     color: var(--text-light);
+    margin-top: -15px; /* Pull it up closer to the heading */
 }
 
+/* The wrapper that contains the expandable list */
+.collapsible-content {
+    /* Set a height limit to create the initial 'collapse' effect */
+    max-height: 500px; /* Adjust this value as needed for initial view */
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+}
+
+.collapsible-content.expanded {
+    max-height: 2000px; /* Large enough to show all content when expanded */
+}
+
+/* Styles for the post list itself */
 .post-list {
     list-style: none;
     padding: 0;
@@ -167,15 +179,50 @@ a:hover {
 }
 
 .placeholder span {
-    color: var(--bg-medium); /* Make placeholders blend in but visible */
+    color: var(--bg-medium);
     font-style: italic;
     font-family: var(--font-code);
 }
 
+/* Styles for the toggle button */
+.expand-button {
+    display: block;
+    margin: 10px auto 20px auto;
+    padding: 10px 20px;
+    background-color: var(--bg-medium);
+    color: var(--text-accent);
+    border: 1px solid var(--text-accent);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-code);
+    font-size: 1rem;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.expand-button:hover {
+    background-color: var(--text-accent);
+    color: var(--bg-dark);
+    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+}
+
+.expand-button.expanded::after {
+    content: " \25B2"; /* Unicode for an upward-pointing triangle */
+}
+
+.expand-button:not(.expanded)::after {
+    content: " \25BC"; /* Unicode for a downward-pointing triangle */
+}
+
+/* Hides items that exceed the initial view and are managed by JS */
+.hidden-item {
+    display: none;
+}
+
+
 /* --- Certificates Section Styling --- */
 .certificates-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive grid of certs */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
     padding-top: 20px;
 }
@@ -185,7 +232,7 @@ a:hover {
     height: auto;
     object-fit: cover;
     border-radius: 4px;
-    opacity: 0.8; /* Slightly muted when not focused */
+    opacity: 0.8;
     transition: opacity 0.3s, transform 0.3s;
     cursor: pointer;
     border: 1px solid var(--bg-medium);
@@ -195,7 +242,7 @@ a:hover {
 .certificates-grid img:hover {
     opacity: 1;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 252, 241, 0.3); /* Accent glow on hover */
+    box-shadow: 0 5px 15px rgba(102, 252, 241, 0.3);
 }
 
 /* --- Footer --- */
@@ -205,6 +252,6 @@ a:hover {
     margin-top: 40px;
     border-top: 1px solid var(--bg-medium);
     font-size: 0.9rem;
-    color: var(--bg-medium); /* Subtler text color */
+    color: var(--bg-medium);
     font-family: var(--font-code);
 }
