@@ -41,9 +41,9 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Adds space above the "About" title */
+/* UPDATED: Reduced the margin-top to close the gap */
 #sidebar-nav .nav-section-spacer {
-    margin-top: 1.5rem;
+    margin-top: 0.75rem;
 }
 
 #sidebar-nav ul {
@@ -103,6 +103,8 @@ h1 {
     font-size: 1.0em;
     color: #6c757d;
     font-style: italic;
+    /* Added to make the new single line wrap nicely */
+    line-height: 1.5; 
 }
 
 h2 {
@@ -137,9 +139,7 @@ ol {
     padding-left: 0;
 }
 
-/* THIS IS THE FIX: 
-  Changed "ol li" to "ol > li" to select ONLY direct children.
-*/
+/* This rule styles ONLY the direct <li> children (1, 2, 3...) */
 ol > li {
     position: relative;
     counter-increment: pillar-counter;
@@ -147,9 +147,7 @@ ol > li {
     padding-left: 35px;
 }
 
-/* THIS IS THE FIX: 
-  Changed "ol li::before" to "ol > li::before".
-*/
+/* This rule adds the number ONLY to the direct <li> children */
 ol > li::before {
     content: counter(pillar-counter) ".";
     position: absolute;
@@ -160,28 +158,24 @@ ol > li::before {
     color: #495057;
 }
 
-/* This rule now correctly targets the sub-lists (bullets)
-  and ensures they have the default disc style.
-*/
+/* This rule styles the nested <ul> (the bullets) */
 ol > li ul {
-    list-style-type: disc; /* Explicitly set to bullets */
+    list-style-type: disc; /* Use standard bullets */
     margin-top: -10px;
     margin-bottom: 15px;
-    padding-left: 40px; /* Adjust left padding for bullets */
+    padding-left: 40px; 
 }
 
-/* This rule ensures sub-list items DON'T have the custom numbering.
-*/
+/* This rule styles the nested <li> (the bullet items) */
 ol > li ul li {
     margin-bottom: 8px;
-    padding-left: 0; /* Resets padding from the parent li */
-    position: static; /* Resets position */
+    padding-left: 0; 
+    position: static; 
 }
 
-/* This rule ensures sub-list items DON'T have a "::before" number.
-*/
+/* This rule ensures the nested <li> items DON'T get a number */
 ol > li ul li::before {
-    content: none; /* Removes any counter content */
+    content: none; 
 }
 
 
