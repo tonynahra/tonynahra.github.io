@@ -1,7 +1,9 @@
-/* === GLOBAL SETUP === */
+/* === GLOBAL SETUP & DYNAMIC CONTENT LOADING LOGIC === */
+
 $(document).ready(function () {
     
-    // 1. Initialize all collapsible sections (YouTube menu)
+    // 1. Initialize all collapsible sections (YouTube menu on the left)
+    // NOTE: This MUST be defined before it is called.
     initializeCollapsibleSections();
     
     // 2. Attach event listener to all expand buttons (YouTube menu)
@@ -27,10 +29,86 @@ $(document).ready(function () {
     if (initialPage) {
         loadContent(initialPage);
     }
+    
+    // Your existing scroll-to-top logic (if you added the button)
+    // mybutton = document.getElementById("myBtn");
+    // window.onscroll = function() {scrollFunction()};
+    // ... (rest of scrollFunction) ...
 });
 
 
-/* === DYNAMIC CONTENT LOADING LOGIC === */
+/* === COLLAPSIBLE MENU LOGIC (Left Side YouTube Menu) === */
+
+/**
+ * Hides all elements in a list/container that exceed a defined limit (data-max).
+ * Updates the button text.
+ */
+function initializeCollapsibleSections() {
+    $('.expand-button').each(function() {
+        const $button = $(this);
+        const targetId = $button.data('target');
+        const $target = $('#' + targetId);
+        const maxItems = parseInt($button.data('max') || 3); // Default to 3 visible items
+        let $items = [];
+
+        // In this context, we target the anchor tags (the playlist links)
+        if ($target.hasClass('collapsible-content') && $target.find('a').length) {
+            // Use only anchor tags
+            $items = $target.find('a'); 
+        }
+
+        if ($items.length > maxItems) {
+            // Hide items beyond the limit
+            $items.slice(maxItems).addClass('hidden-item');
+            
+            // Set initial button text to show the number of hidden items
+            const hiddenCount = $items.length - maxItems;
+            $button.text(`Show More (${hiddenCount}) \u25BC`); // Down arrow
+            $button.removeClass('expanded');
+            $button.show(); // Ensure button is visible if there are hidden items
+            
+        } else {
+            // If few items, hide the button
+            $button.hide(); 
+        }
+    });
+}
+
+/**
+ * Toggles the expanded state of a collapsible section.
+ * @param {object} $button - The jQuery object for the clicked button.
+ */
+function toggleCollapsibleSection($button) {
+    const targetId = $button.data('target');
+    const $target = $('#' + targetId);
+    const isExpanded = $button.hasClass('expanded');
+    const maxItems = parseInt($button.data('max') || 3);
+
+    // Toggle the visual class for the content wrapper (for CSS transition)
+    $target.toggleClass('expanded', !isExpanded);
+    $button.toggleClass('expanded', !isExpanded);
+    
+    // Find all the list items/links to show/hide
+    let $items = [];
+    if ($target.find('a').length) {
+        $items = $target.find('a');
+    }
+    
+    const hiddenCount = $items.length - maxItems;
+
+    if (!isExpanded) {
+        // EXPAND: Show all items and update button text/style
+        $items.slice(maxItems).removeClass('hidden-item');
+        $button.text(`Show Less \u25B2`); // Up arrow
+    } else {
+        // COLLAPSE: Hide the items beyond the limit and revert button text/style
+        $items.slice(maxItems).addClass('hidden-item');
+        $button.text(`Show More (${hiddenCount}) \u25BC`); // Down arrow
+    }
+}
+
+
+/* === DYNAMIC CONTENT LOADING IMPLEMENTATION === */
 
 /**
  * Loads content from a given URL into the #content-area.
@@ -47,16 +125,28 @@ function loadContent(pageUrl) {
         url: pageUrl,
         type: 'GET',
         success: function(data) {
-            // Check if the URL contains a query string (for YouTube pages)
-            if (pageUrl.includes('?')) {
-                // If it's a YouTube page, only load the container content, not the whole HTML page
-                // We assume the YouTube page has a #youtube-card-container
+            // Determine if content is YouTube (requires special handling)
+            const isYouTubePage = pageUrl.includes('youtube_page.html');
+            
+            if (isYouTubePage) {
+                // For YouTube, extract the inner container content
                 const $html = $(data);
-                const $youtubeContent = $html.find('#youtube-card-container').html();
+                const $youtubeContent = $html.find('#youtube-card-container').parent().html(); 
                 $contentArea.html($youtubeContent);
                 
-                // If the YouTube script needs to run, call it here (details below)
-                // runYoutubeScript(pageUrl);
+                // Extract parameters from the URL
+                const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
+                
+                // Initialize the YouTube content using the script
+                // We assume 'youtubeLoader.js' will be loaded separately or included here.
+                if (typeof loadVids === 'function') {
+                    // This assumes your old YouTube functions are now global or in this file
+                    const params = paramString.split(',');
+                    loadVids(params[0], params[1], params[2]);
+                } else {
+                    console.error("YouTube loading functions not found. Check youtubeLoader.js is included.");
+                }
+
             } else {
                 // For Posts and Certificates, just load the HTML fragment
                 $contentArea.html(data);
@@ -65,7 +155,7 @@ function loadContent(pageUrl) {
             // 3. Apply card logic after content is loaded
             handleCardView($contentArea);
             
-            // 4. Re-initialize image modals if applicable
+            // 4. Re-initialize image modals (if defined globally)
             if (window.initializeImageModal) {
                 window.initializeImageModal(); 
             }
@@ -76,16 +166,16 @@ function loadContent(pageUrl) {
     });
 }
 
-/* === CARD VIEW (Show More) LOGIC === */
+
+/* === CARD VIEW (Show More) LOGIC (Right Side Content) === */
 
 /**
  * Finds all .card-list elements and applies the initial 10-item limit.
- * @param {object} $scope - The jQuery object containing the newly loaded content.
  */
 function handleCardView($scope) {
     $scope.find('.card-list').each(function() {
         const $list = $(this);
-        const $items = $list.children();
+        const $items = $list.children('.card-item'); // Target direct children with card-item class
         const initialLimit = 10;
         
         // Remove existing button just in case
@@ -111,13 +201,10 @@ function handleCardView($scope) {
 
 /**
  * Toggles the expanded state of a card list.
- * @param {object} $list - The jQuery object of the card list container.
- * @param {object} $button - The jQuery object of the toggle button.
- * @param {number} initialLimit - The number of initially visible cards.
  */
 function toggleCardList($list, $button, initialLimit) {
     const isExpanded = $button.data('state') === 'expanded';
-    const $items = $list.children();
+    const $items = $list.children('.card-item');
     const totalCount = $items.length;
     const hiddenCount = totalCount - initialLimit;
 
@@ -134,24 +221,60 @@ function toggleCardList($list, $button, initialLimit) {
     }
 }
 
+/* === YOUTUBE PLAYLIST CORE FUNCTIONS (YOUR ORIGINAL CODE ADAPTED) === */
 
-/* === COLLAPSIBLE MENU LOGIC (Re-used for YouTube menu on left) === */
-// (Keep the original initializeCollapsibleSections and toggleCollapsibleSection functions 
-// from the previous response here, as they manage the left-side YouTube menu)
+// IMPORTANT: Your old YouTube script used a global 'PARAM'. Here we use arguments 
+// passed from the loadContent function to make it work dynamically.
+var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'  ; // Ensure your key is here
+var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
-// ... (Your previous initializeCollapsibleSections and toggleCollapsibleSection functions here) ...
+function loadVids(PL, Category, BKcol) {
 
-/* === YOUTUBE PLAYLIST LOGIC ADAPTATION === */
+    // Clear the grid first, as content is re-loaded dynamically
+    $('#Grid').empty(); 
 
-// IMPORTANT: This script is only an adaptation. 
-// The real YouTube video loading logic should be run on the loaded page (e.g., youtube_page.html)
-// or called from here if the loading logic is self-contained. 
-// I recommend keeping the core YouTube logic in a separate file for the dedicated page, 
-// and updating the loaded content via AJAX.
+    var options = {
+        part: 'snippet',
+        key: key,
+        maxResults: 20, // Request up to 20 videos
+        playlistId: PL
+    }
 
-// ... (Your original YouTube functions loadVids, resultsLoop, etc., can be removed 
-// from this file unless you are making this the central script to also run the YouTube AJAX call) ...
+    $.getJSON(URL, options, function (data) {
+        resultsLoop(data, Category, BKcol);
+        
+        // After loading videos, re-run the card view logic to handle 'Show More' if > 10
+        handleCardView($('#content-area'));
 
+    }).fail(function() {
+        $('#Grid').html('<p class="error-message">Error loading YouTube playlist. Check API key and console for network issues.</p>');
+    });
+}
+    
+function resultsLoop(data, Cat, BKcol) {
+    $.each(data.items, function (i, item) {
+
+        // Skip any items without video ID
+        if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) return;
+
+        var thumb = item.snippet.thumbnails.medium.url;
+        var title = item.snippet.title;
+        var desc = item.snippet.description.substring(0, 100) + '...';
+        var vid = item.snippet.resourceId.videoId;
+
+        $('#Grid').append(`
+        <div data-uk-filter="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
+            <a href="https://www.youtube.com/embed/${vid}" data-uk-lightbox data-lightbox-type="iframe">
+               <img class="YTi" src="${thumb}" alt="${title}" >
+               <h3>${title}</h3>
+               <p>${desc}</p>
+            </a>
+        </div>
+        `);
+    });
+}
+
+// You can keep the old topFunction if you are using a button for it
 function topFunction() {
     document.body.scrollTop = 0; // For Safari
     document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
