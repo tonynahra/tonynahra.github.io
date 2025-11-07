@@ -1,0 +1,210 @@
+/* --- CSS Variables for Easy Theme Changes --- */
+:root {
+    --bg-dark: #1f2833; /* Dark slate/near-black background */
+    --bg-medium: #2c3e50; /* Slightly lighter background for sections */
+    --text-light: #c5c8c6; /* Light gray for main text */
+    --text-accent: #66fcf1; /* Cyan/aqua for a tech/neon accent */
+    --text-primary: #ffffff; /* Pure white for headings */
+    --font-heading: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-code: 'IBM Plex Mono', monospace;
+}
+
+/* --- Global Reset and Body Styling --- */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    min-height: 100vh; /* Ensure full page coverage */
+}
+
+/* Remove the old background image for a cleaner look */
+body::before {
+    content: none !important;
+}
+
+/* --- Layout Container --- */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 25px;
+}
+
+/* --- Typography (Headings & Tagline) --- */
+h1, h2, h3 {
+    font-family: var(--font-heading);
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+h1 {
+    font-size: 2.8rem;
+    margin-bottom: 0.25rem;
+    color: var(--text-accent); /* Use the accent color for the main name */
+}
+
+.tagline {
+    font-family: var(--font-code);
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin-top: 0;
+}
+
+.header-divider {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, var(--text-accent), var(--bg-dark));
+    margin: 20px 0 40px 0;
+}
+
+/* --- Links (General) --- */
+a, a:visited {
+    color: var(--text-accent);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+}
+
+/* --- Main Content Grid (Responsive Layout) --- */
+.main-content-grid {
+    display: grid;
+    gap: 40px;
+    grid-template-columns: 1fr; /* Default to single column for mobile */
+}
+
+@media (min-width: 900px) {
+    .main-content-grid {
+        /* Two columns: 1 for profile/links, 2 for posts/certs */
+        grid-template-columns: 350px 1fr; 
+    }
+}
+
+/* --- Profile Section Styling --- */
+.profile-summary {
+    background: var(--bg-medium);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    height: fit-content; /* Only take up necessary vertical space */
+}
+
+.profile-photo {
+    width: 100%; /* Make the image responsive within its container */
+    max-width: 250px;
+    height: auto;
+    display: block;
+    margin: 0 auto 20px;
+    border-radius: 50%; /* Circular image for a modern look */
+    border: 3px solid var(--text-accent);
+    box-shadow: 0 0 15px rgba(102, 252, 241, 0.5); /* Glowing border effect */
+}
+
+.contact-links {
+    padding-top: 20px;
+    border-top: 1px solid var(--bg-dark);
+}
+
+.link-item, .kid-links a {
+    display: block;
+    font-size: 1.05rem;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--bg-dark);
+}
+
+.kid-links {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+    font-family: var(--font-code); /* Code font for these specific links */
+}
+.kid-links li {
+    display: inline-block;
+    margin-right: 15px;
+}
+.family-heading {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: var(--text-light);
+}
+
+
+/* --- Posts Section Styling (Future-Proofing) --- */
+.posts-section {
+    padding-bottom: 40px;
+}
+
+.posts-intro {
+    font-family: var(--font-code);
+    font-style: italic;
+    color: var(--text-light);
+}
+
+.post-list {
+    list-style: none;
+    padding: 0;
+}
+
+.post-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--bg-medium);
+}
+
+.post-list li a {
+    font-size: 1.15rem;
+    color: var(--text-light);
+}
+
+.post-list li a:hover {
+    color: var(--text-accent);
+    text-decoration: none;
+}
+
+.placeholder span {
+    color: var(--bg-medium); /* Make placeholders blend in but visible */
+    font-style: italic;
+    font-family: var(--font-code);
+}
+
+/* --- Certificates Section Styling --- */
+.certificates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive grid of certs */
+    gap: 15px;
+    padding-top: 20px;
+}
+
+.certificates-grid img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 4px;
+    opacity: 0.8; /* Slightly muted when not focused */
+    transition: opacity 0.3s, transform 0.3s;
+    cursor: pointer;
+    border: 1px solid var(--bg-medium);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.certificates-grid img:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 252, 241, 0.3); /* Accent glow on hover */
+}
+
+/* --- Footer --- */
+.site-footer {
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+    border-top: 1px solid var(--bg-medium);
+    font-size: 0.9rem;
+    color: var(--bg-medium); /* Subtler text color */
+    font-family: var(--font-code);
+}
