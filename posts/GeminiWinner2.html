@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google's AI Dominance: 18-Point Strategic Analysis</title>
+    <title>Google's AI Dominance: 10-Point Strategic Analysis</title>
     
     <style>
         /* --- 1. Basic & Font Styles --- */
@@ -14,26 +14,27 @@
             color: #212529;
             margin: 0;
             padding: 0;
+            /* Added for smooth scrolling */
+            scroll-behavior: smooth;
         }
 
         /* --- 2. NEW: Two-Column Grid Layout --- */
         .page-container {
             display: grid;
-            /* Creates two columns: a 240px fixed sidebar and a flexible content area */
             grid-template-columns: 240px 1fr;
-            gap: 2rem; /* Space between the columns */
-            max-width: 1200px; /* Max width of the entire layout */
-            margin: 20px auto; /* Center the layout */
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 20px auto;
             padding: 0 20px;
         }
 
         /* --- 3. NEW: Sticky Sidebar Navigation --- */
         #sidebar-nav {
             position: sticky;
-            top: 20px; /* "Sticks" 20px from the top */
-            align-self: start; /* Aligns to the top of the grid row */
-            max-height: 90vh; /* Prevents it from being too tall */
-            overflow-y: auto; /* Adds scroll if it's taller than the screen */
+            top: 20px;
+            align-self: start;
+            max-height: 90vh;
+            overflow-y: auto;
             border-right: 1px solid #e9ecef;
             padding-right: 20px;
         }
@@ -73,18 +74,12 @@
             background-color: #e6f2ff;
         }
         
-        #sidebar-nav .placeholder-link {
-            color: #999;
-            font-style: italic;
-        }
-
         /* --- 4. Main Article Content (Your styles, adapted) --- */
         main {
-            /* No longer needs max-width or margin, as the grid handles it */
             background-color: #ffffff;
             border: 1px solid #dee2e6;
             border-radius: 8px;
-            padding: 20px 40px; /* Add padding back */
+            padding: 20px 40px;
         }
 
         header {
@@ -119,6 +114,8 @@
             color: #343a40;
             margin-top: 25px;
             margin-bottom: 10px;
+            /* Added for smooth scroll offset */
+            scroll-margin-top: 20px; 
         }
 
         p { margin-bottom: 15px; }
@@ -173,17 +170,16 @@
         /* --- 5. NEW: Responsive Mobile Styles --- */
         @media (max-width: 960px) {
             .page-container {
-                /* Stacks the columns on top of each other */
                 grid-template-columns: 1fr;
                 padding: 0 10px;
                 margin: 10px auto;
             }
 
             #sidebar-nav {
-                position: static; /* Un-stick the sidebar */
-                max-height: none; /* Allow it to be full height */
-                border-right: none; /* Remove side border */
-                border-bottom: 1px solid #e9ecef; /* Add bottom border */
+                position: static;
+                max-height: none;
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
                 padding-right: 0;
                 padding-bottom: 1rem;
                 margin-bottom: 1rem;
@@ -195,7 +191,7 @@
         }
     </style>
 </head>
-<body>
+<body id="page-top">
 
     <div class="page-container">
 
@@ -203,6 +199,10 @@
             <h3>On this page</h3>
             <nav>
                 <ul>
+                    <li style="border-bottom: 1px solid #e9ecef; padding-bottom: 8px; margin-bottom: 8px;">
+                        <a href="#page-top" style="font-weight: 600;">Top of Page</a>
+                    </li>
+                    
                     <li><a href="#pillar-1">1. Pioneering Research</a></li>
                     <li><a href="#pillar-2">2. World-Class Model Suite</a></li>
                     <li><a href="#pillar-3">3. Custom, Optimized Silicon</a></li>
@@ -214,52 +214,44 @@
                     <li><a href="#pillar-9">9. Enterprise Entrenchment</a></li>
                     <li><a href="#pillar-10">10. Platform-Native Integration</a></li>
                     
-                    <li><a href="#pillar-11" class="placeholder-link">11. [Add Pillar 11]</a></li>
-                    <li><a href="#pillar-12" class="placeholder-link">12. [Add Pillar 12]</a></li>
-                    <li><a href="#pillar-13" class="placeholder-link">13. [Add Pillar 13]</a></li>
-                    <li><a href="#pillar-14" class="placeholder-link">14. [Add Pillar 14]</a></li>
-                    <li><a href="#pillar-15" class="placeholder-link">15. [Add Pillar 15]</a></li>
-                    <li><a href="#pillar-16" class="placeholder-link">16. [Add Pillar 16]</a></li>
-                    <li><a href="#pillar-17" class="placeholder-link">17. [Add Pillar 17]</a></li>
-                    <li><a href="#pillar-18" class="placeholder-link">18. [Add Pillar 18]</a></li>
-                </ul>
+                    </ul>
             </nav>
         </aside>
 
         <main>
             <article>
                 <header>
-                    <h1>Google's AI Dominance: 18-Point Strategic Analysis</h1>
-                    <p class="subtitle">A breakdown of the 18 reinforcing pillars that create Google's formidable AI advantage.
-                    <br/>By <a href="httpsa://tonynahra.github.io/" >Tony Nahra</a>
+                    <h1>Google's AI Dominance: 10-Point Strategic Analysis</h1>
+                    <p class="subtitle">A breakdown of the 10 reinforcing pillars that create Google's formidable AI advantage.
+                    <br/>By <a href="https://tonynahra.github.io/" >Tony Nahra</a>
                     </p>
                 </header>
 
                 <p>In the global race for artificial intelligence supremacy, many contenders are vying for the top spot. Yet, when you look closely at the strategic assets of Alphabet's Google, a compelling argument emerges: their leadership may not be a question of "if," but "when."</p>
 
-                <p>Google has meticulously built a set of reinforcing advantages that create a near-perfect ecosystem for AI dominance. Here is a breakdown of those 18 strategic pillars.</p>
+                <p>Google has meticulously built a set of reinforcing advantages that create a near-perfect ecosystem for AI dominance. Here is a breakdown of those 10 strategic pillars.</p>
 
-                <h2>The 18 Strategic Pillars</h2>
+                <h2>The 10 Strategic Pillars</h2>
 
                 <ol>
                     <li>
                         <h3 id="pillar-1">The Foundation: Pioneering Research</h3>
-                        <p>Google Research effectively set the stage for the modern AI boom. Their 2017 paper, <a href="httpss://en.wikipedia.org/wiki/Attention_Is_All_You_Need" target="_blank">"Attention Is All You Need,"</a> introduced the Transformer architecture, the foundational technology behind models like GPT and Google's own Gemini. They didn't just join the race; they built the track.</p>
+                        <p>Google Research effectively set the stage for the modern AI boom. Their 2017 paper, <a href="https://en.wikipedia.org/wiki/Attention_Is_All_You_Need" target="_blank">"Attention Is All You Need,"</a> introduced the Transformer architecture, the foundational technology behind models like GPT and Google's own Gemini. They didn't just join the race; they built the track.</p>
                     </li>
                     
                     <li>
                         <h3 id="pillar-2">The Engine: A World-Class Model Suite</h3>
-                        <p>Building on that foundation, Google has developed its own cutting-edge AI suite, headlined by the <a href="httpss://deepmind.google/technologies/gemini/" target="_blank">Gemini family of models</a>. As a natively multimodal system, it was designed from the ground up to understand and operate across text, images, audio, video, and code simultaneously.</p>
+                        <p>Building on that foundation, Google has developed its own cutting-edge AI suite, headlined by the <a href="https://deepmind.google/technologies/gemini/" target="_blank">Gemini family of models</a>. As a natively multimodal system, it was designed from the ground up to understand and operate across text, images, audio, video, and code simultaneously.</p>
                     </li>
 
                     <li>
                         <h3 id="pillar-3">The Hardware: Custom, Optimized Silicon</h3>
-                        <p>A-level software runs best on A-level hardware. Google understood this early on, developing its own <a href="httpss://cloud.google.com/tpu" target="_blank">Tensor Processing Units (TPUs)</a>. These smart chips are custom-built and optimized specifically for their machine learning workloads, giving them a significant performance and efficiency advantage. While other compute data centers are dependent on NVIDIA's availability and timeline, Google relies on its own <a href="httpss://blog.google/products/google-cloud/ironwood-tpu-age-of-inference" target="Willow" >Ironwood</a> chip.</p>
+                        <p>A-level software runs best on A-level hardware. Google understood this early on, developing its own <a href="https://cloud.google.com/tpu" target="_blank">Tensor Processing Units (TPUs)</a>. These smart chips are custom-built and optimized specifically for their machine learning workloads, giving them a significant performance and efficiency advantage. While other compute data centers are dependent on NVIDIA's availability and timeline, Google relies on its own <a href="https://blog.google/products/google-cloud/ironwood-tpu-age-of-inference" target="Willow" >Ironwood</a> chip.</p>
                     </li>
 
                     <li>
                         <h3 id="pillar-4">The Fortress: Sovereign Infrastructure</h3>
-                        <p>Where does this all run? On <a href="httpss://www.google.com/about/datacenters/" target="_blank">Google's own massive, global data centers</a>. By hosting on their own infrastructure, they control for cost, security, scalability, and speed, eliminating dependence on other cloud providers for their most critical asset.</p>
+                        <p>Where does this all run? On <a href="https://www.google.com/about/datacenters/" target="_blank">Google's own massive, global data centers</a>. By hosting on their own infrastructure, they control for cost, security, scalability, and speed, eliminating dependence on other cloud providers for their most critical asset.</p>
                     </li>
 
                     <li>
@@ -268,20 +260,20 @@
                             <ul>
                                 <li><b>Search:</b> A real-time map of human curiosity.</li>
                                 <li><b><a href="https://maps.google.com/" target="_blank">Maps</a>:</b> A rich model of the physical world.</li>
-                                <li><b><a href="httpss://books.google.com/" target="_blank">Books</a>:</b> A digitized library of human history.</li>
-                                <li><b>And the crown jewel: <a href="httpss://www.youtube.com/" target="_blank">YouTube</a>.</b> The world's largest video platform is a limitless well of video frames, audio, transcribed text, users views, likes and comments!</li>
+                                <li><b><a href="https://books.google.com/" target="_blank">Books</a>:</b> A digitized library of human history.</li>
+                                <li><b>And the crown jewel: <a href="https://www.youtube.com/" target="_blank">YouTube</a>.</b> The world's largest video platform is a limitless well of video frames, audio, transcribed text, users views, likes and comments!</li>
                             </ul>
                         </p>
                     </li>
 
                     <li>
                         <h3 id="pillar-6">The Horizon: Next-Generation Computing</h3>
-                        <p>Google isn't just focused on today's hardware. Its investments in <a href="httpss://quantumai.google/" target="_blank">Quantum Computing</a>, highlighted by the Willow chip's recent <a href="httpss://www.sciencenews.org/article/google-quantum-computer-sycamore-milestone/" target="_blank">breakthroughs in error correction</a>, show a clear focus on the *next* paradigm of computation.</p>
+                        <p>Google isn't just focused on today's hardware. Its investments in <a href="https://quantumai.google/" target="_blank">Quantum Computing</a>, highlighted by the Willow chip's recent <a href="https://www.sciencenews.org/article/google-quantum-computer-sycamore-milestone/" target="_blank">breakthroughs in error correction</a>, show a clear focus on the *next* paradigm of computation.</p>
                     </li>
 
                     <li>
                         <h3 id="pillar-7">The Flywheel: Unmatched Distribution</h3>
-                        <p>A powerful AI is useless without distribution. Google can integrate its AI into the daily lives of billions of users overnight through its dominant <a href="httpss://workspace.google.com/" target="_blank">ecosystem</a>:
+                        <p>A powerful AI is useless without distribution. Google can integrate its AI into the daily lives of billions of users overnight through its dominant <a href="https://workspace.google.com/" target="_blank">ecosystem</a>:
                             <ul>
                                 <li>Google Search</li>
                                 <li>Gmail, Docs, Sheets, & Slides</li>
@@ -293,22 +285,21 @@
 
                     <li>
                         <h3 id="pillar-8">The Fuel: A Self-Financing Juggernaut</h3>
-                        <p>Finally, the entire endeavor is self-financing. Google's existing successful products generate such massive cash flow that they can fund this capital-intensive R&D without blinking. (See: <a href="httpss://abc.xyz/investor/" target="_blank">Alphabet Investor Relations</a>).</p>
+                        <p>Finally, the entire endeavor is self-financing. Google's existing successful products generate such massive cash flow that they can fund this capital-intensive R&D without blinking. (See: <a href="https://abc.xyz/investor/" target="_blank">Alphabet Investor Relations</a>).</p>
                     </li>
                     
                     <li>
                         <h3 id="pillar-9">The Monetization: Enterprise Entrenchment</h3>
-                        <p>This is the profit engine. Google is embedding Gemini directly into its high-margin <a href="httpss://cloud.google.com/gemini-enterprise" target="_blank">Gemini Enterprise</a> and <a href="httpss://cloud.google.com/vertex-ai" target="_blank">Vertex AI</a> platforms. This allows companies to build AI agents on their own data (across Workspace, MS 365, etc.), creating a secure, "sticky" ecosystem that turns AI novelty into a recurring revenue stream.</p>
+                        <p>This is the profit engine. Google is embedding Gemini directly into its high-margin <a href="httpstps://cloud.google.com/gemini-enterprise" target="_blank">Gemini Enterprise</a> and <a href="https://cloud.google.com/vertex-ai" target="_blank">Vertex AI</a> platforms. This allows companies to build AI agents on their own data (across Workspace, MS 365, etc.), creating a secure, "sticky" ecosystem that turns AI novelty into a recurring revenue stream.</p>
                     </li>
 
                     <li>
                         <h3 id="pillar-10">The "Edge": Platform-Native Integration</h3>
-                        <p>This goes beyond simple distribution. Google is embedding Gemini at the *operating system* level. This includes <a href="httpss://developer.android.com/ai/gemini-nano" target="_blank">Gemini Nano</a> running on-device on Android for speed and privacy, and deep, conversational integration into core apps like <a href="httpss://blog.google/products/maps/gemini-navigation-features-landmark-lens/" target="_blank">Google Maps</a>, making AI an ambient, agentic part of a user's life.</p>
+                        <p>This goes beyond simple distribution. Google is embedding Gemini at the *operating system* level. This includes <a href="https://developer.android.com/ai/gemini-nano" target="_blank">Gemini Nano</a> running on-device on Android for speed and privacy, and deep, conversational integration into core apps like <a href="httpss://blog.google/products/maps/gemini-navigation-features-landmark-lens/" target="_blank">Google Maps</a>, making AI an ambient, agentic part of a user's life.</p>
                     </li>
+                </ol>
 
-                    </ol>
-
-                <h2>Conclusion: 18-Pillar Flywheel</h2>
+                <h2>Conclusion: 10-Pillar Flywheel</h2>
                 <p>When you assemble these pieces, the picture is clear. Google controls the foundational research, the models, the custom chips, the data centers, the unparalleled data, the distribution network, the long-term R&D, and the cash to fund it all. Now, they are locking in that advantage with a powerful enterprise monetization engine and a deep, platform-native integration strategy.</p>
                 <p>It is only a matter of "Time," and as we know, Time is Money.</p>
 
@@ -327,5 +318,46 @@
             <a href="/" >Back to home page</a>
         
         </main>
-    </div> </body>
+    </div> <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // UPDATED: This query now specifically targets only pillar links
+            const sections = document.querySelectorAll('h3[id^="pillar-"]');
+            const navLinks = document.querySelectorAll('#sidebar-nav a[href^="#pillar-"]');
+
+            const removeActiveClasses = () => {
+                navLinks.forEach(link => link.classList.remove('active'));
+            };
+
+            const addActiveClass = (id) => {
+                const activeLink = document.querySelector(`#sidebar-nav a[href="#${id}"]`);
+                if (activeLink) {
+                    removeActiveClasses();
+                    activeLink.classList.add('active');
+                }
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        addActiveClass(entry.target.id);
+                    }
+                });
+            }, { 
+                rootMargin: '0px 0px -70% 0px', 
+                threshold: 0.1 
+            });
+
+            sections.forEach(section => observer.observe(section));
+
+            const style = document.createElement('style');
+            style.innerHTML = `
+                #sidebar-nav a.active {
+                    color: #0056b3;
+                    font-weight: 600;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
 </html>
