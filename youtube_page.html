@@ -1,14 +1,26 @@
 <section id="youtube-card-container" class="card-list-page">
     
-    <div class="search-wrapper">
-        <input type="search" id="youtube-search-box" placeholder="Filter videos by title or description...">
+    <!-- UPDATED FILTER BAR -->
+    <div class="filter-bar">
+        <div class="search-wrapper">
+            <input type="search" id="youtube-search-box" placeholder="Filter by title/desc...">
+        </div>
+        <!-- NEW KEYWORD DROPDOWN -->
+        <div class="keyword-wrapper">
+            <select id="youtube-keyword-filter">
+                <option value="all">All Keywords (Tags)</option>
+                <!-- This will be auto-populated by JS -->
+            </select>
+        </div>
     </div>
 
     <h2 id="playlist-title">Loading Playlist...</h2>
     <p class="posts-intro" id="playlist-description">The latest videos from this YouTube playlist, displayed as professional cards.</p>
 
+    <!-- The video cards will be loaded here -->
     <div id="Grid" class="card-list"></div>
     
+    <!-- An optional message for when no results are found -->
     <p id="youtube-no-results" class="error-message" style="display: none;">No videos match your filter.</p>
     
 </section>
