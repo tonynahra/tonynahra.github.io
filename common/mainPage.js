@@ -228,19 +228,28 @@ function toggleCardList($list, $button, initialLimit) {
 var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'  ; // Ensure your key is here
 var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
+/* --- Ensure this is in your common/mainPage.js file --- */
+
+// ... (Your previous loadContent function remains the same, but notice the update below)
+
 function loadVids(PL, Category, BKcol) {
 
     // Clear the grid first, as content is re-loaded dynamically
     $('#Grid').empty(); 
+    
+    // Update the title dynamically based on the Category param
+    $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
+    $('#playlist-description').text(`The latest videos from the ${Category.replace(/_/g, ' ')} playlist, displayed as cards.`);
 
     var options = {
         part: 'snippet',
         key: key,
-        maxResults: 20, // Request up to 20 videos
+        maxResults: 20, 
         playlistId: PL
     }
 
     $.getJSON(URL, options, function (data) {
+        // Pass the background color parameter to resultsLoop
         resultsLoop(data, Category, BKcol);
         
         // After loading videos, re-run the card view logic to handle 'Show More' if > 10
@@ -254,7 +263,6 @@ function loadVids(PL, Category, BKcol) {
 function resultsLoop(data, Cat, BKcol) {
     $.each(data.items, function (i, item) {
 
-        // Skip any items without video ID
         if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) return;
 
         var thumb = item.snippet.thumbnails.medium.url;
@@ -273,7 +281,7 @@ function resultsLoop(data, Cat, BKcol) {
         `);
     });
 }
-
+ 
 // You can keep the old topFunction if you are using a button for it
 function topFunction() {
     document.body.scrollTop = 0; // For Safari
