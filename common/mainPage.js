@@ -414,3 +414,63 @@ function filterYouTubeCards(searchTerm) {
         // --- END FIX ---
     }
 }
+
+/**
+ * Filters the Post cards based on a search term AND category.
+ */
+function filterPostCards() {
+    const searchTerm = $('#post-search-box').val().toLowerCase();
+    const selectedCategory = $('#post-category-filter').val();
+    
+    const $grid = $('#posts-card-list');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#posts-no-results');
+    
+    let visibleCount = 0;
+
+    if (searchTerm.length > 0 || selectedCategory !== "all") {
+        // A filter is active, so hide the "Show More" button.
+        $showMoreButton.hide();
+
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardCategory = $card.data('category');
+            const title = $card.find('h3').text().toLowerCase();
+            const desc = $card.find('p').text().toLowerCase();
+
+            // Check if matches category
+            const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
+            // Check if matches search term
+            const searchMatch = (searchTerm === "" || title.includes(searchTerm) || desc.includes(searchTerm));
+
+            if (categoryMatch && searchMatch) {
+                // This card matches.
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else {
+                // This card does not match. Hide it.
+                $card.hide();
+            }
+        });
+
+        // Show or hide the "no results" message
+        if (visibleCount === 0) {
+            $noResultsMessage.show();
+        } else {
+            $noResultsMessage.hide();
+        }
+        
+    } else {
+        // --- NO FILTERS ---
+        // Search is empty AND category is "all", reset the view.
+        $noResultsMessage.hide();
+        
+        // Remove all inline 'style' attributes (from .show()/.hide())
+        $allCards.removeAttr('style'); 
+        
+        // Re-run handleCardView to reset pagination
+        handleCardView($('#content-area'));
+    }
+}
+
