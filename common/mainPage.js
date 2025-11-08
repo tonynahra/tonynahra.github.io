@@ -116,10 +116,8 @@ function toggleCollapsibleSection($button) {
 function loadContent(pageUrl) {
     const $contentArea = $('#content-area');
     
-    // 1. Show loading state
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
     
-    // 2. Fetch the content
     $.ajax({
         url: pageUrl,
         type: 'GET',
@@ -127,16 +125,20 @@ function loadContent(pageUrl) {
             const isYouTubePage = pageUrl.includes('youtube_page.html');
             
             if (isYouTubePage) {
-                // Inject the HTML
                 $contentArea.html(data); 
 
-                // Get parameters
+                // --- ADD THIS EVENT LISTENER ---
+                // We use .on() delegated to the contentArea
+                // so it works even though the box was just loaded.
+                $contentArea.on('keyup', '#youtube-search-box', function() {
+                    filterYouTubeCards($(this).val());
+                });
+                // --- END ADD ---
+
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
                 const params = paramString.split(',');
                 
                 if (params.length === 3 && typeof loadVids === 'function') {
-                    // Call loadVids, which will now be responsible 
-                    // for calling handleCardView *after* videos are loaded.
                     loadVids(params[0], params[1], params[2]);
                 } else {
                     $contentArea.html('<div class="error-message">YouTube parameter error.</div>');
@@ -145,11 +147,9 @@ function loadContent(pageUrl) {
             } else {
                 // For Posts and Certificates, just load the HTML fragment
                 $contentArea.html(data);
-                // Call handleCardView *after* the content is loaded
                 handleCardView($contentArea);
             }
 
-            // 3. Re-initialize image modals
             if (typeof initializeImageModal === 'function') {
                 initializeImageModal(); 
             }
@@ -350,3 +350,51 @@ function topFunction() {
     document.body.scrollTop = 0; // For Safari
     document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 }
+
+/**
+ * Filters the YouTube cards based on a search term.
+ * @param {string} searchTerm - The text to filter by.
+ */
+function filterYouTubeCards(searchTerm) {
+    searchTerm = searchTerm.toLowerCase();
+    const $grid = $('#Grid');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#youtube-no-results');
+    
+    let visibleCount = 0;
+
+    if (searchTerm.length > 0) {
+        // When searching, hide the "Show More" button
+        $showMoreButton.hide();
+
+        $allCards.each(function() {
+            const $card = $(this);
+            const title = $card.find('h3').text().toLowerCase();
+            const desc = $card.find('p').text().toLowerCase();
+
+            if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+                $card.show();
+                visibleCount++;
+            } else {
+                $card.hide();
+            }
+        });
+
+        // Show or hide the "no results" message
+        if (visibleCount === 0) {
+            $noResultsMessage.show();
+        } else {
+            $noResultsMessage.hide();
+        }
+        
+    } else {
+        // Search is empty, reset the view
+        $noResultsMessage.hide();
+        $allCards.show(); // Show all cards
+        
+        // Re-run handleCardView to reset the "Show More" button/logic
+        handleCardView($('#content-area'));
+    }
+}
+
