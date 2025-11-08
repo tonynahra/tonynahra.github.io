@@ -64,77 +64,81 @@ $(document).ready(function () {
         loadContent(pageUrl);
     });
 
-    // Listener for ALL CARDS
+    // --- UPDATED: Listener for ALL CARDS ---
     $('body').on('click', '.card-item, .item', function(e) {
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
-        if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
+        
+        // Allow clicks on "Open in new window" to work normally
+        if ($(e.target).hasClass('open-new-window')) {
             return;
         }
+
+        // Stop the event
         e.preventDefault(); 
         e.stopPropagation(); 
         
         const loadUrl = $link.attr('href');
         const $contentArea = $('#content-area');
+        const loadType = $link.data('load-type'); // Get the *explicit* type
 
-        const $cardPage = $contentArea.find('.card-list-page').first();
-        if ($cardPage.length) {
-            $cardPage.hide();
-        } else {
-            console.warn("Could not find .card-list-page to hide.");
-        }
-
-        const backButtonHtml = `
-            <div class="back-button-wrapper">
-                <button class="js-back-to-list">
-                    &larr; Back
-                </button>
-                <a href="${loadUrl}" class="open-new-window" target="_blank" rel="noopener noreferrer">
-                    Open in new window &nearr;
-                </a>
-            </div>
-        `;
-        const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
-        $contentWrapper.html(backButtonHtml); 
-        
         // --- THIS IS THE FIX ---
-        // 1. PREPEND the new content, so it's at the top.
-        $contentArea.prepend($contentWrapper);
-        
-        // 2. NOW, find the wrapper we just prepended and scroll to it.
-        const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
-        if ($scrollToElement.length) {
-            const scrollToTarget = $scrollToElement.offset().top - 20; // 20px offset
-            // Use native INSTANT scroll
-            window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+        // ONLY load content in-page if data-load-type is specified.
+        if (loadType) {
+            const $cardPage = $contentArea.find('.card-list-page').first();
+            if ($cardPage.length) {
+                $cardPage.hide();
+            } else {
+                console.warn("Could not find .card-list-page to hide.");
+            }
+
+            const backButtonHtml = `
+                <div class="back-button-wrapper">
+                    <button class="js-back-to-list">
+                        &larr; Back
+                    </button>
+                    <a href="${loadUrl}" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                        Open in new window &nearr;
+                    </a>
+                </div>
+            `;
+            const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
+            $contentWrapper.html(backButtonHtml); 
+            $contentArea.prepend($contentWrapper);
+            
+            const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
+            if ($scrollToElement.length) {
+                const scrollToTarget = $scrollToElement.offset().top - 20;
+                window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+            }
+
+            const customHeight = $link.data('height') || '85vh';
+
+            switch (loadType) {
+                case 'html':
+                    $.ajax({
+                        url: loadUrl, type: 'GET',
+                        success: function(data) { $contentWrapper.append(data); },
+                        error: function() { $contentWrapper.append('<div class="error-message">Could not load content.</div>'); }
+                    });
+                    break;
+                case 'image':
+                    $contentWrapper.append(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
+                    break;
+                case 'iframe':
+                    $contentWrapper.append(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
+                    break;
+                default:
+                    // Failsafe for unknown type: open in new tab
+                    window.open(loadUrl, '_blank');
+            }
+        } 
+        // ELSE: No data-load-type was found, so just open the link in a new tab.
+        // This will handle GitHub, etc.
+        else {
+            window.open(loadUrl, '_blank');
         }
         // --- END FIX ---
-
-        let loadType = $link.data('load-type');
-        if (!loadType) {
-            if (loadUrl.startsWith('http')) { loadType = 'iframe'; }
-            else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) { loadType = 'image'; }
-            else { loadType = 'html'; }
-        }
-        const customHeight = $link.data('height') || '85vh';
-
-        switch (loadType) {
-            case 'html':
-                $.ajax({
-                    url: loadUrl, type: 'GET',
-                    success: function(data) { $contentWrapper.append(data); },
-                    error: function() { $contentWrapper.append('<div class="error-message">Could not load content.</div>'); }
-                });
-                break;
-            case 'image':
-                $contentWrapper.append(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
-                break;
-            case 'iframe':
-                $contentWrapper.append(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
-                break;
-            default:
-                window.open(loadUrl, '_blank');
-        }
     });
 
     // Listener for the "Back" button
@@ -143,10 +147,8 @@ $(document).ready(function () {
         $contentArea.find('.loaded-content-wrapper').remove();
         const $cardPage = $contentArea.find('.card-list-page').first().show();
 
-        // --- THIS IS THE SCROLL FIX ---
         if ($cardPage.length) {
             const scrollToTarget = $cardPage.offset().top - 20;
-            // Use native INSTANT scroll
             window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
         }
     });
@@ -188,9 +190,7 @@ $(document).ready(function () {
         }
     });
     
-    // --- THIS IS THE SCROLL FIX ---
     $('body').on('click', '.scroll-to-top', function() {
-        // Use native INSTANT scroll
         window.scrollTo({ top: 0, behavior: 'auto' });
     });
 
@@ -256,11 +256,8 @@ function loadContent(pageUrl) {
     $contentArea.empty();
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
     
-    // --- THIS IS THE SCROLL FIX ---
     const scrollToTarget = $contentArea.offset().top - 20; 
-    // Use native INSTANT scroll
     window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
-    // --- END FIX ---
 
     $.ajax({
         url: pageUrl,
