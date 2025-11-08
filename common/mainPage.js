@@ -64,7 +64,7 @@ $(document).ready(function () {
         loadContent(pageUrl);
     });
 
-    // --- UPDATED: Listener for ALL CARDS ---
+    // Listener for ALL CARDS
     $('body').on('click', '.card-item, .item', function(e) {
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
@@ -82,7 +82,6 @@ $(document).ready(function () {
         const $contentArea = $('#content-area');
         const loadType = $link.data('load-type'); // Get the *explicit* type
 
-        // --- THIS IS THE FIX ---
         // ONLY load content in-page if data-load-type is specified.
         if (loadType) {
             const $cardPage = $contentArea.find('.card-list-page').first();
@@ -134,11 +133,9 @@ $(document).ready(function () {
             }
         } 
         // ELSE: No data-load-type was found, so just open the link in a new tab.
-        // This will handle GitHub, etc.
         else {
             window.open(loadUrl, '_blank');
         }
-        // --- END FIX ---
     });
 
     // Listener for the "Back" button
@@ -384,15 +381,18 @@ function resultsLoop(data, Cat, BKcol) {
         const desc = item.snippet.description ? decodeText(item.snippet.description.substring(0, 100) + '...') : 'No description available.';
         const vid = item.snippet.resourceId.videoId;
 
+        // --- THIS IS THE FIX ---
+        // Added the missing ':' to https://
         $('#Grid').append(`
         <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
-            <a href="https.www.youtube.com/embed/${vid}" data-load-type="iframe">
+            <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
                <img class="YTi" src="${thumb}" alt="${title}" >
                <h3>${title}</h3>
                <p>${desc}</p>
             </a>
         </div>
         `);
+        // --- END FIX ---
     });
 }
 
