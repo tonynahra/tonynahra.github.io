@@ -123,22 +123,21 @@ function loadContent(pageUrl) {
             const isYouTubePage = pageUrl.includes('youtube_page.html');
             
             if (isYouTubePage) {
-                // For YouTube, extract the inner container content
-                const $html = $(data);
-                // We use .html() on the parent to get the whole section, not just the inner div content
-                const $youtubeContent = $html.find('#youtube-card-container').parent().html(); 
-                $contentArea.html($youtubeContent);
-                
-                // Extract parameters from the URL
+                // --- THIS IS THE FIX ---
+                // The 'data' is just the HTML fragment from youtube_page.html.
+                // We inject it directly into the content area.
+                $contentArea.html(data); 
+                // --- END FIX ---
+
+                // Now that the HTML is 100% in the DOM, we find the parameters
+                // and call loadVids, which can now find $('#Grid').
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
-                
-                // Initialize the YouTube content using the script
                 const params = paramString.split(',');
-                // Ensure the parameter array has the expected number of elements
+                
                 if (params.length === 3 && typeof loadVids === 'function') {
                     loadVids(params[0], params[1], params[2]);
                 } else {
-                    $contentArea.html('<div class="error-message">YouTube content structure error: Parameters missing or loadVids function not found.</div>');
+                    $contentArea.html('<div class="error-message">YouTube parameter error.</div>');
                     console.error("YouTube content structure error: Parameters:", params);
                 }
 
@@ -150,7 +149,7 @@ function loadContent(pageUrl) {
             // 3. Apply card logic after content is loaded
             handleCardView($contentArea);
             
-            // 4. Re-initialize image modals (if defined globally by image-modal.js)
+            // 4. Re-initialize image modals
             if (typeof initializeImageModal === 'function') {
                 initializeImageModal(); 
             }
@@ -161,6 +160,7 @@ function loadContent(pageUrl) {
         }
     });
 }
+
 
 
 /* === CARD VIEW (Show More) LOGIC (Right Side Content) === */
