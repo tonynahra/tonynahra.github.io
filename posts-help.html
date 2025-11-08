@@ -1,0 +1,93 @@
+<!-- This file can be loaded into your #content-area -->
+<section class="content-page cv-container">
+    <h2>Guide: How to Create Post Cards</h2>
+    
+    <div class="cv-header">
+        <p style="margin: 0;">A reference guide for the custom parameters in <code>posts.html</code>.</p>
+    </div>
+
+    <!-- Section 1 -->
+    <h3 class="about-heading">1. The Card `div` Structure (The Template)</h3>
+    <div class="about-content">
+        <p>This is your main template. Copy and paste this structure into <code>posts.html</code> to create a new card.</p>
+<pre><code>&lt;!-- Card Item --&gt;
+&lt;div class="card-item" data-category="CategoryName" style="border-left-color: #ColorHex;"&gt;
+    
+    &lt;!-- Optional: Preview Image --&gt;
+    &lt;img src="path/to/image.png" class="card-image" alt="Preview"&gt;
+    
+    &lt;!-- Title (Used for search) --&gt;
+    &lt;h3&gt;My Post Title&lt;/h3&gt;
+    
+    &lt;!-- Description (Used for search) --&gt;
+    &lt;p&gt;A short description of the post or link.&lt;/p&gt;
+    
+    &lt;!-- Visual Category Label --&gt;
+    &lt;span class="card-category"&gt;CategoryName&lt;/span&gt;
+    
+    &lt;!-- The Link: See Section 3 for options --&gt;
+    &lt;a href="path/to/content.html" data-load-type="html"&gt;Read More &rarr;&lt;/a&gt;
+    
+&lt;/div&gt;</code></pre>
+    </div>
+
+    <!-- Section 2 -->
+    <h3 class="about-heading">2. Card `div` Parameters</h3>
+    <div class="about-content">
+        <p>These parameters control the filtering and appearance of the card itself.</p>
+        <ul>
+            <li><strong><code>data-category="CategoryName"</code></strong><br>
+            This is the *most important* attribute for filtering. The JavaScript `filterPostCards()` function reads this value. It must match one of the <code>&lt;option value="CategoryName"&gt;</code> tags in your filter dropdown.</li>
+            
+            <li><strong><code>style="border-left-color: #ColorHex;"</code></strong><br>
+            This controls the color of the accent border on the left.</li>
+        </ul>
+    </div>
+
+    <!-- Section 3 -->
+    <h3 class="about-heading">3. The Link `&lt;a&gt;` Tag (The "Command")</h3>
+    <div class="about-content">
+        <p>This is the most powerful part. The attributes on the <code>&lt;a&gt;</code> tag control what happens when the card is clicked.</p>
+        
+        <h4>A) Standard Link (Opens in New Tab)</h4>
+        <p>If you just want the card to open a link in a new browser tab, **do not** add any <code>data-load-type</code> attribute. (Requires the JavaScript update below).</p>
+<pre><code>&lt;!-- This link will open in a new tab --&gt;
+&lt;a href="https://www.google.com"&gt;View on Google &rarr;&lt;/a&gt;</code></pre>
+
+        <h4>B) Dynamic Link (Loads in Right-Hand Area)</h4>
+        <p>To load content into the right-hand <code>#content-area</code>, add the <strong><code>data-load-type</code></strong> attribute.</p>
+        <ul>
+            <li><strong><code>data-load-type="html"</code></strong><br>
+            Loads a local HTML file (like a full blog post you wrote). The file must be an HTML *fragment* (no <code>&lt;html&gt;</code> or <code>&lt;body&gt;</code> tags).</li>
+            
+            <li><strong><code>data-load-type="image"</code></strong><br>
+            Loads a single image (local or remote) into the content area, centered and safely scaled.</li>
+            
+            <li><strong><code>data-load-type="iframe"</code></strong><br>
+            Loads an entire remote website (like Wikipedia). This is the best solution for showing remote pages, as all their relative links and images will work.</li>
+            
+            <li><strong><code>data-height="..."</code></strong> (Optional)<br>
+            Only works with <code>data-load-type="iframe"</code>. Overrides the default height for a specific iframe (e.g., <code>data-height="1200px"</code>).</li>
+        </ul>
+    </div>
+
+    <!-- Section 4 -->
+    <h3 class="about-heading">4. The Filter Bar (in `posts.html`)</h3>
+    <div class="about-content">
+        <p>To add a new category to your filter, you must add a new <code>&lt;option&gt;</code> tag to the <code>&lt;select id="post-category-filter"&gt;</code> dropdown. The <code>value</code> must exactly match the <code>data-category</code> on your cards.</p>
+<pre><code>&lt;select id="post-category-filter"&gt;
+    &lt;option value="all"&gt;All Categories&lt;/option&gt;
+    
+    &lt;!-- Add your new category here --&gt;
+    &lt;option value="Python"&gt;Python&lt;/option&gt;
+    &lt;option value="Data"&gt;Data&lt;/option&gt;
+&lt;/select&gt;</code></pre>
+    </div>
+    
+    <!-- Section 5 -->
+    <h3 class="about-heading">5. **Required JavaScript Update**</h3>
+    <div class="about-content">
+        <p>To make the new, simpler click logic work, you **must replace** the <code>.card-item</code> click handler in your <code>common/mainPage.js</code> file. (This code is provided in the <code>guide.md</code> file).</p>
+    </div>
+    
+</section>
