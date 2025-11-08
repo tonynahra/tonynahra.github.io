@@ -262,10 +262,6 @@ $.getJSON(URL, options, function (data) {
         $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
         console.error("YouTube API Request Failed:", jqXHR.responseJSON || errorThrown);
     });
-}
-
-
-
     
     
 }
