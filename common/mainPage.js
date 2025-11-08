@@ -11,18 +11,37 @@ const STOP_WORDS = new Set([
     'comprehensive', 'dummies', 'glance', 'handout', 'part 1', 'v1'
 ]);
 
+/**
+ * Helper function to safely decode text.
+ * @param {string} text - The text to decode.
+ * @returns {string} - The decoded text.
+ */
+function decodeText(text) {
+    if (!text) return "";
+    try {
+        // Decodes %20, &amp;, etc.
+        return decodeURIComponent(text)
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'");
+    } catch (e) {
+        // Fallback for invalid URI components
+        return text;
+    }
+}
+
 $(document).ready(function () {
     
     initializeCollapsibleSections();
     
     // --- EVENT LISTENERS (DELEGATED) ---
 
-    // Listener for "Show More" (Left Menu)
     $('body').on('click', '.expand-button', function() {
         toggleCollapsibleSection($(this));
     });
     
-    // Listener for "Show More" (Cards)
     $('body').on('click', '.toggle-card-button', function() {
         const $button = $(this);
         const $list = $button.prev('.card-list');
@@ -31,7 +50,6 @@ $(document).ready(function () {
         }
     });
 
-    // Listener for LEFT MENU
     $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
         
@@ -81,6 +99,15 @@ $(document).ready(function () {
         const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
         $contentWrapper.html(backButtonHtml); 
 
+        // --- THIS IS THE FIX ---
+        // 1. Append the wrapper (with buttons) FIRST.
+        $contentArea.append($contentWrapper);
+        
+        // 2. NOW, scroll to the wrapper.
+        const scrollToTarget = $contentWrapper.offset().top - 20; // 20px offset from top
+        $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+        // --- END FIX ---
+
         let loadType = $link.data('load-type');
         if (!loadType) {
             if (loadUrl.startsWith('http')) { loadType = 'iframe'; }
@@ -89,34 +116,20 @@ $(document).ready(function () {
         }
         const customHeight = $link.data('height') || '85vh';
 
-        // --- THIS IS THE FIX ---
-        // Get the top position of the content area, minus a 20px offset
-        const scrollToTarget = $contentArea.offset().top - 20;
-
         switch (loadType) {
             case 'html':
                 $.ajax({
                     url: loadUrl, type: 'GET',
                     success: function(data) { $contentWrapper.append(data); },
-                    error: function() { $contentWrapper.append('<div class="error-message">Could not load content.</div>'); },
-                    complete: function() { 
-                        $contentArea.append($contentWrapper);
-                        // Scroll to top after content is appended
-                        $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
-                    }
+                    error: function() { $contentWrapper.append('<div class="error-message">Could not load content.</div>'); }
+                    // Note: Scroll happens immediately, not in 'complete'
                 });
                 break;
             case 'image':
                 $contentWrapper.append(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
-                $contentArea.append($contentWrapper);
-                // Scroll to top
-                $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
                 break;
             case 'iframe':
                 $contentWrapper.append(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
-                $contentArea.append($contentWrapper);
-                // Scroll to top
-                $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
                 break;
             default:
                 window.open(loadUrl, '_blank');
@@ -127,11 +140,11 @@ $(document).ready(function () {
     $('body').on('click', '.js-back-to-list', function() {
         const $contentArea = $('#content-area');
         $contentArea.find('.loaded-content-wrapper').remove();
-        $contentArea.find('.card-list-page').first().show();
+        const $cardPage = $contentArea.find('.card-list-page').first().show();
 
         // --- THIS IS THE FIX ---
-        // Also scroll to top when going back to the list
-        const scrollToTarget = $contentArea.offset().top - 20;
+        // Scroll back to the top of the card list
+        const scrollToTarget = $cardPage.offset().top - 20;
         $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
     });
 
@@ -358,8 +371,9 @@ function resultsLoop(data, Cat, BKcol) {
             }
         }
         
-        const title = item.snippet.title;
-        const desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
+        // --- FIX: Sanitize text from the API ---
+        const title = decodeText(item.snippet.title);
+        const desc = item.snippet.description ? decodeText(item.snippet.description.substring(0, 100) + '...') : 'No description available.';
         const vid = item.snippet.resourceId.videoId;
 
         $('#Grid').append(`
@@ -393,7 +407,8 @@ function populateSmartKeywords(listId, filterId) {
                 $card.data('category'), 
             ];
             
-            const combinedText = textSources.join(' ');
+            // --- FIX: Sanitize the text *before* splitting ---
+            const combinedText = decodeText(textSources.join(' '));
             const words = combinedText.split(/[^a-zA-Z0-9'-]+/); 
             
             words.forEach(word => {
@@ -434,17 +449,18 @@ function getCardSearchableText($card) {
         $card.find('img').attr('alt'),
         $card.data('category')
     ];
-    return textSources
+    // --- FIX: Sanitize the text for searching ---
+    return decodeText(textSources
         .map(text => String(text || '')) 
         .join(' ')
-        .toLowerCase();
+        .toLowerCase());
 }
 
 
 /* === --- FILTERING LOGIC (UPDATED FOR NEW KEYWORDS) --- === */
 
 function filterYouTubeCards() {
-    const searchTerm = $('#youtube-search-box').val().toLowerCase();
+    const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
     const selectedKeyword = $('#youtube-keyword-filter').val();
     
     const $grid = $('#Grid');
@@ -481,7 +497,7 @@ function filterYouTubeCards() {
 }
 
 function filterPostCards() {
-    const searchTerm = $('#post-search-box').val().toLowerCase();
+    const searchTerm = decodeText($('#post-search-box').val().toLowerCase());
     const selectedCategory = $('#post-category-filter').val();
     const selectedKeyword = $('#post-keyword-filter').val();
     
@@ -521,7 +537,7 @@ function filterPostCards() {
 }
 
 function filterCertCards() {
-    const searchTerm = $('#cert-search-box').val().toLowerCase();
+    const searchTerm = decodeText($('#cert-search-box').val().toLowerCase());
     const selectedCategory = $('#cert-category-filter').val();
     const selectedKeyword = $('#cert-keyword-filter').val();
     
