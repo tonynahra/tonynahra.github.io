@@ -15,12 +15,13 @@ $(document).ready(function () {
     
     initializeCollapsibleSections();
     
-    $('.expand-button').on('click', function() {
+    // --- EVENT LISTENERS (DELEGATED) ---
+
+    // --- FIX: This is now a delegated listener ---
+    $('body').on('click', '.expand-button', function() {
         toggleCollapsibleSection($(this));
     });
     
-    // --- EVENT LISTENERS (DELEGATED) ---
-
     // Listener for LEFT MENU
     $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
@@ -288,7 +289,6 @@ function loadVids(PL, Category, BKcol) {
 
         resultsLoop(data, Category, BKcol);
         handleCardView($('#content-area'));
-        // --- UPDATED: Call the new smart keyword generator ---
         populateSmartKeywords('#Grid', '#youtube-keyword-filter');
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -304,7 +304,7 @@ function resultsLoop(data, Cat, BKcol) {
         const title = item.snippet.title;
         const desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
         const vid = item.snippet.resourceId.videoId;
-        // const tags = (item.snippet.tags || []).join(','); // We don't need this anymore
+        // We get keywords from title/desc in populateSmartKeywords
 
         $('#Grid').append(`
         <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
@@ -318,7 +318,7 @@ function resultsLoop(data, Cat, BKcol) {
     });
 }
 
-/* === --- NEW: SMART KEYWORD LOGIC --- === */
+/* === --- UPDATED: SMART KEYWORD LOGIC --- === */
 
 /**
  * Auto-populates a <select> dropdown by reading ALL text from cards and finding
@@ -346,29 +346,26 @@ function populateSmartKeywords(listId, filterId) {
         
         const combinedText = textSources.join(' ');
 
-        // Split text into individual words
-        const words = combinedText.split(/[\s,.\-()&/|:]+/); // Split on spaces, commas, etc.
+        // --- FIX: Use a more robust regex to split only on non-alphanumeric chars ---
+        const words = combinedText.split(/[^a-zA-Z0-9]+/); 
         
         words.forEach(word => {
-            // Clean the word
             const cleanWord = word.toLowerCase().trim();
             
-            // Check if it's a meaningful word
             if (cleanWord.length > 2 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
-                // Increment count
                 wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
             }
         });
     });
 
-    // Convert wordCounts object to an array [word, count]
     const sortedKeywords = Object.entries(wordCounts)
-        // Sort by count (highest first)
         .sort(([,a], [,b]) => b - a)
-        // Get just the word, and take the top 30
         .slice(0, 30)
         .map(([word]) => word);
 
+    // Clear previous options (except the first one)
+    $filter.children('option:not(:first)').remove();
+    
     // Create and append <option> tags
     sortedKeywords.forEach(key => {
         $filter.append($('<option>', {
@@ -412,7 +409,7 @@ function filterYouTubeCards() {
         $showMoreButton.hide();
         $allCards.each(function() {
             const $card = $(this);
-            const cardText = getCardSearchableText($card); // Get all card text
+            const cardText = getCardSearchableText($card); 
 
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
             const keywordMatch = (selectedKeyword === "all" || cardText.includes(selectedKeyword));
@@ -451,7 +448,7 @@ function filterPostCards() {
         $allCards.each(function() {
             const $card = $(this);
             const cardCategory = $card.data('category'); 
-            const cardText = getCardSearchableText($card); // Get all card text
+            const cardText = getCardSearchableText($card); 
 
             const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
@@ -491,7 +488,7 @@ function filterCertCards() {
         $allCards.each(function() {
             const $card = $(this);
             const cardCategories = $card.data('category'); 
-            const cardText = getCardSearchableText($card); // Get all card text
+            const cardText = getCardSearchableText($card); 
 
             const categoryMatch = (selectedCategory === "all" || cardCategories.includes(selectedCategory));
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
