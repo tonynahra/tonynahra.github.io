@@ -68,13 +68,9 @@ $(document).ready(function () {
     $('body').on('click', '.card-item, .item', function(e) {
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
-        
-        // Allow clicks on "Open in new window" to work normally
-        if ($(e.target).hasClass('open-new-window')) {
+        if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
             return;
         }
-
-        // Stop the event
         e.preventDefault(); 
         e.stopPropagation(); 
         
@@ -82,7 +78,6 @@ $(document).ready(function () {
         const $contentArea = $('#content-area');
         const loadType = $link.data('load-type'); // Get the *explicit* type
 
-        // --- THIS IS THE FIX ---
         // ONLY load content in-page if data-load-type is specified.
         if (loadType) {
             const $cardPage = $contentArea.find('.card-list-page').first();
@@ -106,11 +101,14 @@ $(document).ready(function () {
             $contentWrapper.html(backButtonHtml); 
             $contentArea.prepend($contentWrapper);
             
+            // --- THIS IS THE SCROLL FIX ---
+            // Reverted to jQuery animate() as window.scrollTo() is being blocked
             const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
             if ($scrollToElement.length) {
                 const scrollToTarget = $scrollToElement.offset().top - 20;
-                window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+                $('html, body').animate({ scrollTop: scrollToTarget }, 'auto'); // Use 'auto' (instant)
             }
+            // --- END FIX ---
 
             const customHeight = $link.data('height') || '85vh';
 
@@ -129,16 +127,12 @@ $(document).ready(function () {
                     $contentWrapper.append(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
                     break;
                 default:
-                    // Failsafe for unknown type: open in new tab
                     window.open(loadUrl, '_blank');
             }
         } 
-        // ELSE: No data-load-type was found, so just open the link in a new tab.
-        // This will handle GitHub, etc.
         else {
             window.open(loadUrl, '_blank');
         }
-        // --- END FIX ---
     });
 
     // Listener for the "Back" button
@@ -147,9 +141,11 @@ $(document).ready(function () {
         $contentArea.find('.loaded-content-wrapper').remove();
         const $cardPage = $contentArea.find('.card-list-page').first().show();
 
+        // --- THIS IS THE SCROLL FIX ---
         if ($cardPage.length) {
             const scrollToTarget = $cardPage.offset().top - 20;
-            window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+            // Use jQuery animate()
+            $('html, body').animate({ scrollTop: scrollToTarget }, 'auto');
         }
     });
 
@@ -190,8 +186,10 @@ $(document).ready(function () {
         }
     });
     
+    // --- THIS IS THE SCROLL FIX ---
     $('body').on('click', '.scroll-to-top', function() {
-        window.scrollTo({ top: 0, behavior: 'auto' });
+        // Use jQuery animate()
+        $('html, body').animate({ scrollTop: 0 }, 'auto');
     });
 
     // Load initial content
@@ -256,8 +254,11 @@ function loadContent(pageUrl) {
     $contentArea.empty();
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
     
+    // --- THIS IS THE SCROLL FIX ---
     const scrollToTarget = $contentArea.offset().top - 20; 
-    window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+    // Use jQuery animate()
+    $('html, body').animate({ scrollTop: scrollToTarget }, 'auto');
+    // --- END FIX ---
 
     $.ajax({
         url: pageUrl,
