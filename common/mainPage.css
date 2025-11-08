@@ -10,6 +10,24 @@
     --font-code: 'IBM Plex Mono', monospace;
 }
 
+/* --- NEW: Light Theme Definition --- */
+body.theme-light {
+    --bg-dark: #ffffff;
+    --bg-medium: #f4f4f4;
+    --text-light: #555555;
+    --text-accent: #007acc;
+    --text-primary: #000000;
+}
+
+/* --- NEW: Pastel Theme Definition --- */
+body.theme-pastel {
+    --bg-dark: #f5f0e1; /* Creamy background */
+    --bg-medium: #ffffff; /* White cards */
+    --text-light: #5d5d5d; /* Dark gray text */
+    --text-accent: #e67e22; /* Carrot orange */
+    --text-primary: #2c3e50; /* Dark slate text */
+}
+
 /* --- Global Reset and Body Styling --- */
 body {
     margin: 0;
@@ -19,6 +37,8 @@ body {
     font-family: var(--font-body);
     line-height: 1.6;
     min-height: 100vh;
+    /* Add transition for smooth theme changes */
+    transition: background-color 0.3s, color 0.3s;
 }
 
 body::before {
@@ -27,9 +47,8 @@ body::before {
 
 /* --- Layout Container (Full Width) --- */
 .container {
-    /* max-width: 1400px; <-- Removed for full width */
     margin: 0 auto;
-    padding: 10px 30px 20px 30px; /* Reduced top padding to 10px, side padding to 30px */
+    padding: 10px 30px 20px 30px; 
 }
 
 /* --- Typography (Headings & Tagline) --- */
@@ -52,11 +71,25 @@ h1 {
     margin-top: 0;
 }
 
+/* --- UPDATED: Header Section --- */
+.header-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.header-info {
+    flex-grow: 1;
+}
+
 .header-divider {
     border: 0;
     height: 1px;
     background-image: linear-gradient(to right, var(--text-accent), var(--bg-dark));
     margin: 20px 0 40px 0;
+    width: 100%; /* Ensure divider spans full width */
 }
 
 /* --- Links (General) --- */
@@ -68,7 +101,7 @@ a, a:visited {
 
 a:hover {
     color: var(--text-primary);
-    text-decoration: none; /* Removed underline on hover for a cleaner look */
+    text-decoration: none; 
 }
 
 /* --- Main Content Grid (Responsive Layout) --- */
@@ -80,7 +113,6 @@ a:hover {
 
 @media (min-width: 900px) {
     .main-content-grid {
-        /* Two columns: 350px for left menu, remaining space for content */
         grid-template-columns: 350px 1fr; 
     }
 }
@@ -92,6 +124,7 @@ a:hover {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     height: fit-content;
+    transition: background-color 0.3s;
 }
 
 .profile-photo {
@@ -108,6 +141,7 @@ a:hover {
 .contact-links {
     padding-top: 20px;
     border-top: 1px solid var(--bg-dark);
+    transition: border-color 0.3s;
 }
 
 .link-item {
@@ -115,6 +149,7 @@ a:hover {
     font-size: 1.05rem;
     padding: 8px 0;
     border-bottom: 1px dashed var(--bg-dark);
+    transition: border-color 0.3s;
 }
 
 /* External link icon */
@@ -224,14 +259,11 @@ a:hover {
 
 /* --- Card View & "Show More" Button --- */
 .card-list {
-    /* --- THIS IS THE FIX --- */
-    /* Replaces all 'display: grid' properties */
     column-count: 3;
     column-gap: 20px;
-    /* --- END FIX --- */
-    
     list-style: none;
     padding: 0;
+    align-items: start;
 }
 
 /* Responsive columns */
@@ -254,20 +286,17 @@ a:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     border-left: 3px solid var(--text-accent);
     
-    /* --- CHANGES FOR MASONRY --- */
-    /* min-height: 180px;  <-- REMOVED to allow variable heights */
-    display: flex; /* <-- Still use flexbox *inside* the card */
+    display: flex; 
     flex-direction: column;
     justify-content: space-between;
     
-    break-inside: avoid; /* <-- PREVENTS cards from splitting */
-    margin-bottom: 20px; /* <-- Vertical spacing between cards */
-    width: 100%; /* <-- Ensure it fits in the column */
-    box-sizing: border-box; /* <-- Include padding in width */
-    /* --- END CHANGES --- */
+    break-inside: avoid; 
+    margin-bottom: 20px; 
+    width: 100%; 
+    box-sizing: border-box; 
 
     cursor: pointer;
-    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+    transition: all 0.3s;
 }
 
 .card-item:hover {
@@ -421,18 +450,17 @@ a:hover {
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
     display: flex;
-    justify-content: space-between; /* Pushes buttons to ends */
+    justify-content: space-between; 
     align-items: center;
-    flex-wrap: wrap; /* Wraps on small screens */
+    flex-wrap: wrap; 
     gap: 15px;
 }
 
-/* Style for the <button> "Back" */
 .back-button-wrapper .js-back-to-list {
     padding: 8px 15px;
     background: var(--bg-medium);
     color: var(--text-accent);
-    border: 1px solid var(--bg-medium); /* Solid button */
+    border: 1px solid var(--bg-medium); 
     border-radius: 4px;
     text-decoration: none;
     font-family: var(--font-code);
@@ -448,12 +476,11 @@ a:hover {
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-/* Style for the "Open in new window" link */
 .back-button-wrapper .open-new-window {
     padding: 8px 15px;
     background: transparent;
     color: var(--text-accent);
-    border: 1px solid var(--text-accent); /* Outline button */
+    border: 1px solid var(--text-accent); 
     border-radius: 4px;
     text-decoration: none;
     font-family: var(--font-code);
@@ -501,9 +528,9 @@ a:hover {
 }
 
 .about-me-content p {
-    font-size: 1.1rem; /* Slightly larger text for readability */
+    font-size: 1.1rem; 
     line-height: 1.7;
-    margin-bottom: 20px; /* Space between paragraphs */
+    margin-bottom: 20px; 
 }
 
 .about-me-content p strong {
@@ -594,4 +621,31 @@ code {
     color: var(--text-light);
     opacity: 0.6;
     font-family: var(--font-code);
+}
+
+/* --- NEW: Theme Switcher Styles --- */
+.theme-switcher {
+    display: flex;
+    gap: 10px;
+    padding-top: 10px; /* Align with header text */
+}
+
+.theme-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.theme-dot:hover {
+    transform: scale(1.1);
+    border-color: var(--text-accent);
+}
+
+.theme-dot.active {
+    border-color: var(--text-accent);
+    box-shadow: 0 0 10px var(--text-accent);
+    transform: scale(1.1);
 }
