@@ -428,3 +428,34 @@ a:hover {
     /* 3. Padding for the text *inside* the new box */
     padding: 20px;
 }
+
+/* --- ADD THESE STYLES to common/mainPage.css --- */
+
+.search-wrapper {
+    margin-bottom: 25px;
+}
+
+#youtube-search-box {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--bg-medium);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-family: var(--font-code);
+    font-size: 1rem;
+    box-sizing: border-box; /* Important for 100% width */
+}
+
+#youtube-search-box:focus {
+    outline: none;
+    border-color: var(--text-accent);
+    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+}
+
+.error-message {
+    color: var(--text-accent);
+    font-family: var(--font-code);
+    text-align: center;
+    padding: 20px;
+}
