@@ -334,22 +334,25 @@ a:hover {
     flex-wrap: wrap; 
     gap: 15px;
     margin-bottom: 25px;
+    
+    /* --- NEW: Added contrast --- */
+    background-color: var(--bg-medium);
+    padding: 20px;
+    border-radius: 8px;
+    /* --- END NEW --- */
 }
 
-/* --- THIS IS THE FIX --- */
 /* Search box can grow, dropdowns cannot */
 .filter-bar .search-wrapper {
-    flex: 1 1 250px; /* Can grow and shrink, base width 250px */
+    flex: 1 1 250px; 
     min-width: 200px; 
 }
 .filter-bar .category-wrapper {
-    flex: 0 0 220px; /* Don't grow, don't shrink, base width 220px */
+    flex: 0 0 220px; 
 }
 .filter-bar .keyword-wrapper {
-    flex: 0 0 200px; /* Don't grow, don't shrink, base width 200px (shorter) */
+    flex: 0 0 200px; 
 }
-/* --- END FIX --- */
-
 
 .search-wrapper {
     margin-bottom: 0;
