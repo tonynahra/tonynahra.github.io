@@ -477,3 +477,18 @@ function filterPostCards() {
     }
 }
 
+/**
+ * Helper function to load a simple HTML fragment into the content area.
+ */
+function loadHtmlFragment(pageUrl, $contentArea) {
+    $.ajax({
+        url: pageUrl,
+        type: 'GET',
+        success: function(data) {
+            $contentArea.html(data);
+        },
+        error: function() {
+            $contentArea.html('<div class="error-message">Could not load content. The file may be missing.</div>');
+        }
+    });
+}
