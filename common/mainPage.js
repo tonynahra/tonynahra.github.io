@@ -145,6 +145,15 @@ $(document).ready(function () {
         filterPostCards();
     });
     
+    // --- NEW: Listeners for Certificate Filters ---
+    $('body').on('input', '#cert-search-box', function() {
+        filterCertCards();
+    });
+    $('body').on('change', '#cert-category-filter', function() {
+        filterCertCards();
+    });
+    // --- END NEW ---
+    
     // --- NEW THEME SWITCHER LOGIC ---
     // Function to apply the theme
     function applyTheme(theme) {
@@ -262,6 +271,7 @@ function loadContent(pageUrl) {
 
             const isYouTubePage = pageUrl.includes('youtube_page.html');
             const isPostsPage = pageUrl.includes('posts.html'); 
+            const isCertsPage = pageUrl.includes('certificates.html'); // <-- NEW CHECK
             
             if (isYouTubePage) {
                 // Find parameters and call loadVids
@@ -278,10 +288,12 @@ function loadContent(pageUrl) {
                 // Page is loaded, now set up the card pagination
                 handleCardView($contentArea);
             
-            } else if (!pageUrl.includes('about.html') && !pageUrl.includes('guide.html')) {
-                // Handle "Certificates" page if it's just cards
+            } else if (isCertsPage) { // <-- NEW BLOCK
+                // Page is loaded, now set up the card pagination
                 handleCardView($contentArea);
             }
+            // (About and Guide pages don't need any special logic here)
+
 
             // (re)Initialize any image popups
             if (typeof initializeImageModal === 'function') {
@@ -469,11 +481,13 @@ function filterPostCards() {
         $showMoreButton.hide();
         $allCards.each(function() {
             const $card = $(this);
-            const cardCategory = $card.data('category');
+            const cardCategory = $card.data('category'); // e.g., "Python"
             const title = $card.find('h3').text().toLowerCase();
             const desc = $card.find('p').text().toLowerCase();
 
+            // Check if matches category
             const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
+            // Check if matches search term
             const searchMatch = (searchTerm === "" || title.includes(searchTerm) || desc.includes(searchTerm));
 
             if (categoryMatch && searchMatch) {
@@ -489,6 +503,65 @@ function filterPostCards() {
     } else {
         $noResultsMessage.hide();
         $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'));
+    }
+}
+
+// --- NEW FUNCTION for Certificate Filtering ---
+function filterCertCards() {
+    const searchTerm = $('#cert-search-box').val().toLowerCase();
+    const selectedCategory = $('#cert-category-filter').val();
+    
+    const $grid = $('#cert-card-list');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#cert-no-results');
+    
+    let visibleCount = 0;
+
+    if (searchTerm.length > 0 || selectedCategory !== "all") {
+        // A filter is active, so hide the "Show More" button.
+        $showMoreButton.hide();
+
+        $allCards.each(function() {
+            const $card = $(this);
+            // Get the *full* category string, e.g., "Data,SQL,BI"
+            const cardCategories = $card.data('category'); 
+            // Get the image alt text (or category span) to search
+            const title = $card.find('img').attr('alt').toLowerCase();
+            const categoryText = $card.find('.card-category').text();
+
+            // --- UPDATED LOGIC ---
+            // Check if the selected category (e.g., "SQL") is *in* the card's category string
+            const categoryMatch = (selectedCategory === "all" || cardCategories.includes(selectedCategory));
+            
+            // Check if search term is in the title (alt text)
+            const searchMatch = (searchTerm === "" || title.includes(searchTerm) || categoryText.includes(searchTerm));
+            // --- END UPDATED LOGIC ---
+
+            if (categoryMatch && searchMatch) {
+                // This card matches.
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else {
+                // This card does not match. Hide it.
+                $card.hide();
+            }
+        });
+
+        // Show or hide the "no results" message
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
+        
+    } else {
+        // --- NO FILTERS ---
+        // Search is empty AND category is "all", reset the view.
+        $noResultsMessage.hide();
+        
+        // Remove all inline 'style' attributes (from .show()/.hide())
+        $allCards.removeAttr('style'); 
+        
+        // Re-run handleCardView to reset pagination
         handleCardView($('#content-area'));
     }
 }
