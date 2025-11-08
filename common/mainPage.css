@@ -452,7 +452,3 @@ a:hover {
     opacity: 1;
 }
 
-.open-new-window &nearr; { /* Style the arrow */
-    font-size: 0.8em;
-    vertical-align: top;
-}
