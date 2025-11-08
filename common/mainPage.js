@@ -99,14 +99,17 @@ $(document).ready(function () {
             `;
             const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
             $contentWrapper.html(backButtonHtml); 
+            
+            // --- THIS IS THE FIX ---
+            // 1. PREPEND the new content, so it's at the top.
             $contentArea.prepend($contentWrapper);
             
-            // --- THIS IS THE SCROLL FIX ---
-            // Reverted to jQuery animate() as window.scrollTo() is being blocked
+            // 2. NOW, find the wrapper we just prepended and scroll to it.
             const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
             if ($scrollToElement.length) {
-                const scrollToTarget = $scrollToElement.offset().top - 20;
-                $('html, body').animate({ scrollTop: scrollToTarget }, 'auto'); // Use 'auto' (instant)
+                const scrollToTarget = $scrollToElement.offset().top - 20; // 20px offset
+                // Use native INSTANT scroll
+                window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
             }
             // --- END FIX ---
 
@@ -144,8 +147,8 @@ $(document).ready(function () {
         // --- THIS IS THE SCROLL FIX ---
         if ($cardPage.length) {
             const scrollToTarget = $cardPage.offset().top - 20;
-            // Use jQuery animate()
-            $('html, body').animate({ scrollTop: scrollToTarget }, 'auto');
+            // Use native INSTANT scroll
+            window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
         }
     });
 
@@ -188,8 +191,8 @@ $(document).ready(function () {
     
     // --- THIS IS THE SCROLL FIX ---
     $('body').on('click', '.scroll-to-top', function() {
-        // Use jQuery animate()
-        $('html, body').animate({ scrollTop: 0 }, 'auto');
+        // Use native INSTANT scroll
+        window.scrollTo({ top: 0, behavior: 'auto' });
     });
 
     // Load initial content
@@ -256,8 +259,8 @@ function loadContent(pageUrl) {
     
     // --- THIS IS THE SCROLL FIX ---
     const scrollToTarget = $contentArea.offset().top - 20; 
-    // Use jQuery animate()
-    $('html, body').animate({ scrollTop: scrollToTarget }, 'auto');
+    // Use native INSTANT scroll
+    window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
     // --- END FIX ---
 
     $.ajax({
