@@ -323,7 +323,7 @@ a:hover {
     margin-bottom: 10px;
 }
 
-/* Card images (YouTube and Raindrop) */
+/* Card images (YouTube and Raindrop) - DEFAULT */
 .card-item img.card-image,
 .card-item img.YTi {
     width: 100%;
@@ -376,7 +376,7 @@ a:hover {
 }
 
 #post-category-filter,
-#cert-category-filter { /* --- ADDED CERT FILTER --- */
+#cert-category-filter { 
     width: 100%;
     padding: 12px 15px;
     background-color: var(--bg-dark);
@@ -389,7 +389,7 @@ a:hover {
 }
 
 #post-category-filter:focus,
-#cert-category-filter:focus { /* --- ADDED CERT FILTER --- */
+#cert-category-filter:focus { 
     outline: none;
     border-color: var(--text-accent);
 }
@@ -400,7 +400,7 @@ a:hover {
 
 #youtube-search-box,
 #post-search-box,
-#cert-search-box { /* --- ADDED CERT FILTER --- */
+#cert-search-box { 
     width: 100%;
     padding: 12px 15px;
     background-color: var(--bg-dark);
@@ -414,7 +414,7 @@ a:hover {
 
 #youtube-search-box:focus,
 #post-search-box:focus,
-#cert-search-box:focus { /* --- ADDED CERT FILTER --- */
+#cert-search-box:focus { 
     outline: none;
     border-color: var(--text-accent);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
@@ -666,30 +666,21 @@ code {
 
 /* --- UPDATED: Certificate Card Layout --- */
 
-/* 1. Override column count for certs to be 6 */
+/* 1. REVERTED: Certificate columns are now the same as posts (3) */
+/*
 #cert-card-list {
-    column-count: 6; /* <-- Increased from 4 */
+    column-count: 6; 
 }
+...
+*/
 
-/* 2. Override responsive columns for certs */
-@media (max-width: 1200px) {
-    #cert-card-list {
-        column-count: 4; /* <-- Increased from 3 */
-    }
-}
-@media (max-width: 600px) {
-    #cert-card-list {
-        column-count: 3; /* <-- Increased from 2 */
-    }
-}
-
-/* 3. Make post-cards (but not cert-cards) have a min-height */
+/* 2. Make post-cards (but not cert-cards) have a min-height */
 #posts-card-list .card-item,
 #Grid .card-item { /* #Grid is the YouTube list */
     min-height: 180px; 
 }
 
-/* 4. Make cert-cards have less padding and spacing */
+/* 3. Make cert-cards have less padding and spacing */
 #cert-card-list .card-item {
     padding: 10px;
     justify-content: flex-start; /* Align to top */
@@ -702,4 +693,9 @@ code {
 
 #cert-card-list .card-item a {
     font-size: 0.8rem; /* Smaller "View Full Size" link */
+}
+
+/* 4. --- NEW: Double the height of certificate images --- */
+#cert-card-list .card-item img.card-image {
+    height: 300px; /* Double the default 150px */
 }
