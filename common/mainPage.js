@@ -1,5 +1,16 @@
 var lastContentPage = 'tech-posts.html'; 
 
+// --- NEW: List of common words to ignore ---
+const STOP_WORDS = new Set([
+    'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have', 
+    'he', 'in', 'is', 'it', 'its', 'of', 'on', 'or', 'that', 'the', 'to', 'was', 
+    'were', 'will', 'with', 'part', 'op', 'web', 'at', 'al', 'com', 'org', 'www',
+    'https', 'http', 'pdf', 'html', 'sheet', 'cheat', 'for', 'github', 'master',
+    'file', 'files', 'user', 'users', 'server', 'servers', 'link', 'more', 'read',
+    'view', 'full', 'size', 'click', 'introductory', 'introduction', 'advanced',
+    'comprehensive', 'dummies', 'glance', 'handout', 'part 1', 'v1'
+]);
+
 $(document).ready(function () {
     
     initializeCollapsibleSections();
@@ -97,7 +108,7 @@ $(document).ready(function () {
         $contentArea.find('.card-list-page').first().show();
     });
 
-    // --- UPDATED: All filter listeners ---
+    // --- All filter listeners ---
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
     $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
 
@@ -108,7 +119,6 @@ $(document).ready(function () {
     $('body').on('input', '#cert-search-box', filterCertCards);
     $('body').on('change', '#cert-category-filter', filterCertCards);
     $('body').on('change', '#cert-keyword-filter', filterCertCards);
-    // --- END UPDATED FILTERS ---
     
     // Theme Switcher Logic
     function applyTheme(theme) {
@@ -194,18 +204,16 @@ function loadContent(pageUrl) {
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
                 const params = paramString.split(',');
                 if (params.length === 3 && typeof loadVids === 'function') {
-                    loadVids(params[0], params[1], params[2]);
+                    loadVids(params[0], params[1], params[2]); // loadVids will call populateSmartKeywords
                 } else {
                     $contentArea.html('<div class="error-message">YouTube parameter error.</div>');
                 }
             } else if (isPostsPage) {
                 handleCardView($contentArea);
-                // Auto-populate keywords from data-keywords attribute
-                populateKeywordFilter('#posts-card-list', '#post-keyword-filter', 'data-keywords');
+                populateSmartKeywords('#posts-card-list', '#post-keyword-filter');
             } else if (isCertsPage) { 
                 handleCardView($contentArea);
-                // Auto-populate keywords from data-category attribute
-                populateKeywordFilter('#cert-card-list', '#cert-keyword-filter', 'data-category');
+                populateSmartKeywords('#cert-card-list', '#cert-keyword-filter');
             }
             
             if (typeof initializeImageModal === 'function') {
@@ -280,8 +288,8 @@ function loadVids(PL, Category, BKcol) {
 
         resultsLoop(data, Category, BKcol);
         handleCardView($('#content-area'));
-        // Auto-populate keywords from YouTube tags
-        populateKeywordFilter('#Grid', '#youtube-keyword-filter', 'data-keywords');
+        // --- UPDATED: Call the new smart keyword generator ---
+        populateSmartKeywords('#Grid', '#youtube-keyword-filter');
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
         $('#Grid').html(`<p class="error-message">API Error (Hard): ${jqXHR.status} - ${errorThrown}.</p>`);
@@ -296,11 +304,10 @@ function resultsLoop(data, Cat, BKcol) {
         const title = item.snippet.title;
         const desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
         const vid = item.snippet.resourceId.videoId;
-        // --- NEW: Get tags ---
-        const tags = (item.snippet.tags || []).join(',');
+        // const tags = (item.snippet.tags || []).join(','); // We don't need this anymore
 
         $('#Grid').append(`
-        <div data-category="${Cat}" data-keywords="${tags}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
+        <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
             <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
                <img class="YTi" src="${thumb}" alt="${title}" >
                <h3>${title}</h3>
@@ -311,36 +318,56 @@ function resultsLoop(data, Cat, BKcol) {
     });
 }
 
-/* === NEW: KEYWORD FILTERING LOGIC === */
+/* === --- NEW: SMART KEYWORD LOGIC --- === */
 
 /**
- * Auto-populates a <select> dropdown by reading data attributes from cards.
+ * Auto-populates a <select> dropdown by reading ALL text from cards and finding
+ * the most frequent, meaningful keywords.
  * @param {string} listId - The ID of the card list (e.g., "#posts-card-list").
  * @param {string} filterId - The ID of the <select> dropdown (e.g., "#post-keyword-filter").
- * @param {string} dataAttribute - The name of the data attribute to read (e.g., "data-keywords").
  */
-function populateKeywordFilter(listId, filterId, dataAttribute) {
+function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return; // Don't run if the filter isn't on the page
 
-    const keywords = new Set();
+    const wordCounts = {};
     
-    // Find all cards and get their keywords
+    // Find all cards and get their text content
     $(`${listId} .card-item`).each(function() {
-        const keywordString = $(this).attr(dataAttribute); // Use .attr() for 'data-keywords'
-        if (keywordString) {
-            const keys = keywordString.split(',');
-            keys.forEach(key => {
-                const trimmedKey = key.trim();
-                if (trimmedKey) {
-                    keywords.add(trimmedKey);
-                }
-            });
-        }
+        const $card = $(this);
+        // Combine text from all relevant sources
+        const textSources = [
+            $card.find('h3').text(),
+            $card.find('p').text(),
+            $card.find('.card-category').text(),
+            $card.find('img').attr('alt'),
+            $card.data('category'), // Keep data-category as a source
+        ];
+        
+        const combinedText = textSources.join(' ');
+
+        // Split text into individual words
+        const words = combinedText.split(/[\s,.\-()&/|:]+/); // Split on spaces, commas, etc.
+        
+        words.forEach(word => {
+            // Clean the word
+            const cleanWord = word.toLowerCase().trim();
+            
+            // Check if it's a meaningful word
+            if (cleanWord.length > 2 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
+                // Increment count
+                wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
+            }
+        });
     });
 
-    // Sort keywords alphabetically
-    const sortedKeywords = Array.from(keywords).sort();
+    // Convert wordCounts object to an array [word, count]
+    const sortedKeywords = Object.entries(wordCounts)
+        // Sort by count (highest first)
+        .sort(([,a], [,b]) => b - a)
+        // Get just the word, and take the top 30
+        .slice(0, 30)
+        .map(([word]) => word);
 
     // Create and append <option> tags
     sortedKeywords.forEach(key => {
@@ -351,9 +378,28 @@ function populateKeywordFilter(listId, filterId, dataAttribute) {
     });
 }
 
+/**
+ * Gets all searchable text from a card.
+ * @param {object} $card - The jQuery object for the card.
+ * @returns {string} - A string of all searchable text.
+ */
+function getCardSearchableText($card) {
+    const textSources = [
+        $card.find('h3').text(),
+        $card.find('p').text(),
+        $card.find('.card-category').text(),
+        $card.find('img').attr('alt'),
+        $card.data('category')
+    ];
+    return textSources.join(' ').toLowerCase();
+}
+
+
+/* === --- UPDATED: FILTERING LOGIC --- === */
+
 function filterYouTubeCards() {
     const searchTerm = $('#youtube-search-box').val().toLowerCase();
-    const selectedKeyword = $('#youtube-keyword-filter').val(); // <-- NEW
+    const selectedKeyword = $('#youtube-keyword-filter').val();
     
     const $grid = $('#Grid');
     const $allCards = $grid.children('.card-item');
@@ -362,18 +408,16 @@ function filterYouTubeCards() {
     
     let visibleCount = 0;
 
-    if (searchTerm.length > 0 || selectedKeyword !== "all") { // <-- UPDATED
+    if (searchTerm.length > 0 || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
             const $card = $(this);
-            const title = $card.find('h3').text().toLowerCase();
-            const desc = $card.find('p').text().toLowerCase();
-            const keywords = $card.data('keywords'); // <-- NEW
+            const cardText = getCardSearchableText($card); // Get all card text
 
-            const searchMatch = (searchTerm === "" || title.includes(searchTerm) || desc.includes(searchTerm));
-            const keywordMatch = (selectedKeyword === "all" || keywords.includes(selectedKeyword)); // <-- NEW
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            const keywordMatch = (selectedKeyword === "all" || cardText.includes(selectedKeyword));
 
-            if (searchMatch && keywordMatch) { // <-- UPDATED
+            if (searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
             } else {
@@ -393,7 +437,7 @@ function filterYouTubeCards() {
 function filterPostCards() {
     const searchTerm = $('#post-search-box').val().toLowerCase();
     const selectedCategory = $('#post-category-filter').val();
-    const selectedKeyword = $('#post-keyword-filter').val(); // <-- NEW
+    const selectedKeyword = $('#post-keyword-filter').val();
     
     const $grid = $('#posts-card-list');
     const $allCards = $grid.children('.card-item');
@@ -402,20 +446,18 @@ function filterPostCards() {
     
     let visibleCount = 0;
 
-    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") { // <-- UPDATED
+    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
             const $card = $(this);
             const cardCategory = $card.data('category'); 
-            const keywords = $card.data('keywords'); // <-- NEW
-            const title = $card.find('h3').text().toLowerCase();
-            const desc = $card.find('p').text().toLowerCase();
+            const cardText = getCardSearchableText($card); // Get all card text
 
             const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
-            const searchMatch = (searchTerm === "" || title.includes(searchTerm) || desc.includes(searchTerm));
-            const keywordMatch = (selectedKeyword === "all" || (keywords && keywords.includes(selectedKeyword))); // <-- NEW
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            const keywordMatch = (selectedKeyword === "all" || cardText.includes(selectedKeyword));
 
-            if (categoryMatch && searchMatch && keywordMatch) { // <-- UPDATED
+            if (categoryMatch && searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
             } else {
@@ -435,7 +477,7 @@ function filterPostCards() {
 function filterCertCards() {
     const searchTerm = $('#cert-search-box').val().toLowerCase();
     const selectedCategory = $('#cert-category-filter').val();
-    const selectedKeyword = $('#cert-keyword-filter').val(); // <-- NEW
+    const selectedKeyword = $('#cert-keyword-filter').val();
     
     const $grid = $('#cert-card-list');
     const $allCards = $grid.children('.card-item');
@@ -444,18 +486,18 @@ function filterCertCards() {
     
     let visibleCount = 0;
 
-    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") { // <-- UPDATED
+    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
             const $card = $(this);
-            const cardCategories = $card.data('category'); // This is our keyword source
-            const title = $card.find('img').attr('alt').toLowerCase();
+            const cardCategories = $card.data('category'); 
+            const cardText = getCardSearchableText($card); // Get all card text
 
             const categoryMatch = (selectedCategory === "all" || cardCategories.includes(selectedCategory));
-            const searchMatch = (searchTerm === "" || title.includes(searchTerm));
-            const keywordMatch = (selectedKeyword === "all" || cardCategories.includes(selectedKeyword)); // <-- NEW
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            const keywordMatch = (selectedKeyword === "all" || cardText.includes(selectedKeyword)); 
 
-            if (categoryMatch && searchMatch && keywordMatch) { // <-- UPDATED
+            if (categoryMatch && searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
             } else {
