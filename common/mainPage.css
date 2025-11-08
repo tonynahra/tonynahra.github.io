@@ -397,3 +397,29 @@ a:hover {
     /* Optional: Add a subtle shadow for depth */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
+
+/* --- UPDATE THESE STYLES in common/mainPage.css --- */
+
+.cv-section[open] {
+    /* When open, use the lighter background for the whole component */
+    background: var(--bg-medium);
+}
+
+.cv-content {
+    /* 1. Pushed towards the right (indented) */
+    margin-left: 40px;  /* Indents the entire content box */
+    margin-right: 15px; /* Adds space on the right edge */
+    margin-bottom: 20px;/* Adds space below the box before the next section */
+
+    /* 2. A box around it */
+    background: var(--bg-dark); /* Use the darkest background for contrast */
+    border: 1px solid var(--bg-medium);
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Adds a subtle shadow */
+
+    /* 3. Padding for the text *inside* the new box */
+    padding: 20px;
+    
+    /* This replaces the old border-top and padding styles */
+}
+
