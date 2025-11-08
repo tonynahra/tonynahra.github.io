@@ -230,7 +230,7 @@ a:hover {
     content: " \25B2"; /* Up arrow */
 }
 
-.expand-button:not(.expanded)::after {
+.expand-button:not(.expanded):::after {
     content: " \25BC"; /* Down arrow */
 }
 
@@ -623,11 +623,21 @@ code {
     font-family: var(--font-code);
 }
 
-/* --- NEW: Theme Switcher Styles --- */
+/* --- REPLACED: Theme Switcher Styles --- */
 .theme-switcher {
+    position: fixed; /* Fix it to the viewport */
+    top: 20px;       /* Space from top */
+    left: 5px;       /* Space from left */
+    z-index: 1000;   /* On top of everything */
+    
     display: flex;
+    flex-direction: column; /* Stack vertically */
     gap: 10px;
-    padding-top: 10px; /* Align with header text */
+    
+    padding: 8px;
+    background-color: var(--bg-medium);
+    border-radius: 20px; /* Rounded pill shape */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .theme-dot {
