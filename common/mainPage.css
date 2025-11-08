@@ -338,11 +338,9 @@ a:hover {
     padding: 20px;
     border-radius: 8px;
     
-    /* --- NEW: Sticky Filter Bar --- */
     position: sticky;
     top: 0;
     z-index: 50;
-    /* --- END NEW --- */
 }
 
 .filter-bar .search-wrapper {
@@ -437,7 +435,8 @@ a:hover {
 }
 
 /* --- Back/Open Buttons --- */
-.back-button-wrapper {
+/* These styles are now for the MODAL, not the page */
+.modal-header {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
@@ -448,7 +447,8 @@ a:hover {
     gap: 15px;
 }
 
-.back-button-wrapper .js-back-to-list {
+/* Style for the <button> "Close" */
+.modal-header .modal-close-btn {
     padding: 8px 15px;
     background: var(--bg-medium);
     color: var(--text-accent);
@@ -462,13 +462,14 @@ a:hover {
     font-size: 0.9rem;
 }
 
-.back-button-wrapper .js-back-to-list:hover {
+.modal-header .modal-close-btn:hover {
     background: var(--text-accent);
     color: var(--bg-dark);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-.back-button-wrapper .open-new-window {
+/* Style for the "Open in new window" link */
+.modal-header .open-new-window {
     padding: 8px 15px;
     background: transparent;
     color: var(--text-accent);
@@ -481,7 +482,7 @@ a:hover {
     font-size: 0.9rem;
 }
 
-.back-button-wrapper .open-new-window:hover {
+.modal-header .open-new-window:hover {
     background: var(--text-accent);
     color: var(--bg-dark);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
@@ -630,7 +631,6 @@ code {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    /* --- UPDATED: Use a border that works on light/dark mode --- */
     border: 2px solid var(--text-primary);
     cursor: pointer;
     transition: all 0.2s;
@@ -646,11 +646,10 @@ code {
 .theme-dot.active {
     border-color: var(--text-accent);
     box-shadow: 0 0 10px var(--text-accent);
-    transform: scale(1.2); /* Make active dot slightly larger */
+    transform: scale(1.2); 
     opacity: 1;
 }
 
-/* --- NEW: Add the theme colors to the dots --- */
 .theme-dot[data-theme="theme-dark"] {
     background-color: #1f2833;
 }
@@ -686,27 +685,23 @@ code {
     height: 300px; /* Double the default 150px */
 }
 
-/* --- NEW: Scroll to Top Button --- */
+/* --- Scroll to Top Button --- */
 .scroll-to-top {
-    display: none; /* Hidden by default */
+    display: none; 
     position: fixed;
     bottom: 20px;
     right: 30px;
     z-index: 100;
-    
     background-color: var(--bg-medium);
     color: var(--text-accent);
     border: 1px solid var(--text-accent);
-    border-radius: 50%; /* Make it circular */
-    
+    border-radius: 50%; 
     width: 40px;
     height: 40px;
-    
     font-size: 1.5rem;
     font-weight: bold;
-    line-height: 38px; /* Vertically center the arrow */
+    line-height: 38px; 
     text-align: center;
-    
     cursor: pointer;
     opacity: 0.7;
     transition: all 0.3s;
@@ -721,4 +716,45 @@ code {
 
 .scroll-to-top.show {
     display: block;
+}
+
+/* --- NEW: Modal Styles --- */
+.modal-backdrop {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8); /* Dim background */
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: var(--bg-dark);
+    margin: 3% auto; /* 3% from top, centered horizontally */
+    padding: 20px;
+    border: 1px solid var(--bg-medium);
+    border-radius: 8px;
+    width: 90%; /* 90% of the viewport width */
+    max-width: 1400px;
+    height: 90vh; /* 90% of the viewport height */
+    display: flex;
+    flex-direction: column;
+}
+
+/* This is the area for the iframe/image/html */
+#modal-content-area {
+    flex-grow: 1; /* Take up all available space */
+    overflow: auto; /* Add scrollbars if content overflows */
+}
+
+/* Make iframes and images fill the modal area */
+#modal-content-area .loaded-iframe,
+#modal-content-area .loaded-image {
+    width: 100%;
+    height: 100%;
+    min-height: 60vh;
 }
