@@ -125,9 +125,6 @@ a:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     height: fit-content;
     transition: background-color 0.3s;
-    
-    /* --- ADDED --- */
-    /* This allows us to position the theme dots inside */
     position: relative; 
 }
 
@@ -378,7 +375,8 @@ a:hover {
     min-width: 200px;
 }
 
-#post-category-filter {
+#post-category-filter,
+#cert-category-filter { /* --- ADDED CERT FILTER --- */
     width: 100%;
     padding: 12px 15px;
     background-color: var(--bg-dark);
@@ -390,7 +388,8 @@ a:hover {
     box-sizing: border-box;
 }
 
-#post-category-filter:focus {
+#post-category-filter:focus,
+#cert-category-filter:focus { /* --- ADDED CERT FILTER --- */
     outline: none;
     border-color: var(--text-accent);
 }
@@ -400,7 +399,8 @@ a:hover {
 }
 
 #youtube-search-box,
-#post-search-box {
+#post-search-box,
+#cert-search-box { /* --- ADDED CERT FILTER --- */
     width: 100%;
     padding: 12px 15px;
     background-color: var(--bg-dark);
@@ -413,7 +413,8 @@ a:hover {
 }
 
 #youtube-search-box:focus,
-#post-search-box:focus {
+#post-search-box:focus,
+#cert-search-box:focus { /* --- ADDED CERT FILTER --- */
     outline: none;
     border-color: var(--text-accent);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
@@ -660,4 +661,45 @@ code {
     border-color: var(--text-accent);
     box-shadow: 0 0 10px var(--text-accent);
     transform: scale(1.1);
+}
+
+
+/* --- NEW: Certificate Card Layout --- */
+
+/* 1. Override column count for certs to be 4 */
+#cert-card-list {
+    column-count: 4;
+}
+
+/* 2. Override responsive columns for certs */
+@media (max-width: 1200px) {
+    #cert-card-list {
+        column-count: 3;
+    }
+}
+@media (max-width: 600px) {
+    #cert-card-list {
+        column-count: 2; /* 2 columns on mobile */
+    }
+}
+
+/* 3. Make post-cards (but not cert-cards) have a min-height */
+#posts-card-list .card-item,
+#Grid .card-item { /* #Grid is the YouTube list */
+    min-height: 180px; 
+}
+
+/* 4. Make cert-cards have less padding and spacing */
+#cert-card-list .card-item {
+    padding: 10px;
+    justify-content: flex-start; /* Align to top */
+}
+
+#cert-card-list .card-item .card-category {
+    margin-bottom: 5px;
+    font-size: 0.75rem; /* Smaller category text */
+}
+
+#cert-card-list .card-item a {
+    font-size: 0.8rem; /* Smaller "View Full Size" link */
 }
