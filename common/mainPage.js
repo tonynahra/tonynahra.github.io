@@ -17,12 +17,19 @@ $(document).ready(function () {
         loadContent(pageUrl);
     });
 
-    // 4. *** ADD THIS NEW CLICK HANDLER ***
-    // This listens for clicks on the "Read More" links *inside* the content area
-    $('#content-area').on('click', '.content-loader-link', function(e) {
-        e.preventDefault(); // Stop the link from just opening
+$('#content-area').on('click', '.card-item', function(e) {
         
-        const $link = $(this);
+        // Find the "Read More" link *inside* the card we just clicked
+        const $link = $(this).find('.content-loader-link');
+
+        // If no link is found, do nothing.
+        if (!$link.length) {
+            return; 
+        }
+
+        // Stop the link from firing (we'll handle it)
+        e.preventDefault(); 
+        
         const loadType = $link.data('load-type');
         const loadUrl = $link.attr('href');
         const $contentArea = $('#content-area'); // The container
@@ -32,11 +39,9 @@ $(document).ready(function () {
 
         switch (loadType) {
             case 'html':
-                // Use our new helper function to load the local post
                 loadHtmlFragment(loadUrl, $contentArea);
                 break;
             case 'image':
-                // Build HTML for a centered, max-width image
                 const imgHtml = `
                     <div class="image-wrapper">
                         <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
@@ -44,16 +49,17 @@ $(document).ready(function () {
                 $contentArea.html(imgHtml);
                 break;
             case 'iframe':
-                // Build HTML for a full-page iframe
                 const iframeHtml = `<iframe src="${loadUrl}" class="loaded-iframe"></iframe>`;
                 $contentArea.html(iframeHtml);
                 break;
             default:
-                // As a fallback, just open in a new tab
+                // Fallback: If the link isn't a special loader, 
+                // just open it in a new tab (like a normal link).
                 window.open(loadUrl, '_blank');
         }
     });
-    // --- END OF NEW HANDLER ---
+
+
     
     // 5. Load initial content (the first link marked 'active-nav')
     const initialPage = $('.nav-link.active-nav').data('page');
