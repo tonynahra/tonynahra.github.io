@@ -96,13 +96,13 @@ $(document).ready(function () {
         `;
         const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
         $contentWrapper.html(backButtonHtml); 
-        $contentArea.append($contentWrapper);
         
-        // --- THIS IS THE SCROLL FIX ---
-        // 1. Find the "Back" button wrapper we *just added*.
-        const $scrollToElement = $contentWrapper.find('.back-button-wrapper');
+        // --- THIS IS THE FIX ---
+        // 1. PREPEND the new content, so it's at the top.
+        $contentArea.prepend($contentWrapper);
         
-        // 2. Animate the scroll to that element's position.
+        // 2. NOW, find the wrapper we just prepended and scroll to it.
+        const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
         if ($scrollToElement.length) {
             const scrollToTarget = $scrollToElement.offset().top - 20; // 20px offset
             $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
@@ -142,7 +142,6 @@ $(document).ready(function () {
         $contentArea.find('.loaded-content-wrapper').remove();
         const $cardPage = $contentArea.find('.card-list-page').first().show();
 
-        // --- THIS IS THE SCROLL FIX ---
         // Scroll back to the top of the card list page
         if ($cardPage.length) {
             const scrollToTarget = $cardPage.offset().top - 20;
@@ -252,12 +251,9 @@ function loadContent(pageUrl) {
     $contentArea.empty();
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
     
-    // --- SCROLL FIX ---
-    // When a *new page* is loaded (from the left menu), 
-    // scroll to the top of that content area.
+    // Scroll to the top of the content area
     const scrollToTarget = $contentArea.offset().top - 20; 
     $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
-    // --- END FIX ---
 
     $.ajax({
         url: pageUrl,
