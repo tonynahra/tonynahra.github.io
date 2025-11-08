@@ -37,7 +37,6 @@ body {
     font-family: var(--font-body);
     line-height: 1.6;
     min-height: 100vh;
-    /* Add transition for smooth theme changes */
     transition: background-color 0.3s, color 0.3s;
 }
 
@@ -89,7 +88,7 @@ h1 {
     height: 1px;
     background-image: linear-gradient(to right, var(--text-accent), var(--bg-dark));
     margin: 20px 0 40px 0;
-    width: 100%; /* Ensure divider spans full width */
+    width: 100%; 
 }
 
 /* --- Links (General) --- */
@@ -108,7 +107,7 @@ a:hover {
 .main-content-grid {
     display: grid;
     gap: 40px;
-    grid-template-columns: 1fr; /* Default to single column for mobile */
+    grid-template-columns: 1fr; 
 }
 
 @media (min-width: 900px) {
@@ -156,7 +155,7 @@ a:hover {
 /* External link icon */
 .link-item[href^="http"]:not([data-page])::after, 
 .kid-links a[href^="http"]::after {
-    content: "\2197"; /* Unicode for North East Arrow (diagonal) */
+    content: "\2197"; 
     font-size: 0.8em;
     padding-left: 5px;
     opacity: 0.6;
@@ -247,7 +246,7 @@ a:hover {
 /* Style for the active link in the left menu */
 .nav-link.active-nav {
     color: var(--text-primary);
-    background-color: var(--bg-dark); /* Darker than profile bg */
+    background-color: var(--bg-dark); 
     border-radius: 4px;
     padding-left: 10px;
     padding-right: 10px;
@@ -286,16 +285,13 @@ a:hover {
     border-radius: 6px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     border-left: 3px solid var(--text-accent);
-    
     display: flex; 
     flex-direction: column;
     justify-content: space-between;
-    
     break-inside: avoid; 
     margin-bottom: 20px; 
     width: 100%; 
     box-sizing: border-box; 
-
     cursor: pointer;
     transition: all 0.3s;
 }
@@ -328,8 +324,8 @@ a:hover {
 .card-item img.YTi {
     width: 100%;
     height: 150px; 
-    object-fit: contain; /* Scales down to fit */
-    background-color: var(--bg-dark); /* Letterboxing color */
+    object-fit: contain; 
+    background-color: var(--bg-dark); 
     border-radius: 4px;
     margin-bottom: 15px;
     border: 1px solid var(--bg-medium);
@@ -358,25 +354,33 @@ a:hover {
     color: var(--bg-dark);
 }
 
-/* --- Filter Bar (Posts & YouTube) --- */
+/* --- UPDATED: Filter Bar --- */
 .filter-bar {
     display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+    flex-wrap: wrap; /* Allows filters to stack on small screens */
+    gap: 15px;
     margin-bottom: 25px;
 }
 
-.filter-bar .search-wrapper {
-    flex-grow: 1; 
-    min-width: 250px;
+/* All wrappers will share space and wrap */
+.filter-bar .search-wrapper,
+.filter-bar .category-wrapper,
+.filter-bar .keyword-wrapper {
+    flex: 1 1 200px; /* grow, shrink, basis */
+    min-width: 200px; /* Minimum width before wrapping */
 }
 
-.filter-bar .category-wrapper {
-    min-width: 200px;
+/* Remove margin-bottom from search wrapper, gap handles spacing */
+.search-wrapper {
+    margin-bottom: 0;
 }
 
+/* --- UPDATED: Filter Dropdowns & Inputs --- */
 #post-category-filter,
-#cert-category-filter { 
+#cert-category-filter,
+#post-keyword-filter,
+#cert-keyword-filter,
+#youtube-keyword-filter { 
     width: 100%;
     padding: 12px 15px;
     background-color: var(--bg-dark);
@@ -389,13 +393,12 @@ a:hover {
 }
 
 #post-category-filter:focus,
-#cert-category-filter:focus { 
+#cert-category-filter:focus,
+#post-keyword-filter:focus,
+#cert-keyword-filter:focus,
+#youtube-keyword-filter:focus { 
     outline: none;
     border-color: var(--text-accent);
-}
-
-.search-wrapper {
-    margin-bottom: 25px;
 }
 
 #youtube-search-box,
@@ -630,17 +633,13 @@ code {
 
 /* --- REPLACED: Theme Switcher Styles --- */
 .theme-switcher {
-    /* Position it in the corner of the parent box */
     position: absolute;
-    top: 25px;   /* Same as .profile-summary padding */
-    left: 25px;  /* Same as .profile-summary padding */
+    top: 25px;   
+    left: 25px;  
     z-index: 10;
-    
     display: flex;
-    flex-direction: column; /* Stack vertically */
+    flex-direction: column; 
     gap: 10px;
-    
-    /* Remove background/shadow, just let it float */
 }
 
 .theme-dot {
@@ -664,38 +663,26 @@ code {
 }
 
 
-/* --- UPDATED: Certificate Card Layout --- */
-
-/* 1. REVERTED: Certificate columns are now the same as posts (3) */
-/*
-#cert-card-list {
-    column-count: 6; 
-}
-...
-*/
-
-/* 2. Make post-cards (but not cert-cards) have a min-height */
+/* --- Certificate Card Layout --- */
 #posts-card-list .card-item,
-#Grid .card-item { /* #Grid is the YouTube list */
+#Grid .card-item { 
     min-height: 180px; 
 }
 
-/* 3. Make cert-cards have less padding and spacing */
 #cert-card-list .card-item {
     padding: 10px;
-    justify-content: flex-start; /* Align to top */
+    justify-content: flex-start; 
 }
 
 #cert-card-list .card-item .card-category {
     margin-bottom: 5px;
-    font-size: 0.75rem; /* Smaller category text */
+    font-size: 0.75rem; 
 }
 
 #cert-card-list .card-item a {
-    font-size: 0.8rem; /* Smaller "View Full Size" link */
+    font-size: 0.8rem; 
 }
 
-/* 4. --- NEW: Double the height of certificate images --- */
 #cert-card-list .card-item img.card-image {
     height: 300px; /* Double the default 150px */
 }
