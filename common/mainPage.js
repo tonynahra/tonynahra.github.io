@@ -1,4 +1,3 @@
-
 var lastContentPage = 'tech-posts.html'; 
 
 $(document).ready(function () {
@@ -12,7 +11,6 @@ $(document).ready(function () {
     });
     
     // 3. Attach event listener for all nav links (using delegation)
-    // This now handles the main menu AND the dynamic "Back" button
     $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
         
@@ -34,28 +32,26 @@ $(document).ready(function () {
         loadContent(pageUrl);
     });
 
-    // 4. Click handler for all cards (posts and youtube)
+    // 4. *** UPDATE THIS HANDLER ***
     $('#content-area').on('click', '.card-item, .item', function(e) {
         
         // Find the first <a> tag inside the card
         const $link = $(this).find('a').first(); 
-        if (!$link.length) { return; } // Do nothing if no link
+        if (!$link.length) { return; } 
 
-        // Prevent link from opening
         e.preventDefault(); 
-        e.stopPropagation(); // Stop event bubbling
+        e.stopPropagation(); 
         
         const loadUrl = $link.attr('href');
         const $contentArea = $('#content-area');
 
         // --- NEW STATE-PRESERVING LOGIC ---
         
-        // 1. Find the card list page and hide it
-        const $cardPage = $contentArea.find('.card-list-page');
+        // 1. *** FIX: Use .children() instead of .find() ***
+        const $cardPage = $contentArea.children('.card-list-page');
         if ($cardPage.length) {
             $cardPage.hide();
         } else {
-            // Failsafe if we can't find the list, just clear the area
             $contentArea.empty();
         }
 
@@ -125,13 +121,13 @@ $(document).ready(function () {
         }
     });
 
-    // 5. NEW: Click handler for the dynamic "Back" button
+    // 5. *** UPDATE THIS HANDLER ***
     $('#content-area').on('click', '.js-back-to-list', function() {
         // Remove the loaded content
         $(this).closest('.loaded-content-wrapper').remove();
         
-        // Show the card list again
-        $('#content-area').find('.card-list-page').show();
+        // *** FIX: Use .children() instead of .find() ***
+        $('#content-area').children('.card-list-page').show();
     });
     
     // 6. Load initial content
