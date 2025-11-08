@@ -246,18 +246,12 @@ a:hover {
 
 /* --- Card View & "Show More" Button --- */
 .card-list {
-    /* --- THIS IS THE FIX --- */
-    /* Replaced column-count: 3 with column-width */
-    column-width: 300px; /* Creates as many 300px columns as can fit */
-    /* --- END FIX --- */
-
+    column-width: 300px;
     column-gap: 20px;
     list-style: none;
     padding: 0;
     align-items: start;
 }
-
-/* Responsive columns are no longer needed, column-width handles it */
 
 .card-item {
     background-color: var(--bg-medium);
@@ -340,18 +334,19 @@ a:hover {
     flex-wrap: wrap; 
     gap: 15px;
     margin-bottom: 25px;
-    /* max-width: 1200px; <-- Removed, let it be natural */
 }
 
 /* --- THIS IS THE FIX --- */
-/* This stops the search/dropdowns from stretching */
-.filter-bar .search-wrapper,
-.filter-bar .category-wrapper,
-.filter-bar .keyword-wrapper {
-    flex-grow: 1; /* They can grow if needed */
-    flex-shrink: 1; /* They can shrink */
-    flex-basis: 250px; /* But their ideal width is 250px */
+/* Search box can grow, dropdowns cannot */
+.filter-bar .search-wrapper {
+    flex: 1 1 250px; /* Can grow and shrink, base width 250px */
     min-width: 200px; 
+}
+.filter-bar .category-wrapper {
+    flex: 0 0 220px; /* Don't grow, don't shrink, base width 220px */
+}
+.filter-bar .keyword-wrapper {
+    flex: 0 0 200px; /* Don't grow, don't shrink, base width 200px (shorter) */
 }
 /* --- END FIX --- */
 
