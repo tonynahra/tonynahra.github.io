@@ -1,5 +1,3 @@
-/* === GLOBAL SETUP & DYNAMIC CONTENT LOADING LOGIC === */
-
 $(document).ready(function () {
     
     // 1. Initialize all collapsible sections (YouTube menu on the left)
@@ -13,24 +11,56 @@ $(document).ready(function () {
     // 3. Attach event listener to all dynamic navigation links
     $('.nav-link').on('click', function(e) {
         e.preventDefault();
-        
-        // Update active state in the left menu
         $('.nav-link').removeClass('active-nav');
         $(this).addClass('active-nav');
-        
-        // Load the new content
         const pageUrl = $(this).data('page');
         loadContent(pageUrl);
     });
+
+    // 4. *** ADD THIS NEW CLICK HANDLER ***
+    // This listens for clicks on the "Read More" links *inside* the content area
+    $('#content-area').on('click', '.content-loader-link', function(e) {
+        e.preventDefault(); // Stop the link from just opening
+        
+        const $link = $(this);
+        const loadType = $link.data('load-type');
+        const loadUrl = $link.attr('href');
+        const $contentArea = $('#content-area'); // The container
+
+        // Show a loading spinner
+        $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
+
+        switch (loadType) {
+            case 'html':
+                // Use our new helper function to load the local post
+                loadHtmlFragment(loadUrl, $contentArea);
+                break;
+            case 'image':
+                // Build HTML for a centered, max-width image
+                const imgHtml = `
+                    <div class="image-wrapper">
+                        <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
+                    </div>`;
+                $contentArea.html(imgHtml);
+                break;
+            case 'iframe':
+                // Build HTML for a full-page iframe
+                const iframeHtml = `<iframe src="${loadUrl}" class="loaded-iframe"></iframe>`;
+                $contentArea.html(iframeHtml);
+                break;
+            default:
+                // As a fallback, just open in a new tab
+                window.open(loadUrl, '_blank');
+        }
+    });
+    // --- END OF NEW HANDLER ---
     
-    // 4. Load initial content (the first link marked 'active-nav')
+    // 5. Load initial content (the first link marked 'active-nav')
     const initialPage = $('.nav-link.active-nav').data('page');
     if (initialPage) {
         loadContent(initialPage);
     }
 });
-
-
 /* === COLLAPSIBLE MENU LOGIC (Left Side YouTube Menu) === */
 
 /**
