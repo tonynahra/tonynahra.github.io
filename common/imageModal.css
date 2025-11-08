@@ -1,572 +1,121 @@
-/* --- CSS Variables for Easy Theme Changes --- */
-:root {
-    --bg-dark: #1f2833; /* Dark slate/near-black background */
-    --bg-medium: #2c3e50; /* Slightly lighter background for sections */
-    --text-light: #c5c8c6; /* Light gray for main text */
-    --text-accent: #66fcf1; /* Cyan/aqua for a tech/neon accent */
-    --text-primary: #ffffff; /* Pure white for headings */
-    --font-heading: 'Inter', sans-serif;
-    --font-body: 'Inter', sans-serif;
-    --font-code: 'IBM Plex Mono', monospace;
+/* The outmost container of the lightbox */
+#image-modal-popup {
+	/* Hide until popup is trigerred to open */
+	display: none;	
+	position: fixed;
+	padding: 0;
+	margin: 0;
+
+	/* Make sure the popup is in front of everything else, depending on your page's layering, you might need a higher number here */
+	z-index: 100000;
+
+	/* Set the edges to cover the whole page. Also for centering the image */
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+
+	/* A semi transparent background. Set it to any color you like */
+	background-color: #0000008f;
 }
 
-/* --- Global Reset and Body Styling --- */
-body {
+/* Used for centering */
+#image-modal-container
+{
+	position: relative;
+	background-color: transparent;
+
+	padding: 0;
     margin: 0;
-    padding: 0;
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    font-family: var(--font-body);
-    line-height: 1.6;
-    min-height: 100vh;
-}
-
-body::before {
-    content: none !important;
-}
-
-/* --- Layout Container (Full Width) --- */
-.container {
-    /* max-width: 1400px; <-- Removed for full width */
-    margin: 0 auto;
-    padding: 10px 30px 20px 30px; /* Reduced top padding to 10px, side padding to 30px */
-}
-
-/* --- Typography (Headings & Tagline) --- */
-h1, h2, h3 {
-    font-family: var(--font-heading);
-    color: var(--text-primary);
-    font-weight: 700;
-}
-
-h1 {
-    font-size: 2.8rem;
-    margin-bottom: 0.25rem;
-    color: var(--text-accent);
-}
-
-.tagline {
-    font-family: var(--font-code);
-    font-size: 1.1rem;
-    color: var(--text-light);
-    margin-top: 0;
-}
-
-.header-divider {
-    border: 0;
-    height: 1px;
-    background-image: linear-gradient(to right, var(--text-accent), var(--bg-dark));
-    margin: 20px 0 40px 0;
-}
-
-/* --- Links (General) --- */
-a, a:visited {
-    color: var(--text-accent);
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-a:hover {
-    color: var(--text-primary);
-    text-decoration: none; /* Removed underline on hover for a cleaner look */
-}
-
-/* --- Main Content Grid (Responsive Layout) --- */
-.main-content-grid {
-    display: grid;
-    gap: 40px;
-    grid-template-columns: 1fr; /* Default to single column for mobile */
-}
-
-@media (min-width: 900px) {
-    .main-content-grid {
-        /* Two columns: 350px for left menu, remaining space for content */
-        grid-template-columns: 350px 1fr; 
-    }
-}
-
-/* --- Profile/Links Section Styling (Left Column) --- */
-.profile-summary {
-    background: var(--bg-medium);
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    height: fit-content;
-}
-
-.profile-photo {
-    width: 100%;
-    max-width: 250px;
-    height: auto;
-    display: block;
-    margin: 0 auto 20px;
-    border-radius: 50%;
-    border: 3px solid var(--text-accent);
-    box-shadow: 0 0 15px rgba(102, 252, 241, 0.5);
-}
-
-.contact-links {
-    padding-top: 20px;
-    border-top: 1px solid var(--bg-dark);
-}
-
-.link-item {
-    display: block;
-    font-size: 1.05rem;
-    padding: 8px 0;
-    border-bottom: 1px dashed var(--bg-dark);
-}
-
-/* External link icon */
-.link-item[href^="http"]:not([data-page])::after, 
-.kid-links a[href^="http"]::after {
-    content: "\2197"; /* Unicode for North East Arrow (diagonal) */
-    font-size: 0.8em;
-    padding-left: 5px;
-    opacity: 0.6;
-    vertical-align: top;
-    transition: opacity 0.3s;
-}
-
-.link-item[href^="http"]:hover::after,
-.kid-links a[href^="http"]:hover::after {
-    opacity: 1;
-}
-
-.link-item[data-page]::after {
-    content: none !important;
-}
-
-.kid-links {
-    list-style: none;
-    padding: 0;
-    margin-top: 10px;
-    font-family: var(--font-code);
-}
-.kid-links li {
-    display: inline-block;
-    margin-right: 15px;
-}
-.family-heading {
-    margin-top: 20px;
-    font-size: 1.2rem;
-    color: var(--text-light);
-}
-
-/* --- Collapsible Menu (YouTube) --- */
-.posts-intro {
-    font-family: var(--font-code);
-    font-style: italic;
-    color: var(--text-light);
-    margin-top: -15px;
-}
-
-.collapsible-content {
-    max-height: 500px;
-    overflow: hidden;
-    transition: max-height 0.5s ease-in-out;
-}
-
-.collapsible-content.expanded {
-    max-height: 2000px; 
-}
-
-.expand-button {
-    display: block;
-    margin: 10px auto 20px auto;
-    padding: 10px 20px;
-    background-color: var(--bg-medium);
-    color: var(--text-accent);
-    border: 1px solid var(--text-accent);
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: var(--font-code);
-    font-size: 1rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.expand-button:hover {
-    background-color: var(--text-accent);
-    color: var(--bg-dark);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
-
-.expand-button.expanded::after {
-    content: " \25B2"; /* Up arrow */
-}
-
-.expand-button:not(.expanded)::after {
-    content: " \25BC"; /* Down arrow */
-}
-
-.hidden-item {
-    display: none;
-}
-
-/* --- Dynamic Content Area (Right Column) --- */
-.dynamic-content-area {
-    min-height: 80vh; 
-}
-
-/* Style for the active link in the left menu */
-.nav-link.active-nav {
-    color: var(--text-primary);
-    background-color: var(--bg-dark); /* Darker than profile bg */
-    border-radius: 4px;
-    padding-left: 10px;
-    padding-right: 10px;
-    border-left: 3px solid var(--text-accent);
-}
 
-.nav-link.active-nav:hover {
-    text-decoration: none;
-}
-
-/* --- Card View & "Show More" Button --- */
-.card-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    list-style: none;
-    padding: 0;
-}
-
-.card-item {
-    background-color: var(--bg-medium);
-    padding: 15px;
-    border-radius: 6px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    border-left: 3px solid var(--text-accent);
-    min-height: 180px; 
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-}
-
-.card-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-}
-
-.card-item h3 {
-    margin-top: 0;
-    color: var(--text-accent);
-    font-size: 1.15rem;
-}
-
-.card-item p {
-    font-size: 0.95rem;
-}
-
-.card-category {
-    font-family: var(--font-code);
-    font-size: 0.85rem;
-    color: var(--text-light);
-    opacity: 0.7;
-    margin-bottom: 10px;
-}
-
-/* Card images (YouTube and Raindrop) */
-.card-item img.card-image,
-.card-item img.YTi {
-    width: 100%;
-    height: 150px; 
-    object-fit: contain; /* Scales down to fit */
-    background-color: var(--bg-dark); /* Letterboxing color */
-    border-radius: 4px;
-    margin-bottom: 15px;
-    border: 1px solid var(--bg-medium);
-}
-
-.hidden-card-item {
-    display: none !important;
-}
-
-.toggle-card-button {
-    display: block;
-    margin: 20px auto 40px auto;
-    padding: 10px 20px;
-    background-color: var(--bg-medium);
-    color: var(--text-accent);
-    border: 1px solid var(--text-accent);
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: var(--font-code);
-    font-size: 1rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.toggle-card-button:hover {
-    background-color: var(--text-accent);
-    color: var(--bg-dark);
-}
-
-/* --- Filter Bar (Posts & YouTube) --- */
-.filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 25px;
-}
-
-.filter-bar .search-wrapper {
-    flex-grow: 1; 
-    min-width: 250px;
-}
-
-.filter-bar .category-wrapper {
-    min-width: 200px;
-}
-
-#post-category-filter {
-    width: 100%;
-    padding: 12px 15px;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--bg-medium);
-    border-radius: 4px;
-    color: var(--text-primary);
-    font-family: var(--font-code);
-    font-size: 1rem;
-    box-sizing: border-box;
-}
-
-#post-category-filter:focus {
-    outline: none;
-    border-color: var(--text-accent);
-}
-
-.search-wrapper {
-    margin-bottom: 25px;
-}
-
-#youtube-search-box,
-#post-search-box {
-    width: 100%;
-    padding: 12px 15px;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--bg-medium);
-    border-radius: 4px;
-    color: var(--text-primary);
-    font-family: var(--font-code);
-    font-size: 1rem;
-    box-sizing: border-box;
-}
-
-#youtube-search-box:focus,
-#post-search-box:focus {
-    outline: none;
-    border-color: var(--text-accent);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
+	text-align: center;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 
-/* --- Loading Spinner & Error Message --- */
-.content-loader {
-    text-align: center;
-    padding: 100px 0;
-    color: var(--text-light);
-}
-
-.spinner {
-    border: 5px solid var(--bg-medium); 
-    border-top: 5px solid var(--text-accent); 
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 15px;
-}
+	/* Allow for some padding around the image. Set to 100% if you don't want it. */
+	width: 90%;
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
-.error-message {
-    color: var(--text-accent);
-    font-family: var(--font-code);
-    text-align: center;
-    padding: 20px;
-}
 
-/* --- Back/Open Buttons --- */
-.back-button-wrapper {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--bg-medium);
-    display: flex;
-    justify-content: space-between; /* Pushes buttons to ends */
-    align-items: center;
-    flex-wrap: wrap; /* Wraps on small screens */
-    gap: 15px;
-}
 
-/* Style for the <button> "Back" */
-.back-button-wrapper .js-back-to-list {
-    padding: 8px 15px;
-    background: var(--bg-medium);
-    color: var(--text-accent);
-    border: 1px solid var(--bg-medium); /* Solid button */
-    border-radius: 4px;
-    text-decoration: none;
-    font-family: var(--font-code);
-    font-weight: 700;
-    transition: all 0.3s;
-    cursor: pointer;
-    font-size: 0.9rem;
-}
+/* The dialog */
 
-.back-button-wrapper .js-back-to-list:hover {
-    background: var(--text-accent);
-    color: var(--bg-dark);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
+#image-modal-dialog {
+	position: relative;
+	display: inline-block;
+	padding: 0;
+	margin: 0;
 
-/* Style for the "Open in new window" link */
-.back-button-wrapper .open-new-window {
-    padding: 8px 15px;
-    background: transparent;
-    color: var(--text-accent);
-    border: 1px solid var(--text-accent); /* Outline button */
-    border-radius: 4px;
-    text-decoration: none;
-    font-family: var(--font-code);
-    font-weight: 700;
-    transition: all 0.3s;
-    font-size: 0.9rem;
-}
+	/* Frame color */
+	background-color: #666;
 
-.back-button-wrapper .open-new-window:hover {
-    background: var(--text-accent);
-    color: var(--bg-dark);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
+	/* Frame thickness */
+	/* padding: 10px; */
 
+	/* Radius of the rounded edges of the frame. Set to 0 for sharp edges */
+	border-radius: 10px;
 
-/* --- Loaded Content (Images/IFrames) --- */
-.image-wrapper {
-    text-align: center;
-    padding: 20px;
+	  background: #fff; 
+          box-shadow:  0 8px 12px 0 rgba(0, 0, 0, 0.3), 0 9px 25px 0 rgba(0, 0, 0, 0.22); 
+	
 }
 
-.loaded-image {
-    max-width: 100%; 
-    max-height: 80vh; 
-    height: auto;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    background: #fff; 
-}
 
-.loaded-iframe {
-    width: 100%;
-    height: 85vh; /* Default height */
-    border: none;
-    border-radius: 6px;
-    background: #fff; 
-}
 
-/* --- About Me Page Styles --- */
-.about-me-container h2 {
-    color: var(--text-accent);
-    border-bottom: 1px solid var(--bg-medium);
-    padding-bottom: 10px;
-    margin-bottom: 25px;
-}
+/* The image */
 
-.about-me-content p {
-    font-size: 1.1rem; /* Slightly larger text for readability */
-    line-height: 1.7;
-    margin-bottom: 20px; /* Space between paragraphs */
-}
+#image-modal-image {
 
-.about-me-content p strong {
-    color: var(--text-primary);
-    font-weight: 700;
-}
+	padding: 0;
+	margin: 0;
+		
+	/* This ensures the height of the popup is within the viewport height */
+	max-height: 85vh;
 
-.about-me-content ul {
-    list-style-type: disc;
-    padding-left: 30px;
-    margin-top: 10px;
-}
-.about-me-content li {
-    font-size: 1.1rem;
-    line-height: 1.7;
+	/* So the image doesn't streetch disproportionally on Safari */
+    max-width: 85vw;
+	
+	/* Set to 0 if you don't want rounded border */
+	border-radius: 10px;
+	
 }
 
-/* --- Guide Page Styles (Uses About Me styles) --- */
-.cv-container h2 {
-    color: var(--text-accent);
-    border-bottom: 1px solid var(--bg-medium);
-    padding-bottom: 10px;
-    margin-bottom: 25px;
-}
 
-.cv-header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    font-family: var(--font-code);
-    font-size: 0.95rem;
-    padding: 10px;
-    background: var(--bg-medium);
-    border-radius: 4px;
-    margin-bottom: 20px;
-}
 
-.about-heading {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    padding-bottom: 10px;
-    margin-top: 25px;
-    border-bottom: 1px solid var(--bg-medium);
-}
+/* Loading animation */
+#image-modal-loader {
+	padding: 0;
+    margin: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+	background: #000 url(/common/loader.gif) center center no-repeat;
 
-.about-content {
-    padding: 15px 5px 0 5px; 
+	/* set 'background-size' to 'auto' if your loading animation is smaller than the dimensions specified below */
+	background-size: contain;
+    max-width: 100px;
+    max-height: 100px;
+    margin: auto;
+    width: 100px;
+    height: 100px;
 }
 
-.about-content ul {
-    list-style-type: disc;
-    padding-left: 30px;
-    margin-top: 10px;
-}
-.about-content li {
-    font-size: 1rem;
-    line-height: 1.6;
-}
-.about-content p {
-    font-size: 1rem;
-    line-height: 1.6;
-}
+/* Close button */
+#image-modal-close-button {
+	/* Place the button on the top-right of the popup */
+	position: absolute;
+	right: -10px;
+	top: -10px;
+	padding: 0;
+	margin: 0;
 
-/* Style for code blocks in the guide */
-pre {
-    background: var(--bg-dark);
-    border: 1px solid var(--bg-medium);
-    padding: 15px;
-    border-radius: 4px;
-    overflow-x: auto;
-    font-family: var(--font-code);
-}
-code {
-    font-family: var(--font-code);
-    background: var(--bg-dark);
-    padding: 2px 5px;
-    border-radius: 3px;
-}
 
-/* --- Footer --- */
-.site-footer {
-    text-align: center;
-    padding: 20px 0;
-    margin-top: 40px;
-    border-top: 1px solid var(--bg-medium);
-    font-size: 0.9rem;
-    color: var(--text-light);
-    opacity: 0.6;
-    font-family: var(--font-code);
+	/* I am using an image for the button here, but you can just use text if you want to. */
+	background-size: contain;
+	// background: url(/common/close-button.gif) no-repeat;
+	width: 50px;
+	height: 50px;
 }
