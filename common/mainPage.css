@@ -537,12 +537,25 @@ a:hover {
 /* Styles for the new images from Raindrop's DATA-COVER.
   This will also style the YouTube card images.
 */
+
+/* --- UPDATE THIS RULE in common/mainPage.css --- */
+
 .card-item img.card-image,
 .card-item img.YTi {
     width: 100%;
-    height: 150px; /* Gives all card images a uniform height */
-    object-fit: cover; /* Scales the image to fit without stretching */
+    height: 150px; /* This sets the maximum height */
+    
+    /* * THIS IS THE FIX:
+     * 'contain' scales the image down (zooms out) to fit inside the
+     * 150px height, maintaining its aspect ratio.
+     */
+    object-fit: contain;
+    
+    /* We add a dark background for any "letterboxing" */
+    background-color: var(--bg-dark); 
+    
     border-radius: 4px;
     margin-bottom: 15px;
     border: 1px solid var(--bg-medium);
 }
+
