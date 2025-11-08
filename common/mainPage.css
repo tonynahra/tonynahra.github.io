@@ -229,6 +229,11 @@ a:hover {
     gap: 20px;
     list-style: none;
     padding: 0;
+    
+    /* --- THIS IS THE FIX --- */
+    /* This stops the grid from stretching items to be the same height */
+    align-items: start;
+    /* --- END FIX --- */
 }
 
 .card-item {
