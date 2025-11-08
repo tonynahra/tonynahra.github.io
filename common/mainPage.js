@@ -13,27 +13,22 @@ const STOP_WORDS = new Set([
 
 $(document).ready(function () {
     
-    // 1. Initialize collapsible menu (runs once)
     initializeCollapsibleSections();
     
     // --- EVENT LISTENERS (DELEGATED) ---
 
-    // Listener for "Show More" (Left Menu)
     $('body').on('click', '.expand-button', function() {
         toggleCollapsibleSection($(this));
     });
     
-    // Listener for "Show More" (Cards)
     $('body').on('click', '.toggle-card-button', function() {
         const $button = $(this);
-        // Find the list, which is the <div class="card-list"> *before* this button
         const $list = $button.prev('.card-list');
         if ($list.length) {
             showMoreCards($button, $list);
         }
     });
 
-    // Listener for LEFT MENU
     $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
         
@@ -50,7 +45,6 @@ $(document).ready(function () {
         loadContent(pageUrl);
     });
 
-    // Listener for ALL CARDS
     $('body').on('click', '.card-item, .item', function(e) {
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
@@ -113,7 +107,6 @@ $(document).ready(function () {
         }
     });
 
-    // Listener for the "Back" button
     $('body').on('click', '.js-back-to-list', function() {
         const $contentArea = $('#content-area');
         $contentArea.find('.loaded-content-wrapper').remove();
@@ -123,11 +116,9 @@ $(document).ready(function () {
     // --- All filter listeners ---
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
     $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
-
     $('body').on('input', '#post-search-box', filterPostCards);
     $('body').on('change', '#post-category-filter', filterPostCards);
     $('body').on('change', '#post-keyword-filter', filterPostCards);
-    
     $('body').on('input', '#cert-search-box', filterCertCards);
     $('body').on('change', '#cert-category-filter', filterCertCards);
     $('body').on('change', '#cert-keyword-filter', filterCertCards);
@@ -147,6 +138,28 @@ $(document).ready(function () {
     if (savedTheme) { applyTheme(savedTheme); }
     else { $('.theme-dot[data-theme="theme-dark"]').addClass('active'); }
 
+
+    // --- NEW: Scroll-to-Top Button Logic ---
+    // 1. Inject the button into the page
+    $('body').append('<button class="scroll-to-top" title="Go to top">&uarr;</button>');
+    const $scrollTopBtn = $('.scroll-to-top');
+
+    // 2. Show/hide button on scroll
+    $(window).on('scroll', function() {
+        if ($(window).scrollTop() > 300) {
+            $scrollTopBtn.addClass('show');
+        } else {
+            $scrollTopBtn.removeClass('show');
+        }
+    });
+
+    // 3. Handle the click event
+    $('body').on('click', '.scroll-to-top', function() {
+        $('html, body').animate({ scrollTop: 0 }, 'smooth');
+    });
+    // --- END NEW ---
+
+
     // Load initial content
     const initialPage = $('.nav-link.active-nav').data('page');
     if (initialPage) {
@@ -157,62 +170,47 @@ $(document).ready(function () {
 
 
 /* === COLLAPSIBLE MENU LOGIC (LEFT-SIDE PLAYLISTS) === */
-// --- THIS FUNCTION IS NEW / HEAVILY MODIFIED ---
 function initializeCollapsibleSections() {
     $('.expand-button').each(function() {
         const $button = $(this);
         const targetId = $button.data('target');
         const $target = $('#' + targetId);
-        const $items = $target.find('a'); // Get all the links
+        const $items = $target.find('a'); 
         const totalItems = $items.length;
         const initialLimit = parseInt($button.data('max') || 3);
-        const increment = 3; // How many to show on each click
+        const increment = 3; 
 
         if (totalItems > initialLimit) {
-            // Hide all items after the initial limit
             $items.slice(initialLimit).addClass('hidden-item');
-            
             const remaining = totalItems - initialLimit;
             $button.text(`Show More (${remaining} more) \u25BC`);
-            
-            // Store state on the button
-            $button.data('visible-count', initialLimit);
-            $button.data('increment', increment);
-            $button.data('total-items', totalItems);
+            $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
             $button.show();
         } else {
-            // Not enough items to hide, so hide the button
             $button.hide(); 
         }
     });
 }
 
-// --- THIS FUNCTION IS NEW / HEAVILY MODIFIED ---
 function toggleCollapsibleSection($button) {
     const targetId = $button.data('target');
     const $target = $('#' + targetId);
     const $items = $target.find('a');
 
-    // Get state from the button
     const totalItems = parseInt($button.data('total-items') || 0);
     const increment = parseInt($button.data('increment') || 3);
     const visibleCount = parseInt($button.data('visible-count') || 0);
     
     const newVisibleCount = visibleCount + increment;
 
-    // Show the next batch
     $items.slice(visibleCount, newVisibleCount).removeClass('hidden-item');
-    
-    // Update button state
     $button.data('visible-count', newVisibleCount);
     
     const remaining = totalItems - newVisibleCount;
     
     if (remaining <= 0) {
-        // All items are shown, hide the button
         $button.hide();
     } else {
-        // Update the button text
         $button.text(`Show More (${remaining} more) \u25BC`);
     }
 }
@@ -238,7 +236,7 @@ function loadContent(pageUrl) {
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
                 const params = paramString.split(',');
                 if (params.length === 3 && typeof loadVids === 'function') {
-                    loadVids(params[0], params[1], params[2]); // loadVids will call populateSmartKeywords
+                    loadVids(params[0], params[1], params[2]);
                 } else {
                     $contentArea.html('<div class="error-message">YouTube parameter error.</div>');
                 }
@@ -361,7 +359,7 @@ function resultsLoop(data, Cat, BKcol) {
     });
 }
 
-/* === --- SMART KEYWORD LOGIC --- === */
+/* === --- SMART KEYWORD LOGIC (UPDATED) --- === */
 
 function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
@@ -381,13 +379,12 @@ function populateSmartKeywords(listId, filterId) {
             ];
             
             const combinedText = textSources.join(' ');
-            
             const words = combinedText.split(/[^a-zA-Z0-9'-]+/); 
             
             words.forEach(word => {
                 const cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
                 
-                if (cleanWord.length > 2 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
+                if (cleanWord.length > 2 && cleanWord.length <= 15 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
                     wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
                 }
             });
@@ -401,9 +398,11 @@ function populateSmartKeywords(listId, filterId) {
         $filter.children('option:not(:first)').remove();
         
         sortedKeywords.forEach(key => {
+            const displayText = key.length > 8 ? key.substring(0, 8) + '...' : key;
+            
             $filter.append($('<option>', {
-                value: key,
-                text: key
+                value: key,       // Value is the full word
+                text: displayText  // Text is truncated
             }));
         });
     
@@ -427,7 +426,7 @@ function getCardSearchableText($card) {
 }
 
 
-/* === --- FILTERING LOGIC --- === */
+/* === --- FILTERING LOGIC (UPDATED FOR NEW KEYWORDS) --- === */
 
 function filterYouTubeCards() {
     const searchTerm = $('#youtube-search-box').val().toLowerCase();
