@@ -13,16 +13,26 @@ const STOP_WORDS = new Set([
 
 $(document).ready(function () {
     
+    // 1. Initialize collapsible menu (runs once)
     initializeCollapsibleSections();
     
     // --- EVENT LISTENERS (DELEGATED) ---
 
-    // --- FIX: This is now a delegated listener ---
+    // Listener for "Show More" (Left Menu)
     $('body').on('click', '.expand-button', function() {
-        console.log("Toggle collapsible section..."); // <-- DIAGNOSTIC LOG
         toggleCollapsibleSection($(this));
     });
     
+    // Listener for "Show More" (Cards)
+    $('body').on('click', '.toggle-card-button', function() {
+        const $button = $(this);
+        // Find the list, which is the <div class="card-list"> *before* this button
+        const $list = $button.prev('.card-list');
+        if ($list.length) {
+            showMoreCards($button, $list);
+        }
+    });
+
     // Listener for LEFT MENU
     $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
@@ -146,43 +156,65 @@ $(document).ready(function () {
 });
 
 
-/* === COLLAPSIBLE MENU LOGIC === */
+/* === COLLAPSIBLE MENU LOGIC (LEFT-SIDE PLAYLISTS) === */
+// --- THIS FUNCTION IS NEW / HEAVILY MODIFIED ---
 function initializeCollapsibleSections() {
     $('.expand-button').each(function() {
         const $button = $(this);
         const targetId = $button.data('target');
         const $target = $('#' + targetId);
-        const maxItems = parseInt($button.data('max') || 3);
-        let $items = [];
-        if ($target.hasClass('collapsible-content') && $target.find('a').length) {
-            $items = $target.find('a'); 
-        }
-        if ($items.length > maxItems) {
-            $items.slice(maxItems).addClass('hidden-item');
-            const hiddenCount = $items.length - maxItems;
-            $button.text(`Show More (${hiddenCount}) \u25BC`).removeClass('expanded').show();
+        const $items = $target.find('a'); // Get all the links
+        const totalItems = $items.length;
+        const initialLimit = parseInt($button.data('max') || 3);
+        const increment = 3; // How many to show on each click
+
+        if (totalItems > initialLimit) {
+            // Hide all items after the initial limit
+            $items.slice(initialLimit).addClass('hidden-item');
+            
+            const remaining = totalItems - initialLimit;
+            $button.text(`Show More (${remaining} more) \u25BC`);
+            
+            // Store state on the button
+            $button.data('visible-count', initialLimit);
+            $button.data('increment', increment);
+            $button.data('total-items', totalItems);
+            $button.show();
         } else {
+            // Not enough items to hide, so hide the button
             $button.hide(); 
         }
     });
 }
+
+// --- THIS FUNCTION IS NEW / HEAVILY MODIFIED ---
 function toggleCollapsibleSection($button) {
     const targetId = $button.data('target');
     const $target = $('#' + targetId);
-    const isExpanded = $button.hasClass('expanded');
-    const maxItems = parseInt($button.data('max') || 3);
-    let $items = [];
-    if ($target.find('a').length) { $items = $target.find('a'); }
-    const hiddenCount = $items.length - maxItems;
-    if (!isExpanded) {
-        $items.slice(maxItems).removeClass('hidden-item');
-        $button.text(`Show Less \u25B2`);
+    const $items = $target.find('a');
+
+    // Get state from the button
+    const totalItems = parseInt($button.data('total-items') || 0);
+    const increment = parseInt($button.data('increment') || 3);
+    const visibleCount = parseInt($button.data('visible-count') || 0);
+    
+    const newVisibleCount = visibleCount + increment;
+
+    // Show the next batch
+    $items.slice(visibleCount, newVisibleCount).removeClass('hidden-item');
+    
+    // Update button state
+    $button.data('visible-count', newVisibleCount);
+    
+    const remaining = totalItems - newVisibleCount;
+    
+    if (remaining <= 0) {
+        // All items are shown, hide the button
+        $button.hide();
     } else {
-        $items.slice(maxItems).addClass('hidden-item');
-        $button.text(`Show More (${hiddenCount}) \u25BC`);
+        // Update the button text
+        $button.text(`Show More (${remaining} more) \u25BC`);
     }
-    $target.toggleClass('expanded', !isExpanded);
-    $button.toggleClass('expanded', !isExpanded);
 }
 
 
@@ -245,32 +277,11 @@ function handleCardView($scope) {
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
             
             $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
-            
-            // --- FIX: Attach to body ---
-            // This button is created dynamically, so its listener must be delegated
-            // (We will attach it in the $(document).ready() block)
-            // $button.on('click', function() { showMoreCards($(this), $list); });
-            
+            // We rely on the global delegated listener in $(document).ready()
             $list.after($button);
         }
     });
 }
-
-// --- FIX: Add this new listener to $(document).ready() ---
-$(document).ready(function() {
-    // ... all your other .ready() code ...
-
-    // Listener for "Show More" (Cards)
-    $('body').on('click', '.toggle-card-button', function() {
-        const $button = $(this);
-        // Find the list, which is the <div class="card-list"> *before* this button
-        const $list = $button.prev('.card-list');
-        if ($list.length) {
-            showMoreCards($button, $list);
-        }
-    });
-});
-
 
 function showMoreCards($button, $list) {
     const $items = $list.children('.card-item');
@@ -325,18 +336,14 @@ function resultsLoop(data, Cat, BKcol) {
             return; // skip this item
         }
         
-        // --- FIX: Check for thumbnails and provide a fallback ---
-        let thumb = 'https://placehold.co/320x180/2c3e50/66fcf1?text=Video'; // Default placeholder
-        // Check if thumbnails object exists and is not null
+        let thumb = 'https://placehold.co/320x180/2c3e50/66fcf1?text=Video';
         if (item.snippet.thumbnails) { 
-            // Check for medium, then default
             if (item.snippet.thumbnails.medium && item.snippet.thumbnails.medium.url) {
                 thumb = item.snippet.thumbnails.medium.url;
             } else if (item.snippet.thumbnails.default && item.snippet.thumbnails.default.url) {
                 thumb = item.snippet.thumbnails.default.url;
             }
         }
-        // --- END FIX ---
         
         const title = item.snippet.title;
         const desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
@@ -414,7 +421,7 @@ function getCardSearchableText($card) {
         $card.data('category')
     ];
     return textSources
-        .map(text => String(text || '')) // Convert null/undefined to empty string
+        .map(text => String(text || '')) 
         .join(' ')
         .toLowerCase();
 }
@@ -515,7 +522,7 @@ function filterCertCards() {
         $showMoreButton.hide();
         $allCards.each(function() {
             const $card = $(this);
-            const cardCategories = $card.data('category') || ''; // Ensure it's a string
+            const cardCategories = $card.data('category') || ''; 
             const cardText = getCardSearchableText($card); 
 
             const categoryMatch = (selectedCategory === "all" || cardCategories.includes(selectedCategory));
