@@ -21,12 +21,10 @@ body {
     min-height: 100vh;
 }
 
-/* --- Layout Container (USER UPDATES APPLIED) --- */
+/* --- Layout Container (Full Width) --- */
 .container {
-    /* 1. Removed max-width to allow full-width */
     margin: 0 auto;
-    /* 2. Reduced top margin (10px) and set side margins (30px) */
-    padding: 10px 30px; 
+    padding: 10px 30px; /* Reduced top padding, 30px side padding */
     box-sizing: border-box;
 }
 
@@ -222,7 +220,7 @@ a:hover {
     list-style: none;
     padding: 0;
 }
-.card-item {
+.card-item, .item { /* UPDATED: Catches .item class from old script */
     background-color: var(--bg-medium);
     padding: 15px;
     border-radius: 6px;
@@ -235,15 +233,15 @@ a:hover {
     cursor: pointer;
     transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
-.card-item:hover {
+.card-item:hover, .item:hover { /* UPDATED: Catches .item class */
     transform: translateY(-3px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
-.card-item h3 {
+.card-item h3, .item h3 { /* UPDATED: Catches .item class */
     margin-top: 0;
     color: var(--text-accent);
 }
-.card-item p {
+.card-item p, .item p { /* UPDATED: Catches .item class */
     font-size: 0.95rem;
 }
 .card-category {
@@ -357,6 +355,9 @@ a:hover {
 }
 
 /* --- Loaded Content Wrappers --- */
+.loaded-content-wrapper { /* New wrapper for loaded content */
+    width: 100%;
+}
 .image-wrapper {
     text-align: center;
     padding: 20px;
@@ -406,20 +407,18 @@ a:hover {
 }
 
 
-/* --- Back Button Styles (from user) --- */
+/* --- Back Button Styles --- */
 .back-button-wrapper {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
-    
-    /* --- NEW: Use Flexbox --- */
     display: flex;
     justify-content: space-between; /* Pushes "Back" and "Open" to opposite ends */
     align-items: center;
 }
 
+/* This styles the "Back" button (as a .nav-link) */
 .back-button-wrapper a.nav-link {
-    /* This is the "Back" button */
     display: inline-block;
     padding: 8px 15px;
     background: var(--bg-medium);
@@ -430,25 +429,47 @@ a:hover {
     font-weight: 700;
     transition: all 0.3s;
 }
-
 .back-button-wrapper a.nav-link:hover {
     background: var(--text-accent);
     color: var(--bg-dark);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-.open-new-window {
-    font-family: var(--font-code);
-    font-size: 0.9rem;
-    color: var(--text-light); /* Lighter, secondary color */
+/* This styles the new ".js-back-to-list" button */
+.back-button-wrapper .js-back-to-list {
+    display: inline-block;
+    padding: 8px 15px;
+    background: var(--bg-medium);
+    color: var(--text-accent);
+    border-radius: 4px;
     text-decoration: none;
-    opacity: 0.7;
+    font-family: var(--font-code);
+    font-weight: 700;
+    transition: all 0.3s;
+    cursor: pointer; /* Make it look clickable */
+}
+.back-button-wrapper .js-back-to-list:hover {
+    background: var(--text-accent);
+    color: var(--bg-dark);
+    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+}
+
+/* "Open in new window" button */
+.open-new-window {
+    display: inline-block;
+    padding: 8px 15px;
+    background: transparent;
+    color: var(--text-accent);
+    border: 1px solid var(--text-accent); /* Outline */
+    border-radius: 4px;
+    text-decoration: none;
+    font-family: var(--font-code);
+    font-weight: 700;
     transition: all 0.3s;
 }
-
 .open-new-window:hover {
-    color: var(--text-accent);
-    text-decoration: underline;
-    opacity: 1;
+    background: var(--text-accent);
+    color: var(--bg-dark);
+    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+    text-decoration: none;
 }
-
