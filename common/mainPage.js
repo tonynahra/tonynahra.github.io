@@ -16,27 +16,24 @@ $(document).ready(function () {
         const pageUrl = $(this).data('page');
         loadContent(pageUrl);
     });
-
-$('#content-area').on('click', '.card-item', function(e) {
+    
+    $('#content-area').on('click', '.card-item', function(e) {
         
-        // Find the "Read More" link *inside* the card we just clicked
         const $link = $(this).find('.content-loader-link');
-
-        // If no link is found, do nothing.
-        if (!$link.length) {
-            return; 
-        }
-
-        // Stop the link from firing (we'll handle it)
+        if (!$link.length) { return; }
         e.preventDefault(); 
         
         const loadType = $link.data('load-type');
         const loadUrl = $link.attr('href');
-        const $contentArea = $('#content-area'); // The container
-
-        // Show a loading spinner
+        const $contentArea = $('#content-area');
+    
+        // --- THIS IS THE NEW LOGIC ---
+        // Get the custom height. Default to '85vh' if not specified.
+        const customHeight = $link.data('height') || '85vh';
+        // --- END NEW LOGIC ---
+    
         $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
-
+    
         switch (loadType) {
             case 'html':
                 loadHtmlFragment(loadUrl, $contentArea);
@@ -49,16 +46,14 @@ $('#content-area').on('click', '.card-item', function(e) {
                 $contentArea.html(imgHtml);
                 break;
             case 'iframe':
-                const iframeHtml = `<iframe src="${loadUrl}" class="loaded-iframe"></iframe>`;
+                // --- UPDATED: We now apply the height as an inline style ---
+                const iframeHtml = `<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`;
                 $contentArea.html(iframeHtml);
                 break;
             default:
-                // Fallback: If the link isn't a special loader, 
-                // just open it in a new tab (like a normal link).
                 window.open(loadUrl, '_blank');
         }
     });
-
 
     
     // 5. Load initial content (the first link marked 'active-nav')
