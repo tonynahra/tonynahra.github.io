@@ -17,10 +17,12 @@ $(document).ready(function () {
     
     // --- EVENT LISTENERS (DELEGATED) ---
 
+    // Listener for "Show More" (Left Menu)
     $('body').on('click', '.expand-button', function() {
         toggleCollapsibleSection($(this));
     });
     
+    // Listener for "Show More" (Cards)
     $('body').on('click', '.toggle-card-button', function() {
         const $button = $(this);
         const $list = $button.prev('.card-list');
@@ -29,6 +31,7 @@ $(document).ready(function () {
         }
     });
 
+    // Listener for LEFT MENU
     $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
         
@@ -45,6 +48,7 @@ $(document).ready(function () {
         loadContent(pageUrl);
     });
 
+    // Listener for ALL CARDS
     $('body').on('click', '.card-item, .item', function(e) {
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
@@ -85,32 +89,50 @@ $(document).ready(function () {
         }
         const customHeight = $link.data('height') || '85vh';
 
+        // --- THIS IS THE FIX ---
+        // Get the top position of the content area, minus a 20px offset
+        const scrollToTarget = $contentArea.offset().top - 20;
+
         switch (loadType) {
             case 'html':
                 $.ajax({
                     url: loadUrl, type: 'GET',
                     success: function(data) { $contentWrapper.append(data); },
                     error: function() { $contentWrapper.append('<div class="error-message">Could not load content.</div>'); },
-                    complete: function() { $contentArea.append($contentWrapper); }
+                    complete: function() { 
+                        $contentArea.append($contentWrapper);
+                        // Scroll to top after content is appended
+                        $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+                    }
                 });
                 break;
             case 'image':
                 $contentWrapper.append(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
                 $contentArea.append($contentWrapper);
+                // Scroll to top
+                $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
                 break;
             case 'iframe':
                 $contentWrapper.append(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
                 $contentArea.append($contentWrapper);
+                // Scroll to top
+                $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
                 break;
             default:
                 window.open(loadUrl, '_blank');
         }
     });
 
+    // Listener for the "Back" button
     $('body').on('click', '.js-back-to-list', function() {
         const $contentArea = $('#content-area');
         $contentArea.find('.loaded-content-wrapper').remove();
         $contentArea.find('.card-list-page').first().show();
+
+        // --- THIS IS THE FIX ---
+        // Also scroll to top when going back to the list
+        const scrollToTarget = $contentArea.offset().top - 20;
+        $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
     });
 
     // --- All filter listeners ---
@@ -139,12 +161,9 @@ $(document).ready(function () {
     else { $('.theme-dot[data-theme="theme-dark"]').addClass('active'); }
 
 
-    // --- NEW: Scroll-to-Top Button Logic ---
-    // 1. Inject the button into the page
+    // --- Scroll-to-Top Button Logic ---
     $('body').append('<button class="scroll-to-top" title="Go to top">&uarr;</button>');
     const $scrollTopBtn = $('.scroll-to-top');
-
-    // 2. Show/hide button on scroll
     $(window).on('scroll', function() {
         if ($(window).scrollTop() > 300) {
             $scrollTopBtn.addClass('show');
@@ -152,13 +171,9 @@ $(document).ready(function () {
             $scrollTopBtn.removeClass('show');
         }
     });
-
-    // 3. Handle the click event
     $('body').on('click', '.scroll-to-top', function() {
         $('html, body').animate({ scrollTop: 0 }, 'smooth');
     });
-    // --- END NEW ---
-
 
     // Load initial content
     const initialPage = $('.nav-link.active-nav').data('page');
