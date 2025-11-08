@@ -218,30 +218,44 @@ function handleCardView($scope) {
 function showMoreCards($button, $list) {
     const $items = $list.children('.card-item');
 
-    // --- FIX: Use parseInt() to ensure all data is treated as a number ---
+    // Use parseInt() to ensure all data is treated as a number
     const totalItems = parseInt($button.data('total-items') || 0);
     const increment = parseInt($button.data('increment') || 10);
     const visibleCount = parseInt($button.data('visible-count') || 0);
-    // --- END FIX ---
     
     const newVisibleCount = visibleCount + increment;
     
+    const remaining = totalItems - newVisibleCount;
+
+    // --- DIAGNOSTIC LOG ---
+    // Open your browser console (F12) and look for this message when you click the button.
+    console.log({
+        message: "Calculating 'Show More'...",
+        totalItems: totalItems,
+        visibleSoFar: visibleCount,
+        increment: increment,
+        newVisibleTotal: newVisibleCount,
+        remainingToShoW: remaining
+    });
+    // --- END LOG ---
+
     // Show the next batch of items
     $items.slice(visibleCount, newVisibleCount).removeClass('hidden-card-item');
     
     // Update the button's state
     $button.data('visible-count', newVisibleCount);
     
-    const remaining = totalItems - newVisibleCount;
-    
     if (remaining <= 0) {
-        // All items are shown, hide the button
+        // This is the line that is firing too early.
+        // The log above will tell us why.
+        console.log("Hiding button because remaining is <= 0.");
         $button.hide();
     } else {
         // Update the button text with the new remaining count
         $button.text(`Show More (${remaining} more) \u25BC`);
     }
 }
+
 
 function toggleCardList($list, $button, initialLimit) {
     const isExpanded = $button.data('state') === 'expanded';
