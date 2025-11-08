@@ -664,22 +664,22 @@ code {
 }
 
 
-/* --- NEW: Certificate Card Layout --- */
+/* --- UPDATED: Certificate Card Layout --- */
 
-/* 1. Override column count for certs to be 4 */
+/* 1. Override column count for certs to be 6 */
 #cert-card-list {
-    column-count: 4;
+    column-count: 6; /* <-- Increased from 4 */
 }
 
 /* 2. Override responsive columns for certs */
 @media (max-width: 1200px) {
     #cert-card-list {
-        column-count: 3;
+        column-count: 4; /* <-- Increased from 3 */
     }
 }
 @media (max-width: 600px) {
     #cert-card-list {
-        column-count: 2; /* 2 columns on mobile */
+        column-count: 3; /* <-- Increased from 2 */
     }
 }
 
