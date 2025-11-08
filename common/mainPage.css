@@ -21,15 +21,13 @@ body {
     min-height: 100vh;
 }
 
-body::before {
-    content: none !important;
-}
-
-/* --- Layout Container --- */
+/* --- Layout Container (USER UPDATES APPLIED) --- */
 .container {
-    max-width: 1600px;
+    /* 1. Removed max-width to allow full-width */
     margin: 0 auto;
-    padding: 20px 25px;
+    /* 2. Reduced top margin (10px) and set side margins (30px) */
+    padding: 10px 30px; 
+    box-sizing: border-box;
 }
 
 /* --- Typography (Headings & Tagline) --- */
@@ -80,11 +78,12 @@ a:hover {
 
 @media (min-width: 900px) {
     .main-content-grid {
+        /* Two columns: 1 for profile/links, 2 for content */
         grid-template-columns: 350px 1fr; 
     }
 }
 
-/* --- Profile/Links Section Styling --- */
+/* --- Left Column: Profile/Links Section Styling --- */
 .profile-summary {
     background: var(--bg-medium);
     padding: 25px;
@@ -132,228 +131,7 @@ a:hover {
     color: var(--text-light);
 }
 
-
-/* --- Posts and YouTube Sections (Collapsible) --- */
-.posts-section, .youtube-section {
-    padding-bottom: 20px;
-}
-
-.posts-intro {
-    font-family: var(--font-code);
-    font-style: italic;
-    color: var(--text-light);
-    margin-top: -15px; /* Pull it up closer to the heading */
-}
-
-/* The wrapper that contains the expandable list */
-.collapsible-content {
-    /* Set a height limit to create the initial 'collapse' effect */
-    max-height: 500px; /* Adjust this value as needed for initial view */
-    overflow: hidden;
-    transition: max-height 0.5s ease-in-out;
-}
-
-.collapsible-content.expanded {
-    max-height: 2000px; /* Large enough to show all content when expanded */
-}
-
-/* Styles for the post list itself */
-.post-list {
-    list-style: none;
-    padding: 0;
-}
-
-.post-list li {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--bg-medium);
-}
-
-.post-list li a {
-    font-size: 1.15rem;
-    color: var(--text-light);
-}
-
-.post-list li a:hover {
-    color: var(--text-accent);
-    text-decoration: none;
-}
-
-.placeholder span {
-    color: var(--bg-medium);
-    font-style: italic;
-    font-family: var(--font-code);
-}
-
-/* Styles for the toggle button */
-.expand-button {
-    display: block;
-    margin: 10px auto 20px auto;
-    padding: 10px 20px;
-    background-color: var(--bg-medium);
-    color: var(--text-accent);
-    border: 1px solid var(--text-accent);
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: var(--font-code);
-    font-size: 1rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.expand-button:hover {
-    background-color: var(--text-accent);
-    color: var(--bg-dark);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
-
-.expand-button.expanded::after {
-    content: " \25B2"; /* Unicode for an upward-pointing triangle */
-}
-
-.expand-button:not(.expanded)::after {
-    content: " \25BC"; /* Unicode for a downward-pointing triangle */
-}
-
-/* Hides items that exceed the initial view and are managed by JS */
-.hidden-item {
-    display: none;
-}
-
-
-/* --- Certificates Section Styling --- */
-.certificates-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    padding-top: 20px;
-}
-
-.certificates-grid img {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: 4px;
-    opacity: 0.8;
-    transition: opacity 0.3s, transform 0.3s;
-    cursor: pointer;
-    border: 1px solid var(--bg-medium);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.certificates-grid img:hover {
-    opacity: 1;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 252, 241, 0.3);
-}
-
-/* --- Footer --- */
-.site-footer {
-    text-align: center;
-    padding: 20px 0;
-    margin-top: 40px;
-    border-top: 1px solid var(--bg-medium);
-    font-size: 0.9rem;
-    color: var(--bg-medium);
-    font-family: var(--font-code);
-}
-
-/* --- Dynamic Content Area --- */
-.dynamic-content-area {
-    min-height: 60vh; /* Ensures the area has space even if content is loading */
-}
-
-/* Nav Link Styling for Active State */
-.nav-link.active-nav {
-    color: var(--text-primary);
-    background-color: var(--bg-medium);
-    border-radius: 4px;
-    padding: 8px 10px;
-    border-left: 3px solid var(--text-accent);
-}
-
-.nav-link.active-nav:hover {
-    text-decoration: none;
-}
-
-/* --- Card View & Toggle Button Styles --- */
-.card-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    list-style: none;
-    padding: 0;
-}
-
-.card-item {
-    background-color: var(--bg-medium);
-    padding: 15px;
-    border-radius: 6px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    border-left: 3px solid var(--text-accent);
-    transition: transform 0.3s;
-}
-
-.card-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-}
-
-.card-item h3 {
-    margin-top: 0;
-    color: var(--text-accent);
-}
-
-.card-item p {
-    font-size: 0.95rem;
-}
-
-.hidden-card-item {
-    display: none !important;
-}
-
-.toggle-card-button {
-    /* Reuse expand-button styles for consistency */
-    display: block;
-    margin: 20px auto 40px auto;
-    padding: 10px 20px;
-    background-color: var(--bg-medium);
-    color: var(--text-accent);
-    border: 1px solid var(--text-accent);
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: var(--font-code);
-    font-size: 1rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.toggle-card-button:hover {
-    background-color: var(--text-accent);
-    color: var(--bg-dark);
-}
-
-/* --- Loading Spinner Styles --- */
-.content-loader {
-    text-align: center;
-    padding: 100px 0;
-    color: var(--text-light);
-}
-
-.spinner {
-    border: 5px solid var(--bg-medium); 
-    border-top: 5px solid var(--text-accent); 
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 15px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-/* --- Add this block to your common/mainPage.css file --- */
-
-/* Style for external links - uses a Unicode character */
+/* External Link Icon */
 .link-item[href^="http"]:not([data-page])::after, 
 .kid-links a[href^="http"]::after {
     content: "\2197"; /* Unicode for North East Arrow (diagonal) */
@@ -368,109 +146,106 @@ a:hover {
 .kid-links a[href^="http"]:hover::after {
     opacity: 1;
 }
-
-/* Ensure dynamic internal links don't get the icon, 
-   by targeting links with the 'data-page' attribute */
 .link-item[data-page]::after {
     content: none !important;
 }
 
-/* Updated grid for certificates to use the same look as posts */
-.certificates-grid img {
-    /* Remove original styles for images in the grid since they are now in .card-item */
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: 4px;
-    opacity: 1; 
-    border: none;
-    box-shadow: none;
-    cursor: default;
-}
-.card-item img {
-    /* New style for images inside the cards (certifications, videos) */
-    display: block;
-    max-width: 100%;
-    height: auto;
-    margin-top: 10px;
-    border-radius: 4px;
-    /* Optional: Add a subtle shadow for depth */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-/* --- UPDATE THESE STYLES in common/mainPage.css --- */
-
-.cv-section[open] {
-    background: var(--bg-medium); /* This is the lighter container */
-    
-    /* * THIS IS THE FIX: 
-     * We add padding to the bottom of the light container itself.
-     * This forces it to be taller than the dark box inside.
-    */
+/* --- Left Column: Collapsible Menu --- */
+.posts-section, .youtube-section {
     padding-bottom: 20px;
 }
 
-.cv-content {
-    /* 1. Pushed towards the right (indented) */
-    margin-left: 40px;
-    margin-right: 15px;
-    
-    /* * We remove margin-bottom from here, as the parent's
-     * padding-bottom now handles the spacing.
-    */
-    
-    /* 2. A box around it */
-    background: var(--bg-dark); /* Use the darkest background */
-    border: 1px solid var(--bg-medium);
-    border-radius: 6px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-
-    /* 3. Padding for the text *inside* the new box */
-    padding: 20px;
+.posts-intro {
+    font-family: var(--font-code);
+    font-style: italic;
+    color: var(--text-light);
+    margin-top: -15px;
 }
 
-/* --- ADD THESE STYLES to common/mainPage.css --- */
-
-.search-wrapper {
-    margin-bottom: 25px;
+.collapsible-content {
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
 }
-
-#youtube-search-box {
-    width: 100%;
-    padding: 12px 15px;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--bg-medium);
+.collapsible-content.expanded {
+    max-height: 2000px; 
+}
+.expand-button {
+    display: block;
+    margin: 10px auto 20px auto;
+    padding: 10px 20px;
+    background-color: var(--bg-medium);
+    color: var(--text-accent);
+    border: 1px solid var(--text-accent);
     border-radius: 4px;
-    color: var(--text-primary);
+    cursor: pointer;
     font-family: var(--font-code);
     font-size: 1rem;
-    box-sizing: border-box; /* Important for 100% width */
+    transition: background-color 0.3s, color 0.3s;
 }
-
-#youtube-search-box:focus {
-    outline: none;
-    border-color: var(--text-accent);
+.expand-button:hover {
+    background-color: var(--text-accent);
+    color: var(--bg-dark);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
-
-.error-message {
-    color: var(--text-accent);
-    font-family: var(--font-code);
-    text-align: center;
-    padding: 20px;
+.expand-button.expanded::after {
+    content: " \25B2";
+}
+.expand-button:not(.expanded)::after {
+    content: " \25BC";
+}
+.hidden-item {
+    display: none;
 }
 
-/* --- ADD THESE STYLES to common/mainPage.css --- */
 
-/* 1. Make Post Cards Bigger */
-.card-list .card-item {
-    min-height: 180px; /* Set a minimum height for all cards */
+/* --- Right Column: Dynamic Content Area --- */
+.dynamic-content-area {
+    min-height: 60vh;
+}
+.nav-link.active-nav {
+    color: var(--text-primary);
+    background-color: var(--bg-dark); /* Use dark, not medium, for contrast */
+    border-radius: 4px;
+    padding: 8px 10px;
+    border-left: 3px solid var(--text-accent);
+}
+.nav-link.active-nav:hover {
+    text-decoration: none;
+}
+
+/* --- Card Styles --- */
+.card-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    list-style: none;
+    padding: 0;
+}
+.card-item {
+    background-color: var(--bg-medium);
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-left: 3px solid var(--text-accent);
+    min-height: 180px; 
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Pushes the "Read More" link to the bottom */
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
-
-/* 2. Style for the new category span */
+.card-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+.card-item h3 {
+    margin-top: 0;
+    color: var(--text-accent);
+}
+.card-item p {
+    font-size: 0.95rem;
+}
 .card-category {
     font-family: var(--font-code);
     font-size: 0.85rem;
@@ -478,25 +253,51 @@ a:hover {
     opacity: 0.7;
     margin-bottom: 10px;
 }
+.card-item img.card-image,
+.card-item img.YTi {
+    width: 100%;
+    height: 150px; 
+    object-fit: contain;
+    background-color: var(--bg-dark); 
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border: 1px solid var(--bg-medium);
+}
 
-/* 3. Style for the new filter bar */
+/* --- Card Pagination & Filtering --- */
+.hidden-card-item {
+    display: none !important;
+}
+.toggle-card-button {
+    display: block;
+    margin: 20px auto 40px auto;
+    padding: 10px 20px;
+    background-color: var(--bg-medium);
+    color: var(--text-accent);
+    border: 1px solid var(--text-accent);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-code);
+    font-size: 1rem;
+    transition: background-color 0.3s, color 0.3s;
+}
+.toggle-card-button:hover {
+    background-color: var(--text-accent);
+    color: var(--bg-dark);
+}
 .filter-bar {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
     margin-bottom: 25px;
 }
-
 .filter-bar .search-wrapper {
-    flex-grow: 1; /* Search box takes available space */
-    min-width: 250px; /* Wraps nicely on small screens */
+    flex-grow: 1;
+    min-width: 250px;
 }
-
 .filter-bar .category-wrapper {
     min-width: 200px;
 }
-
-/* Style for the category dropdown */
 #post-category-filter {
     width: 100%;
     padding: 12px 15px;
@@ -508,14 +309,11 @@ a:hover {
     font-size: 1rem;
     box-sizing: border-box;
 }
-
 #post-category-filter:focus {
     outline: none;
     border-color: var(--text-accent);
 }
-
-/* Style for the post search box */
-#post-search-box {
+#post-search-box, #youtube-search-box {
     width: 100%;
     padding: 12px 15px;
     background-color: var(--bg-dark);
@@ -526,153 +324,102 @@ a:hover {
     font-size: 1rem;
     box-sizing: border-box;
 }
-
-#post-search-box:focus {
+#post-search-box:focus, #youtube-search-box:focus {
     outline: none;
     border-color: var(--text-accent);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
-/* --- ADD THESE STYLES to common/mainPage.css --- */
 
-/* Styles for the new images from Raindrop's DATA-COVER.
-  This will also style the YouTube card images.
-*/
-
-/* --- UPDATE THIS RULE in common/mainPage.css --- */
-
-.card-item img.card-image,
-.card-item img.YTi {
-    width: 100%;
-    height: 150px; /* This sets the maximum height */
-    
-    /* * THIS IS THE FIX:
-     * 'contain' scales the image down (zooms out) to fit inside the
-     * 150px height, maintaining its aspect ratio.
-     */
-    object-fit: contain;
-    
-    /* We add a dark background for any "letterboxing" */
-    background-color: var(--bg-dark); 
-    
-    border-radius: 4px;
-    margin-bottom: 15px;
-    border: 1px solid var(--bg-medium);
+/* --- Content Loading --- */
+.content-loader {
+    text-align: center;
+    padding: 100px 0;
+    color: var(--text-light);
 }
-
-/* --- ADD THESE NEW STYLES for about.html --- */
-
-/* Keeps the "Hi, I'm Tony" header */
-.cv-header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+.spinner {
+    border: 5px solid var(--bg-medium); 
+    border-top: 5px solid var(--text-accent); 
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.error-message {
+    color: var(--text-accent);
     font-family: var(--font-code);
-    font-size: 0.95rem;
-    padding: 10px;
-    background: var(--bg-medium);
-    border-radius: 4px;
-    margin-bottom: 20px;
+    text-align: center;
+    padding: 20px;
 }
 
-/* Styles the new "My Background" and "Interests" headings */
-.about-heading {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    padding-bottom: 10px;
-    margin-top: 25px;
-    border-bottom: 1px solid var(--bg-medium);
+/* --- Loaded Content Wrappers --- */
+.image-wrapper {
+    text-align: center;
+    padding: 20px;
+}
+.loaded-image {
+    max-width: 100%; 
+    max-height: 80vh; 
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    background: #fff;
+}
+.loaded-iframe {
+    width: 100%;
+    height: 85vh; /* Default height */
+    border: none;
+    border-radius: 6px;
+    background: #fff;
 }
 
-/* Styles the content sections */
-.about-content {
-    padding: 15px 5px 0 5px; /* Simple top/side padding, no box */
-}
-
-.about-content ul {
-    list-style-type: disc;
-    padding-left: 30px;
-    margin-top: 10px;
-}
-
-.about-content p, .about-content li {
-    font-size: 1rem;
-    line-height: 1.6;
-}
-
-
-/* --- UPDATE THESE STYLES for about.html --- */
-
-/* Rename .about-author-container to .about-me-container */
+/* --- About Me Page Styles --- */
 .about-me-container h2 {
     color: var(--text-accent);
     border-bottom: 1px solid var(--bg-medium);
     padding-bottom: 10px;
     margin-bottom: 25px;
 }
-
-/* Rename .about-author-content to .about-me-content */
 .about-me-content p {
-    font-size: 1.1rem; /* Slightly larger text for readability */
+    font-size: 1.1rem;
     line-height: 1.7;
-    margin-bottom: 20px; /* Space between paragraphs */
+    margin-bottom: 20px;
 }
-
 .about-me-content p strong {
     color: var(--text-primary);
     font-weight: 700;
 }
-/* --- ADD THESE STYLES for Loaded Content --- */
 
-/* Wrapper for centering the loaded image */
-.image-wrapper {
+/* --- Footer --- */
+.site-footer {
     text-align: center;
-    padding: 20px;
+    padding: 20px 0;
+    margin-top: 40px;
+    border-top: 1px solid var(--bg-medium);
+    font-size: 0.9rem;
+    color: var(--bg-medium);
+    font-family: var(--font-code);
 }
 
-/* The loaded image (local or remote) */
-.loaded-image {
-    max-width: 100%; /* Ensures it's not wider than the container */
-    max-height: 80vh; /* Ensures it doesn't get too tall */
-    height: auto;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    background: #fff; /* White background for any transparent images */
-}
 
-/* The loaded remote HTML page */
-.loaded-iframe {
-    width: 100%;
-    height: 100vh; /* Make it tall to fill the space */
-    border: none;
-    border-radius: 6px;
-    background: #fff; /* Show a white background while it loads */
-}
-/* --- ADD THIS to your .card-item rule --- */
-.card-item {
-    min-height: 180px; 
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer; /* <--- ADD THIS LINE */
-    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; /* Optional: nice hover effect */
-}
-
-/* Optional: Add a hover effect */
-.card-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-}
-
-/* --- ADD THESE STYLES for the Back Button --- */
-
+/* --- Back Button Styles (from user) --- */
 .back-button-wrapper {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
+    
+    /* --- NEW: Use Flexbox --- */
+    display: flex;
+    justify-content: space-between; /* Pushes "Back" and "Open" to opposite ends */
+    align-items: center;
 }
 
 .back-button-wrapper a.nav-link {
+    /* This is the "Back" button */
     display: inline-block;
     padding: 8px 15px;
     background: var(--bg-medium);
@@ -688,4 +435,24 @@ a:hover {
     background: var(--text-accent);
     color: var(--bg-dark);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+}
+
+.open-new-window {
+    font-family: var(--font-code);
+    font-size: 0.9rem;
+    color: var(--text-light); /* Lighter, secondary color */
+    text-decoration: none;
+    opacity: 0.7;
+    transition: all 0.3s;
+}
+
+.open-new-window:hover {
+    color: var(--text-accent);
+    text-decoration: underline;
+    opacity: 1;
+}
+
+.open-new-window &nearr; { /* Style the arrow */
+    font-size: 0.8em;
+    vertical-align: top;
 }
