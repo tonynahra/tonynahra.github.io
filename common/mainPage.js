@@ -98,13 +98,29 @@ $(document).ready(function () {
         const loadUrl = $link.attr('href');
         let loadType = $link.data('load-type'); // Get the *explicit* type
         
-        // --- UPDATED LOGIC ---
-        // If no type is specified, open in a new tab and STOP.
+        // --- THIS IS THE FIX ---
+        // Auto-guess the load type if it's not provided
         if (!loadType) {
-            window.open(loadUrl, '_blank');
-            return; 
+            if (loadUrl.startsWith('http')) {
+                // Check for sites that block iframes
+                if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
+                    // It's an external link, open in new tab and *don't* open modal
+                    window.open(loadUrl, '_blank');
+                    return; // Stop execution
+                } else {
+                    loadType = 'iframe'; // Assume other http links are fine
+                }
+            } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+                loadType = 'image';
+            } else if (loadUrl.endsWith('.html')) { // Check for local HTML files
+                loadType = 'html';
+            } else {
+                // Failsafe: open in new tab
+                window.open(loadUrl, '_blank');
+                return;
+            }
         }
-        // --- END UPDATED LOGIC ---
+        // --- END FIX ---
 
 
         // --- NEW MODAL LOGIC ---
@@ -133,15 +149,9 @@ $(document).ready(function () {
                 $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
                 break;
             case 'iframe':
-                // Check for sites that block iframes
-                if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
-                    $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here. Please use the "Open in new window" button.</div>');
-                } else {
-                    $modalContent.html(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
-                }
+                $modalContent.html(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
                 break;
             default:
-                // This case should no longer be reachable
                 $modalContent.html('<div class="error-message">Unknown content type.</div>');
                 return;
         }
