@@ -19,6 +19,7 @@ $(document).ready(function () {
 
     // --- FIX: This is now a delegated listener ---
     $('body').on('click', '.expand-button', function() {
+        console.log("Toggle collapsible section..."); // <-- DIAGNOSTIC LOG
         toggleCollapsibleSection($(this));
     });
     
@@ -244,11 +245,32 @@ function handleCardView($scope) {
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
             
             $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
-            $button.on('click', function() { showMoreCards($(this), $list); });
+            
+            // --- FIX: Attach to body ---
+            // This button is created dynamically, so its listener must be delegated
+            // (We will attach it in the $(document).ready() block)
+            // $button.on('click', function() { showMoreCards($(this), $list); });
+            
             $list.after($button);
         }
     });
 }
+
+// --- FIX: Add this new listener to $(document).ready() ---
+$(document).ready(function() {
+    // ... all your other .ready() code ...
+
+    // Listener for "Show More" (Cards)
+    $('body').on('click', '.toggle-card-button', function() {
+        const $button = $(this);
+        // Find the list, which is the <div class="card-list"> *before* this button
+        const $list = $button.prev('.card-list');
+        if ($list.length) {
+            showMoreCards($button, $list);
+        }
+    });
+});
+
 
 function showMoreCards($button, $list) {
     const $items = $list.children('.card-item');
@@ -298,14 +320,19 @@ function loadVids(PL, Category, BKcol) {
     
 function resultsLoop(data, Cat, BKcol) {
     $.each(data.items, function (i, item) {
-        if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) return;
+        if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) {
+            console.warn("Skipping playlist item, missing resourceId:", item);
+            return; // skip this item
+        }
         
         // --- FIX: Check for thumbnails and provide a fallback ---
         let thumb = 'https://placehold.co/320x180/2c3e50/66fcf1?text=Video'; // Default placeholder
-        if (item.snippet.thumbnails) {
-            if (item.snippet.thumbnails.medium) {
+        // Check if thumbnails object exists and is not null
+        if (item.snippet.thumbnails) { 
+            // Check for medium, then default
+            if (item.snippet.thumbnails.medium && item.snippet.thumbnails.medium.url) {
                 thumb = item.snippet.thumbnails.medium.url;
-            } else if (item.snippet.thumbnails.default) {
+            } else if (item.snippet.thumbnails.default && item.snippet.thumbnails.default.url) {
                 thumb = item.snippet.thumbnails.default.url;
             }
         }
@@ -329,12 +356,6 @@ function resultsLoop(data, Cat, BKcol) {
 
 /* === --- SMART KEYWORD LOGIC --- === */
 
-/**
- * Auto-populates a <select> dropdown by reading ALL text from cards and finding
- * the most frequent, meaningful keywords.
- * @param {string} listId - The ID of the card list (e.g., "#posts-card-list").
- * @param {string} filterId - The ID of the <select> dropdown (e.g., "#post-keyword-filter").
- */
 function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return; 
@@ -354,11 +375,9 @@ function populateSmartKeywords(listId, filterId) {
             
             const combinedText = textSources.join(' ');
             
-            // --- FIX: More robust regex for splitting ---
-            const words = combinedText.split(/[^a-zA-Z0-9'-]+/); // Allow hyphens and apostrophes
+            const words = combinedText.split(/[^a-zA-Z0-9'-]+/); 
             
             words.forEach(word => {
-                // Remove any remaining non-alphanumeric characters (like 'é' becomes 'e')
                 const cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
                 
                 if (cleanWord.length > 2 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
@@ -386,9 +405,6 @@ function populateSmartKeywords(listId, filterId) {
     }
 }
 
-/**
- * Gets all searchable text from a card.
- */
 function getCardSearchableText($card) {
     const textSources = [
         $card.find('h3').text(),
