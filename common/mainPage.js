@@ -232,6 +232,8 @@ var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
 // ... (Your previous loadContent function remains the same, but notice the update below)
 
+
+
 function loadVids(PL, Category, BKcol) {
 
     // Clear the grid first, as content is re-loaded dynamically
@@ -248,18 +250,23 @@ function loadVids(PL, Category, BKcol) {
         playlistId: PL
     }
 
-    $.getJSON(URL, options, function (data) {
-        // Pass the background color parameter to resultsLoop
-        resultsLoop(data, Category, BKcol);
-        
-        // After loading videos, re-run the card view logic to handle 'Show More' if > 10
-        handleCardView($('#content-area'));
-                
-        }).fail(function() {
-            // This is where the failure should be logged, but it only logs to the console if you explicitly added it.
-            $('#Grid').html('<p class="error-message">Error loading YouTube playlist. Check API key and console for network issues.</p>');
-        });
 
+
+$.getJSON(URL, options, function (data) {
+        // SUCCESS: runs resultsLoop
+        resultsLoop(data, Category, BKcol);
+        handleCardView($('#content-area'));
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        // FAILURE: Display an error in the grid
+        const errorMessage = `API Error: ${jqXHR.responseJSON ? jqXHR.responseJSON.error.message : errorThrown}. Please check your API Key and Network tab.`;
+        $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
+        console.error("YouTube API Request Failed:", jqXHR.responseJSON || errorThrown);
+    });
+}
+
+
+
+    
     
 }
     
