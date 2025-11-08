@@ -228,6 +228,8 @@ var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
 /* --- Replace the existing loadVids function in common/mainPage.js with this --- */
 
+/* --- Replace the existing loadVids function in common/mainPage.js with this --- */
+
 function loadVids(PL, Category, BKcol) {
 
     $('#Grid').empty(); 
@@ -238,20 +240,22 @@ function loadVids(PL, Category, BKcol) {
         part: 'snippet',
         key: key, 
         maxResults: 20, 
-        playlistId: PL // This is the crucial line: PL must be the correct ID
+        playlistId: PL
     }
-
-    // *** NEW CRITICAL DEBUG LOG ***
-    console.log("YouTube API Request Object:", options);
-    // ******************************
 
     $.getJSON(URL, options, function (data) {
         // --- SUCCESS HANDLER (Status 200 OK) ---
         
         if (data.error) {
-            const errorMessage = `API Key/Access Error: ${data.error.message}. Check key restrictions.`;
-            $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
-            console.error("YouTube API Failure (JSON payload):", data.error);
+             // CRITICAL: Overwrite the entire right-side area with the error for visibility
+            $('#content-area').html('<div class="error-message" style="padding: 40px;">' +
+                '<h2>🔴 YouTube API Error Received</h2>' +
+                '<p>The API request was successful, but the server returned an error payload. ' + 
+                'This almost always indicates an **API Key restriction** or **invalid Quota**.</p>' +
+                '<p>Check the console for the raw JSON error data.</p>' +
+                '</div>');
+            
+            console.error("YOUTUBE API FAILURE (200 OK Response): You MUST solve the restriction/quota issue for key:", key, data.error);
             return; 
         }
         
@@ -264,15 +268,14 @@ function loadVids(PL, Category, BKcol) {
         resultsLoop(data, Category, BKcol);
         handleCardView($('#content-area'));
 
-        
     }).fail(function(jqXHR, textStatus, errorThrown) {
-        // --- FAILURE HANDLER (Network/Hard Error) ---
-        const errorMessage = `API Error (Hard): ${jqXHR.status} - ${errorThrown}. Check Network tab for details.`;
+        // --- FAILURE HANDLER (Network/Hard Error - Highly unlikely now) ---
+        // This only happens if the request itself is blocked or the server is down.
+        const errorMessage = `API Error (Hard): ${jqXHR.status} - ${errorThrown}.`;
         $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
         console.error("YouTube API Request Failed (Network):", jqXHR, textStatus, errorThrown);
     });
 }
-
     
 function resultsLoop(data, Cat, BKcol) {
     $.each(data.items, function (i, item) {
