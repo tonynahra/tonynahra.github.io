@@ -12,28 +12,19 @@ const STOP_WORDS = new Set([
 ]);
 
 /**
- * --- UPDATED: Helper function to safely decode text ---
+ * Helper function to safely decode text.
  * @param {string} text - The text to decode.
  * @returns {string} - The decoded text.
  */
 function decodeText(text) {
     if (!text) return "";
     try {
-        // Decodes %20, &amp;, etc.
-        let decoded = text;
-        
-        // 1. Decode HTML entities (e.g., &amp;)
-        // We use a temporary textarea to let the browser do this safely
         var $textarea = $('<textarea></textarea>');
-        $textarea.html(decoded);
-        decoded = $textarea.val();
-
-        // 2. Decode URL components (e.g., %20)
+        $textarea.html(text);
+        let decoded = $textarea.val();
         decoded = decodeURIComponent(decoded);
-        
         return decoded;
     } catch (e) {
-        // Fallback for invalid URI components
         return text;
     }
 }
@@ -105,14 +96,12 @@ $(document).ready(function () {
         `;
         const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
         $contentWrapper.html(backButtonHtml); 
-
-        // --- THIS IS THE SCROLL FIX ---
-        // 1. Append the wrapper (with buttons) FIRST.
         $contentArea.append($contentWrapper);
         
-        // 2. NOW, find the top of the main content area and scroll to it.
-        // We target the *wrapper* we just added, not the whole content area
-        const scrollToTarget = $contentWrapper.offset().top - 20; // 20px offset
+        // --- THIS IS THE SCROLL FIX ---
+        // Find the top of the main content area (which is the parent of the grid)
+        // This ensures we scroll to the top of the right-hand column.
+        const scrollToTarget = $contentArea.offset().top - 20; 
         $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
         // --- END FIX ---
 
@@ -130,7 +119,6 @@ $(document).ready(function () {
                     url: loadUrl, type: 'GET',
                     success: function(data) { $contentWrapper.append(data); },
                     error: function() { $contentWrapper.append('<div class="error-message">Could not load content.</div>'); }
-                    // Scroll happens immediately, not in 'complete'
                 });
                 break;
             case 'image':
@@ -151,9 +139,8 @@ $(document).ready(function () {
         const $cardPage = $contentArea.find('.card-list-page').first().show();
 
         // --- THIS IS THE SCROLL FIX ---
-        // Scroll back to the top of the card list
-        // We target the card page (which might have a filter bar)
-        const scrollToTarget = $cardPage.offset().top - 20;
+        // Scroll back to the top of the content area
+        const scrollToTarget = $contentArea.offset().top - 20;
         $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
     });
 
@@ -258,6 +245,13 @@ function loadContent(pageUrl) {
     const $contentArea = $('#content-area');
     $contentArea.empty();
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
+    
+    // --- SCROLL FIX ---
+    // When a *new page* is loaded (from the left menu), 
+    // scroll to the top of that content area.
+    const scrollToTarget = $contentArea.offset().top - 20; 
+    $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+    // --- END FIX ---
 
     $.ajax({
         url: pageUrl,
