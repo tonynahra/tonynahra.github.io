@@ -54,9 +54,12 @@ $(document).ready(function () {
 
         // The Back Button HTML
         const backButtonHtml = `
-            <div class="back-button-wrapper">
+           <div class="back-button-wrapper">
                 <a href="javascript:void(0)" class="nav-link" data-page="${lastContentPage}">
                     &larr; Back
+                </a>
+                <a href="${loadUrl}" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                    Open in new window &nearr;
                 </a>
             </div>
         `;
