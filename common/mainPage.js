@@ -225,7 +225,7 @@ function toggleCardList($list, $button, initialLimit) {
 
 // IMPORTANT: Your old YouTube script used a global 'PARAM'. Here we use arguments 
 // passed from the loadContent function to make it work dynamically.
-var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'  ; // Ensure your key is here
+var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'  ;
 var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
 /* --- Ensure this is in your common/mainPage.js file --- */
