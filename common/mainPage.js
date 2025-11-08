@@ -226,49 +226,45 @@ var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
 /* --- Replace the existing loadVids function in common/mainPage.js with this --- */
 
+/* --- Replace the existing loadVids function in common/mainPage.js with this --- */
+
 function loadVids(PL, Category, BKcol) {
 
-    // Clear the grid first, as content is re-loaded dynamically
     $('#Grid').empty(); 
-    
-    // Update the title dynamically
     $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
     $('#playlist-description').text(`The latest videos from the ${Category.replace(/_/g, ' ')} playlist, displayed as cards.`);
 
     var options = {
         part: 'snippet',
-        key: key, // Ensure 'key' holds your ACTUAL API key
+        key: key, 
         maxResults: 20, 
-        playlistId: PL
+        playlistId: PL // This is the crucial line: PL must be the correct ID
     }
 
-    console.log(`Attempting to load playlist ${PL} with key ${key.substring(0, 5)}...`);
+    // *** NEW CRITICAL DEBUG LOG ***
+    console.log("YouTube API Request Object:", options);
+    // ******************************
 
     $.getJSON(URL, options, function (data) {
         // --- SUCCESS HANDLER (Status 200 OK) ---
         
         if (data.error) {
-             // 1. CRITICAL CHECK: Google often sends an error object on invalid key/limit, 
-             //    even with a 200 OK status.
-            const errorMessage = `API Key/Access Error: ${data.error.message}. Check your API Key's restrictions or limits.`;
+            const errorMessage = `API Key/Access Error: ${data.error.message}. Check key restrictions.`;
             $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
             console.error("YouTube API Failure (JSON payload):", data.error);
-            return; // STOP EXECUTION
+            return; 
         }
         
         if (!data.items || data.items.length === 0) {
-            // 2. CHECK: Playlist is valid but empty
              $('#Grid').html(`<p class="error-message">Playlist is valid but contains no public videos.</p>`);
              console.warn("YouTube API Warning: Playlist has no items.", data);
              return;
         }
 
-        // Proceed only if data is clean and contains items
         resultsLoop(data, Category, BKcol);
-        
-        // After loading videos, re-run the card view logic to handle 'Show More' if > 10
         handleCardView($('#content-area'));
 
+        
     }).fail(function(jqXHR, textStatus, errorThrown) {
         // --- FAILURE HANDLER (Network/Hard Error) ---
         const errorMessage = `API Error (Hard): ${jqXHR.status} - ${errorThrown}. Check Network tab for details.`;
