@@ -168,31 +168,77 @@ function loadContent(pageUrl) {
 /**
  * Finds all .card-list elements and applies the initial 10-item limit.
  */
+/* === CARD VIEW (Show More) LOGIC (Right Side Content) === */
+
+/**
+ * Finds all .card-list elements and applies the initial 10-item limit.
+ */
 function handleCardView($scope) {
     $scope.find('.card-list').each(function() {
         const $list = $(this);
-        const $items = $list.children('.card-item'); // Target direct children with card-item class
+        const $items = $list.children('.card-item');
+        const totalItems = $items.length;
         const initialLimit = 10;
+        const increment = 10;
         
         // Remove existing button just in case
         $list.next('.toggle-card-button').remove(); 
         
-        if ($items.length > initialLimit) {
+        if (totalItems > initialLimit) {
             // Hide all items after the limit
             $items.slice(initialLimit).addClass('hidden-card-item');
             
+            const remaining = totalItems - initialLimit;
+            
             // Create and append the "Show More" button
-            const $button = $(`<button class="toggle-card-button" data-state="collapsed">
-                Show More (${$items.length - initialLimit} more) \u25BC
+            const $button = $(`<button class="toggle-card-button">
+                Show More (${remaining} more) \u25BC
             </button>`);
             
+            // Store initial state on the button
+            $button.data('visible-count', initialLimit);
+            $button.data('increment', increment);
+            $button.data('total-items', totalItems);
+            
+            // Attach the new click handler
             $button.on('click', function() {
-                toggleCardList($list, $button, initialLimit);
+                // Pass the button itself and the associated list
+                showMoreCards($(this), $list); 
             });
             
             $list.after($button);
         }
     });
+}
+
+/**
+ * Shows the next set of cards in a list (replaces toggleCardList).
+ * @param {object} $button - The jQuery object of the toggle button.
+ *Am (object) $list - The jQuery object of the card list container.
+ */
+function showMoreCards($button, $list) {
+    const $items = $list.children('.card-item');
+    const totalItems = $button.data('total-items');
+    const increment = $button.data('increment') || 10;
+    const visibleCount = $button.data('visible-count');
+    
+    const newVisibleCount = visibleCount + increment;
+    
+    // Show the next batch of items
+    $items.slice(visibleCount, newVisibleCount).removeClass('hidden-card-item');
+    
+    // Update the button's state
+    $button.data('visible-count', newVisibleCount);
+    
+    const remaining = totalItems - newVisibleCount;
+    
+    if (remaining <= 0) {
+        // All items are shown, hide the button
+        $button.hide();
+    } else {
+        // Update the button text with the new remaining count
+        $button.text(`Show More (${remaining} more) \u25BC`);
+    }
 }
 
 /**
