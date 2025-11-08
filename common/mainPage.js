@@ -254,10 +254,13 @@ function loadVids(PL, Category, BKcol) {
         
         // After loading videos, re-run the card view logic to handle 'Show More' if > 10
         handleCardView($('#content-area'));
+                
+        }).fail(function() {
+            // This is where the failure should be logged, but it only logs to the console if you explicitly added it.
+            $('#Grid').html('<p class="error-message">Error loading YouTube playlist. Check API key and console for network issues.</p>');
+        });
 
-    }).fail(function() {
-        $('#Grid').html('<p class="error-message">Error loading YouTube playlist. Check API key and console for network issues.</p>');
-    });
+    
 }
     
 function resultsLoop(data, Cat, BKcol) {
