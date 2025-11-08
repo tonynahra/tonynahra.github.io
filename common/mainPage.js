@@ -1,4 +1,6 @@
 var lastContentPage = 'tech-posts.html'; 
+/* === GLOBAL SETUP & DYNAMIC CONTENT LOADING LOGIC === */
+var lastContentPage = 'posts.html'; // Default to posts.html
 
 // --- List of common words to ignore ---
 const STOP_WORDS = new Set([
@@ -82,6 +84,7 @@ $(document).ready(function () {
         const $contentArea = $('#content-area');
         const loadType = $link.data('load-type'); // Get the *explicit* type
 
+        // --- THIS IS THE FIX ---
         // ONLY load content in-page if data-load-type is specified.
         if (loadType) {
             const $cardPage = $contentArea.find('.card-list-page').first();
@@ -133,9 +136,11 @@ $(document).ready(function () {
             }
         } 
         // ELSE: No data-load-type was found, so just open the link in a new tab.
+        // This will handle GitHub, etc.
         else {
             window.open(loadUrl, '_blank');
         }
+        // --- END FIX ---
     });
 
     // Listener for the "Back" button
@@ -381,8 +386,6 @@ function resultsLoop(data, Cat, BKcol) {
         const desc = item.snippet.description ? decodeText(item.snippet.description.substring(0, 100) + '...') : 'No description available.';
         const vid = item.snippet.resourceId.videoId;
 
-        // --- THIS IS THE FIX ---
-        // Added the missing ':' to https://
         $('#Grid').append(`
         <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
             <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
@@ -392,7 +395,6 @@ function resultsLoop(data, Cat, BKcol) {
             </a>
         </div>
         `);
-        // --- END FIX ---
     });
 }
 
