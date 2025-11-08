@@ -123,17 +123,15 @@ function loadContent(pageUrl) {
         type: 'GET',
         success: function(data) {
             const isYouTubePage = pageUrl.includes('youtube_page.html');
+            const isPostsPage = pageUrl.includes('posts.html'); // <-- Check for posts page
             
             if (isYouTubePage) {
                 $contentArea.html(data); 
 
-                // --- ADD THIS EVENT LISTENER ---
-                // We use .on() delegated to the contentArea
-                // so it works even though the box was just loaded.
-                $contentArea.on('keyup', '#youtube-search-box', function() {
+                // Attach YouTube filter
+                $contentArea.on('input', '#youtube-search-box', function() {
                     filterYouTubeCards($(this).val());
                 });
-                // --- END ADD ---
 
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
                 const params = paramString.split(',');
@@ -145,9 +143,23 @@ function loadContent(pageUrl) {
                 }
 
             } else {
-                // For Posts and Certificates, just load the HTML fragment
+                // For Posts, CV, and Certificates, load the HTML
                 $contentArea.html(data);
-                handleCardView($contentArea);
+                
+                // If it's the posts page, attach the new filters
+                if (isPostsPage) {
+                    $contentArea.on('input', '#post-search-box', function() {
+                        filterPostCards();
+                    });
+                    $contentArea.on('change', '#post-category-filter', function() {
+                        filterPostCards();
+                    });
+                }
+                
+                // Run pagination for Posts and Certs
+                if (!pageUrl.includes('cv.html')) {
+                    handleCardView($contentArea);
+                }
             }
 
             if (typeof initializeImageModal === 'function') {
@@ -159,15 +171,6 @@ function loadContent(pageUrl) {
         }
     });
 }
-
-
-
-/* === CARD VIEW (Show More) LOGIC (Right Side Content) === */
-
-/**
- * Finds all .card-list elements and applies the initial 10-item limit.
- */
-/* === CARD VIEW (Show More) LOGIC (Right Side Content) === */
 
 /**
  * Finds all .card-list elements and applies the initial 10-item limit.
