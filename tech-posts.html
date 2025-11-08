@@ -1,9 +1,49 @@
 <section class="posts-page">
     <h2>Recent Technical Posts</h2>
-    <p class="posts-intro">Technical posts</p>
     
-    <div class="card-list">
+    <div class="filter-bar">
+        <div class="search-wrapper">
+            <input type="search" id="post-search-box" placeholder="Filter posts by title or description...">
+        </div>
+        <div class="category-wrapper">
+            <select id="post-category-filter">
+                <option value="all">All Categories</option>
+                <option value="Python">Python</option>
+                <option value="JavaScript">JavaScript</option>
+                <option value="Data">Data Analysis</option>
+                <option value="Cloud">Cloud/DevOps</option>
+            </select>
+        </div>
+    </div>
+    <div id="posts-card-list" class="card-list">
+        <div class="card-item" data-category="Python" style="border-left-color: #3572A5;">
+            <h3>Setting up a Modern Python Environment</h3>
+            <p>**2025-01-20** | A guide to dependency management using Poetry and modern virtual environments.</p>
+            <span class="card-category">Python</span>
+            <a href="post1-url.html">Read More &rarr;</a>
+        </div>
 
+        <div class="card-item" data-category="Data" style="border-left-color: #e74c3c;">
+            <h3>DP-600 Study Guide: Power BI/Fabric</h3>
+            <p>**2025-02-15** | Key concepts and resources for preparing for the Microsoft Fabric certification.</p>
+            <span class="card-category">Data</span>
+            <a href="post2-url.html">Read More &rarr;</a>
+        </div>
+        
+        <div class="card-item" data-category="Data" style="border-left-color: #e74c3c;">
+            <h3>Decoding Oracle's Latest AI Features in 23ai</h3>
+            <p>**2025-03-10** | Exploring the in-database ML and vector capabilities of the new Oracle release.</p>
+            <span class="card-category">Data</span>
+            <a href="post3-url.html">Read More &rarr;</a>
+        </div>
+
+        <div class="card-item" data-category="Cloud" style="border-left-color: #007acc;">
+            <h3>GitHub Actions: CI/CD Pipelines</h3>
+            <p>**2025-04-05** | Implementing continuous integration and deployment workflows for my projects.</p>
+            <span class="card-category">Cloud</span>
+            <a href="post4-url.html">Read More &rarr;</a>
+        </div>
+        
         
         <div class="card-item">
             <h3>AI is Not a Bubble</h3>
