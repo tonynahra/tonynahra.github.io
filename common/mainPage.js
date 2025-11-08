@@ -1,53 +1,58 @@
+/* === GLOBAL SETUP & DYNAMIC CONTENT LOADING LOGIC === */
+var lastContentPage = 'posts.html'; // Default to posts.html
+
 $(document).ready(function () {
     
-    // 1. Initialize all collapsible sections (YouTube menu on the left)
+    // 1. Initialize collapsible menu
     initializeCollapsibleSections();
     
-    // 2. Attach event listener to all expand buttons (YouTube menu)
+    // 2. Attach expand button listener
     $('.expand-button').on('click', function() {
         toggleCollapsibleSection($(this));
     });
     
-    // 3. Attach event listener to all dynamic navigation links    
-    $('.nav-link').on('click', function(e) {
+    // 3. *** THIS IS THE FIX ***
+    // We change $('.nav-link').on('click', ...) 
+    // to $('body').on('click', ...)
+    // This uses event delegation, so it works for the dynamic "Back" button.
+    $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
         
         // Update active state in the left menu
-        $('.nav-link').removeClass('active-nav');
-        $(this).addClass('active-nav');
+        // (We only do this for links *in* the left menu)
+        if ($(this).closest('.profile-summary').length) {
+            $('.nav-link').removeClass('active-nav');
+            $(this).addClass('active-nav');
+        }
         
         // Load the new content
         const pageUrl = $(this).data('page');
         
-        // --- NEW: Store this as the "page to go back to" ---
-        // We only store it if it's not the guide
-        if (pageUrl && pageUrl !== 'guide.html') {
+        // Store this as the "page to go back to"
+        if (pageUrl && pageUrl !== 'guide.html' && pageUrl !== 'about.html') {
             lastContentPage = pageUrl; 
         }
-        // --- END NEW ---
 
         loadContent(pageUrl);
     });
+    // --- END FIX ---
 
-    // 4. *** REPLACE THIS HANDLER ***
-    // This is the new, robust click handler for ALL cards
+    // 4. Click handler for all cards (posts and youtube)
     $('#content-area').on('click', '.card-item, .item', function(e) {
         
         // Find the first <a> tag inside the card
         const $link = $(this).find('a').first(); 
         
-        // If no link is found, do nothing.
         if (!$link.length) { return; }
 
-        e.preventDefault(); // Stop the link from firing
-        e.stopPropagation(); // Stop the event from bubbling
+        e.preventDefault(); 
+        e.stopPropagation(); 
         
         const loadType = $link.data('load-type');
         const loadUrl = $link.attr('href');
-        const $contentArea = $('#content-area'); // The container
+        const $contentArea = $('#content-area'); 
 
-        // --- NEW: The Back Button HTML ---
-        // It's a 'nav-link' so our other click handler will make it work
+        // The Back Button HTML
         const backButtonHtml = `
             <div class="back-button-wrapper">
                 <a href="javascript:void(0)" class="nav-link" data-page="${lastContentPage}">
@@ -56,16 +61,13 @@ $(document).ready(function () {
             </div>
         `;
 
-        // Check if it's a special dynamic load command
         if (loadType) {
             const customHeight = $link.data('height') || '85vh';
             
-            // Show loading spinner
             $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
 
             switch (loadType) {
                 case 'html':
-                    // We must use AJAX here to prepend the back button
                     $.ajax({
                         url: loadUrl,
                         type: 'GET',
@@ -76,7 +78,7 @@ $(document).ready(function () {
                             $contentArea.html(backButtonHtml + '<div class="error-message">Could not load content.</div>');
                         }
                     });
-                    return; // Return because this is async
+                    return; 
                 case 'image':
                     const imgHtml = `
                         <div class="image-wrapper">
@@ -89,77 +91,54 @@ $(document).ready(function () {
                     $contentArea.html(backButtonHtml + iframeHtml);
                     break;
                 default:
-                    // Fallback for an unknown data-load-type
                     window.open(loadUrl, '_blank');
             }
         } else {
-            // It's a standard link (no data-load-type). Just open it in a new tab.
+            // Standard link, open in new tab
             window.open(loadUrl, '_blank');
         }
     });
-
     
-    // 5. Load initial content (the first link marked 'active-nav')
+    // 5. Load initial content
     const initialPage = $('.nav-link.active-nav').data('page');
     if (initialPage) {
-        // Set the initial 'back' page
         lastContentPage = initialPage;
         loadContent(initialPage);
     }
-    
 });
-/* === COLLAPSIBLE MENU LOGIC (Left Side YouTube Menu) === */
 
-/**
- * Hides all elements in a list/container that exceed a defined limit (data-max).
- * Updates the button text.
- */
+
+/* === COLLAPSIBLE MENU LOGIC (Left Side YouTube Menu) === */
 function initializeCollapsibleSections() {
     $('.expand-button').each(function() {
         const $button = $(this);
         const targetId = $button.data('target');
         const $target = $('#' + targetId);
-        const maxItems = parseInt($button.data('max') || 3); // Default to 3 visible items
+        const maxItems = parseInt($button.data('max') || 3);
         let $items = [];
 
-        // In this context, we target the anchor tags (the playlist links)
         if ($target.hasClass('collapsible-content') && $target.find('a').length) {
-            // Use only anchor tags
             $items = $target.find('a'); 
         }
 
         if ($items.length > maxItems) {
-            // Hide items beyond the limit
             $items.slice(maxItems).addClass('hidden-item');
-            
-            // Set initial button text to show the number of hidden items
             const hiddenCount = $items.length - maxItems;
-            $button.text(`Show More (${hiddenCount}) \u25BC`); // Down arrow
+            $button.text(`Show More (${hiddenCount}) \u25BC`);
             $button.removeClass('expanded');
-            $button.show(); // Ensure button is visible if there are hidden items
-            
+            $button.show();
         } else {
-            // If few items, hide the button
             $button.hide(); 
         }
     });
 }
 
-/**
- * Toggles the expanded state of a collapsible section.
- * @param {object} $button - The jQuery object for the clicked button.
- */
 function toggleCollapsibleSection($button) {
     const targetId = $button.data('target');
     const $target = $('#' + targetId);
     const isExpanded = $button.hasClass('expanded');
     const maxItems = parseInt($button.data('max') || 3);
-
-    // Toggle the visual class for the content wrapper (for CSS transition)
-    $target.toggleClass('expanded', !isExpanded);
-    $button.toggleClass('expanded', !isExpanded);
     
-    // Find all the list items/links to show/hide
     let $items = [];
     if ($target.find('a').length) {
         $items = $target.find('a');
@@ -168,28 +147,18 @@ function toggleCollapsibleSection($button) {
     const hiddenCount = $items.length - maxItems;
 
     if (!isExpanded) {
-        // EXPAND: Show all items and update button text/style
         $items.slice(maxItems).removeClass('hidden-item');
-        $button.text(`Show Less \u25B2`); // Up arrow
+        $button.text(`Show Less \u25B2`);
     } else {
-        // COLLAPSE: Hide the items beyond the limit and revert button text/style
         $items.slice(maxItems).addClass('hidden-item');
-        $button.text(`Show More (${hiddenCount}) \u25BC`); // Down arrow
+        $button.text(`Show More (${hiddenCount}) \u25BC`);
     }
+    $target.toggleClass('expanded', !isExpanded);
+    $button.toggleClass('expanded', !isExpanded);
 }
 
 
 /* === DYNAMIC CONTENT LOADING IMPLEMENTATION === */
-
-/**
- * Loads content from a given URL into the #content-area.
- * @param {string} pageUrl - The URL of the content file (e.g., 'posts.html').
- */
-
-/**
- * Loads content from a given URL into the #content-area.
- * @param {string} pageUrl - The URL of the content file (e.g., 'posts.html').
- */
 function loadContent(pageUrl) {
     const $contentArea = $('#content-area');
     
@@ -200,12 +169,10 @@ function loadContent(pageUrl) {
         type: 'GET',
         success: function(data) {
             const isYouTubePage = pageUrl.includes('youtube_page.html');
-            const isPostsPage = pageUrl.includes('posts.html'); // <-- Check for posts page
+            const isPostsPage = pageUrl.includes('posts.html'); 
             
             if (isYouTubePage) {
                 $contentArea.html(data); 
-
-                // Attach YouTube filter
                 $contentArea.on('input', '#youtube-search-box', function() {
                     filterYouTubeCards($(this).val());
                 });
@@ -220,10 +187,8 @@ function loadContent(pageUrl) {
                 }
 
             } else {
-                // For Posts, CV, and Certificates, load the HTML
                 $contentArea.html(data);
                 
-                // If it's the posts page, attach the new filters
                 if (isPostsPage) {
                     $contentArea.on('input', '#post-search-box', function() {
                         filterPostCards();
@@ -233,8 +198,7 @@ function loadContent(pageUrl) {
                     });
                 }
                 
-                // Run pagination for Posts and Certs
-                if (!pageUrl.includes('cv.html')) {
+                if (!pageUrl.includes('about.html') && !pageUrl.includes('guide.html')) {
                     handleCardView($contentArea);
                 }
             }
@@ -249,9 +213,22 @@ function loadContent(pageUrl) {
     });
 }
 
-/**
- * Finds all .card-list elements and applies the initial 10-item limit.
- */
+function loadHtmlFragment(pageUrl, $contentArea) {
+    $.ajax({
+        url: pageUrl,
+        type: 'GET',
+        success: function(data) {
+            // This is used by the 'Back' button logic, so we just show data
+            $contentArea.html(data);
+        },
+        error: function() {
+            $contentArea.html('<div class="error-message">Could not load content. The file may be missing.</div>');
+        }
+    });
+}
+
+
+/* === CARD VIEW (Show More) LOGIC (Right Side Content) === */
 function handleCardView($scope) {
     $scope.find('.card-list').each(function() {
         const $list = $(this);
@@ -260,28 +237,21 @@ function handleCardView($scope) {
         const initialLimit = 10;
         const increment = 10;
         
-        // Remove existing button just in case
         $list.next('.toggle-card-button').remove(); 
         
         if (totalItems > initialLimit) {
-            // Hide all items after the limit
             $items.slice(initialLimit).addClass('hidden-card-item');
-            
             const remaining = totalItems - initialLimit;
             
-            // Create and append the "Show More" button
             const $button = $(`<button class="toggle-card-button">
                 Show More (${remaining} more) \u25BC
             </button>`);
             
-            // Store initial state on the button
             $button.data('visible-count', initialLimit);
             $button.data('increment', increment);
             $button.data('total-items', totalItems);
             
-            // Attach the new click handler
             $button.on('click', function() {
-                // Pass the button itself and the associated list
                 showMoreCards($(this), $list); 
             });
             
@@ -290,102 +260,43 @@ function handleCardView($scope) {
     });
 }
 
-/**
- * Shows the next set of cards in a list (replaces toggleCardList).
- * @param {object} $button - The jQuery object of the toggle button.
- * @param {object} $list - The jQuery object of the card list container.
- */
 function showMoreCards($button, $list) {
     const $items = $list.children('.card-item');
-
-    // Use parseInt() to ensure all data is treated as a number
     const totalItems = parseInt($button.data('total-items') || 0);
     const increment = parseInt($button.data('increment') || 10);
     const visibleCount = parseInt($button.data('visible-count') || 0);
     
     const newVisibleCount = visibleCount + increment;
     
-    const remaining = totalItems - newVisibleCount;
-
-    // --- DIAGNOSTIC LOG ---
-    // Open your browser console (F12) and look for this message when you click the button.
-    console.log({
-        message: "Calculating 'Show More'...",
-        totalItems: totalItems,
-        visibleSoFar: visibleCount,
-        increment: increment,
-        newVisibleTotal: newVisibleCount,
-        remainingToShoW: remaining
-    });
-    // --- END LOG ---
-
-    // Show the next batch of items
     $items.slice(visibleCount, newVisibleCount).removeClass('hidden-card-item');
-    
-    // Update the button's state
     $button.data('visible-count', newVisibleCount);
     
+    const remaining = totalItems - newVisibleCount;
+    
     if (remaining <= 0) {
-        // This is the line that is firing too early.
-        // The log above will tell us why.
-        console.log("Hiding button because remaining is <= 0.");
         $button.hide();
     } else {
-        // Update the button text with the new remaining count
         $button.text(`Show More (${remaining} more) \u25BC`);
     }
 }
 
 
-function toggleCardList($list, $button, initialLimit) {
-    const isExpanded = $button.data('state') === 'expanded';
-    const $items = $list.children('.card-item');
-    const totalCount = $items.length;
-    const hiddenCount = totalCount - initialLimit;
-
-    if (!isExpanded) {
-        // EXPAND: Show all items
-        $items.slice(initialLimit).removeClass('hidden-card-item');
-        $button.text(`Show Less \u25B2`);
-        $button.data('state', 'expanded');
-    } else {
-        // COLLAPSE: Hide items past the limit
-        $items.slice(initialLimit).addClass('hidden-card-item');
-        $button.text(`Show More (${hiddenCount} more) \u25BC`);
-        $button.data('state', 'collapsed');
-    }
-}
-
-
-/* === YOUTUBE PLAYLIST CORE FUNCTIONS (YOUR ORIGINAL CODE ADAPTED) === */
-
-// IMPORTANT: REPLACE THIS KEY WITH YOUR ACTUAL, VALID YOUTUBE API KEY
-var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'  ; 
+var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY';
 var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
 function loadVids(PL, Category, BKcol) {
-    // Clear the grid immediately
     $('#Grid').empty(); 
     
-    // --- MOVED ---
-    // The text-update lines that were here are now moved
-    // into the 'success' block below.
-    // --- END MOVE ---
-
     var options = {
         part: 'snippet',
         key: key, 
-        maxResults: 500, 
+        maxResults: 50, 
         playlistId: PL
     }
 
     $.getJSON(URL, options, function (data) {
-        
-        // --- THIS IS THE FIX ---
-        // Update the title and description text *after* the API call succeeds.
         $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
         $('#playlist-description').text(`The latest videos from the ${Category.replace(/_/g, ' ')} playlist.`);
-        // --- END FIX ---
 
         if (data.error) {
              const errorMessage = `API Key/Access Error: ${data.error.message}. Check key restrictions.`;
@@ -404,24 +315,20 @@ function loadVids(PL, Category, BKcol) {
         handleCardView($('#content-area'));
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
-        const errorMessage = `API Error (Hard): ${jqX_HR.status} - ${errorThrown}.`;
+        const errorMessage = `API Error (Hard): ${jqXHR.status} - ${errorThrown}.`;
         $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
     });
 }
-
-
     
 function resultsLoop(data, Cat, BKcol) {
     $.each(data.items, function (i, item) {
-
         if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) return;
-
         var thumb = item.snippet.thumbnails.medium.url;
         var title = item.snippet.title;
         var desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
         var vid = item.snippet.resourceId.videoId;
 
-        // --- FIX: Ensure class is "card-item" ---
+        // Ensure class is "card-item"
         $('#Grid').append(`
         <div data-uk-filter="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
             <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
@@ -431,20 +338,15 @@ function resultsLoop(data, Cat, BKcol) {
             </a>
         </div>
         `);
-        // --- END FIX ---
     });
 }
-
 
 function topFunction() {
     document.body.scrollTop = 0; // For Safari
     document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 }
 
-/**
- * Filters the YouTube cards based on a search term.
- * @param {string} searchTerm - The text to filter by.
- */
+/* === FILTERING LOGIC === */
 function filterYouTubeCards(searchTerm) {
     searchTerm = searchTerm.toLowerCase();
     const $grid = $('#Grid');
@@ -455,51 +357,29 @@ function filterYouTubeCards(searchTerm) {
     let visibleCount = 0;
 
     if (searchTerm.length > 0) {
-        // A search is active, so hide the "Show More" button.
         $showMoreButton.hide();
-
         $allCards.each(function() {
             const $card = $(this);
             const title = $card.find('h3').text().toLowerCase();
             const desc = $card.find('p').text().toLowerCase();
 
             if (title.includes(searchTerm) || desc.includes(searchTerm)) {
-                // This card matches.
-                // We remove any pagination class and .show() it.
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
             } else {
-                // This card does not match. Hide it.
                 $card.hide();
             }
         });
-
-        // Show or hide the "no results" message
-        if (visibleCount === 0) {
-            $noResultsMessage.show();
-        } else {
-            $noResultsMessage.hide();
-        }
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
         
     } else {
-        // --- THIS IS THE FIX ---
-        // Search is empty, reset the view.
         $noResultsMessage.hide();
-        
-        // 1. Remove all inline 'style' attributes (from .show()/.hide())
         $allCards.removeAttr('style'); 
-        
-        // 2. Re-run handleCardView. This will re-apply
-        //    the .hidden-card-item class to cards 11+
-        //    and re-create the "Show More" button.
         handleCardView($('#content-area'));
-        // --- END FIX ---
     }
 }
 
-/**
- * Filters the Post cards based on a search term AND category.
- */
 function filterPostCards() {
     const searchTerm = $('#post-search-box').val().toLowerCase();
     const selectedCategory = $('#post-category-filter').val();
@@ -512,62 +392,29 @@ function filterPostCards() {
     let visibleCount = 0;
 
     if (searchTerm.length > 0 || selectedCategory !== "all") {
-        // A filter is active, so hide the "Show More" button.
         $showMoreButton.hide();
-
         $allCards.each(function() {
             const $card = $(this);
             const cardCategory = $card.data('category');
             const title = $card.find('h3').text().toLowerCase();
             const desc = $card.find('p').text().toLowerCase();
 
-            // Check if matches category
             const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
-            // Check if matches search term
             const searchMatch = (searchTerm === "" || title.includes(searchTerm) || desc.includes(searchTerm));
 
             if (categoryMatch && searchMatch) {
-                // This card matches.
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
             } else {
-                // This card does not match. Hide it.
                 $card.hide();
             }
         });
-
-        // Show or hide the "no results" message
-        if (visibleCount === 0) {
-            $noResultsMessage.show();
-        } else {
-            $noResultsMessage.hide();
-        }
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
         
     } else {
-        // --- NO FILTERS ---
-        // Search is empty AND category is "all", reset the view.
         $noResultsMessage.hide();
-        
-        // Remove all inline 'style' attributes (from .show()/.hide())
         $allCards.removeAttr('style'); 
-        
-        // Re-run handleCardView to reset pagination
         handleCardView($('#content-area'));
     }
-}
-
-/**
- * Helper function to load a simple HTML fragment into the content area.
- */
-function loadHtmlFragment(pageUrl, $contentArea) {
-    $.ajax({
-        url: pageUrl,
-        type: 'GET',
-        success: function(data) {
-            $contentArea.html(data);
-        },
-        error: function() {
-            $contentArea.html('<div class="error-message">Could not load content. The file may be missing.</div>');
-        }
-    });
 }
