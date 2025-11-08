@@ -192,19 +192,14 @@ a:hover {
 .posts-intro {
     font-family: var(--font-code);
     font-style: italic;
-    color: var(--text-light);
-    margin-top: -15px;
-}
-
+/* --- UPDATED: Collapsible Menu (YouTube) --- */
 .collapsible-content {
-    max-height: 500px;
-    overflow: hidden;
+    /* No max-height or overflow, let it expand naturally */
     transition: max-height 0.5s ease-in-out;
 }
 
-.collapsible-content.expanded {
-    max-height: 2000px; 
-}
+/* We don't need the .expanded class for height anymore */
+/* .collapsible-content.expanded { ... } */
 
 .expand-button {
     display: block;
