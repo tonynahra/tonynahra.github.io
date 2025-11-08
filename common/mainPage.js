@@ -64,11 +64,12 @@ $(document).ready(function () {
         loadContent(pageUrl);
     });
 
-    // Listener for ALL CARDS
+    // --- UPDATED CARD CLICK HANDLER ---
     $('body').on('click', '.card-item, .item', function(e) {
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
         if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
+            // This allows the "Open in new window" link to work normally
             return;
         }
         e.preventDefault(); 
@@ -76,7 +77,21 @@ $(document).ready(function () {
         
         const loadUrl = $link.attr('href');
         const $contentArea = $('#content-area');
+        
+        // --- THIS IS THE NEW LOGIC ---
+        let loadType = $link.data('load-type'); // e.g., 'html', 'image', 'iframe'
 
+        // If no data-load-type is specified, we DON'T guess anymore.
+        // We will just open it in a new tab.
+        if (!loadType) {
+            // This handles all standard external links (like GitHub)
+            // without trying to iframe them.
+            window.open(loadUrl, '_blank');
+            return; // Stop execution
+        }
+        // --- END NEW LOGIC ---
+
+        // --- If a data-load-type *is* specified, proceed as normal ---
         const $cardPage = $contentArea.find('.card-list-page').first();
         if ($cardPage.length) {
             $cardPage.hide();
@@ -96,25 +111,14 @@ $(document).ready(function () {
         `;
         const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
         $contentWrapper.html(backButtonHtml); 
-        
-        // --- THIS IS THE FIX ---
-        // 1. PREPEND the new content, so it's at the top.
         $contentArea.prepend($contentWrapper);
         
-        // 2. NOW, find the wrapper we just prepended and scroll to it.
         const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
         if ($scrollToElement.length) {
-            const scrollToTarget = $scrollToElement.offset().top - 20; // 20px offset
+            const scrollToTarget = $scrollToElement.offset().top - 20; 
             $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
         }
-        // --- END FIX ---
 
-        let loadType = $link.data('load-type');
-        if (!loadType) {
-            if (loadUrl.startsWith('http')) { loadType = 'iframe'; }
-            else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) { loadType = 'image'; }
-            else { loadType = 'html'; }
-        }
         const customHeight = $link.data('height') || '85vh';
 
         switch (loadType) {
@@ -129,9 +133,11 @@ $(document).ready(function () {
                 $contentWrapper.append(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
                 break;
             case 'iframe':
+                // Only links with data-load-type="iframe" will get here
                 $contentWrapper.append(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
                 break;
             default:
+                // Failsafe
                 window.open(loadUrl, '_blank');
         }
     });
@@ -142,7 +148,6 @@ $(document).ready(function () {
         $contentArea.find('.loaded-content-wrapper').remove();
         const $cardPage = $contentArea.find('.card-list-page').first().show();
 
-        // Scroll back to the top of the card list page
         if ($cardPage.length) {
             const scrollToTarget = $cardPage.offset().top - 20;
             $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
@@ -251,7 +256,6 @@ function loadContent(pageUrl) {
     $contentArea.empty();
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
     
-    // Scroll to the top of the content area
     const scrollToTarget = $contentArea.offset().top - 20; 
     $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
 
@@ -308,7 +312,6 @@ function handleCardView($scope) {
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
             
             $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
-            // We rely on the global delegated listener in $(document).ready()
             $list.after($button);
         }
     });
