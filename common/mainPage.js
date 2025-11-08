@@ -99,10 +99,14 @@ $(document).ready(function () {
         $contentArea.append($contentWrapper);
         
         // --- THIS IS THE SCROLL FIX ---
-        // Scroll to the top of the content area *immediately*
-        // This brings the "Back" button into view right away.
-        const scrollToTarget = $contentArea.offset().top - 20; 
-        $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+        // 1. Find the "Back" button wrapper we *just added*.
+        const $scrollToElement = $contentWrapper.find('.back-button-wrapper');
+        
+        // 2. Animate the scroll to that element's position.
+        if ($scrollToElement.length) {
+            const scrollToTarget = $scrollToElement.offset().top - 20; // 20px offset
+            $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+        }
         // --- END FIX ---
 
         let loadType = $link.data('load-type');
@@ -139,7 +143,7 @@ $(document).ready(function () {
         const $cardPage = $contentArea.find('.card-list-page').first().show();
 
         // --- THIS IS THE SCROLL FIX ---
-        // Scroll back to the top of the card list
+        // Scroll back to the top of the card list page
         if ($cardPage.length) {
             const scrollToTarget = $cardPage.offset().top - 20;
             $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
