@@ -87,10 +87,8 @@ $(document).ready(function () {
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
         
-        // Allow clicks on "Open in new window" to work normally
-        // This check is now for the modal, not the card
-        if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
-            // We let the link click through
+        // Allow clicks on "Open in new window" *inside the modal* to work
+        if ($(e.target).hasClass('open-new-window') || $(e.target).closest('.open-new-window').length) {
             return;
         }
 
@@ -100,23 +98,14 @@ $(document).ready(function () {
         const loadUrl = $link.attr('href');
         let loadType = $link.data('load-type'); // Get the *explicit* type
         
-        // Auto-guess load type if not specified
+        // --- UPDATED LOGIC ---
+        // If no type is specified, open in a new tab and STOP.
         if (!loadType) {
-            if (loadUrl.startsWith('http')) {
-                // Check for common sites that block iframes
-                if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
-                    // It's an external link, open in new tab and *don't* open modal
-                    window.open(loadUrl, '_blank');
-                    return; // Stop execution
-                } else {
-                    loadType = 'iframe'; // Assume other http links are fine
-                }
-            } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
-                loadType = 'image';
-            } else {
-                loadType = 'html';
-            }
+            window.open(loadUrl, '_blank');
+            return; 
         }
+        // --- END UPDATED LOGIC ---
+
 
         // --- NEW MODAL LOGIC ---
         const $modal = $('#content-modal');
@@ -144,11 +133,16 @@ $(document).ready(function () {
                 $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
                 break;
             case 'iframe':
-                $modalContent.html(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
+                // Check for sites that block iframes
+                if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
+                    $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here. Please use the "Open in new window" button.</div>');
+                } else {
+                    $modalContent.html(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
+                }
                 break;
             default:
                 // This case should no longer be reachable
-                window.open(loadUrl, '_blank');
+                $modalContent.html('<div class="error-message">Unknown content type.</div>');
                 return;
         }
         
@@ -280,7 +274,6 @@ function loadContent(pageUrl) {
     $contentArea.empty();
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
     
-    // We scroll to the top of the content area when loading a *new page*
     const scrollToTarget = $contentArea.offset().top - 20; 
     window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
 
