@@ -291,7 +291,7 @@ function loadVids(PL, Category, BKcol) {
     var options = {
         part: 'snippet',
         key: key, 
-        maxResults: 20, 
+        maxResults: 200, 
         playlistId: PL
     }
 
