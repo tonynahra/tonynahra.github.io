@@ -102,8 +102,8 @@ $(document).ready(function () {
         const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
         if ($scrollToElement.length) {
             const scrollToTarget = $scrollToElement.offset().top - 20; 
-            // Use native window.scrollTo
-            window.scrollTo({ top: scrollToTarget, behavior: 'smooth' });
+            // Use native INSTANT scroll
+            window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
         }
         // --- END FIX ---
 
@@ -143,8 +143,8 @@ $(document).ready(function () {
         // --- THIS IS THE SCROLL FIX ---
         if ($cardPage.length) {
             const scrollToTarget = $cardPage.offset().top - 20;
-            // Use native window.scrollTo
-            window.scrollTo({ top: scrollToTarget, behavior: 'smooth' });
+            // Use native INSTANT scroll
+            window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
         }
     });
 
@@ -187,8 +187,8 @@ $(document).ready(function () {
     
     // --- THIS IS THE SCROLL FIX ---
     $('body').on('click', '.scroll-to-top', function() {
-        // Use native window.scrollTo
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Use native INSTANT scroll
+        window.scrollTo({ top: 0, behavior: 'auto' });
     });
 
     // Load initial content
@@ -255,8 +255,8 @@ function loadContent(pageUrl) {
     
     // --- THIS IS THE SCROLL FIX ---
     const scrollToTarget = $contentArea.offset().top - 20; 
-    // Use native window.scrollTo
-    window.scrollTo({ top: scrollToTarget, behavior: 'smooth' });
+    // Use native INSTANT scroll
+    window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
     // --- END FIX ---
 
     $.ajax({
