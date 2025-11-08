@@ -192,6 +192,10 @@ a:hover {
 .posts-intro {
     font-family: var(--font-code);
     font-style: italic;
+    color: var(--text-light);
+    margin-top: -15px;
+} /* <-- *** THIS WAS THE MISSING BRACE *** */
+
 /* --- UPDATED: Collapsible Menu (YouTube) --- */
 .collapsible-content {
     /* No max-height or overflow, let it expand naturally */
