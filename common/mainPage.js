@@ -3,7 +3,6 @@
 $(document).ready(function () {
     
     // 1. Initialize all collapsible sections (YouTube menu on the left)
-    // NOTE: This MUST be defined before it is called.
     initializeCollapsibleSections();
     
     // 2. Attach event listener to all expand buttons (YouTube menu)
@@ -29,11 +28,6 @@ $(document).ready(function () {
     if (initialPage) {
         loadContent(initialPage);
     }
-    
-    // Your existing scroll-to-top logic (if you added the button)
-    // mybutton = document.getElementById("myBtn");
-    // window.onscroll = function() {scrollFunction()};
-    // ... (rest of scrollFunction) ...
 });
 
 
@@ -131,6 +125,7 @@ function loadContent(pageUrl) {
             if (isYouTubePage) {
                 // For YouTube, extract the inner container content
                 const $html = $(data);
+                // We use .html() on the parent to get the whole section, not just the inner div content
                 const $youtubeContent = $html.find('#youtube-card-container').parent().html(); 
                 $contentArea.html($youtubeContent);
                 
@@ -138,13 +133,13 @@ function loadContent(pageUrl) {
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
                 
                 // Initialize the YouTube content using the script
-                // We assume 'youtubeLoader.js' will be loaded separately or included here.
-                if (typeof loadVids === 'function') {
-                    // This assumes your old YouTube functions are now global or in this file
-                    const params = paramString.split(',');
+                const params = paramString.split(',');
+                // Ensure the parameter array has the expected number of elements
+                if (params.length === 3 && typeof loadVids === 'function') {
                     loadVids(params[0], params[1], params[2]);
                 } else {
-                    console.error("YouTube loading functions not found. Check youtubeLoader.js is included.");
+                    $contentArea.html('<div class="error-message">YouTube content structure error: Parameters missing or loadVids function not found.</div>');
+                    console.error("YouTube content structure error: Parameters:", params);
                 }
 
             } else {
@@ -155,13 +150,14 @@ function loadContent(pageUrl) {
             // 3. Apply card logic after content is loaded
             handleCardView($contentArea);
             
-            // 4. Re-initialize image modals (if defined globally)
-            if (window.initializeImageModal) {
-                window.initializeImageModal(); 
+            // 4. Re-initialize image modals (if defined globally by image-modal.js)
+            if (typeof initializeImageModal === 'function') {
+                initializeImageModal(); 
             }
         },
-        error: function() {
-            $contentArea.html('<div class="error-message">Could not load content. Please try again.</div>');
+        error: function(jqXHR, textStatus, errorThrown) {
+            $contentArea.html(`<div class="error-message">Could not load content from ${pageUrl}. Status: ${textStatus} (${errorThrown})</div>`);
+            console.error(`AJAX Request Failed for ${pageUrl}:`, jqXHR, textStatus, errorThrown);
         }
     });
 }
@@ -221,50 +217,66 @@ function toggleCardList($list, $button, initialLimit) {
     }
 }
 
+
 /* === YOUTUBE PLAYLIST CORE FUNCTIONS (YOUR ORIGINAL CODE ADAPTED) === */
 
-// IMPORTANT: Your old YouTube script used a global 'PARAM'. Here we use arguments 
-// passed from the loadContent function to make it work dynamically.
-var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'  ;
+// IMPORTANT: REPLACE THIS KEY WITH YOUR ACTUAL, VALID YOUTUBE API KEY
+var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'  ; 
 var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
-/* --- Ensure this is in your common/mainPage.js file --- */
-
-// ... (Your previous loadContent function remains the same, but notice the update below)
-
-
+/* --- Replace the existing loadVids function in common/mainPage.js with this --- */
 
 function loadVids(PL, Category, BKcol) {
 
     // Clear the grid first, as content is re-loaded dynamically
     $('#Grid').empty(); 
     
-    // Update the title dynamically based on the Category param
+    // Update the title dynamically
     $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
     $('#playlist-description').text(`The latest videos from the ${Category.replace(/_/g, ' ')} playlist, displayed as cards.`);
 
     var options = {
         part: 'snippet',
-        key: key,
+        key: key, // Ensure 'key' holds your ACTUAL API key
         maxResults: 20, 
         playlistId: PL
     }
 
+    console.log(`Attempting to load playlist ${PL} with key ${key.substring(0, 5)}...`);
 
+    $.getJSON(URL, options, function (data) {
+        // --- SUCCESS HANDLER (Status 200 OK) ---
+        
+        if (data.error) {
+             // 1. CRITICAL CHECK: Google often sends an error object on invalid key/limit, 
+             //    even with a 200 OK status.
+            const errorMessage = `API Key/Access Error: ${data.error.message}. Check your API Key's restrictions or limits.`;
+            $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
+            console.error("YouTube API Failure (JSON payload):", data.error);
+            return; // STOP EXECUTION
+        }
+        
+        if (!data.items || data.items.length === 0) {
+            // 2. CHECK: Playlist is valid but empty
+             $('#Grid').html(`<p class="error-message">Playlist is valid but contains no public videos.</p>`);
+             console.warn("YouTube API Warning: Playlist has no items.", data);
+             return;
+        }
 
-$.getJSON(URL, options, function (data) {
-        // SUCCESS: runs resultsLoop
+        // Proceed only if data is clean and contains items
         resultsLoop(data, Category, BKcol);
+        
+        // After loading videos, re-run the card view logic to handle 'Show More' if > 10
         handleCardView($('#content-area'));
+
     }).fail(function(jqXHR, textStatus, errorThrown) {
-        // FAILURE: Display an error in the grid
-        const errorMessage = `API Error: ${jqXHR.responseJSON ? jqXHR.responseJSON.error.message : errorThrown}. Please check your API Key and Network tab.`;
+        // --- FAILURE HANDLER (Network/Hard Error) ---
+        const errorMessage = `API Error (Hard): ${jqXHR.status} - ${errorThrown}. Check Network tab for details.`;
         $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
-        console.error("YouTube API Request Failed:", jqXHR.responseJSON || errorThrown);
+        console.error("YouTube API Request Failed (Network):", jqXHR, textStatus, errorThrown);
     });
-    
-    
 }
+
     
 function resultsLoop(data, Cat, BKcol) {
     $.each(data.items, function (i, item) {
@@ -273,7 +285,8 @@ function resultsLoop(data, Cat, BKcol) {
 
         var thumb = item.snippet.thumbnails.medium.url;
         var title = item.snippet.title;
-        var desc = item.snippet.description.substring(0, 100) + '...';
+        // Check if description exists before substring
+        var desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
         var vid = item.snippet.resourceId.videoId;
 
         $('#Grid').append(`
@@ -287,8 +300,7 @@ function resultsLoop(data, Cat, BKcol) {
         `);
     });
 }
- 
-// You can keep the old topFunction if you are using a button for it
+
 function topFunction() {
     document.body.scrollTop = 0; // For Safari
     document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
