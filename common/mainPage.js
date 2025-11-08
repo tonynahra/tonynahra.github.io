@@ -10,8 +10,7 @@ $(document).ready(function () {
         toggleCollapsibleSection($(this));
     });
     
-    // 3. Attach event listener for all nav links (using delegation)
-    // This ONLY handles the left-side menu.
+    // 3. Attach event listener for ALL nav links (using delegation)
     $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
         
@@ -21,7 +20,6 @@ $(document).ready(function () {
             $(this).addClass('active-nav');
         }
         
-        // Load the new content
         const pageUrl = $(this).data('page');
         
         // Store this as the "page to go back to"
@@ -33,10 +31,16 @@ $(document).ready(function () {
     });
 
     // 4. Click handler for all cards (posts and youtube)
-    $('#content-area').on('click', '.card-item, .item', function(e) {
+    $('body').on('click', '.card-item, .item', function(e) {
         
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
+
+        // Don't do anything if the click was ON the link itself
+        // (this allows the "Open in new window" link to work)
+        if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
+            return;
+        }
 
         e.preventDefault(); 
         e.stopPropagation(); 
@@ -49,7 +53,7 @@ $(document).ready(function () {
         if ($cardPage.length) {
             $cardPage.hide();
         } else {
-            console.warn("Could not find .card-list-page to hide. Proceeding anyway.");
+            console.warn("Could not find .card-list-page to hide.");
         }
 
         // 2. Create the "Back" and "Open" buttons
@@ -71,7 +75,6 @@ $(document).ready(function () {
         // 4. Determine content type and load it
         let loadType = $link.data('load-type');
         
-        // Auto-guess load type if not provided
         if (!loadType) {
             if (loadUrl.startsWith('http')) {
                 loadType = 'iframe';
@@ -111,18 +114,20 @@ $(document).ready(function () {
                 $contentArea.append($contentWrapper);
                 break;
             default:
-                // Failsafe: open in new tab if logic fails
                 window.open(loadUrl, '_blank');
         }
     });
 
-    // 5. Click handler ONLY for the new "Back" button
-    $('#content-area').on('click', '.js-back-to-list', function() {
+    // 5. Click handler ONLY for the "Back" button
+    // This is now delegated from the body
+    $('body').on('click', '.js-back-to-list', function() {
+        const $contentArea = $('#content-area');
+        
         // Remove the loaded content wrapper
-        $(this).closest('.loaded-content-wrapper').remove();
+        $contentArea.find('.loaded-content-wrapper').remove();
         
         // Show the hidden card list page (which still has its filters)
-        $('#content-area').find('.card-list-page').first().show();
+        $contentArea.find('.card-list-page').first().show();
     });
     
     // 6. Load initial content
@@ -136,6 +141,7 @@ $(document).ready(function () {
 
 /* === COLLAPSIBLE MENU LOGIC === */
 function initializeCollapsibleSections() {
+    // This logic is fine, no changes needed.
     $('.expand-button').each(function() {
         const $button = $(this);
         const targetId = $button.data('target');
@@ -160,6 +166,7 @@ function initializeCollapsibleSections() {
 }
 
 function toggleCollapsibleSection($button) {
+    // This logic is fine, no changes needed.
     const targetId = $button.data('target');
     const $target = $('#' + targetId);
     const isExpanded = $button.hasClass('expanded');
@@ -188,27 +195,30 @@ function toggleCollapsibleSection($button) {
 function loadContent(pageUrl) {
     const $contentArea = $('#content-area');
     
-    // Clear the entire area for a fresh page load
-    $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
-    
     // --- THIS IS THE FIX ---
-    // Turn OFF all previous delegated listeners on the content area
-    // before we load new content. This stops duplicate listeners.
-    $contentArea.off('input', '#youtube-search-box');
-    $contentArea.off('input', '#post-search-box');
-    $contentArea.off('change', '#post-category-filter');
+    // 1. Explicitly EMPTY the content area. This destroys all old content
+    //    and prevents any duplicates.
+    $contentArea.empty();
+    
+    // 2. Add the spinner.
+    $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
     // --- END FIX ---
+
+    // We no longer need to .off() listeners, because they are
+    // attached to the BODY, not the $contentArea.
 
     $.ajax({
         url: pageUrl,
         type: 'GET',
         success: function(data) {
+            // Replace spinner with new content
+            $contentArea.html(data); 
+
             const isYouTubePage = pageUrl.includes('youtube_page.html');
             const isPostsPage = pageUrl.includes('posts.html'); 
             
             if (isYouTubePage) {
-                $contentArea.html(data); 
-                // Attach listener
+                // Attach listener *now* that the element exists
                 $contentArea.on('input', '#youtube-search-box', function() {
                     filterYouTubeCards($(this).val());
                 });
@@ -222,22 +232,20 @@ function loadContent(pageUrl) {
                     $contentArea.html('<div class="error-message">YouTube parameter error.</div>');
                 }
 
-            } else {
-                $contentArea.html(data);
+            } else if (isPostsPage) {
+                // Attach listeners *now* that the elements exist
+                $contentArea.on('input', '#post-search-box', function() {
+                    filterPostCards();
+                });
+                $contentArea.on('change', '#post-category-filter', function() {
+                    filterPostCards();
+                });
                 
-                if (isPostsPage) {
-                    // Attach listeners
-                    $contentArea.on('input', '#post-search-box', function() {
-                        filterPostCards();
-                    });
-                    $contentArea.on('change', '#post-category-filter', function() {
-                        filterPostCards();
-                    });
-                }
-                
-                if (!pageUrl.includes('about.html') && !pageUrl.includes('guide.html')) {
-                    handleCardView($contentArea);
-                }
+                handleCardView($contentArea);
+            
+            } else if (!pageUrl.includes('about.html') && !pageUrl.includes('guide.html')) {
+                // Handle "Certificates" page if it's just cards
+                handleCardView($contentArea);
             }
 
             if (typeof initializeImageModal === 'function') {
@@ -252,7 +260,7 @@ function loadContent(pageUrl) {
 
 /* === CARD VIEW (Show More) LOGIC === */
 function handleCardView($scope) {
-    // We target .card-list *within* the scope
+    // This logic is fine, no changes needed
     $scope.find('.card-list').each(function() {
         const $list = $(this);
         const $items = $list.children('.card-item');
@@ -284,6 +292,7 @@ function handleCardView($scope) {
 }
 
 function showMoreCards($button, $list) {
+    // This logic is fine, no changes needed
     const $items = $list.children('.card-item');
     const totalItems = parseInt($button.data('total-items') || 0);
     const increment = parseInt($button.data('increment') || 10);
@@ -309,12 +318,13 @@ var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; // Your API Key
 var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
 function loadVids(PL, Category, BKcol) {
+    // This logic is fine, no changes needed
     $('#Grid').empty(); 
     
     var options = {
         part: 'snippet',
         key: key, 
-        maxResults: 50, // Ask for up to 50 videos
+        maxResults: 50, 
         playlistId: PL
     }
 
@@ -345,6 +355,7 @@ function loadVids(PL, Category, BKcol) {
 }
     
 function resultsLoop(data, Cat, BKcol) {
+    // This logic is fine, no changes needed
     $.each(data.items, function (i, item) {
         if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) return;
         var thumb = item.snippet.thumbnails.medium.url;
@@ -371,6 +382,7 @@ function topFunction() {
 
 /* === FILTERING LOGIC === */
 function filterYouTubeCards(searchTerm) {
+    // This logic is fine, no changes needed
     searchTerm = searchTerm.toLowerCase();
     const $grid = $('#Grid');
     const $allCards = $grid.children('.card-item');
@@ -404,6 +416,7 @@ function filterYouTubeCards(searchTerm) {
 }
 
 function filterPostCards() {
+    // This logic is fine, no changes needed
     const searchTerm = $('#post-search-box').val().toLowerCase();
     const selectedCategory = $('#post-category-filter').val();
     
