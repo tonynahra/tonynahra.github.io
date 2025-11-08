@@ -1,6 +1,6 @@
 var lastContentPage = 'tech-posts.html'; 
 
-// --- NEW: List of common words to ignore ---
+// --- List of common words to ignore ---
 const STOP_WORDS = new Set([
     'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have', 
     'he', 'in', 'is', 'it', 'its', 'of', 'on', 'or', 'that', 'the', 'to', 'was', 
@@ -17,7 +17,7 @@ $(document).ready(function () {
     
     // --- EVENT LISTENERS (DELEGATED) ---
 
-    // Listener for "Show More" (Left Menu)
+    // --- FIX: This is now a delegated listener ---
     $('body').on('click', '.expand-button', function() {
         toggleCollapsibleSection($(this));
     });
@@ -300,7 +300,17 @@ function resultsLoop(data, Cat, BKcol) {
     $.each(data.items, function (i, item) {
         if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) return;
         
-        const thumb = item.snippet.thumbnails.medium.url;
+        // --- FIX: Check for thumbnails and provide a fallback ---
+        let thumb = 'https://placehold.co/320x180/2c3e50/66fcf1?text=Video'; // Default placeholder
+        if (item.snippet.thumbnails) {
+            if (item.snippet.thumbnails.medium) {
+                thumb = item.snippet.thumbnails.medium.url;
+            } else if (item.snippet.thumbnails.default) {
+                thumb = item.snippet.thumbnails.default.url;
+            }
+        }
+        // --- END FIX ---
+        
         const title = item.snippet.title;
         const desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
         const vid = item.snippet.resourceId.videoId;
@@ -317,7 +327,7 @@ function resultsLoop(data, Cat, BKcol) {
     });
 }
 
-/* === --- UPDATED: SMART KEYWORD LOGIC (FIXED) --- === */
+/* === --- SMART KEYWORD LOGIC --- === */
 
 /**
  * Auto-populates a <select> dropdown by reading ALL text from cards and finding
@@ -327,31 +337,28 @@ function resultsLoop(data, Cat, BKcol) {
  */
 function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
-    if (!$filter.length) return; // Don't run if the filter isn't on the page
+    if (!$filter.length) return; 
 
     const wordCounts = {};
     
     try {
-        // Find all cards and get their text content
         $(`${listId} .card-item`).each(function() {
             const $card = $(this);
-            // Combine text from all relevant sources
             const textSources = [
                 $card.find('h3').text(),
                 $card.find('p').text(),
                 $card.find('.card-category').text(),
                 $card.find('img').attr('alt'),
-                $card.data('category'), // Keep data-category as a source
+                $card.data('category'), 
             ];
             
             const combinedText = textSources.join(' ');
-
-            // --- FIX: Use a safer regex that splits on whitespace and punctuation ---
-            const words = combinedText.split(/[\s,.\-()&/|:!?\[\]"']+/); 
+            
+            // --- FIX: More robust regex for splitting ---
+            const words = combinedText.split(/[^a-zA-Z0-9'-]+/); // Allow hyphens and apostrophes
             
             words.forEach(word => {
                 // Remove any remaining non-alphanumeric characters (like 'é' becomes 'e')
-                // and handle potential errors from weird characters.
                 const cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
                 
                 if (cleanWord.length > 2 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
@@ -365,10 +372,8 @@ function populateSmartKeywords(listId, filterId) {
             .slice(0, 30)
             .map(([word]) => word);
 
-        // Clear previous options (except the first one)
         $filter.children('option:not(:first)').remove();
         
-        // Create and append <option> tags
         sortedKeywords.forEach(key => {
             $filter.append($('<option>', {
                 value: key,
@@ -378,14 +383,11 @@ function populateSmartKeywords(listId, filterId) {
     
     } catch (error) {
         console.error("Error populating smart keywords:", error);
-        // Don't break the page, just log the error.
     }
 }
 
 /**
  * Gets all searchable text from a card.
- * @param {object} $card - The jQuery object for the card.
- * @returns {string} - A string of all searchable text.
  */
 function getCardSearchableText($card) {
     const textSources = [
@@ -395,7 +397,6 @@ function getCardSearchableText($card) {
         $card.find('img').attr('alt'),
         $card.data('category')
     ];
-    // --- FIX: Ensure all items are strings before joining ---
     return textSources
         .map(text => String(text || '')) // Convert null/undefined to empty string
         .join(' ')
@@ -403,7 +404,7 @@ function getCardSearchableText($card) {
 }
 
 
-/* === --- UPDATED: FILTERING LOGIC --- === */
+/* === --- FILTERING LOGIC --- === */
 
 function filterYouTubeCards() {
     const searchTerm = $('#youtube-search-box').val().toLowerCase();
