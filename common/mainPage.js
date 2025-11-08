@@ -24,7 +24,6 @@ $(document).ready(function () {
         const pageUrl = $(this).data('page');
         
         // Store this as the "page to go back to"
-        // We only store it if it's a card page or main page
         if (pageUrl && pageUrl.includes('.html') && !pageUrl.includes('guide.html') && !pageUrl.includes('about.html')) {
             lastContentPage = pageUrl; 
         }
@@ -35,7 +34,6 @@ $(document).ready(function () {
     // 4. *** UPDATE THIS HANDLER ***
     $('#content-area').on('click', '.card-item, .item', function(e) {
         
-        // Find the first <a> tag inside the card
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
 
@@ -47,13 +45,15 @@ $(document).ready(function () {
 
         // --- NEW STATE-PRESERVING LOGIC ---
         
-        // 1. *** FIX: Use .children() instead of .find() ***
-        const $cardPage = $contentArea.children('.card-list-page');
+        // 1. *** FIX: Use .find().first() and remove the destructive 'else' ***
+        const $cardPage = $contentArea.find('.card-list-page').first(); // Use .find() to be more robust
         if ($cardPage.length) {
             $cardPage.hide();
         } else {
-            $contentArea.empty();
+            // BUG FIX: Do nothing. Don't empty the content area.
+            console.warn("Could not find .card-list-page to hide. Proceeding anyway.");
         }
+        // --- END FIX ---
 
         // 2. Create the "Back" and "Open" buttons
         const backButtonHtml = `
@@ -116,7 +116,6 @@ $(document).ready(function () {
                 $contentArea.append($contentWrapper);
                 break;
             default:
-                // Fallback (shouldn't be reached by new logic)
                 window.open(loadUrl, '_blank');
         }
     });
@@ -126,8 +125,8 @@ $(document).ready(function () {
         // Remove the loaded content
         $(this).closest('.loaded-content-wrapper').remove();
         
-        // *** FIX: Use .children() instead of .find() ***
-        $('#content-area').children('.card-list-page').show();
+        // *** FIX: Use .find().first() to be robust ***
+        $('#content-area').find('.card-list-page').first().show();
     });
     
     // 6. Load initial content
