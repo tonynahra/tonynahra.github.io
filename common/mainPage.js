@@ -32,6 +32,24 @@ function decodeText(text) {
 
 $(document).ready(function () {
     
+    // --- NEW: Inject the modal HTML on page load ---
+    $('body').append(`
+        <div id="content-modal" class="modal-backdrop">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="modal-close-btn">&larr; Close</button>
+                    <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                        Open in new window &nearr;
+                    </a>
+                </div>
+                <div id="modal-content-area">
+                    <!-- Content (iframe, image, html) will be loaded here -->
+                </div>
+            </div>
+        </div>
+    `);
+    // --- END NEW ---
+
     initializeCollapsibleSections();
     
     // --- EVENT LISTENERS (DELEGATED) ---
@@ -64,93 +82,100 @@ $(document).ready(function () {
         loadContent(pageUrl);
     });
 
-    // Listener for ALL CARDS
+    // --- UPDATED: Listener for ALL CARDS (now opens modal) ---
     $('body').on('click', '.card-item, .item', function(e) {
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
+        
+        // Allow clicks on "Open in new window" to work normally
+        // This check is now for the modal, not the card
         if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
+            // We let the link click through
             return;
         }
+
         e.preventDefault(); 
         e.stopPropagation(); 
         
         const loadUrl = $link.attr('href');
-        const $contentArea = $('#content-area');
-        const loadType = $link.data('load-type'); // Get the *explicit* type
-
-        // ONLY load content in-page if data-load-type is specified.
-        if (loadType) {
-            const $cardPage = $contentArea.find('.card-list-page').first();
-            if ($cardPage.length) {
-                $cardPage.hide();
-            } else {
-                console.warn("Could not find .card-list-page to hide.");
-            }
-
-            const backButtonHtml = `
-                <div class="back-button-wrapper">
-                    <button class="js-back-to-list">
-                        &larr; Back
-                    </button>
-                    <a href="${loadUrl}" class="open-new-window" target="_blank" rel="noopener noreferrer">
-                        Open in new window &nearr;
-                    </a>
-                </div>
-            `;
-            const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
-            $contentWrapper.html(backButtonHtml); 
-            
-            // --- THIS IS THE FIX ---
-            // 1. PREPEND the new content, so it's at the top.
-            $contentArea.prepend($contentWrapper);
-            
-            // 2. NOW, find the wrapper we just prepended and scroll to it.
-            const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
-            if ($scrollToElement.length) {
-                const scrollToTarget = $scrollToElement.offset().top - 20; // 20px offset
-                // Use native INSTANT scroll
-                window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
-            }
-            // --- END FIX ---
-
-            const customHeight = $link.data('height') || '85vh';
-
-            switch (loadType) {
-                case 'html':
-                    $.ajax({
-                        url: loadUrl, type: 'GET',
-                        success: function(data) { $contentWrapper.append(data); },
-                        error: function() { $contentWrapper.append('<div class="error-message">Could not load content.</div>'); }
-                    });
-                    break;
-                case 'image':
-                    $contentWrapper.append(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
-                    break;
-                case 'iframe':
-                    $contentWrapper.append(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
-                    break;
-                default:
+        let loadType = $link.data('load-type'); // Get the *explicit* type
+        
+        // Auto-guess load type if not specified
+        if (!loadType) {
+            if (loadUrl.startsWith('http')) {
+                // Check for common sites that block iframes
+                if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
+                    // It's an external link, open in new tab and *don't* open modal
                     window.open(loadUrl, '_blank');
+                    return; // Stop execution
+                } else {
+                    loadType = 'iframe'; // Assume other http links are fine
+                }
+            } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+                loadType = 'image';
+            } else {
+                loadType = 'html';
             }
-        } 
-        else {
-            window.open(loadUrl, '_blank');
         }
+
+        // --- NEW MODAL LOGIC ---
+        const $modal = $('#content-modal');
+        const $modalContent = $('#modal-content-area');
+        const $modalOpenLink = $modal.find('.open-new-window');
+
+        // 1. Clear old content
+        $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
+        
+        // 2. Set the "Open in new window" link href
+        $modalOpenLink.attr('href', loadUrl);
+        
+        // 3. Load new content
+        const customHeight = $link.data('height') || '85vh';
+
+        switch (loadType) {
+            case 'html':
+                $.ajax({
+                    url: loadUrl, type: 'GET',
+                    success: function(data) { $modalContent.html(data); },
+                    error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
+                });
+                break;
+            case 'image':
+                $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
+                break;
+            case 'iframe':
+                $modalContent.html(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
+                break;
+            default:
+                // This case should no longer be reachable
+                window.open(loadUrl, '_blank');
+                return;
+        }
+        
+        // 4. Show the modal
+        $modal.fadeIn(200);
     });
 
-    // Listener for the "Back" button
-    $('body').on('click', '.js-back-to-list', function() {
-        const $contentArea = $('#content-area');
-        $contentArea.find('.loaded-content-wrapper').remove();
-        const $cardPage = $contentArea.find('.card-list-page').first().show();
-
-        // --- THIS IS THE SCROLL FIX ---
-        if ($cardPage.length) {
-            const scrollToTarget = $cardPage.offset().top - 20;
-            // Use native INSTANT scroll
-            window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+    // --- NEW: Listener for the Modal "Close" button ---
+    $('body').on('click', '.modal-close-btn', function() {
+        const $modal = $('#content-modal');
+        const $modalContent = $('#modal-content-area');
+        
+        // Hide the modal
+        $modal.fadeOut(200);
+        
+        // Clear the content to stop videos/etc. from playing
+        $modalContent.html('');
+    });
+    
+    // Optional: Click backdrop to close
+    $('body').on('click', '#content-modal', function(e) {
+        if (e.target.id === 'content-modal') {
+            $(this).find('.modal-close-btn').click();
         }
     });
+    // --- END NEW MODAL LOGIC ---
+
 
     // --- All filter listeners ---
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
@@ -189,9 +214,7 @@ $(document).ready(function () {
         }
     });
     
-    // --- THIS IS THE SCROLL FIX ---
     $('body').on('click', '.scroll-to-top', function() {
-        // Use native INSTANT scroll
         window.scrollTo({ top: 0, behavior: 'auto' });
     });
 
@@ -257,11 +280,9 @@ function loadContent(pageUrl) {
     $contentArea.empty();
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
     
-    // --- THIS IS THE SCROLL FIX ---
+    // We scroll to the top of the content area when loading a *new page*
     const scrollToTarget = $contentArea.offset().top - 20; 
-    // Use native INSTANT scroll
     window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
-    // --- END FIX ---
 
     $.ajax({
         url: pageUrl,
@@ -316,7 +337,6 @@ function handleCardView($scope) {
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
             
             $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
-            // We rely on the global delegated listener in $(document).ready()
             $list.after($button);
         }
     });
