@@ -8,50 +8,93 @@ $(document).ready(function () {
         toggleCollapsibleSection($(this));
     });
     
-    // 3. Attach event listener to all dynamic navigation links
+    // 3. Attach event listener to all dynamic navigation links    
     $('.nav-link').on('click', function(e) {
         e.preventDefault();
+        
+        // Update active state in the left menu
         $('.nav-link').removeClass('active-nav');
         $(this).addClass('active-nav');
+        
+        // Load the new content
         const pageUrl = $(this).data('page');
+        
+        // --- NEW: Store this as the "page to go back to" ---
+        // We only store it if it's not the guide
+        if (pageUrl && pageUrl !== 'guide.html') {
+            lastContentPage = pageUrl; 
+        }
+        // --- END NEW ---
+
         loadContent(pageUrl);
     });
-    
-    $('#content-area').on('click', '.card-item', function(e) {
+
+    // 4. *** REPLACE THIS HANDLER ***
+    // This is the new, robust click handler for ALL cards
+    $('#content-area').on('click', '.card-item, .item', function(e) {
         
-        const $link = $(this).find('.content-loader-link');
+        // Find the first <a> tag inside the card
+        const $link = $(this).find('a').first(); 
+        
+        // If no link is found, do nothing.
         if (!$link.length) { return; }
-        e.preventDefault(); 
+
+        e.preventDefault(); // Stop the link from firing
+        e.stopPropagation(); // Stop the event from bubbling
         
         const loadType = $link.data('load-type');
         const loadUrl = $link.attr('href');
-        const $contentArea = $('#content-area');
-    
-        // --- THIS IS THE NEW LOGIC ---
-        // Get the custom height. Default to '85vh' if not specified.
-        const customHeight = $link.data('height') || '85vh';
-        // --- END NEW LOGIC ---
-    
-        $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
-    
-        switch (loadType) {
-            case 'html':
-                loadHtmlFragment(loadUrl, $contentArea);
-                break;
-            case 'image':
-                const imgHtml = `
-                    <div class="image-wrapper">
-                        <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
-                    </div>`;
-                $contentArea.html(imgHtml);
-                break;
-            case 'iframe':
-                // --- UPDATED: We now apply the height as an inline style ---
-                const iframeHtml = `<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`;
-                $contentArea.html(iframeHtml);
-                break;
-            default:
-                window.open(loadUrl, '_blank');
+        const $contentArea = $('#content-area'); // The container
+
+        // --- NEW: The Back Button HTML ---
+        // It's a 'nav-link' so our other click handler will make it work
+        const backButtonHtml = `
+            <div class="back-button-wrapper">
+                <a href="javascript:void(0)" class="nav-link" data-page="${lastContentPage}">
+                    &larr; Back
+                </a>
+            </div>
+        `;
+
+        // Check if it's a special dynamic load command
+        if (loadType) {
+            const customHeight = $link.data('height') || '85vh';
+            
+            // Show loading spinner
+            $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
+
+            switch (loadType) {
+                case 'html':
+                    // We must use AJAX here to prepend the back button
+                    $.ajax({
+                        url: loadUrl,
+                        type: 'GET',
+                        success: function(data) {
+                            $contentArea.html(backButtonHtml + data);
+                        },
+                        error: function() {
+                            $contentArea.html(backButtonHtml + '<div class="error-message">Could not load content.</div>');
+                        }
+                    });
+                    return; // Return because this is async
+                case 'image':
+                    const imgHtml = `
+                        <div class="image-wrapper">
+                            <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
+                        </div>`;
+                    $contentArea.html(backButtonHtml + imgHtml);
+                    break;
+                case 'iframe':
+                    const iframeHtml = `<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`;
+                    $contentArea.html(backButtonHtml + iframeHtml);
+                    break;
+                default:
+                    // Fallback for an unknown data-load-type
+                    window.open(loadUrl, '_blank');
+            }
+        } else {
+            // It's a standard link (no data-load-type). Just open it in a new tab.
+            window.open(loadUrl, '_blank');
         }
     });
 
@@ -59,8 +102,11 @@ $(document).ready(function () {
     // 5. Load initial content (the first link marked 'active-nav')
     const initialPage = $('.nav-link.active-nav').data('page');
     if (initialPage) {
+        // Set the initial 'back' page
+        lastContentPage = initialPage;
         loadContent(initialPage);
     }
+    
 });
 /* === COLLAPSIBLE MENU LOGIC (Left Side YouTube Menu) === */
 
@@ -372,21 +418,23 @@ function resultsLoop(data, Cat, BKcol) {
 
         var thumb = item.snippet.thumbnails.medium.url;
         var title = item.snippet.title;
-        // Check if description exists before substring
         var desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
         var vid = item.snippet.resourceId.videoId;
 
+        // --- FIX: Ensure class is "card-item" ---
         $('#Grid').append(`
         <div data-uk-filter="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
-            <a href="https://www.youtube.com/embed/${vid}" data-uk-lightbox data-lightbox-type="iframe">
+            <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
                <img class="YTi" src="${thumb}" alt="${title}" >
                <h3>${title}</h3>
                <p>${desc}</p>
             </a>
         </div>
         `);
+        // --- END FIX ---
     });
 }
+
 
 function topFunction() {
     document.body.scrollTop = 0; // For Safari
