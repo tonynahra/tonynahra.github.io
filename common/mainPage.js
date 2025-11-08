@@ -96,16 +96,14 @@ $(document).ready(function () {
         `;
         const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
         $contentWrapper.html(backButtonHtml); 
-        
-        // --- THIS IS THE FIX ---
-        // 1. PREPEND the new content, so it's at the top.
         $contentArea.prepend($contentWrapper);
         
-        // 2. NOW, find the wrapper we just prepended and scroll to it.
+        // --- THIS IS THE SCROLL FIX ---
         const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
         if ($scrollToElement.length) {
-            const scrollToTarget = $scrollToElement.offset().top - 20; // 20px offset
-            $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+            const scrollToTarget = $scrollToElement.offset().top - 20; 
+            // Use native window.scrollTo
+            window.scrollTo({ top: scrollToTarget, behavior: 'smooth' });
         }
         // --- END FIX ---
 
@@ -142,10 +140,11 @@ $(document).ready(function () {
         $contentArea.find('.loaded-content-wrapper').remove();
         const $cardPage = $contentArea.find('.card-list-page').first().show();
 
-        // Scroll back to the top of the card list page
+        // --- THIS IS THE SCROLL FIX ---
         if ($cardPage.length) {
             const scrollToTarget = $cardPage.offset().top - 20;
-            $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+            // Use native window.scrollTo
+            window.scrollTo({ top: scrollToTarget, behavior: 'smooth' });
         }
     });
 
@@ -185,8 +184,11 @@ $(document).ready(function () {
             $scrollTopBtn.removeClass('show');
         }
     });
+    
+    // --- THIS IS THE SCROLL FIX ---
     $('body').on('click', '.scroll-to-top', function() {
-        $('html, body').animate({ scrollTop: 0 }, 'smooth');
+        // Use native window.scrollTo
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     // Load initial content
@@ -251,9 +253,11 @@ function loadContent(pageUrl) {
     $contentArea.empty();
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
     
-    // Scroll to the top of the content area
+    // --- THIS IS THE SCROLL FIX ---
     const scrollToTarget = $contentArea.offset().top - 20; 
-    $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+    // Use native window.scrollTo
+    window.scrollTo({ top: scrollToTarget, behavior: 'smooth' });
+    // --- END FIX ---
 
     $.ajax({
         url: pageUrl,
