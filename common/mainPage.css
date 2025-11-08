@@ -559,3 +559,43 @@ a:hover {
     border: 1px solid var(--bg-medium);
 }
 
+/* --- ADD THESE NEW STYLES for about.html --- */
+
+/* Keeps the "Hi, I'm Tony" header */
+.cv-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    font-family: var(--font-code);
+    font-size: 0.95rem;
+    padding: 10px;
+    background: var(--bg-medium);
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Styles the new "My Background" and "Interests" headings */
+.about-heading {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    padding-bottom: 10px;
+    margin-top: 25px;
+    border-bottom: 1px solid var(--bg-medium);
+}
+
+/* Styles the content sections */
+.about-content {
+    padding: 15px 5px 0 5px; /* Simple top/side padding, no box */
+}
+
+.about-content ul {
+    list-style-type: disc;
+    padding-left: 30px;
+    margin-top: 10px;
+}
+
+.about-content p, .about-content li {
+    font-size: 1rem;
+    line-height: 1.6;
+}
