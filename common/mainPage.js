@@ -108,6 +108,11 @@ function toggleCollapsibleSection($button) {
  * Loads content from a given URL into the #content-area.
  * @param {string} pageUrl - The URL of the content file (e.g., 'posts.html').
  */
+
+/**
+ * Loads content from a given URL into the #content-area.
+ * @param {string} pageUrl - The URL of the content file (e.g., 'posts.html').
+ */
 function loadContent(pageUrl) {
     const $contentArea = $('#content-area');
     
@@ -119,44 +124,38 @@ function loadContent(pageUrl) {
         url: pageUrl,
         type: 'GET',
         success: function(data) {
-            // Determine if content is YouTube (requires special handling)
             const isYouTubePage = pageUrl.includes('youtube_page.html');
             
             if (isYouTubePage) {
-                // --- THIS IS THE FIX ---
-                // The 'data' is just the HTML fragment from youtube_page.html.
-                // We inject it directly into the content area.
+                // Inject the HTML
                 $contentArea.html(data); 
-                // --- END FIX ---
 
-                // Now that the HTML is 100% in the DOM, we find the parameters
-                // and call loadVids, which can now find $('#Grid').
+                // Get parameters
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
                 const params = paramString.split(',');
                 
                 if (params.length === 3 && typeof loadVids === 'function') {
+                    // Call loadVids, which will now be responsible 
+                    // for calling handleCardView *after* videos are loaded.
                     loadVids(params[0], params[1], params[2]);
                 } else {
                     $contentArea.html('<div class="error-message">YouTube parameter error.</div>');
-                    console.error("YouTube content structure error: Parameters:", params);
                 }
 
             } else {
                 // For Posts and Certificates, just load the HTML fragment
                 $contentArea.html(data);
+                // Call handleCardView *after* the content is loaded
+                handleCardView($contentArea);
             }
 
-            // 3. Apply card logic after content is loaded
-            handleCardView($contentArea);
-            
-            // 4. Re-initialize image modals
+            // 3. Re-initialize image modals
             if (typeof initializeImageModal === 'function') {
                 initializeImageModal(); 
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $contentArea.html(`<div class="error-message">Could not load content from ${pageUrl}. Status: ${textStatus} (${errorThrown})</div>`);
-            console.error(`AJAX Request Failed for ${pageUrl}:`, jqXHR, textStatus, errorThrown);
         }
     });
 }
@@ -214,13 +213,16 @@ function handleCardView($scope) {
 /**
  * Shows the next set of cards in a list (replaces toggleCardList).
  * @param {object} $button - The jQuery object of the toggle button.
- *Am (object) $list - The jQuery object of the card list container.
+ * @param {object} $list - The jQuery object of the card list container.
  */
 function showMoreCards($button, $list) {
     const $items = $list.children('.card-item');
-    const totalItems = $button.data('total-items');
-    const increment = $button.data('increment') || 10;
-    const visibleCount = $button.data('visible-count');
+
+    // --- FIX: Use parseInt() to ensure all data is treated as a number ---
+    const totalItems = parseInt($button.data('total-items') || 0);
+    const increment = parseInt($button.data('increment') || 10);
+    const visibleCount = parseInt($button.data('visible-count') || 0);
+    // --- END FIX ---
     
     const newVisibleCount = visibleCount + increment;
     
@@ -241,9 +243,6 @@ function showMoreCards($button, $list) {
     }
 }
 
-/**
- * Toggles the expanded state of a card list.
- */
 function toggleCardList($list, $button, initialLimit) {
     const isExpanded = $button.data('state') === 'expanded';
     const $items = $list.children('.card-item');
@@ -270,14 +269,7 @@ function toggleCardList($list, $button, initialLimit) {
 var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'  ; 
 var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
-/* --- Replace the existing loadVids function in common/mainPage.js with this --- */
-
-/* --- Replace the existing loadVids function in common/mainPage.js with this --- */
-
-/* --- Replace the existing loadVids function in common/mainPage.js with this --- */
-
 function loadVids(PL, Category, BKcol) {
-
     $('#Grid').empty(); 
     $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
     $('#playlist-description').text(`The latest videos from the ${Category.replace(/_/g, ' ')} playlist, displayed as cards.`);
@@ -290,19 +282,11 @@ function loadVids(PL, Category, BKcol) {
     }
 
     $.getJSON(URL, options, function (data) {
-        // --- SUCCESS HANDLER (Status 200 OK) ---
-        
         if (data.error) {
-             // CRITICAL: Overwrite the entire right-side area with the error for visibility
-            $('#content-area').html('<div class="error-message" style="padding: 40px;">' +
-                '<h2>🔴 YouTube API Error Received</h2>' +
-                '<p>The API request was successful, but the server returned an error payload. ' + 
-                'This almost always indicates an **API Key restriction** or **invalid Quota**.</p>' +
-                '<p>Check the console for the raw JSON error data.</p>' +
-                '</div>');
-            
-            console.error("YOUTUBE API FAILURE (200 OK Response): You MUST solve the restriction/quota issue for key:", key, data.error);
-            return; 
+             const errorMessage = `API Key/Access Error: ${data.error.message}. Check key restrictions.`;
+             $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
+             console.error("YouTube API Failure (JSON payload):", data.error);
+             return; 
         }
         
         if (!data.items || data.items.length === 0) {
@@ -312,16 +296,18 @@ function loadVids(PL, Category, BKcol) {
         }
 
         resultsLoop(data, Category, BKcol);
+        
+        // This is now the *only* call for YouTube, 
+        // and it runs *after* the grid is populated.
         handleCardView($('#content-area'));
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
-        // --- FAILURE HANDLER (Network/Hard Error - Highly unlikely now) ---
-        // This only happens if the request itself is blocked or the server is down.
         const errorMessage = `API Error (Hard): ${jqXHR.status} - ${errorThrown}.`;
         $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
-        console.error("YouTube API Request Failed (Network):", jqXHR, textStatus, errorThrown);
     });
 }
+
+
     
 function resultsLoop(data, Cat, BKcol) {
     $.each(data.items, function (i, item) {
