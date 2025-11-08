@@ -96,12 +96,15 @@ $(document).ready(function () {
         `;
         const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
         $contentWrapper.html(backButtonHtml); 
+        
+        // --- THIS IS THE FIX ---
+        // 1. PREPEND the new content, so it's at the top.
         $contentArea.prepend($contentWrapper);
         
-        // --- THIS IS THE SCROLL FIX ---
+        // 2. NOW, find the wrapper we just prepended and scroll to it.
         const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
         if ($scrollToElement.length) {
-            const scrollToTarget = $scrollToElement.offset().top - 20; 
+            const scrollToTarget = $scrollToElement.offset().top - 20; // 20px offset
             // Use native INSTANT scroll
             window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
         }
@@ -386,7 +389,7 @@ function resultsLoop(data, Cat, BKcol) {
 
         $('#Grid').append(`
         <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
-            <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
+            <a href="https.www.youtube.com/embed/${vid}" data-load-type="iframe">
                <img class="YTi" src="${thumb}" alt="${title}" >
                <h3>${title}</h3>
                <p>${desc}</p>
