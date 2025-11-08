@@ -99,10 +99,14 @@ $(document).ready(function () {
         $contentArea.append($contentWrapper);
         
         // --- THIS IS THE SCROLL FIX ---
-        // Find the top of the main content area (which is the parent of the grid)
-        // This ensures we scroll to the top of the right-hand column.
-        const scrollToTarget = $contentArea.offset().top - 20; 
-        $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+        // 1. Find the "Back" button wrapper we *just added*.
+        const $scrollToElement = $contentWrapper.find('.back-button-wrapper');
+        
+        // 2. Animate the scroll to that element's position.
+        if ($scrollToElement.length) {
+            const scrollToTarget = $scrollToElement.offset().top - 20; // 20px offset
+            $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+        }
         // --- END FIX ---
 
         let loadType = $link.data('load-type');
@@ -139,9 +143,11 @@ $(document).ready(function () {
         const $cardPage = $contentArea.find('.card-list-page').first().show();
 
         // --- THIS IS THE SCROLL FIX ---
-        // Scroll back to the top of the content area
-        const scrollToTarget = $contentArea.offset().top - 20;
-        $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+        // Scroll back to the top of the card list page
+        if ($cardPage.length) {
+            const scrollToTarget = $cardPage.offset().top - 20;
+            $('html, body').animate({ scrollTop: scrollToTarget }, 'smooth');
+        }
     });
 
     // --- All filter listeners ---
@@ -374,7 +380,6 @@ function resultsLoop(data, Cat, BKcol) {
             }
         }
         
-        // --- FIX: Sanitize text from the API ---
         const title = decodeText(item.snippet.title);
         const desc = item.snippet.description ? decodeText(item.snippet.description.substring(0, 100) + '...') : 'No description available.';
         const vid = item.snippet.resourceId.videoId;
@@ -410,7 +415,6 @@ function populateSmartKeywords(listId, filterId) {
                 $card.data('category'), 
             ];
             
-            // --- FIX: Sanitize the text *before* splitting ---
             const combinedText = decodeText(textSources.join(' '));
             const words = combinedText.split(/[^a-zA-Z0-9'-]+/); 
             
@@ -452,7 +456,6 @@ function getCardSearchableText($card) {
         $card.find('img').attr('alt'),
         $card.data('category')
     ];
-    // --- FIX: Sanitize the text for searching ---
     return decodeText(textSources
         .map(text => String(text || '')) 
         .join(' ')
