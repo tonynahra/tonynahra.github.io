@@ -648,3 +648,19 @@ a:hover {
     border-radius: 6px;
     background: #fff; /* Show a white background while it loads */
 }
+/* --- ADD THIS to your .card-item rule --- */
+.card-item {
+    min-height: 180px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer; /* <--- ADD THIS LINE */
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; /* Optional: nice hover effect */
+}
+
+/* Optional: Add a hover effect */
+.card-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
