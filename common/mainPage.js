@@ -284,9 +284,13 @@ var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'  ;
 var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
 function loadVids(PL, Category, BKcol) {
+    // Clear the grid immediately
     $('#Grid').empty(); 
-    $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
-    $('#playlist-description').text(`The latest videos from the ${Category.replace(/_/g, ' ')} playlist, displayed as cards.`);
+    
+    // --- MOVED ---
+    // The text-update lines that were here are now moved
+    // into the 'success' block below.
+    // --- END MOVE ---
 
     var options = {
         part: 'snippet',
@@ -296,6 +300,13 @@ function loadVids(PL, Category, BKcol) {
     }
 
     $.getJSON(URL, options, function (data) {
+        
+        // --- THIS IS THE FIX ---
+        // Update the title and description text *after* the API call succeeds.
+        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
+        $('#playlist-description').text(`The latest videos from the ${Category.replace(/_/g, ' ')} playlist.`);
+        // --- END FIX ---
+
         if (data.error) {
              const errorMessage = `API Key/Access Error: ${data.error.message}. Check key restrictions.`;
              $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
@@ -310,13 +321,10 @@ function loadVids(PL, Category, BKcol) {
         }
 
         resultsLoop(data, Category, BKcol);
-        
-        // This is now the *only* call for YouTube, 
-        // and it runs *after* the grid is populated.
         handleCardView($('#content-area'));
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
-        const errorMessage = `API Error (Hard): ${jqXHR.status} - ${errorThrown}.`;
+        const errorMessage = `API Error (Hard): ${jqX_HR.status} - ${errorThrown}.`;
         $('#Grid').html(`<p class="error-message">${errorMessage}</p>`);
     });
 }
