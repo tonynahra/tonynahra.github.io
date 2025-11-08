@@ -664,3 +664,28 @@ a:hover {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
+/* --- ADD THESE STYLES for the Back Button --- */
+
+.back-button-wrapper {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--bg-medium);
+}
+
+.back-button-wrapper a.nav-link {
+    display: inline-block;
+    padding: 8px 15px;
+    background: var(--bg-medium);
+    color: var(--text-accent);
+    border-radius: 4px;
+    text-decoration: none;
+    font-family: var(--font-code);
+    font-weight: 700;
+    transition: all 0.3s;
+}
+
+.back-button-wrapper a.nav-link:hover {
+    background: var(--text-accent);
+    color: var(--bg-dark);
+    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+}
