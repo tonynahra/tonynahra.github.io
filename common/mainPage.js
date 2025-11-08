@@ -295,7 +295,7 @@ function loadVids(PL, Category, BKcol) {
     var options = {
         part: 'snippet',
         key: key, 
-        maxResults: 200, 
+        maxResults: 500, 
         playlistId: PL
     }
 
@@ -373,7 +373,7 @@ function filterYouTubeCards(searchTerm) {
     let visibleCount = 0;
 
     if (searchTerm.length > 0) {
-        // When searching, hide the "Show More" button
+        // A search is active, so hide the "Show More" button.
         $showMoreButton.hide();
 
         $allCards.each(function() {
@@ -382,9 +382,12 @@ function filterYouTubeCards(searchTerm) {
             const desc = $card.find('p').text().toLowerCase();
 
             if (title.includes(searchTerm) || desc.includes(searchTerm)) {
-                $card.show();
+                // This card matches.
+                // We remove any pagination class and .show() it.
+                $card.removeClass('hidden-card-item').show();
                 visibleCount++;
             } else {
+                // This card does not match. Hide it.
                 $card.hide();
             }
         });
@@ -397,12 +400,17 @@ function filterYouTubeCards(searchTerm) {
         }
         
     } else {
-        // Search is empty, reset the view
+        // --- THIS IS THE FIX ---
+        // Search is empty, reset the view.
         $noResultsMessage.hide();
-        $allCards.show(); // Show all cards
         
-        // Re-run handleCardView to reset the "Show More" button/logic
+        // 1. Remove all inline 'style' attributes (from .show()/.hide())
+        $allCards.removeAttr('style'); 
+        
+        // 2. Re-run handleCardView. This will re-apply
+        //    the .hidden-card-item class to cards 11+
+        //    and re-create the "Show More" button.
         handleCardView($('#content-area'));
+        // --- END FIX ---
     }
 }
-
