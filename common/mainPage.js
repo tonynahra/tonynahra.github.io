@@ -41,7 +41,6 @@ $(document).ready(function () {
         if (!$link.length) { return; } 
 
         // Don't do anything if the click was ON the link itself
-        // (this allows the "Open in new window" link to work)
         if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
             return;
         }
@@ -146,6 +145,41 @@ $(document).ready(function () {
         filterPostCards();
     });
     
+    // --- NEW THEME SWITCHER LOGIC ---
+    // Function to apply the theme
+    function applyTheme(theme) {
+        // Remove all possible theme classes
+        $('body').removeClass('theme-light theme-pastel');
+        
+        // Add the specific theme class (if not dark)
+        if (theme !== 'theme-dark') {
+            $('body').addClass(theme);
+        }
+        
+        // Save choice to localStorage
+        localStorage.setItem('theme', theme);
+        
+        // Update active dot visual
+        $('.theme-dot').removeClass('active');
+        $(`.theme-dot[data-theme="${theme}"]`).addClass('active');
+    }
+
+    // Click handler for the theme dots
+    $('body').on('click', '.theme-dot', function() {
+        const theme = $(this).data('theme');
+        applyTheme(theme);
+    });
+
+    // Apply saved theme on page load
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        applyTheme(savedTheme);
+    } else {
+        // Default to dark and set active dot
+        $('.theme-dot[data-theme="theme-dark"]').addClass('active');
+    }
+    // --- END NEW THEME LOGIC ---
+
     // 4. Load initial content
     const initialPage = $('.nav-link.active-nav').data('page');
     if (initialPage) {
