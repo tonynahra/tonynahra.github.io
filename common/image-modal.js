@@ -10,15 +10,12 @@ $(document).ready(function () {
         toggleCollapsibleSection($(this));
     });
     
-    // 3. *** THIS IS THE FIX ***
-    // We change $('.nav-link').on('click', ...) 
-    // to $('body').on('click', ...)
-    // This uses event delegation, so it works for the dynamic "Back" button.
+    // 3. Attach event listener for all nav links (using delegation)
+    // This ONLY handles the left-side menu now.
     $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
         
         // Update active state in the left menu
-        // (We only do this for links *in* the left menu)
         if ($(this).closest('.profile-summary').length) {
             $('.nav-link').removeClass('active-nav');
             $(this).addClass('active-nav');
@@ -28,59 +25,66 @@ $(document).ready(function () {
         const pageUrl = $(this).data('page');
         
         // Store this as the "page to go back to"
-        if (pageUrl && pageUrl !== 'guide.html' && pageUrl !== 'about.html') {
+        if (pageUrl && pageUrl.includes('.html') && !pageUrl.includes('guide.html') && !pageUrl.includes('about.html')) {
             lastContentPage = pageUrl; 
         }
 
         loadContent(pageUrl);
     });
-    // --- END FIX ---
 
-    // 4. *** THIS HANDLER IS REPLACED ***
+    // 4. *** THIS HANDLER IS UPDATED ***
     // Click handler for all cards (posts and youtube)
     $('#content-area').on('click', '.card-item, .item', function(e) {
         
-        // Find the first <a> tag inside the card
         const $link = $(this).find('a').first(); 
-        
-        if (!$link.length) { return; }
+        if (!$link.length) { return; } 
 
         e.preventDefault(); 
         e.stopPropagation(); 
         
-        let loadType = $link.data('load-type'); // 'let' so we can change it
         const loadUrl = $link.attr('href');
-        const $contentArea = $('#content-area'); 
+        const $contentArea = $('#content-area');
 
-        // --- NEW: Default loadType if not specified ---
-        if (!loadType) {
-            if (loadUrl.startsWith('http')) {
-                loadType = 'iframe';
-            } else if (/\.(png|jpg|jpeg|gif|webp)$/i.test(loadUrl)) {
-                loadType = 'image';
-            } else {
-                // Assume it's a local HTML fragment
-                loadType = 'html';
-            }
+        // 1. Find the card list page and hide it
+        const $cardPage = $contentArea.find('.card-list-page').first();
+        if ($cardPage.length) {
+            $cardPage.hide();
+        } else {
+            console.warn("Could not find .card-list-page to hide. Proceeding anyway.");
         }
-        // --- END NEW ---
 
-        // --- NEW: Back Button HTML now includes "Open in new window" ---
+        // 2. *** FIX: "Back" button is now a <button> tag ***
+        // It no longer has the .nav-link class.
         const backButtonHtml = `
             <div class="back-button-wrapper">
-                <a href="javascript:void(0)" class="nav-link" data-page="${lastContentPage}">
+                <button class="js-back-to-list">
                     &larr; Back
-                </a>
+                </button>
                 <a href="${loadUrl}" class="open-new-window" target="_blank" rel="noopener noreferrer">
                     Open in new window &nearr;
                 </a>
             </div>
         `;
-        // --- END NEW ---
 
+        // 3. Create a new wrapper for the loaded content
+        const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
+        $contentWrapper.html(backButtonHtml); // Add buttons first
+
+        // 4. Determine content type and load it
+        let loadType = $link.data('load-type');
+        
+        // Auto-guess load type if not provided
+        if (!loadType) {
+            if (loadUrl.startsWith('http')) {
+                loadType = 'iframe';
+            } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+                loadType = 'image';
+            } else {
+                loadType = 'html';
+            }
+        }
+        
         const customHeight = $link.data('height') || '85vh';
-            
-        $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
 
         switch (loadType) {
             case 'html':
@@ -88,32 +92,43 @@ $(document).ready(function () {
                     url: loadUrl,
                     type: 'GET',
                     success: function(data) {
-                        $contentArea.html(backButtonHtml + data);
+                        $contentWrapper.append(data); 
                     },
                     error: function() {
-                        $contentArea.html(backButtonHtml + '<div class="error-message">Could not load content.</div>');
+                        $contentWrapper.append('<div class="error-message">Could not load content.</div>');
+                    },
+                    complete: function() {
+                        $contentArea.append($contentWrapper);
                     }
                 });
-                return; 
+                break;
             case 'image':
-                const imgHtml = `
-                    <div class="image-wrapper">
-                        <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
-                    </div>`;
-                $contentArea.html(backButtonHtml + imgHtml);
+                const imgHtml = `<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`;
+                $contentWrapper.append(imgHtml);
+                $contentArea.append($contentWrapper);
                 break;
             case 'iframe':
                 const iframeHtml = `<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`;
-                $contentArea.html(backButtonHtml + iframeHtml);
+                $contentWrapper.append(iframeHtml);
+                $contentArea.append($contentWrapper);
                 break;
             default:
-                // This will now catch any unhandled types
-                $contentArea.html(backButtonHtml + '<div class="error-message">Error: Unknown content type.</div>');
+                // Failsafe: open in new tab if logic fails
+                window.open(loadUrl, '_blank');
         }
     });
-    // --- END OF REPLACED HANDLER ---
+
+    // 5. *** THIS HANDLER IS UPDATED ***
+    // Click handler ONLY for the new "Back" button
+    $('#content-area').on('click', '.js-back-to-list', function() {
+        // Remove the loaded content wrapper
+        $(this).closest('.loaded-content-wrapper').remove();
+        
+        // Show the hidden card list page (which still has its filters)
+        $('#content-area').find('.card-list-page').first().show();
+    });
     
-    // 5. Load initial content
+    // 6. Load initial content
     const initialPage = $('.nav-link.active-nav').data('page');
     if (initialPage) {
         lastContentPage = initialPage;
@@ -122,7 +137,7 @@ $(document).ready(function () {
 });
 
 
-/* === COLLAPSIBLE MENU LOGIC (Left Side YouTube Menu) === */
+/* === COLLAPSIBLE MENU LOGIC === */
 function initializeCollapsibleSections() {
     $('.expand-button').each(function() {
         const $button = $(this);
@@ -176,6 +191,7 @@ function toggleCollapsibleSection($button) {
 function loadContent(pageUrl) {
     const $contentArea = $('#content-area');
     
+    // Clear the entire area for a fresh page load
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
     
     $.ajax({
@@ -187,6 +203,7 @@ function loadContent(pageUrl) {
             
             if (isYouTubePage) {
                 $contentArea.html(data); 
+                // Attach listener directly
                 $contentArea.on('input', '#youtube-search-box', function() {
                     filterYouTubeCards($(this).val());
                 });
@@ -204,6 +221,7 @@ function loadContent(pageUrl) {
                 $contentArea.html(data);
                 
                 if (isPostsPage) {
+                    // Attach listeners directly
                     $contentArea.on('input', '#post-search-box', function() {
                         filterPostCards();
                     });
@@ -227,23 +245,9 @@ function loadContent(pageUrl) {
     });
 }
 
-function loadHtmlFragment(pageUrl, $contentArea) {
-    $.ajax({
-        url: pageUrl,
-        type: 'GET',
-        success: function(data) {
-            // This is used by the 'Back' button logic, so we just show data
-            $contentArea.html(data);
-        },
-        error: function() {
-            $contentArea.html('<div class="error-message">Could not load content. The file may be missing.</div>');
-        }
-    });
-}
-
-
-/* === CARD VIEW (Show More) LOGIC (Right Side Content) === */
+/* === CARD VIEW (Show More) LOGIC === */
 function handleCardView($scope) {
+    // We target .card-list *within* the scope
     $scope.find('.card-list').each(function() {
         const $list = $(this);
         const $items = $list.children('.card-item');
@@ -305,7 +309,7 @@ function loadVids(PL, Category, BKcol) {
     var options = {
         part: 'snippet',
         key: key, 
-        maxResults: 50, 
+        maxResults: 50, // Ask for up to 50 videos
         playlistId: PL
     }
 
@@ -343,7 +347,6 @@ function resultsLoop(data, Cat, BKcol) {
         var desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
         var vid = item.snippet.resourceId.videoId;
 
-        // Ensure class is "card-item"
         $('#Grid').append(`
         <div data-uk-filter="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
             <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
