@@ -224,17 +224,28 @@ a:hover {
 
 /* --- Card View & "Show More" Button --- */
 .card-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    /* --- THIS IS THE FIX --- */
+    /* Replaces all 'display: grid' properties */
+    column-count: 3;
+    column-gap: 20px;
+    /* --- END FIX --- */
+    
     list-style: none;
     padding: 0;
-    
-    /* --- THIS IS THE FIX --- */
-    /* This stops the grid from stretching items to be the same height */
-    align-items: start;
-    /* --- END FIX --- */
 }
+
+/* Responsive columns */
+@media (max-width: 1200px) {
+    .card-list {
+        column-count: 2;
+    }
+}
+@media (max-width: 600px) {
+    .card-list {
+        column-count: 1;
+    }
+}
+
 
 .card-item {
     background-color: var(--bg-medium);
@@ -242,10 +253,19 @@ a:hover {
     border-radius: 6px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     border-left: 3px solid var(--text-accent);
-    min-height: 180px; 
-    display: flex;
+    
+    /* --- CHANGES FOR MASONRY --- */
+    /* min-height: 180px;  <-- REMOVED to allow variable heights */
+    display: flex; /* <-- Still use flexbox *inside* the card */
     flex-direction: column;
     justify-content: space-between;
+    
+    break-inside: avoid; /* <-- PREVENTS cards from splitting */
+    margin-bottom: 20px; /* <-- Vertical spacing between cards */
+    width: 100%; /* <-- Ensure it fits in the column */
+    box-sizing: border-box; /* <-- Include padding in width */
+    /* --- END CHANGES --- */
+
     cursor: pointer;
     transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
