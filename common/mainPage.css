@@ -194,16 +194,12 @@ a:hover {
     font-style: italic;
     color: var(--text-light);
     margin-top: -15px;
-} /* <-- *** THIS WAS THE MISSING BRACE *** */
+}
 
 /* --- UPDATED: Collapsible Menu (YouTube) --- */
 .collapsible-content {
-    /* No max-height or overflow, let it expand naturally */
     transition: max-height 0.5s ease-in-out;
 }
-
-/* We don't need the .expanded class for height anymore */
-/* .collapsible-content.expanded { ... } */
 
 .expand-button {
     display: block;
@@ -223,14 +219,6 @@ a:hover {
     background-color: var(--text-accent);
     color: var(--bg-dark);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
-
-.expand-button.expanded::after {
-    content: " \25B2"; /* Up arrow */
-}
-
-.expand-button:not(.expanded):::after {
-    content: " \25BC"; /* Down arrow */
 }
 
 .hidden-item {
@@ -258,25 +246,18 @@ a:hover {
 
 /* --- Card View & "Show More" Button --- */
 .card-list {
-    column-count: 3;
+    /* --- THIS IS THE FIX --- */
+    /* Replaced column-count: 3 with column-width */
+    column-width: 300px; /* Creates as many 300px columns as can fit */
+    /* --- END FIX --- */
+
     column-gap: 20px;
     list-style: none;
     padding: 0;
     align-items: start;
 }
 
-/* Responsive columns */
-@media (max-width: 1200px) {
-    .card-list {
-        column-count: 2;
-    }
-}
-@media (max-width: 600px) {
-    .card-list {
-        column-count: 1;
-    }
-}
-
+/* Responsive columns are no longer needed, column-width handles it */
 
 .card-item {
     background-color: var(--bg-medium);
@@ -356,20 +337,25 @@ a:hover {
 /* --- UPDATED: Filter Bar --- */
 .filter-bar {
     display: flex;
-    flex-wrap: wrap; /* Allows filters to stack on small screens */
+    flex-wrap: wrap; 
     gap: 15px;
     margin-bottom: 25px;
+    /* max-width: 1200px; <-- Removed, let it be natural */
 }
 
-/* All wrappers will share space and wrap */
+/* --- THIS IS THE FIX --- */
+/* This stops the search/dropdowns from stretching */
 .filter-bar .search-wrapper,
 .filter-bar .category-wrapper,
 .filter-bar .keyword-wrapper {
-    flex: 1 1 200px; /* grow, shrink, basis */
-    min-width: 200px; /* Minimum width before wrapping */
+    flex-grow: 1; /* They can grow if needed */
+    flex-shrink: 1; /* They can shrink */
+    flex-basis: 250px; /* But their ideal width is 250px */
+    min-width: 200px; 
 }
+/* --- END FIX --- */
 
-/* Remove margin-bottom from search wrapper, gap handles spacing */
+
 .search-wrapper {
     margin-bottom: 0;
 }
