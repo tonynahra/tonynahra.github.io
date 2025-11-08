@@ -1,5 +1,5 @@
-/* === GLOBAL SETUP & DYNAMIC CONTENT LOADING LOGIC === */
-var lastContentPage = 'posts.html'; // Default to posts.html
+
+var lastContentPage = 'tech-posts.html'; 
 
 $(document).ready(function () {
     
@@ -11,15 +11,12 @@ $(document).ready(function () {
         toggleCollapsibleSection($(this));
     });
     
-    // 3. *** THIS IS THE FIX ***
-    // We change $('.nav-link').on('click', ...) 
-    // to $('body').on('click', ...)
-    // This uses event delegation, so it works for the dynamic "Back" button.
+    // 3. Attach event listener for all nav links (using delegation)
+    // This now handles the main menu AND the dynamic "Back" button
     $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
         
         // Update active state in the left menu
-        // (We only do this for links *in* the left menu)
         if ($(this).closest('.profile-summary').length) {
             $('.nav-link').removeClass('active-nav');
             $(this).addClass('active-nav');
@@ -29,33 +26,43 @@ $(document).ready(function () {
         const pageUrl = $(this).data('page');
         
         // Store this as the "page to go back to"
-        if (pageUrl && pageUrl !== 'guide.html' && pageUrl !== 'about.html') {
+        // We only store it if it's a card page or main page
+        if (pageUrl && pageUrl.includes('.html') && !pageUrl.includes('guide.html') && !pageUrl.includes('about.html')) {
             lastContentPage = pageUrl; 
         }
 
         loadContent(pageUrl);
     });
-    // --- END FIX ---
 
     // 4. Click handler for all cards (posts and youtube)
     $('#content-area').on('click', '.card-item, .item', function(e) {
         
         // Find the first <a> tag inside the card
         const $link = $(this).find('a').first(); 
-        
-        if (!$link.length) { return; }
+        if (!$link.length) { return; } // Do nothing if no link
 
+        // Prevent link from opening
         e.preventDefault(); 
-        e.stopPropagation(); 
+        e.stopPropagation(); // Stop event bubbling
         
-        const loadType = $link.data('load-type');
         const loadUrl = $link.attr('href');
-        const $contentArea = $('#content-area'); 
+        const $contentArea = $('#content-area');
 
-        // The Back Button HTML
+        // --- NEW STATE-PRESERVING LOGIC ---
+        
+        // 1. Find the card list page and hide it
+        const $cardPage = $contentArea.find('.card-list-page');
+        if ($cardPage.length) {
+            $cardPage.hide();
+        } else {
+            // Failsafe if we can't find the list, just clear the area
+            $contentArea.empty();
+        }
+
+        // 2. Create the "Back" and "Open" buttons
         const backButtonHtml = `
-           <div class="back-button-wrapper">
-                <a href="javascript:void(0)" class="nav-link" data-page="${lastContentPage}">
+            <div class="back-button-wrapper">
+                <a class="js-back-to-list">
                     &larr; Back
                 </a>
                 <a href="${loadUrl}" class="open-new-window" target="_blank" rel="noopener noreferrer">
@@ -64,45 +71,70 @@ $(document).ready(function () {
             </div>
         `;
 
-        if (loadType) {
-            const customHeight = $link.data('height') || '85vh';
-            
-            $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
+        // 3. Create a new wrapper for the loaded content
+        const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
+        $contentWrapper.html(backButtonHtml); // Add buttons first
 
-            switch (loadType) {
-                case 'html':
-                    $.ajax({
-                        url: loadUrl,
-                        type: 'GET',
-                        success: function(data) {
-                            $contentArea.html(backButtonHtml + data);
-                        },
-                        error: function() {
-                            $contentArea.html(backButtonHtml + '<div class="error-message">Could not load content.</div>');
-                        }
-                    });
-                    return; 
-                case 'image':
-                    const imgHtml = `
-                        <div class="image-wrapper">
-                            <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
-                        </div>`;
-                    $contentArea.html(backButtonHtml + imgHtml);
-                    break;
-                case 'iframe':
-                    const iframeHtml = `<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`;
-                    $contentArea.html(backButtonHtml + iframeHtml);
-                    break;
-                default:
-                    window.open(loadUrl, '_blank');
+        // 4. Determine content type and load it
+        let loadType = $link.data('load-type');
+        
+        // Auto-guess load type if not provided
+        if (!loadType) {
+            if (loadUrl.startsWith('http')) {
+                loadType = 'iframe';
+            } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+                loadType = 'image';
+            } else {
+                loadType = 'html';
             }
-        } else {
-            // Standard link, open in new tab
-            window.open(loadUrl, '_blank');
+        }
+        
+        const customHeight = $link.data('height') || '85vh';
+
+        switch (loadType) {
+            case 'html':
+                // Use AJAX to load the HTML fragment
+                $.ajax({
+                    url: loadUrl,
+                    type: 'GET',
+                    success: function(data) {
+                        $contentWrapper.append(data); // Add new content after buttons
+                    },
+                    error: function() {
+                        $contentWrapper.append('<div class="error-message">Could not load content.</div>');
+                    },
+                    complete: function() {
+                        // Add the fully formed wrapper to the page
+                        $contentArea.append($contentWrapper);
+                    }
+                });
+                break;
+            case 'image':
+                const imgHtml = `<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`;
+                $contentWrapper.append(imgHtml);
+                $contentArea.append($contentWrapper);
+                break;
+            case 'iframe':
+                const iframeHtml = `<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`;
+                $contentWrapper.append(iframeHtml);
+                $contentArea.append($contentWrapper);
+                break;
+            default:
+                // Fallback (shouldn't be reached by new logic)
+                window.open(loadUrl, '_blank');
         }
     });
+
+    // 5. NEW: Click handler for the dynamic "Back" button
+    $('#content-area').on('click', '.js-back-to-list', function() {
+        // Remove the loaded content
+        $(this).closest('.loaded-content-wrapper').remove();
+        
+        // Show the card list again
+        $('#content-area').find('.card-list-page').show();
+    });
     
-    // 5. Load initial content
+    // 6. Load initial content
     const initialPage = $('.nav-link.active-nav').data('page');
     if (initialPage) {
         lastContentPage = initialPage;
@@ -176,6 +208,7 @@ function loadContent(pageUrl) {
             
             if (isYouTubePage) {
                 $contentArea.html(data); 
+                // Attach listener directly
                 $contentArea.on('input', '#youtube-search-box', function() {
                     filterYouTubeCards($(this).val());
                 });
@@ -193,6 +226,7 @@ function loadContent(pageUrl) {
                 $contentArea.html(data);
                 
                 if (isPostsPage) {
+                    // Attach listeners directly
                     $contentArea.on('input', '#post-search-box', function() {
                         filterPostCards();
                     });
@@ -201,11 +235,13 @@ function loadContent(pageUrl) {
                     });
                 }
                 
+                // Only run pagination on pages that are not 'about' or 'guide'
                 if (!pageUrl.includes('about.html') && !pageUrl.includes('guide.html')) {
                     handleCardView($contentArea);
                 }
             }
 
+            // Re-initialize image modals (if defined)
             if (typeof initializeImageModal === 'function') {
                 initializeImageModal(); 
             }
@@ -216,12 +252,15 @@ function loadContent(pageUrl) {
     });
 }
 
+/**
+ * Helper function to load a simple HTML fragment.
+ * This is now mainly used by the left-side menu for non-card pages.
+ */
 function loadHtmlFragment(pageUrl, $contentArea) {
     $.ajax({
         url: pageUrl,
         type: 'GET',
         success: function(data) {
-            // This is used by the 'Back' button logic, so we just show data
             $contentArea.html(data);
         },
         error: function() {
@@ -235,6 +274,7 @@ function loadHtmlFragment(pageUrl, $contentArea) {
 function handleCardView($scope) {
     $scope.find('.card-list').each(function() {
         const $list = $(this);
+        // Ensure we only find direct children
         const $items = $list.children('.card-item');
         const totalItems = $items.length;
         const initialLimit = 10;
@@ -284,7 +324,8 @@ function showMoreCards($button, $list) {
 }
 
 
-var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY';
+/* === YOUTUBE PLAYLIST CORE FUNCTIONS === */
+var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; // Your API Key
 var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
 function loadVids(PL, Category, BKcol) {
@@ -293,11 +334,12 @@ function loadVids(PL, Category, BKcol) {
     var options = {
         part: 'snippet',
         key: key, 
-        maxResults: 50, 
+        maxResults: 50, // Ask for up to 50 videos
         playlistId: PL
     }
 
     $.getJSON(URL, options, function (data) {
+        // Update text *after* API call succeeds
         $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
         $('#playlist-description').text(`The latest videos from the ${Category.replace(/_/g, ' ')} playlist.`);
 
@@ -315,6 +357,8 @@ function loadVids(PL, Category, BKcol) {
         }
 
         resultsLoop(data, Category, BKcol);
+        
+        // Run pagination *after* cards are loaded
         handleCardView($('#content-area'));
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -331,7 +375,7 @@ function resultsLoop(data, Cat, BKcol) {
         var desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
         var vid = item.snippet.resourceId.videoId;
 
-        // Ensure class is "card-item"
+        // Ensure class is "card-item" so it's clickable
         $('#Grid').append(`
         <div data-uk-filter="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
             <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
