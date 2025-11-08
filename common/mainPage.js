@@ -1,6 +1,4 @@
 var lastContentPage = 'tech-posts.html'; 
-/* === GLOBAL SETUP & DYNAMIC CONTENT LOADING LOGIC === */
-var lastContentPage = 'posts.html'; // Default to posts.html
 
 // --- List of common words to ignore ---
 const STOP_WORDS = new Set([
