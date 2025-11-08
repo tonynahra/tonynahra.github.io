@@ -17,7 +17,7 @@ $(document).ready(function () {
     
     // --- EVENT LISTENERS (DELEGATED) ---
 
-    // --- FIX: This is now a delegated listener ---
+    // Listener for "Show More" (Left Menu)
     $('body').on('click', '.expand-button', function() {
         toggleCollapsibleSection($(this));
     });
@@ -304,7 +304,6 @@ function resultsLoop(data, Cat, BKcol) {
         const title = item.snippet.title;
         const desc = item.snippet.description ? item.snippet.description.substring(0, 100) + '...' : 'No description available.';
         const vid = item.snippet.resourceId.videoId;
-        // We get keywords from title/desc in populateSmartKeywords
 
         $('#Grid').append(`
         <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
@@ -318,7 +317,7 @@ function resultsLoop(data, Cat, BKcol) {
     });
 }
 
-/* === --- UPDATED: SMART KEYWORD LOGIC --- === */
+/* === --- UPDATED: SMART KEYWORD LOGIC (FIXED) --- === */
 
 /**
  * Auto-populates a <select> dropdown by reading ALL text from cards and finding
@@ -332,47 +331,55 @@ function populateSmartKeywords(listId, filterId) {
 
     const wordCounts = {};
     
-    // Find all cards and get their text content
-    $(`${listId} .card-item`).each(function() {
-        const $card = $(this);
-        // Combine text from all relevant sources
-        const textSources = [
-            $card.find('h3').text(),
-            $card.find('p').text(),
-            $card.find('.card-category').text(),
-            $card.find('img').attr('alt'),
-            $card.data('category'), // Keep data-category as a source
-        ];
-        
-        const combinedText = textSources.join(' ');
-
-        // --- FIX: Use a more robust regex to split only on non-alphanumeric chars ---
-        const words = combinedText.split(/[^a-zA-Z0-9]+/); 
-        
-        words.forEach(word => {
-            const cleanWord = word.toLowerCase().trim();
+    try {
+        // Find all cards and get their text content
+        $(`${listId} .card-item`).each(function() {
+            const $card = $(this);
+            // Combine text from all relevant sources
+            const textSources = [
+                $card.find('h3').text(),
+                $card.find('p').text(),
+                $card.find('.card-category').text(),
+                $card.find('img').attr('alt'),
+                $card.data('category'), // Keep data-category as a source
+            ];
             
-            if (cleanWord.length > 2 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
-                wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
-            }
+            const combinedText = textSources.join(' ');
+
+            // --- FIX: Use a safer regex that splits on whitespace and punctuation ---
+            const words = combinedText.split(/[\s,.\-()&/|:!?\[\]"']+/); 
+            
+            words.forEach(word => {
+                // Remove any remaining non-alphanumeric characters (like 'é' becomes 'e')
+                // and handle potential errors from weird characters.
+                const cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
+                
+                if (cleanWord.length > 2 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
+                    wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
+                }
+            });
         });
-    });
 
-    const sortedKeywords = Object.entries(wordCounts)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 30)
-        .map(([word]) => word);
+        const sortedKeywords = Object.entries(wordCounts)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 30)
+            .map(([word]) => word);
 
-    // Clear previous options (except the first one)
-    $filter.children('option:not(:first)').remove();
+        // Clear previous options (except the first one)
+        $filter.children('option:not(:first)').remove();
+        
+        // Create and append <option> tags
+        sortedKeywords.forEach(key => {
+            $filter.append($('<option>', {
+                value: key,
+                text: key
+            }));
+        });
     
-    // Create and append <option> tags
-    sortedKeywords.forEach(key => {
-        $filter.append($('<option>', {
-            value: key,
-            text: key
-        }));
-    });
+    } catch (error) {
+        console.error("Error populating smart keywords:", error);
+        // Don't break the page, just log the error.
+    }
 }
 
 /**
@@ -388,7 +395,11 @@ function getCardSearchableText($card) {
         $card.find('img').attr('alt'),
         $card.data('category')
     ];
-    return textSources.join(' ').toLowerCase();
+    // --- FIX: Ensure all items are strings before joining ---
+    return textSources
+        .map(text => String(text || '')) // Convert null/undefined to empty string
+        .join(' ')
+        .toLowerCase();
 }
 
 
@@ -487,7 +498,7 @@ function filterCertCards() {
         $showMoreButton.hide();
         $allCards.each(function() {
             const $card = $(this);
-            const cardCategories = $card.data('category'); 
+            const cardCategories = $card.data('category') || ''; // Ensure it's a string
             const cardText = getCardSearchableText($card); 
 
             const categoryMatch = (selectedCategory === "all" || cardCategories.includes(selectedCategory));
