@@ -87,7 +87,6 @@ $(document).ready(function () {
         const $link = $(this).find('a').first(); 
         if (!$link.length) { return; } 
         
-        // Allow clicks on "Open in new window" *inside the modal* to work
         if ($(e.target).hasClass('open-new-window') || $(e.target).closest('.open-new-window').length) {
             return;
         }
@@ -96,45 +95,33 @@ $(document).ready(function () {
         e.stopPropagation(); 
         
         const loadUrl = $link.attr('href');
-        let loadType = $link.data('load-type'); // Get the *explicit* type
+        let loadType = $link.data('load-type'); 
         
-        // --- THIS IS THE FIX ---
-        // Auto-guess the load type if it's not provided
         if (!loadType) {
             if (loadUrl.startsWith('http')) {
-                // Check for sites that block iframes
                 if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
-                    // It's an external link, open in new tab and *don't* open modal
                     window.open(loadUrl, '_blank');
-                    return; // Stop execution
+                    return; 
                 } else {
-                    loadType = 'iframe'; // Assume other http links are fine
+                    loadType = 'iframe'; 
                 }
             } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
                 loadType = 'image';
-            } else if (loadUrl.endsWith('.html')) { // Check for local HTML files
+            } else if (loadUrl.endsWith('.html')) { 
                 loadType = 'html';
             } else {
-                // Failsafe: open in new tab
                 window.open(loadUrl, '_blank');
                 return;
             }
         }
-        // --- END FIX ---
 
-
-        // --- NEW MODAL LOGIC ---
         const $modal = $('#content-modal');
         const $modalContent = $('#modal-content-area');
         const $modalOpenLink = $modal.find('.open-new-window');
 
-        // 1. Clear old content
         $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-        
-        // 2. Set the "Open in new window" link href
         $modalOpenLink.attr('href', loadUrl);
         
-        // 3. Load new content
         const customHeight = $link.data('height') || '85vh';
 
         switch (loadType) {
@@ -156,29 +143,21 @@ $(document).ready(function () {
                 return;
         }
         
-        // 4. Show the modal
         $modal.fadeIn(200);
     });
 
-    // --- NEW: Listener for the Modal "Close" button ---
     $('body').on('click', '.modal-close-btn', function() {
         const $modal = $('#content-modal');
         const $modalContent = $('#modal-content-area');
-        
-        // Hide the modal
         $modal.fadeOut(200);
-        
-        // Clear the content to stop videos/etc. from playing
         $modalContent.html('');
     });
     
-    // Optional: Click backdrop to close
     $('body').on('click', '#content-modal', function(e) {
         if (e.target.id === 'content-modal') {
             $(this).find('.modal-close-btn').click();
         }
     });
-    // --- END NEW MODAL LOGIC ---
 
 
     // --- All filter listeners ---
@@ -288,7 +267,8 @@ function loadContent(pageUrl) {
     window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
 
     $.ajax({
-        url: pageUrl,
+        // We only want the base page, so strip any URL params
+        url: pageUrl.split('?')[0],
         type: 'GET',
         success: function(data) {
             $contentArea.html(data); 
@@ -312,9 +292,25 @@ function loadContent(pageUrl) {
             } else if (isCertsPage) { 
                 handleCardView($contentArea);
                 populateSmartKeywords('#cert-card-list', '#cert-keyword-filter');
-            } else if (isAlbumPage) { // <-- NEW
-                handleCardView($contentArea);
-                // No keywords for album
+            } else if (isAlbumPage) { 
+                // --- THIS IS THE FIX ---
+                // 1. Get the full query string (e.g., "json=birds.json")
+                const queryString = pageUrl.split('?')[1];
+                if (queryString) {
+                    // 2. Parse the query string to find the value of "json"
+                    const urlParams = new URLSearchParams(queryString);
+                    const jsonUrl = urlParams.get('json');
+                    
+                    if (jsonUrl) {
+                        // 3. Call loadPhotoAlbum with the extracted URL
+                        loadPhotoAlbum(jsonUrl);
+                    } else {
+                        $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
+                    }
+                } else {
+                     $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
+                }
+                // --- END FIX ---
             }
             
             if (typeof initializeImageModal === 'function') {
@@ -426,6 +422,44 @@ function resultsLoop(data, Cat, BKcol) {
         `);
     });
 }
+
+// --- NEW: Photo Album Logic ---
+/**
+ * Fetches JSON data from a URL and populates the photo album.
+ * @param {string} jsonUrl - The URL of the album JSON file.
+ */
+function loadPhotoAlbum(jsonUrl) {
+    const $albumList = $('#photo-album-list');
+    
+    // Use jQuery's getJSON to fetch the remote file
+    $.getJSON(jsonUrl, function (albumData) {
+        // Success
+        $('#album-title').text(decodeText(albumData.albumTitle));
+        $albumList.empty(); 
+        
+        $.each(albumData.photos, function(index, photo) {
+            const title = decodeText(photo.title);
+            const cardHtml = `
+                <div class="card-item">
+                    <a href="${photo.url}" data-load-type="image">
+                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
+                    </a>
+                </div>
+            `;
+            $albumList.append(cardHtml);
+        });
+        
+        // After all cards are added, initialize the "Show More" button
+        handleCardView($('#content-area'));
+
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        // Error
+        $('#album-title').text("Error Loading Album");
+        $albumList.html(`<p class="error-message">Could not load album data from ${jsonUrl}. Error: ${textStatus}</p>`);
+        console.error("Photo Album AJAX failed:", textStatus, errorThrown);
+    });
+}
+
 
 /* === --- SMART KEYWORD LOGIC (UPDATED) --- === */
 
