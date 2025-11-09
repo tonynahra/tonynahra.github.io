@@ -445,7 +445,8 @@ a:hover {
 /* --- NEW: Styles for all modal buttons --- */
 .modal-header .modal-close-btn,
 .modal-header .modal-prev-btn,
-.modal-header .modal-next-btn {
+.modal-header .modal-next-btn,
+.modal-header .modal-info-btn { /* Added info-btn */
     padding: 8px 15px;
     background: var(--bg-medium);
     color: var(--text-accent);
@@ -461,7 +462,8 @@ a:hover {
 
 .modal-header .modal-close-btn:hover,
 .modal-header .modal-prev-btn:hover,
-.modal-header .modal-next-btn:hover {
+.modal-header .modal-next-btn:hover,
+.modal-header .modal-info-btn:hover { /* Added info-btn */
     background: var(--text-accent);
     color: var(--bg-dark);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
@@ -479,6 +481,10 @@ a:hover {
 .modal-header .modal-prev-btn:disabled:hover,
 .modal-header .modal-next-btn:disabled:hover {
     box-shadow: none;
+}
+/* Hide info button by default */
+.modal-header .modal-info-btn {
+    display: none;
 }
 
 
@@ -752,6 +758,7 @@ code {
     flex-direction: column;
     justify-content: flex-start; 
     align-items: center; 
+    position: relative; /* For photo info overlay */
 }
 
 /* --- Photo Album Card Styles --- */
@@ -792,6 +799,7 @@ code {
     opacity: 0;
     transform: translateY(20px);
     transition: all 0.3s ease;
+    pointer-events: none; /* Make sure hover doesn't block card click */
 }
 
 /* Show on hover */
@@ -844,4 +852,37 @@ code {
     border: none;
     border-radius: 6px;
     background: #fff; 
+}
+
+/* --- NEW: Modal Photo Info Overlay --- */
+.modal-photo-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 40px 20px 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    color: #fff;
+    
+    /* Hide by default */
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    pointer-events: none; /* Don't block clicking image */
+}
+
+.modal-photo-info.info-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.modal-photo-info h3 {
+    font-size: 1.2rem;
+    color: #fff;
+    margin-bottom: 5px;
+}
+.modal-photo-info p {
+    font-size: 1rem;
+    color: #eee;
+    margin: 0;
 }
