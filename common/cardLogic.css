@@ -137,6 +137,7 @@
 #cert-category-filter,
 #post-keyword-filter,
 #cert-keyword-filter,
+#youtube-category-filter, /* --- ADDED YOUTUBE --- */
 #youtube-keyword-filter,
 #album-category-filter, 
 #album-keyword-filter,
@@ -157,6 +158,7 @@
 #cert-category-filter:focus,
 #post-keyword-filter:focus,
 #cert-keyword-filter:focus,
+#youtube-category-filter:focus, /* --- ADDED YOUTUBE --- */
 #youtube-keyword-filter:focus,
 #album-category-filter:focus, 
 #album-keyword-filter:focus,
@@ -312,7 +314,7 @@
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-/* --- THIS IS THE FIX --- */
+/* --- THIS IS THE FIX (PART 2) --- */
 /* Modal Image/Iframe Styles */
 /* This wrapper is now *only* for images/iframes */
 #modal-content-area .image-wrapper,
