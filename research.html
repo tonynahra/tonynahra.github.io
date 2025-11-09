@@ -1,28 +1,26 @@
 <section class="research-page card-list-page">
-    <h2>Research & Analysis</h2>
     
-    <!-- Filter Bar for Research -->
+    <!-- UPDATED: Title moved inside, filters wrapped -->
     <div class="filter-bar">
-        <div class="search-wrapper">
-            <!-- UPDATED: Added ID -->
-            <input type="search" id="research-search-box" placeholder="Filter by title/desc...">
-        </div>
-        <div class="category-wrapper">
-            <!-- UPDATED: Added ID -->
-            <select id="research-category-filter">
-                <option value="all">All Categories</option>
-                <option value="Finance">Finance</option>
-                <option value="Tech">Tech</option>
-                <option value="AI">AI</option>
-                <option value="Economics">Economics</option>
-            </select>
-        </div>
-        <div class="keyword-wrapper">
-            <!-- UPDATED: Added ID -->
-            <select id="research-keyword-filter">
-                <option value="all">Top Keywords</option>
-                <!-- This will be auto-populated by JS -->
-            </select>
+        <h2>Research & Analysis</h2>
+        <div class="filter-controls">
+            <div class="search-wrapper">
+                <input type="search" id="research-search-box" placeholder="Filter by title/desc...">
+            </div>
+            <div class="category-wrapper">
+                <select id="research-category-filter">
+                    <option value="all">All Categories</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Tech">Tech</option>
+                    <option value="AI">AI</option>
+                    <option value="Economics">Economics</option>
+                </select>
+            </div>
+            <div class="keyword-wrapper">
+                <select id="research-keyword-filter">
+                    <option value="all">Top Keywords</option>
+                </select>
+            </div>
         </div>
     </div>
 
