@@ -94,22 +94,15 @@ $(document).ready(function () {
         loadContent(pageUrl, initialLoad);
     });
 
-    // --- UPDATED: Listener for ALL CARDS (now sets up modal state) ---
     $('body').on('click', '.card-item, .item', function(e) {
         const $clickedCard = $(this);
         const $link = $clickedCard.find('a').first();
         if (!$link.length) { return; } 
         
-        // --- THIS IS THE FIX ---
-        // ONLY stop the event if the click was *not* on a link *inside* the card.
-        // This allows "Read More" and "Open in new window" to work as normal links.
         const $clickedLink = $(e.target).closest('a');
         if ($clickedLink.length > 0 && !$clickedLink.is($link)) {
-            // User clicked a different link (e.g., in a post summary).
-            // Let the browser handle it (which is to do nothing, as it's not the main link)
             return;
         }
-        // --- END FIX ---
         
         e.preventDefault(); 
         e.stopPropagation(); 
@@ -127,7 +120,6 @@ $(document).ready(function () {
         if (currentCardList.length > 0) {
             loadModalContent(currentCardIndex);
             
-            // --- FIX: Add modal-open class to body ---
             $('body').addClass('modal-open');
             $('#content-modal').fadeIn(200);
             
@@ -135,12 +127,10 @@ $(document).ready(function () {
         }
     });
 
-    // --- UPDATED: Modal Close button ---
     $('body').on('click', '.modal-close-btn', function() {
         const $modal = $('#content-modal');
         const $modalContent = $('#modal-content-area');
         
-        // --- FIX: Remove modal-open class from body ---
         $('body').removeClass('modal-open');
         $modal.fadeOut(200);
         
@@ -151,14 +141,12 @@ $(document).ready(function () {
         $(document).off('keydown.modalNav');
     });
     
-    // Optional: Click backdrop to close
     $('body').on('click', '#content-modal', function(e) {
         if (e.target.id === 'content-modal') {
             $(this).find('.modal-close-btn').click();
         }
     });
     
-    // --- Modal Prev/Next/Info button listeners ---
     $('body').on('click', '.modal-prev-btn', function() {
         if (currentCardIndex > 0) {
             loadModalContent(currentCardIndex - 1);
@@ -428,7 +416,6 @@ function resultsLoop(data, Cat, BKcol) {
 
         $('#Grid').append(`
         <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
-            <!-- YOUTUBE LINKS MUST have data-load-type="iframe" -->
             <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
                <img class="YTi" src="${thumb}" alt="${title}" >
                <h3>${title}</h3>
@@ -456,17 +443,14 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
             
             categories.add(category);
 
-            // --- UPDATED: Added .photo-details div ---
             const cardHtml = `
                 <div class="card-item" 
                      data-category="${category}" 
                      data-keywords="${title},${description}">
                     
-                    <!-- ALBUM LINKS MUST have data-load-type="image" -->
                     <a href="${photo.url}" data-load-type="image">
                         <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
                         
-                        <!-- This div is for the hover effect -->
                         <div class="photo-details">
                             <h3>${title}</h3>
                             <p>${description}</p>
@@ -587,7 +571,6 @@ function handleModalKeys(e) {
             $('.modal-next-btn').click();
             break;
         case " ": // Spacebar
-            // --- FIX: Prevent spacebar from scrolling page ---
             e.preventDefault(); 
             $('.modal-next-btn').click();
             break;
@@ -638,13 +621,11 @@ function loadModalContent(index) {
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     $modalOpenLink.attr('href', loadUrl);
     
-    // Clear any existing info overlays
     $modalContent.find('.modal-photo-info').remove();
-    $modalInfoBtn.hide(); // Hide info button by default
+    $modalInfoBtn.hide(); 
 
     const customHeight = $link.data('height') || '85vh';
     
-    // --- NEW: Info is now extracted for *all* types ---
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
     const desc = $card.find('p').text();
@@ -657,7 +638,6 @@ function loadModalContent(index) {
                 <p>${desc}</p>
             </div>`;
     }
-    // --- END NEW ---
 
     switch (loadType) {
         case 'html':
@@ -674,18 +654,26 @@ function loadModalContent(index) {
             });
             break;
         case 'image':
-            $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
-            if (infoHtml) {
-                $modalContent.append(infoHtml);
-                $modalInfoBtn.show(); 
-            }
+            // --- THIS IS THE FIX ---
+            // Wrap the image and info in the image-wrapper
+            $modalContent.html(`
+                <div class="image-wrapper">
+                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            // --- END FIX ---
             break;
         case 'iframe':
-            $modalContent.html(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
-            if (infoHtml) {
-                $modalContent.append(infoHtml);
-                $modalInfoBtn.show(); 
-            }
+            // --- THIS IS THE FIX ---
+            // Create a new wrapper for iframes to hold info
+            $modalContent.html(`
+                <div class="iframe-wrapper">
+                    <iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            // --- END FIX ---
             break;
         case 'blocked':
             $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here. Please use the "Open in new window" button.</div>');
