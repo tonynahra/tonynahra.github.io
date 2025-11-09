@@ -4,9 +4,11 @@
     <!-- Filter Bar for Research -->
     <div class="filter-bar">
         <div class="search-wrapper">
+            <!-- UPDATED: Added ID -->
             <input type="search" id="research-search-box" placeholder="Filter by title/desc...">
         </div>
         <div class="category-wrapper">
+            <!-- UPDATED: Added ID -->
             <select id="research-category-filter">
                 <option value="all">All Categories</option>
                 <option value="Finance">Finance</option>
@@ -16,6 +18,7 @@
             </select>
         </div>
         <div class="keyword-wrapper">
+            <!-- UPDATED: Added ID -->
             <select id="research-keyword-filter">
                 <option value="all">Top Keywords</option>
                 <!-- This will be auto-populated by JS -->
@@ -26,11 +29,6 @@
     <!-- Card List Container -->
     <div id="research-card-list" class="card-list">
         
-        <!-- 
-          NEW RESEARCH CARD TYPE
-          - data-load-type="research"
-          - data-json-url="path/to/your.json"
-        -->
         <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
             <img src="https://placehold.co/400x200/2c3e50/27ae60?text=Markets" class="card-image" alt="Markets Stocks Tickers">
             <h3>Stock Ticker Research</h3>
@@ -46,7 +44,7 @@
             <h3>Large Language Model Efficiency</h3>
             <p>A paper on reducing token compute cost for LLMs.</p>
             <span class="card-category">AI</span>
-            <a href="https-arxiv.org/abs/2305.11111" target="_blank">Read Paper &rarr;</a>
+            <a href="https.../2305.11111" target="_blank">Read Paper &rarr;</a>
         </div>
         
         <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
@@ -88,7 +86,7 @@
             <h3>Supply Chain Bottlenecks Post-2023</h3>
             <p>A look at the lasting impacts on global shipping and logistics.</p>
             <span class="card-category">Economics</span>
-            <a href="https-www.imf.org/en/Home" target="_blank">Read More &rarr;</a>
+            <a href="https.../en/Home" target="_blank">Read More &rarr;</a>
         </div>
 
         <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
@@ -112,7 +110,6 @@
             <a href="https://deepmind.google/discover/blog/alphago-the-story-so-far/" target="_blank">Read More &rarr;</a>
         </div>
         
-        <!-- Adding more cards to reach 50 total -->
         <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
             <h3>Venture Capital Trends</h3>
             <p>Investment shifts in SaaS and AI startups for 2025.</p>
