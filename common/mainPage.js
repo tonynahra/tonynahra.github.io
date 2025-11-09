@@ -1,5 +1,8 @@
 var lastContentPage = 'tech-posts.html'; 
 
+var currentCardList = []; // NEW: Stores the list of cards for modal navigation
+var currentCardIndex = 0; // NEW: Stores the current position in the modal
+
 // --- List of common words to ignore ---
 const STOP_WORDS = new Set([
     'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have', 
@@ -9,7 +12,7 @@ const STOP_WORDS = new Set([
     'file', 'files', 'user', 'users', 'server', 'servers', 'link', 'more', 'read',
     'view', 'full', 'size', 'click', 'introductory', 'introduction', 'advanced',
     'comprehensive', 'dummies', 'glance', 'handout', 'part 1', 'v1',
-    'photo', 'usa', 'new', 'york', 'amazing', 'island' // Added album-specific stop words
+    'photo', 'usa', 'new', 'york', 'amazing', 'island'
 ]);
 
 /**
@@ -33,15 +36,21 @@ function decodeText(text) {
 
 $(document).ready(function () {
     
-    // --- NEW: Inject the modal HTML on page load ---
+    // --- UPDATED: Inject the modal HTML with new buttons ---
     $('body').append(`
         <div id="content-modal" class="modal-backdrop">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button class="modal-close-btn">&larr; Close</button>
-                    <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
-                        Open in new window &nearr;
-                    </a>
+                    <div class="modal-nav-left">
+                        <button class="modal-prev-btn">&larr; Prev</button>
+                        <button class="modal-next-btn">Next &rarr;</button>
+                    </div>
+                    <div class="modal-nav-right">
+                        <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                            Open in new window &nearr;
+                        </a>
+                        <button class="modal-close-btn">&times; Close</button>
+                    </div>
                 </div>
                 <div id="modal-content-area">
                     <!-- Content (iframe, image, html) will be loaded here -->
@@ -49,7 +58,7 @@ $(document).ready(function () {
             </div>
         </div>
     `);
-    // --- END NEW ---
+    // --- END UPDATED ---
 
     initializeCollapsibleSections();
     
@@ -81,87 +90,80 @@ $(document).ready(function () {
             lastContentPage = pageUrl; 
         }
         
-        // --- UPDATED: Pass the initial-load override ---
         const initialLoad = $(this).data('initial-load');
         loadContent(pageUrl, initialLoad);
     });
 
-    // --- UPDATED: Listener for ALL CARDS (now opens modal) ---
+    // --- UPDATED: Listener for ALL CARDS (now sets up modal state) ---
     $('body').on('click', '.card-item, .item', function(e) {
-        const $link = $(this).find('a').first(); 
+        const $clickedCard = $(this);
+        const $link = $clickedCard.find('a').first();
         if (!$link.length) { return; } 
         
-        if ($(e.target).hasClass('open-new-window') || $(e.target).closest('.open-new-window').length) {
-            return;
+        if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
+            // Allow clicks on "Open in new window" *inside the modal* to work
+            if ($(e.target).hasClass('open-new-window') || $(e.target).closest('.open-new-window').length) {
+                return;
+            }
+            // If it's a *different* link (like in a post body), open in new tab
+            if (!$(e.target).closest('.card-item').length && !$(e.target).closest('.item').length) {
+                 window.open($link.attr('href'), '_blank');
+                 return;
+            }
         }
 
         e.preventDefault(); 
         e.stopPropagation(); 
         
-        const loadUrl = $link.attr('href');
-        let loadType = $link.data('load-type'); 
+        // --- NEW: Build the list for modal navigation ---
+        const $cardList = $clickedCard.closest('.card-list');
+        const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible');
         
-        if (!loadType) {
-            if (loadUrl.startsWith('http')) {
-                if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
-                    window.open(loadUrl, '_blank');
-                    return; 
-                } else {
-                    loadType = 'iframe'; 
-                }
-            } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
-                loadType = 'image';
-            } else if (loadUrl.endsWith('.html')) { 
-                loadType = 'html';
-            } else {
-                window.open(loadUrl, '_blank');
-                return;
-            }
+        currentCardList = [];
+        $allVisibleCards.each(function() {
+            currentCardList.push($(this).find('a').first());
+        });
+        
+        currentCardIndex = $allVisibleCards.index($clickedCard);
+        
+        if (currentCardList.length > 0) {
+            loadModalContent(currentCardIndex);
+            $('#content-modal').fadeIn(200);
         }
-
-        const $modal = $('#content-modal');
-        const $modalContent = $('#modal-content-area');
-        const $modalOpenLink = $modal.find('.open-new-window');
-
-        $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-        $modalOpenLink.attr('href', loadUrl);
-        
-        const customHeight = $link.data('height') || '85vh';
-
-        switch (loadType) {
-            case 'html':
-                $.ajax({
-                    url: loadUrl, type: 'GET',
-                    success: function(data) { $modalContent.html(data); },
-                    error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
-                });
-                break;
-            case 'image':
-                $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
-                break;
-            case 'iframe':
-                $modalContent.html(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
-                break;
-            default:
-                $modalContent.html('<div class="error-message">Unknown content type.</div>');
-                return;
-        }
-        
-        $modal.fadeIn(200);
     });
 
+    // --- UPDATED: Modal Close button ---
     $('body').on('click', '.modal-close-btn', function() {
         const $modal = $('#content-modal');
         const $modalContent = $('#modal-content-area');
         $modal.fadeOut(200);
         $modalContent.html('');
+        
+        // Clear the state
+        currentCardList = [];
+        currentCardIndex = 0;
     });
     
+    // Optional: Click backdrop to close
     $('body').on('click', '#content-modal', function(e) {
         if (e.target.id === 'content-modal') {
             $(this).find('.modal-close-btn').click();
         }
     });
+    
+    // --- NEW: Modal Prev/Next button listeners ---
+    $('body').on('click', '.modal-prev-btn', function() {
+        if (currentCardIndex > 0) {
+            loadModalContent(currentCardIndex - 1);
+        }
+    });
+    
+    $('body').on('click', '.modal-next-btn', function() {
+        if (currentCardIndex < currentCardList.length - 1) {
+            loadModalContent(currentCardIndex + 1);
+        }
+    });
+    // --- END MODAL LOGIC ---
 
 
     // --- All filter listeners ---
@@ -221,7 +223,6 @@ $(document).ready(function () {
 
 
 /* === COLLAPSIBLE MENU LOGIC (LEFT-SIDE PLAYLISTS) === */
-// --- UPDATED: Reads 'data-initial-load' ---
 function initializeCollapsibleSections() {
     $('.expand-button').each(function() {
         const $button = $(this);
@@ -229,7 +230,7 @@ function initializeCollapsibleSections() {
         const $target = $('#' + targetId);
         const $items = $target.find('a'); 
         const totalItems = $items.length;
-        const initialLimit = parseInt($button.data('initial-load') || 3); // <-- UPDATED
+        const initialLimit = parseInt($button.data('initial-load') || 3);
         const increment = 3; 
 
         if (totalItems > initialLimit) {
@@ -269,7 +270,6 @@ function toggleCollapsibleSection($button) {
 
 
 /* === DYNAMIC CONTENT LOADING IMPLEMENTATION === */
-// --- UPDATED: Accepts 'initialLoadOverride' ---
 function loadContent(pageUrl, initialLoadOverride) {
     const $contentArea = $('#content-area');
     $contentArea.empty();
@@ -293,15 +293,15 @@ function loadContent(pageUrl, initialLoadOverride) {
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
                 const params = paramString.split(',');
                 if (params.length === 3 && typeof loadVids === 'function') {
-                    loadVids(params[0], params[1], params[2], initialLoadOverride); // <-- Pass override
+                    loadVids(params[0], params[1], params[2], initialLoadOverride);
                 } else {
                     $contentArea.html('<div class="error-message">YouTube parameter error.</div>');
                 }
             } else if (isPostsPage) {
-                handleCardView($contentArea, initialLoadOverride); // <-- Pass override
+                handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#posts-card-list', '#post-keyword-filter');
             } else if (isCertsPage) { 
-                handleCardView($contentArea, initialLoadOverride); // <-- Pass override
+                handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#cert-card-list', '#cert-keyword-filter');
             } else if (isAlbumPage) { 
                 const queryString = pageUrl.split('?')[1];
@@ -310,7 +310,7 @@ function loadContent(pageUrl, initialLoadOverride) {
                     const jsonUrl = urlParams.get('json');
                     
                     if (jsonUrl) {
-                        loadPhotoAlbum(jsonUrl, initialLoadOverride); // <-- Pass override
+                        loadPhotoAlbum(jsonUrl, initialLoadOverride);
                     } else {
                         $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
                     }
@@ -330,13 +330,12 @@ function loadContent(pageUrl, initialLoadOverride) {
 }
 
 /* === CARD VIEW (Show More) LOGIC === */
-// --- UPDATED: Accepts 'initialLoadOverride' ---
 function handleCardView($scope, initialLoadOverride) {
     $scope.find('.card-list').each(function() {
         const $list = $(this);
         const $items = $list.children('.card-item');
         const totalItems = $items.length;
-        const initialLimit = parseInt(initialLoadOverride) || 10; // <-- Use override or default to 10
+        const initialLimit = parseInt(initialLoadOverride) || 10;
         const increment = 10;
         
         $list.next('.toggle-card-button').remove(); 
@@ -372,7 +371,6 @@ function showMoreCards($button, $list) {
 var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; // Your API Key
 var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
-// --- UPDATED: Accepts 'initialLoadOverride' ---
 function loadVids(PL, Category, BKcol, initialLoadOverride) {
     $('#Grid').empty(); 
     var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
@@ -391,7 +389,7 @@ function loadVids(PL, Category, BKcol, initialLoadOverride) {
         }
 
         resultsLoop(data, Category, BKcol);
-        handleCardView($('#content-area'), initialLoadOverride); // <-- Pass override
+        handleCardView($('#content-area'), initialLoadOverride);
         populateSmartKeywords('#Grid', '#youtube-keyword-filter');
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -448,6 +446,7 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
             
             categories.add(category);
 
+            // --- UPDATED: Added .photo-details div ---
             const cardHtml = `
                 <div class="card-item" 
                      data-category="${category}" 
@@ -455,9 +454,12 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
                     
                     <a href="${photo.url}" data-load-type="image">
                         <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
-                        <h3 style="display: none;">${title}</h3>
-                        <p style="display: none;">${description}</p>
-                        <span class="card-category" style="display: none;">${category}</span>
+                        
+                        <!-- This div is for the hover effect -->
+                        <div class="photo-details">
+                            <h3>${title}</h3>
+                            <p>${description}</p>
+                        </div>
                     </a>
                 </div>
             `;
@@ -466,8 +468,7 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
         
         populateAlbumCategories(categories);
         populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
-        
-        handleCardView($('#content-area'), initialLoadOverride); // <-- Pass override
+        handleCardView($('#content-area'), initialLoadOverride);
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
         $('#album-title').text("Error Loading Album");
@@ -554,6 +555,75 @@ function getCardSearchableText($card) {
         .map(text => String(text || '')) 
         .join(' ')
         .toLowerCase());
+}
+
+
+/* === --- NEW: MODAL NAVIGATION HELPER --- === */
+function loadModalContent(index) {
+    if (index < 0 || index >= currentCardList.length) {
+        return; // Index out of bounds
+    }
+
+    // Get the link from our stored list
+    const $link = currentCardList[index];
+    if (!$link.length) return;
+    
+    // Update global index
+    currentCardIndex = index;
+    
+    const loadUrl = $link.attr('href');
+    let loadType = $link.data('load-type');
+    
+    // Auto-guess type if not provided
+    if (!loadType) {
+        if (loadUrl.startsWith('http')) {
+            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
+                loadType = 'blocked'; // Special type for blocked iframes
+            } else {
+                loadType = 'iframe';
+            }
+        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+            loadType = 'image';
+        } else if (loadUrl.endsWith('.html')) {
+            loadType = 'html';
+        } else {
+            loadType = 'newtab'; // Failsafe for unknown links
+        }
+    }
+
+    const $modalContent = $('#modal-content-area');
+    const $modalOpenLink = $('#content-modal .open-new-window');
+    
+    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
+    $modalOpenLink.attr('href', loadUrl);
+
+    const customHeight = $link.data('height') || '85vh';
+
+    switch (loadType) {
+        case 'html':
+            $.ajax({
+                url: loadUrl, type: 'GET',
+                success: function(data) { $modalContent.html(data); },
+                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
+            });
+            break;
+        case 'image':
+            $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
+            break;
+        case 'iframe':
+            $modalContent.html(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
+            break;
+        case 'blocked':
+            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here. Please use the "Open in new window" button.</div>');
+            break;
+        default: // newtab
+            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
+            break;
+    }
+    
+    // Update Prev/Next button visibility
+    $('.modal-prev-btn').toggle(index > 0);
+    $('.modal-next-btn').toggle(index < currentCardList.length - 1);
 }
 
 
