@@ -15,6 +15,17 @@
       "id": "orcl", 
       "name": "ORCL", 
       "contentUrl": "https://mediamaze.com/invest/Ratings.php?T=ORCL" 
+    },
+    { 
+      "id": "goog", 
+      "name": "GOOG", 
+      "contentUrl": "https://tonynahra.github.io/posts/GeminiWinner.html" 
+    }
+    ,
+    { 
+      "id": "analysts", 
+      "name": "Analysts", 
+      "contentUrl": "https://hosting.briefing.com/fidelity/Calendars/UpgradesDowngrades.htm" 
     }
   ]
 }
