@@ -1,46 +1,8 @@
+/* === GLOBAL VARIABLES === */
 var currentCardList = []; // Stores the list of cards for modal navigation
 var currentCardIndex = 0; // Stores the current position in the modal
 var isModalInfoVisible = false; // Stores the state of the info toggle
 
-// --- List of common words to ignore ---
-const STOP_WORDS = new Set([
-    'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have', 
-    'he', 'in', 'is', 'it', 'its', 'of', 'on', 'or', 'that', 'the', 'to', 'was', 
-    'were', 'will', 'with', 'part', 'op', 'web', 'at', 'al', 'com', 'org', 'www',
-    'https', 'http', 'pdf', 'html', 'sheet', 'cheat', 'for', 'github', 'master',
-    'file', 'files', 'user', 'users', 'server', 'servers', 'link', 'more', 'read',
-    'view', 'full', 'size', 'click', 'introductory', 'introduction', 'advanced',
-    'comprehensive', 'dummies', 'glance', 'handout', 'part 1', 'v1',
-    'photo', 'usa', 'new', 'york', 'amazing', 'island'
-]);
-
-// --- Keyword Dictionaries ---
-const REPLACEMENT_MAP = {
-    'javascript': 'js',
-    'artificial': 'ai',
-    'intelligence': 'ai',
-    'llms': 'llm',
-    'python': 'python',
-    'statistics': 'stats',
-    'statistical': 'stats',
-    'powerbi': 'bi',
-    'power': 'bi',
-    'analysis': 'data',
-    'analytics': 'data'
-};
-const SYNONYM_MAP = {
-    'js': ['javascript'],
-    'ai': ['artificial', 'intelligence'],
-    'llm': ['llms'],
-    'stats': ['statistics', 'statistical'],
-    'bi': ['powerbi', 'power'],
-    'data': ['analysis', 'analytics']
-};
-
-
-/**
- * Helper function to safely decode text.
- */
 function decodeText(text) {
     if (!text) return "";
     try {
@@ -429,11 +391,13 @@ function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return; 
 
-    const wordCounts = {};
+    const wordCounts = {}; // Global counts
     
     try {
         $(`${listId} .card-item`).each(function() {
             const $card = $(this);
+            const localCardKeywords = new Set(); // --- NEW: Unique keywords *per card*
+            
             const textSources = [
                 $card.find('h3').text(),
                 $card.find('p').text(),
@@ -449,16 +413,21 @@ function populateSmartKeywords(listId, filterId) {
             words.forEach(word => {
                 let cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
                 
-                // --- FIX: Apply replacements ---
                 if (REPLACEMENT_MAP[cleanWord]) {
                     cleanWord = REPLACEMENT_MAP[cleanWord];
                 }
                 
-                // --- FIX: Ignore long words ---
                 if (cleanWord.length > 2 && cleanWord.length <= 15 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
-                    wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
+                    // Add to the *local* set for this card
+                    localCardKeywords.add(cleanWord);
                 }
             });
+
+            // --- NEW: Now, update global counts *once per card* ---
+            localCardKeywords.forEach(key => {
+                wordCounts[key] = (wordCounts[key] || 0) + 1;
+            });
+            // --- END NEW ---
         });
 
         const sortedKeywords = Object.entries(wordCounts)
@@ -468,14 +437,14 @@ function populateSmartKeywords(listId, filterId) {
         $filter.children('option:not(:first)').remove();
         
         sortedKeywords.forEach(([key, count]) => {
-            // --- FIX: Trim at 15 chars and add count ---
+            // --- NEW: Trim at 15 chars and add count ---
             const displayText = key.length > 15 ? key.substring(0, 15) + '...' : key;
             
             $filter.append($('<option>', {
                 value: key,
                 text: `${displayText} (${count})` // e.g., "beethoven (5)"
             }));
-            // --- END FIX ---
+            // --- END NEW ---
         });
     
     } catch (error) {
