@@ -175,6 +175,8 @@ function loadContent(pageUrl, initialLoadOverride) {
                 populateCategoryFilter('#research-card-list', '#research-category-filter'); // <-- ADDED
             }
             
+            // This function is from an old script, but we keep the call
+            // in case you are still using it for certificates.
             if (typeof initializeImageModal === 'function') {
                 initializeImageModal(); 
             }
