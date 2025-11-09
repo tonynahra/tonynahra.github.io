@@ -97,6 +97,7 @@
     z-index: 50;
 
     align-items: center;
+    justify-content: space-between; /* Space between title and controls */
 }
 
 .filter-bar h2 {
@@ -104,7 +105,9 @@
     padding: 0;
     color: var(--text-primary);
     font-size: 1.5rem;
-    flex-grow: 1; 
+    /* --- UPDATED: Don't let title grow/shrink --- */
+    flex-grow: 0;
+    flex-shrink: 0;
     margin-right: 20px; 
 }
 
@@ -112,16 +115,20 @@
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
-    flex-grow: 1; /* Allow controls to wrap and grow */
+    flex-grow: 1; /* Controls will take remaining space */
 }
 
 /* --- THIS IS THE FIX --- */
-/* All filter items share space and wrap nicely */
-.filter-bar .search-wrapper,
-.filter-bar .category-wrapper,
+/* Search wrapper grows, dropdowns have fixed width */
+.filter-bar .search-wrapper {
+    flex: 1 1 200px; /* grow, shrink, basis */
+    min-width: 180px; 
+}
+.filter-bar .category-wrapper {
+    flex: 0 1 200px; /* Don't grow, shrink, basis 200px */
+}
 .filter-bar .keyword-wrapper {
-    flex: 1 1 180px; /* grow, shrink, basis */
-    min-width: 180px; /* Minimum width before wrapping */
+    flex: 0 1 180px; /* Don't grow, shrink, basis 180px */
 }
 /* --- END FIX --- */
 
@@ -222,10 +229,7 @@
     flex-grow: 1; 
     overflow-y: auto; 
     position: relative; 
-    /* --- THIS IS THE FIX --- */
-    /* Remove flex properties that were cutting off HTML content */
     display: block;
-    /* --- END FIX --- */
 }
 
 /* Modal Button Styles */
@@ -347,16 +351,14 @@
     padding: 40px 20px 20px;
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
-    /* --- THIS IS THE FIX --- */
-    display: none; /* Changed from opacity */ 
-    /* --- END FIX --- */
+    display: none; 
     transform: translateY(0); 
     transition: all 0.3s ease;
     pointer-events: none; 
 }
 
 .modal-photo-info.info-visible {
-    display: block; /* Changed from opacity */
+    display: block; 
 }
 
 .modal-photo-info h3 {
