@@ -22,6 +22,8 @@ $(document).ready(function () {
         
         const pageUrl = $(this).data('page');
         
+        // Store this as the "page to go back to"
+        // This now includes research.html
         if (pageUrl && pageUrl.includes('.html') && !pageUrl.includes('guide.html') && !pageUrl.includes('about.html')) {
             lastContentPage = pageUrl; 
         }
@@ -168,22 +170,16 @@ function loadContent(pageUrl, initialLoadOverride) {
                 } else {
                      $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
                 }
-            } else if (isResearchPage) { // <-- NEW
-                const queryString = pageUrl.split('?')[1];
-                if (queryString) {
-                    const urlParams = new URLSearchParams(queryString);
-                    const jsonUrl = urlParams.get('data'); // Get the 'data' param
-                    
-                    if (jsonUrl && typeof loadResearchData === 'function') {
-                        loadResearchData(jsonUrl);
-                    } else {
-                        $contentArea.html('<div class="error-message">No data URL specified for research.</div>');
-                    }
-                } else {
-                     $contentArea.html('<div class="error-message">No data URL specified for research.</div>');
-                }
+            } else if (isResearchPage) { 
+                // --- THIS IS THE FIX ---
+                // This page is just a card list, like posts.
+                handleCardView($contentArea, initialLoadOverride);
+                populateSmartKeywords('#research-card-list', '#research-keyword-filter');
+                // The logic to load the tabs is in cardLogic.js
+                // --- END FIX ---
             }
             
+            // Re-initialize old image modal if it exists (for certificates)
             if (typeof initializeImageModal === 'function') {
                 initializeImageModal(); 
             }
