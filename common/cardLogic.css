@@ -81,11 +81,11 @@
     color: var(--bg-dark);
 }
 
-/* --- Filter Bar --- */
+/* --- UPDATED: Filter Bar --- */
 .filter-bar {
     display: flex;
     flex-wrap: wrap; 
-    gap: 15px;
+    gap: 20px; /* Increased gap */
     margin-bottom: 25px;
     
     background-color: var(--bg-medium);
@@ -95,6 +95,26 @@
     position: sticky;
     top: 0;
     z-index: 50;
+
+    /* --- NEW: Aligns title (left) and controls (right) --- */
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* --- NEW: Title inside the filter bar --- */
+.filter-bar h2 {
+    margin: 0;
+    padding: 0;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    flex-grow: 1; /* Allows title to take up space */
+}
+
+/* --- NEW: Wrapper for all filter inputs --- */
+.filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .filter-bar .search-wrapper {
@@ -200,15 +220,11 @@
     flex-direction: column;
 }
 
-/* --- THIS IS THE FIX --- */
-/* This is the main content box inside the modal */
 #modal-content-area {
     flex-grow: 1; 
     overflow-y: auto; 
     position: relative; 
-    /* REMOVED all flex properties to fix HTML/iFrame trimming */
 }
-/* --- END FIX --- */
 
 /* Modal Button Styles */
 .modal-header {
@@ -222,7 +238,6 @@
     gap: 15px;
 }
 
-/* --- NEW: Hide main header when in research mode --- */
 .modal-backdrop.research-mode .modal-header {
     display: none;
 }
@@ -330,15 +345,20 @@
     padding: 40px 20px 20px;
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
-    opacity: 0;
-    transform: translateY(20px);
+    
+    /* --- THIS IS THE FIX --- */
+    display: none; /* Changed from opacity */
+    /* --- END FIX --- */
+    
+    transform: translateY(0); /* Removed transform */
     transition: all 0.3s ease;
     pointer-events: none; 
 }
 
 .modal-photo-info.info-visible {
-    opacity: 1;
-    transform: translateY(0);
+    /* --- THIS IS THE FIX --- */
+    display: block; /* Changed from opacity */
+    /* --- END FIX --- */
 }
 
 .modal-photo-info h3 {
@@ -420,9 +440,7 @@
     margin: 0;
 }
 
-/* --- NEW: Research Page / Tab Styles --- */
-
-/* This is the new header *inside* the modal */
+/* --- Research Page / Tab Styles --- */
 .research-modal-header {
     display: flex;
     justify-content: space-between;
@@ -436,7 +454,6 @@
     margin: 0;
     color: var(--text-accent);
 }
-/* Re-style the buttons for this context */
 .research-modal-header .modal-close-btn,
 .research-modal-header .open-new-window {
     padding: 8px 15px;
@@ -476,7 +493,6 @@
 
 .tab-content {
     padding: 20px 0;
-    /* Styles for content loaded inside tabs */
 }
 .tab-content h3 {
     color: var(--text-accent);
