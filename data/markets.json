@@ -1,0 +1,20 @@
+{
+  "title": "Stock Ticker Research",
+  "tickers": [
+    { 
+      "id": "msft", 
+      "name": "MSFT", 
+      "contentUrl": "data/msft.html" 
+    },
+    { 
+      "id": "nvda", 
+      "name": "NVDA", 
+      "contentUrl": "data/nvda.html" 
+    },
+    { 
+      "id": "orcl", 
+      "name": "ORCL", 
+      "contentUrl": "data/orcl.html" 
+    }
+  ]
+}
