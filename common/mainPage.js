@@ -1,12 +1,25 @@
 var lastContentPage = 'tech-posts.html'; 
 
+function decodeText(text) {
+    if (!text) return "";
+    try {
+        var $textarea = $('<textarea></textarea>');
+        $textarea.html(text);
+        let decoded = $textarea.val();
+        decoded = decodeURIComponent(decoded);
+        return decoded;
+    } catch (e) {
+        return text;
+    }
+}
+
+
 $(document).ready(function () {
     
     initializeCollapsibleSections();
     
     // --- EVENT LISTENERS (DELEGATED) ---
 
-    // Listener for "Show More" (Left Menu)
     $('body').on('click', '.expand-button', function() {
         toggleCollapsibleSection($(this));
     });
@@ -22,8 +35,6 @@ $(document).ready(function () {
         
         const pageUrl = $(this).data('page');
         
-        // Store this as the "page to go back to"
-        // This now includes research.html
         if (pageUrl && pageUrl.includes('.html') && !pageUrl.includes('guide.html') && !pageUrl.includes('about.html')) {
             lastContentPage = pageUrl; 
         }
@@ -34,7 +45,7 @@ $(document).ready(function () {
 
     // Theme Switcher Logic
     function applyTheme(theme) {
-        $('body').removeClass('theme-light theme-pastel theme-forest');
+        $('body').removeClass('theme-light theme-pastel theme-forest theme-cool');
         if (theme !== 'theme-dark') { $('body').addClass(theme); }
         localStorage.setItem('theme', theme);
         $('.theme-dot').removeClass('active');
@@ -79,7 +90,7 @@ function initializeCollapsibleSections() {
     $('.expand-button').each(function() {
         const $button = $(this);
         const targetId = $button.data('target');
-        const $target = $('#' + targetId);
+        const $target = $('#'AS $target);
         const $items = $target.find('a'); 
         const totalItems = $items.length;
         const initialLimit = parseInt($button.data('initial-load') || 3);
@@ -140,7 +151,7 @@ function loadContent(pageUrl, initialLoadOverride) {
             const isPostsPage = pageUrl.includes('posts.html'); 
             const isCertsPage = pageUrl.includes('certificates.html');
             const isAlbumPage = pageUrl.includes('album.html');
-            const isResearchPage = pageUrl.includes('research.html'); // <-- NEW
+            const isResearchPage = pageUrl.includes('research.html'); 
 
             if (isYouTubePage) {
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
@@ -171,15 +182,10 @@ function loadContent(pageUrl, initialLoadOverride) {
                      $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
                 }
             } else if (isResearchPage) { 
-                // --- THIS IS THE FIX ---
-                // This page is just a card list, like posts.
                 handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#research-card-list', '#research-keyword-filter');
-                // The logic to load the tabs is in cardLogic.js
-                // --- END FIX ---
             }
             
-            // Re-initialize old image modal if it exists (for certificates)
             if (typeof initializeImageModal === 'function') {
                 initializeImageModal(); 
             }
