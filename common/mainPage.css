@@ -487,6 +487,7 @@ a:hover {
 
 
 /* --- Loaded Content (Images/IFrames) --- */
+/* This is a fall-back for local .html fragments */
 .image-wrapper {
     text-align: center;
     padding: 20px;
@@ -743,12 +744,21 @@ code {
     flex-direction: column;
 }
 
+/* --- UPDATED: Modal Content Area --- */
 #modal-content-area {
     flex-grow: 1; 
-    overflow: auto; 
-    display: flex; /* Use flex to center image */
+    overflow: auto; /* This will scroll if content is too tall */
+    /* REMOVED: display: flex and centering properties */
+}
+
+/* --- UPDATED: Image Wrapper (for images) --- */
+#modal-content-area .image-wrapper {
+    /* This wrapper is now created by JS *only* for images */
+    display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
+    height: 100%;
 }
 
 /* --- UPDATED: Image aspect ratio fix --- */
