@@ -224,6 +224,7 @@ function loadVids(PL, Category, BKcol, initialLoadOverride) {
         resultsLoop(data, Category, BKcol);
         handleCardView($('#content-area'), initialLoadOverride);
         populateSmartKeywords('#Grid', '#youtube-keyword-filter');
+        // --- NEW: Populate YouTube categories (which is just the one) ---
         populateCategoryFilter('#Grid', '#youtube-category-filter');
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -295,6 +296,7 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
             $albumList.append(cardHtml);
         });
         
+        // --- UPDATED: Call the new general category populator ---
         populateCategoryFilter('#photo-album-list', '#album-category-filter');
         populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
         handleCardView($('#content-area'), initialLoadOverride);
@@ -358,18 +360,23 @@ function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
     $target.html('<div class="content-loader"><div class="spinner"></div></div>'); 
     
-    // --- THIS IS THE FIX for CORS ---
-    // Use an iframe to load the remote content
-    const iframeHtml = `<iframe src="${htmlUrl}" class="loaded-iframe"></iframe>`;
-    $target.html(iframeHtml);
-    // --- END FIX ---
+    $.ajax({
+        url: htmlUrl,
+        type: 'GET',
+        success: function(data) {
+            $target.html(data);
+        },
+        error: function() {
+            $target.html('<div class="error-message">Could not load content.</div>');
+        }
+    });
 }
 
 
 /* === --- SMART KEYWORD/CATEGORY LOGIC --- === */
 
 /**
- * --- Populates the CATEGORY dropdown with counts ---
+ * --- NEW: Populates the CATEGORY dropdown with counts ---
  */
 function populateCategoryFilter(listId, filterId) {
     const $filter = $(filterId);
@@ -567,10 +574,7 @@ function loadModalContent(index) {
         }
     }
 
-    // --- THIS IS THE FIX ---
-    // Change the default height to 90vh
-    const customHeight = $link.data('height') || '90vh';
-    // --- END FIX ---
+    const customHeight = $link.data('height') || '85vh';
     
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
