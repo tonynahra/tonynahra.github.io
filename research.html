@@ -1,16 +1,18 @@
 <section class="research-page card-list-page">
     
-    <!-- UPDATED: Title moved inside, filters wrapped -->
-    <div class="filter-bar">
+   <div class="filter-bar">
         <h2>Research & Analysis</h2>
         <div class="filter-controls">
             <div class="search-wrapper">
                 <input type="search" id="research-search-box" placeholder="Filter by title/desc...">
             </div>
             <div class="category-wrapper">
+                <!-- --- THIS IS THE FIX --- -->
                 <select id="research-category-filter">
                     <option value="all">All Categories</option>
+                    <!-- Options will be populated by JS -->
                 </select>
+                <!-- --- END FIX --- -->
             </div>
             <div class="keyword-wrapper">
                 <select id="research-keyword-filter">
