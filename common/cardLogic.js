@@ -15,9 +15,6 @@ const STOP_WORDS = new Set([
 ]);
 
 // --- NEW: Keyword Dictionaries ---
-
-// A. REPLACEMENT_MAP: Cleans up keywords *before* they are added to the dropdown.
-// (e.g., "javascript" becomes "js")
 const REPLACEMENT_MAP = {
     'javascript': 'js',
     'artificial': 'ai',
@@ -31,9 +28,6 @@ const REPLACEMENT_MAP = {
     'analysis': 'data',
     'analytics': 'data'
 };
-
-// B. SYNONYM_MAP: Expands search *when* a filter is selected.
-// (e.g., filtering for "js" also finds "javascript")
 const SYNONYM_MAP = {
     'js': ['javascript'],
     'ai': ['artificial', 'intelligence'],
@@ -104,8 +98,7 @@ $(document).ready(function () {
         if (!$link.length) { return; } 
         
         const $clickedLink = $(e.target).closest('a');
-        // This check is now only for links *inside* the modal header
-        if ($clickedLink.length > 0 && $clickedLink.closest('.modal-header').length > 0) {
+        if ($clickedLink.length > 0 && !$clickedLink.is($link)) {
             return;
         }
         
@@ -188,9 +181,8 @@ $(document).ready(function () {
     $('body').on('change', '#research-category-filter', filterResearchCards);
     $('body').on('change', '#research-keyword-filter', filterResearchCards);
 
-    // --- NEW: Research Tab listener (moved from mainPage.js) ---
-    // Note: We delegate from #modal-content-area for tabs inside the modal
-    $('#modal-content-area').on('click', '.tab-button', function() {
+    // --- Research Tab listener ---
+    $('#content-modal').on('click', '.tab-button', function() {
         $(this).siblings().removeClass('active');
         $(this).addClass('active');
         
@@ -359,18 +351,14 @@ function populateAlbumCategories(categories) {
     });
 }
 
-/* === --- NEW: RESEARCH TAB LOGIC --- === */
+/* === --- RESEARCH TAB LOGIC --- === */
 
 /**
  * Builds the tabbed interface inside the modal.
- * @param {string} jsonUrl - The URL of the main data file (e.g., data/markets.json).
  */
 function buildResearchModal(jsonUrl) {
     const $modalContent = $('#modal-content-area');
     
-    // --- THIS IS THE FIX ---
-    // 1. Create a new header for the research title and the modal buttons
-    //    We move the buttons from the main modal header into this one.
     const researchHtml = `
         <div class="research-modal-header">
             <h2 id="research-title-modal">Loading Research...</h2>
@@ -387,19 +375,15 @@ function buildResearchModal(jsonUrl) {
         </div>
     `;
     $modalContent.html(researchHtml);
-    // --- END FIX ---
 
-    // 2. Fetch the JSON data
     $.getJSON(jsonUrl, function (data) {
         $('#research-title-modal').text(decodeText(data.title));
         
-        // --- NEW: Update the "Open in new window" href to the JSON file ---
         $modalContent.find('.open-new-window').attr('href', jsonUrl);
         
         const $tabNav = $('#research-tab-nav-modal');
         $tabNav.empty(); 
 
-        // 3. Create a tab button for each ticker
         $.each(data.tickers, function(index, ticker) {
             const $button = $(`<button class="tab-button"></button>`);
             $button.text(ticker.name);
@@ -407,7 +391,6 @@ function buildResearchModal(jsonUrl) {
             
             if (index === 0) {
                 $button.addClass('active');
-                // 4. Load the first tab's content
                 loadModalTabContent(ticker.contentUrl, '#research-tab-content-modal');
             }
             $tabNav.append($button);
@@ -464,14 +447,17 @@ function populateSmartKeywords(listId, filterId) {
             words.forEach(word => {
                 let cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
                 
-                // --- NEW: Apply replacements ---
+                // --- THIS IS THE FIX ---
+                // Apply replacements
                 if (REPLACEMENT_MAP[cleanWord]) {
                     cleanWord = REPLACEMENT_MAP[cleanWord];
                 }
                 
+                // Check length *after* replacement
                 if (cleanWord.length > 2 && cleanWord.length <= 15 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
                     wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
                 }
+                // --- END FIX ---
             });
         });
 
@@ -483,7 +469,10 @@ function populateSmartKeywords(listId, filterId) {
         $filter.children('option:not(:first)').remove();
         
         sortedKeywords.forEach(key => {
+            // --- THIS IS THE FIX ---
+            // Truncate display text to 8 chars, but use full word as value
             const displayText = key.length > 8 ? key.substring(0, 8) + '...' : key;
+            // --- END FIX ---
             
             $filter.append($('<option>', {
                 value: key,
@@ -519,7 +508,7 @@ function handleModalKeys(e) {
         return;
     }
     
-    // Don't interfere if user is typing in a tab
+    // Don't interfere if user is typing
     if ($(e.target).is('input, textarea, select')) {
         return;
     }
@@ -566,22 +555,17 @@ function loadModalContent(index) {
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
     
-    // --- THIS IS THE FIX ---
-    // Show/Hide modal buttons based on card type
     if (loadType === 'research' && jsonUrl) {
-        // This is a special research tab card
-        $modal.addClass('research-mode'); // Hides main header, prev/next
+        $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', jsonUrl); 
-        buildResearchModal(jsonUrl); // Build the tab interface
-        return; // Stop here
+        buildResearchModal(jsonUrl); 
+        return; 
     } 
     
-    // This is a regular card (image, iframe, html)
-    $modal.removeClass('research-mode'); // Show main header, prev/next
+    $modal.removeClass('research-mode'); 
     $modalOpenLink.attr('href', loadUrl);
     $modalContent.find('.modal-photo-info').remove();
     $modalInfoBtn.hide(); 
-    // --- END FIX ---
     
     
     if (!loadType) {
@@ -659,24 +643,11 @@ function loadModalContent(index) {
 
 
 /* === --- FILTERING LOGIC --- === */
-
-/**
- * Checks if a card's text matches a keyword, including synonyms.
- * @param {string} cardText - The pre-compiled text from the card.
- * @param {string} selectedKeyword - The keyword selected from the dropdown.
- * @returns {boolean} - True if it's a match.
- */
 function checkKeywordMatch(cardText, selectedKeyword) {
     if (selectedKeyword === "all") return true;
-
-    // Get the base keyword and its synonyms
     const keywordsToMatch = [selectedKeyword, ...(SYNONYM_MAP[selectedKeyword] || [])];
-    
-    // Check if the card text includes *any* of the keywords
     return keywordsToMatch.some(key => cardText.includes(key));
 }
-
-
 function filterYouTubeCards() {
     const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
     const selectedKeyword = $('#youtube-keyword-filter').val();
@@ -694,9 +665,7 @@ function filterYouTubeCards() {
             const $card = $(this);
             const cardText = getCardSearchableText($card); 
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
-            // --- UPDATED: Use new synonym checker ---
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
-
             if (searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
@@ -730,9 +699,8 @@ function filterPostCards() {
             const cardText = getCardSearchableText($card); 
             const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
-            // --- UPDATED: Use new synonym checker ---
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
-
+V
             if (categoryMatch && searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
@@ -766,9 +734,7 @@ function filterCertCards() {
             const cardText = getCardSearchableText($card); 
             const categoryMatch = (selectedCategory === "all" || cardCategories.includes(selectedCategory));
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
-            // --- UPDATED: Use new synonym checker ---
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword); 
-
             if (categoryMatch && searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
@@ -802,7 +768,6 @@ function filterAlbumCards() {
             const cardText = getCardSearchableText($card); 
             const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
-            // --- UPDATED: Use new synonym checker ---
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
             if (categoryMatch && searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
@@ -837,7 +802,6 @@ function filterResearchCards() {
             const cardText = getCardSearchableText($card); 
             const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
-            // --- UPDATED: Use new synonym checker ---
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
             if (categoryMatch && searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
