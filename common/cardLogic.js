@@ -305,9 +305,6 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
     });
 }
 
-// --- REMOVED: populateAlbumCategories (now replaced by generic one) ---
-
-
 /* === --- RESEARCH TAB LOGIC --- === */
 function buildResearchModal(jsonUrl) {
     const $modalContent = $('#modal-content-area');
@@ -635,8 +632,15 @@ function loadModalContent(index) {
 /* === --- FILTERING LOGIC --- === */
 function checkKeywordMatch(cardText, selectedKeyword) {
     if (selectedKeyword === "all") return true;
+    // Check for the base keyword AND any synonyms
     const keywordsToMatch = [selectedKeyword, ...(SYNONYM_MAP[selectedKeyword] || [])];
-    return keywordsToMatch.some(key => cardText.includes(key));
+    
+    // Create a regex to match whole words
+    return keywordsToMatch.some(key => {
+        // \b is a word boundary. This prevents "js" from matching "objects"
+        const regex = new RegExp(`\\b${key}\\b`, 'i'); 
+        return regex.test(cardText);
+    });
 }
 function filterYouTubeCards() {
     const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
