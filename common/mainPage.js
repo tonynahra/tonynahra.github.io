@@ -80,7 +80,10 @@ $(document).ready(function () {
         if (pageUrl && pageUrl.includes('.html') && !pageUrl.includes('guide.html') && !pageUrl.includes('about.html')) {
             lastContentPage = pageUrl; 
         }
-        loadContent(pageUrl);
+        
+        // --- UPDATED: Pass the initial-load override ---
+        const initialLoad = $(this).data('initial-load');
+        loadContent(pageUrl, initialLoad);
     });
 
     // --- UPDATED: Listener for ALL CARDS (now opens modal) ---
@@ -171,14 +174,13 @@ $(document).ready(function () {
     $('body').on('change', '#cert-category-filter', filterCertCards);
     $('body').on('change', '#cert-keyword-filter', filterCertCards);
     
-    // --- NEW: Album filter listeners ---
     $('body').on('input', '#album-search-box', filterAlbumCards);
     $('body').on('change', '#album-category-filter', filterAlbumCards);
     $('body').on('change', '#album-keyword-filter', filterAlbumCards);
     
     // Theme Switcher Logic
     function applyTheme(theme) {
-        $('body').removeClass('theme-light theme-pastel');
+        $('body').removeClass('theme-light theme-pastel theme-forest');
         if (theme !== 'theme-dark') { $('body').addClass(theme); }
         localStorage.setItem('theme', theme);
         $('.theme-dot').removeClass('active');
@@ -208,15 +210,18 @@ $(document).ready(function () {
     });
 
     // Load initial content
-    const initialPage = $('.nav-link.active-nav').data('page');
-    if (initialPage) {
-        lastContentPage = initialPage;
-        loadContent(initialPage);
+    const initialPage = $('.nav-link.active-nav');
+    if (initialPage.length) {
+        const pageUrl = initialPage.data('page');
+        const initialLoad = initialPage.data('initial-load');
+        lastContentPage = pageUrl;
+        loadContent(pageUrl, initialLoad);
     }
 });
 
 
 /* === COLLAPSIBLE MENU LOGIC (LEFT-SIDE PLAYLISTS) === */
+// --- UPDATED: Reads 'data-initial-load' ---
 function initializeCollapsibleSections() {
     $('.expand-button').each(function() {
         const $button = $(this);
@@ -224,7 +229,7 @@ function initializeCollapsibleSections() {
         const $target = $('#' + targetId);
         const $items = $target.find('a'); 
         const totalItems = $items.length;
-        const initialLimit = parseInt($button.data('max') || 3);
+        const initialLimit = parseInt($button.data('initial-load') || 3); // <-- UPDATED
         const increment = 3; 
 
         if (totalItems > initialLimit) {
@@ -264,7 +269,8 @@ function toggleCollapsibleSection($button) {
 
 
 /* === DYNAMIC CONTENT LOADING IMPLEMENTATION === */
-function loadContent(pageUrl) {
+// --- UPDATED: Accepts 'initialLoadOverride' ---
+function loadContent(pageUrl, initialLoadOverride) {
     const $contentArea = $('#content-area');
     $contentArea.empty();
     $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
@@ -287,32 +293,30 @@ function loadContent(pageUrl) {
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
                 const params = paramString.split(',');
                 if (params.length === 3 && typeof loadVids === 'function') {
-                    loadVids(params[0], params[1], params[2]);
+                    loadVids(params[0], params[1], params[2], initialLoadOverride); // <-- Pass override
                 } else {
                     $contentArea.html('<div class="error-message">YouTube parameter error.</div>');
                 }
             } else if (isPostsPage) {
-                handleCardView($contentArea);
+                handleCardView($contentArea, initialLoadOverride); // <-- Pass override
                 populateSmartKeywords('#posts-card-list', '#post-keyword-filter');
             } else if (isCertsPage) { 
-                handleCardView($contentArea);
+                handleCardView($contentArea, initialLoadOverride); // <-- Pass override
                 populateSmartKeywords('#cert-card-list', '#cert-keyword-filter');
             } else if (isAlbumPage) { 
-                // --- THIS IS THE FIX ---
                 const queryString = pageUrl.split('?')[1];
                 if (queryString) {
                     const urlParams = new URLSearchParams(queryString);
                     const jsonUrl = urlParams.get('json');
                     
                     if (jsonUrl) {
-                        loadPhotoAlbum(jsonUrl);
+                        loadPhotoAlbum(jsonUrl, initialLoadOverride); // <-- Pass override
                     } else {
                         $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
                     }
                 } else {
                      $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
                 }
-                // --- END FIX ---
             }
             
             if (typeof initializeImageModal === 'function') {
@@ -326,12 +330,13 @@ function loadContent(pageUrl) {
 }
 
 /* === CARD VIEW (Show More) LOGIC === */
-function handleCardView($scope) {
+// --- UPDATED: Accepts 'initialLoadOverride' ---
+function handleCardView($scope, initialLoadOverride) {
     $scope.find('.card-list').each(function() {
         const $list = $(this);
         const $items = $list.children('.card-item');
         const totalItems = $items.length;
-        const initialLimit = 10;
+        const initialLimit = parseInt(initialLoadOverride) || 10; // <-- Use override or default to 10
         const increment = 10;
         
         $list.next('.toggle-card-button').remove(); 
@@ -367,7 +372,8 @@ function showMoreCards($button, $list) {
 var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; // Your API Key
 var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
 
-function loadVids(PL, Category, BKcol) {
+// --- UPDATED: Accepts 'initialLoadOverride' ---
+function loadVids(PL, Category, BKcol, initialLoadOverride) {
     $('#Grid').empty(); 
     var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
 
@@ -385,7 +391,7 @@ function loadVids(PL, Category, BKcol) {
         }
 
         resultsLoop(data, Category, BKcol);
-        handleCardView($('#content-area'));
+        handleCardView($('#content-area'), initialLoadOverride); // <-- Pass override
         populateSmartKeywords('#Grid', '#youtube-keyword-filter');
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -426,16 +432,10 @@ function resultsLoop(data, Cat, BKcol) {
 }
 
 // --- UPDATED: Photo Album Logic ---
-/**
- * Fetches JSON data from a URL and populates the photo album.
- * @param {string} jsonUrl - The URL of the album JSON file.
- */
-function loadPhotoAlbum(jsonUrl) {
+function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
     const $albumList = $('#photo-album-list');
     
-    // Use jQuery's getJSON to fetch the remote file
     $.getJSON(jsonUrl, function (albumData) {
-        // Success
         $('#album-title').text(decodeText(albumData.albumTitle));
         $albumList.empty(); 
         
@@ -446,7 +446,6 @@ function loadPhotoAlbum(jsonUrl) {
             const category = decodeText(photo.category);
             const description = decodeText(photo.description);
             
-            // Add to our set of categories
             categories.add(category);
 
             const cardHtml = `
@@ -456,7 +455,6 @@ function loadPhotoAlbum(jsonUrl) {
                     
                     <a href="${photo.url}" data-load-type="image">
                         <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
-                        <!-- We add title/desc here for filtering, but hide them with CSS -->
                         <h3 style="display: none;">${title}</h3>
                         <p style="display: none;">${description}</p>
                         <span class="card-category" style="display: none;">${category}</span>
@@ -466,31 +464,22 @@ function loadPhotoAlbum(jsonUrl) {
             $albumList.append(cardHtml);
         });
         
-        // --- NEW: Populate filters after loading ---
         populateAlbumCategories(categories);
         populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
         
-        // After all cards are added, initialize the "Show More" button
-        handleCardView($('#content-area'));
+        handleCardView($('#content-area'), initialLoadOverride); // <-- Pass override
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
-        // Error
         $('#album-title').text("Error Loading Album");
         $albumList.html(`<p class="error-message">Could not load album data from ${jsonUrl}. Error: ${textStatus}</p>`);
         console.error("Photo Album AJAX failed:", textStatus, errorThrown);
     });
 }
 
-/**
- * --- NEW: Populates the category dropdown for the album
- * @param {Set<string>} categories - A set of unique category names.
- */
 function populateAlbumCategories(categories) {
     const $filter = $('#album-category-filter');
     if (!$filter.length) return;
-
     const sortedCategories = Array.from(categories).sort();
-    
     sortedCategories.forEach(key => {
         $filter.append($('<option>', {
             value: key,
@@ -516,7 +505,7 @@ function populateSmartKeywords(listId, filterId) {
                 $card.find('.card-category').text(),
                 $card.find('img').attr('alt'),
                 $card.data('category'), 
-                $card.data('keywords') // Also read from data-keywords
+                $card.data('keywords') 
             ];
             
             const combinedText = decodeText(textSources.join(' '));
@@ -603,7 +592,7 @@ function filterYouTubeCards() {
     } else {
         $noResultsMessage.hide();
         $allCards.removeAttr('style'); 
-        handleCardView($('#content-area'));
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
     }
 }
 
@@ -643,7 +632,7 @@ function filterPostCards() {
     } else {
         $noResultsMessage.hide();
         $allCards.removeAttr('style'); 
-        handleCardView($('#content-area'));
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page="posts.html"]').data('initial-load')) || 10);
     }
 }
 
@@ -684,13 +673,10 @@ function filterCertCards() {
     } else {
         $noResultsMessage.hide();
         $allCards.removeAttr('style'); 
-        handleCardView($('#content-area'));
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page="certificates.html"]').data('initial-load')) || 10);
     }
 }
 
-/**
- * --- NEW: Filter function for the Photo Album
- */
 function filterAlbumCards() {
     const searchTerm = decodeText($('#album-search-box').val().toLowerCase());
     const selectedCategory = $('#album-category-filter').val();
@@ -727,6 +713,6 @@ function filterAlbumCards() {
     } else {
         $noResultsMessage.hide();
         $allCards.removeAttr('style'); 
-        handleCardView($('#content-area'));
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="album.html"]').data('initial-load')) || 10);
     }
 }
