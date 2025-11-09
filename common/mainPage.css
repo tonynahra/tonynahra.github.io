@@ -47,7 +47,6 @@ body::before {
 /* --- Layout Container (Full Width) --- */
 .container {
     margin: 0 auto;
-    /* --- UPDATED: Reduced top padding --- */
     padding: 20px 30px; 
 }
 
@@ -57,10 +56,6 @@ h1, h2, h3 {
     color: var(--text-primary);
     font-weight: 700;
 }
-
-/* --- REMOVED: Old header styles --- */
-/* .header-section, .header-info, .tagline, .header-divider { ... } */
-
 
 /* --- Links (General) --- */
 a, a:visited {
@@ -98,7 +93,6 @@ a:hover {
     position: relative; 
 }
 
-/* --- NEW: Style for H1 title in profile box --- */
 .profile-summary h1 {
     text-align: center;
     font-size: 2.2rem;
@@ -338,11 +332,15 @@ a:hover {
     margin-bottom: 0;
 }
 
+/* --- UPDATED: Filter Dropdowns & Inputs --- */
+/* This rule now includes all 3 dropdowns */
 #post-category-filter,
 #cert-category-filter,
 #post-keyword-filter,
 #cert-keyword-filter,
-#youtube-keyword-filter { 
+#youtube-keyword-filter,
+#album-category-filter, 
+#album-keyword-filter { 
     width: 100%;
     padding: 12px 15px;
     background-color: var(--bg-dark);
@@ -354,18 +352,23 @@ a:hover {
     box-sizing: border-box;
 }
 
+/* This rule now includes all 3 dropdowns */
 #post-category-filter:focus,
 #cert-category-filter:focus,
 #post-keyword-filter:focus,
 #cert-keyword-filter:focus,
-#youtube-keyword-filter:focus { 
+#youtube-keyword-filter:focus,
+#album-category-filter:focus, 
+#album-keyword-filter:focus { 
     outline: none;
     border-color: var(--text-accent);
 }
 
+/* This rule now includes all 3 search boxes */
 #youtube-search-box,
 #post-search-box,
-#cert-search-box { 
+#cert-search-box,
+#album-search-box { 
     width: 100%;
     padding: 12px 15px;
     background-color: var(--bg-dark);
@@ -377,9 +380,11 @@ a:hover {
     box-sizing: border-box;
 }
 
+/* This rule now includes all 3 search boxes */
 #youtube-search-box:focus,
 #post-search-box:focus,
-#cert-search-box:focus { 
+#cert-search-box:focus,
+#album-search-box:focus { 
     outline: none;
     border-color: var(--text-accent);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
@@ -727,30 +732,27 @@ code {
     overflow-y: auto; 
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Aligns content (like HTML) to the top */
+    justify-content: flex-start; 
     align-items: center; 
 }
 
 /* --- NEW: Photo Album Specific Styles --- */
-/* Style for the album cards themselves */
 #photo-album-list .card-item {
     padding: 0;
     background: transparent;
     border: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Keep the shadow */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
     border-radius: 6px;
-    overflow: hidden; /* Contain the image */
+    overflow: hidden; 
 }
 
-/* The image inside an album card */
 #photo-album-list .card-item img.card-image {
-    height: auto; /* Let height be natural */
+    height: auto; 
     margin-bottom: 0;
     border: none;
-    display: block; /* Remove bottom space */
+    display: block; 
 }
 
-/* Hide the <a> text on album cards */
 #photo-album-list .card-item a {
     font-size: 0;
 }
@@ -759,7 +761,6 @@ code {
 
 
 /* --- UPDATED: Image Wrapper (for images) --- */
-/* This now *only* applies inside the modal */
 #modal-content-area .image-wrapper {
     display: flex;
     justify-content: center;
@@ -775,7 +776,7 @@ code {
     height: auto; 
     max-width: 100%; 
     max-height: 100%; 
-    object-fit: contain; /* Maintain aspect ratio */
+    object-fit: contain; 
     border-radius: 6px; 
 }
 
