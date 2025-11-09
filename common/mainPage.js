@@ -95,7 +95,11 @@ function initializeCollapsibleSections() {
     $('.expand-button').each(function() {
         const $button = $(this);
         const targetId = $button.data('target');
-        const $target = $('#'AS $target);
+        
+        // --- THIS IS THE FIX ---
+        const $target = $('#' + targetId); // Changed from $('#'AS $target);
+        // --- END FIX ---
+
         const $items = $target.find('a'); 
         const totalItems = $items.length;
         const initialLimit = parseInt($button.data('initial-load') || 3);
