@@ -3,6 +3,25 @@
     <!-- The title will be set by JavaScript -->
     <h2 id="album-title">Loading Album...</h2>
     
+    <!-- NEW: Filter Bar for Photo Album -->
+    <div class="filter-bar">
+        <div class="search-wrapper">
+            <input type="search" id="album-search-box" placeholder="Filter by title/desc...">
+        </div>
+        <div class="category-wrapper">
+            <select id="album-category-filter">
+                <option value="all">All Categories</option>
+                <!-- This will be auto-populated by JS -->
+            </select>
+        </div>
+        <div class="keyword-wrapper">
+            <select id="album-keyword-filter">
+                <option value="all">Top Keywords</option>
+                <!-- This will be auto-populated by JS -->
+            </select>
+        </div>
+    </div>
+    
     <!-- 
       This is the container where JavaScript will 
       dynamically add your photo cards.
@@ -10,6 +29,9 @@
     <div id="photo-album-list" class="card-list">
         <!-- Photos will be loaded here -->
     </div>
+    
+    <!-- Message for when no results are found -->
+    <p id="album-no-results" class="error-message" style="display: none;">No photos match your filter.</p>
     
     <!-- 
       The .toggle-card-button (Show More)
