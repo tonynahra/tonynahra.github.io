@@ -354,20 +354,16 @@ function buildResearchModal(jsonUrl) {
     });
 }
 
-/**
- * --- THIS IS THE FIX ---
- * Fetches an HTML fragment and loads it into the *modal's* tab container
- * using an IFRAME to avoid CORS errors.
- */
 function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
-    $target.html(''); // Clear the spinner
+    $target.html('<div class="content-loader"><div class="spinner"></div></div>'); 
     
-    // Use an iframe to load the remote content. This bypasses CORS.
+    // --- THIS IS THE FIX for CORS ---
+    // Use an iframe to load the remote content
     const iframeHtml = `<iframe src="${htmlUrl}" class="loaded-iframe"></iframe>`;
     $target.html(iframeHtml);
+    // --- END FIX ---
 }
-// --- END FIX ---
 
 
 /* === --- SMART KEYWORD/CATEGORY LOGIC --- === */
@@ -385,6 +381,7 @@ function populateCategoryFilter(listId, filterId) {
         $(`${listId} .card-item`).each(function() {
             const categories = $(this).data('category');
             if (categories) {
+                // Split categories like "Data,SQL,BI"
                 String(categories).split(',').forEach(cat => {
                     const cleanCat = cat.trim();
                     if (cleanCat) {
@@ -570,7 +567,10 @@ function loadModalContent(index) {
         }
     }
 
-    const customHeight = $link.data('height') || '85vh';
+    // --- THIS IS THE FIX ---
+    // Change the default height to 90vh
+    const customHeight = $link.data('height') || '90vh';
+    // --- END FIX ---
     
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
