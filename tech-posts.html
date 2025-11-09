@@ -1,35 +1,42 @@
 <section class="posts-page card-list-page">
-    <h2>Recent Technical Posts</h2>
     
-    <!-- Filter Bar -->
+    <!-- UPDATED: Title moved inside, filters wrapped -->
     <div class="filter-bar">
-        <div class="search-wrapper">
-            <input type="search" id="post-search-box" placeholder="Filter posts by title or description...">
-        </div>
-        <div class="category-wrapper">
-            <select id="post-category-filter">
-                <option value="all">All Categories</option>
-                <option value="AI">AI</option>
-                <option value="Programming">Programming</option>
-                <option value="Python">Python</option>
-                <option value="JavaScript">JavaScript</option>
-                <option value="Data">Data</option>
-                <option value="Cloud">Cloud</option>
-                <option value="Web">Web</option>
-                <option value="Link">Link</option>
-            </select>
-        </div>
-          <div class="keyword-wrapper">
-            <select id="post-keyword-filter">
-                <option value="all">All Keywords</option>
-                <!-- This will be auto-populated by JS -->
-            </select>
+        <h2>Recent Technical Posts</h2>
+        <div class="filter-controls">
+            <div class="search-wrapper">
+                <input type="search" id="post-search-box" placeholder="Filter by title/desc...">
+            </div>
+            <div class="category-wrapper">
+                <select id="post-category-filter">
+                    <option value="all">All Categories</option>
+                    <option value="AI">AI</option>
+                    <option value="Programming">Programming</option>
+                    <option value="Python">Python</option>
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="Data">Data</option>
+                    <option value="Cloud">Cloud</option>
+                    <option value="Web">Web</option>
+                    <option value="Link">Link</option>
+                </select>
+            </div>
+            <div class="keyword-wrapper">
+                <select id="post-keyword-filter">
+                    <option value="all">Top Keywords</option>
+                </select>
+            </div>
         </div>
     </div>
 
     <!-- Card List Container -->
     <div id="posts-card-list" class="card-list">
 
+
+
+
+        
+
+        
 
 <div class="card-item" data-category="Link" style="border-left-color: #66fcf1;">
     <h3>Analysts Rating for ORCL</h3>
