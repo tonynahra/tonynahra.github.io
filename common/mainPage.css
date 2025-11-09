@@ -47,7 +47,8 @@ body::before {
 /* --- Layout Container (Full Width) --- */
 .container {
     margin: 0 auto;
-    padding: 10px 30px 20px 30px; 
+    /* --- UPDATED: Reduced top padding --- */
+    padding: 20px 30px; 
 }
 
 /* --- Typography (Headings & Tagline) --- */
@@ -57,39 +58,9 @@ h1, h2, h3 {
     font-weight: 700;
 }
 
-h1 {
-    font-size: 2.8rem;
-    margin-bottom: 0.25rem;
-    color: var(--text-accent);
-}
+/* --- REMOVED: Old header styles --- */
+/* .header-section, .header-info, .tagline, .header-divider { ... } */
 
-.tagline {
-    font-family: var(--font-code);
-    font-size: 1.1rem;
-    color: var(--text-light);
-    margin-top: 0;
-}
-
-/* --- UPDATED: Header Section --- */
-.header-section {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-}
-
-.header-info {
-    flex-grow: 1;
-}
-
-.header-divider {
-    border: 0;
-    height: 1px;
-    background-image: linear-gradient(to right, var(--text-accent), var(--bg-dark));
-    margin: 20px 0 40px 0;
-    width: 100%; 
-}
 
 /* --- Links (General) --- */
 a, a:visited {
@@ -125,6 +96,15 @@ a:hover {
     height: fit-content;
     transition: background-color 0.3s;
     position: relative; 
+}
+
+/* --- NEW: Style for H1 title in profile box --- */
+.profile-summary h1 {
+    text-align: center;
+    font-size: 2.2rem;
+    color: var(--text-accent);
+    margin-top: 0;
+    margin-bottom: 20px;
 }
 
 .profile-photo {
@@ -487,9 +467,27 @@ a:hover {
 
 
 /* --- Loaded Content (Images/IFrames) --- */
-/* REMOVED conflicting rules for .image-wrapper, .loaded-image, .loaded-iframe
-*/
+/* This is a fall-back for local .html fragments */
+.image-wrapper {
+    text-align: center;
+}
 
+.loaded-image {
+    max-width: 100%; 
+    max-height: 80vh; 
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    background: #fff; 
+}
+
+.loaded-iframe {
+    width: 100%;
+    height: 85vh; /* Default height */
+    border: none;
+    border-radius: 6px;
+    background: #fff; 
+}
 
 /* --- About Me Page Styles --- */
 .about-me-container h2 {
@@ -713,39 +711,62 @@ code {
 
 .modal-content {
     background-color: var(--bg-dark);
-    /* --- UPDATED: Reduced top margin --- */
-    margin: 20px auto; /* 20px from top, centered horizontally */
+    margin: 20px auto; 
     padding: 20px;
     border: 1px solid var(--bg-medium);
     border-radius: 8px;
     width: 90%; 
     max-width: 1400px;
-    /* --- UPDATED: Use flex-height --- */
-    height: calc(100vh - 60px); /* 100% height minus top/bottom margin */
+    height: calc(100vh - 60px); 
     display: flex;
     flex-direction: column;
 }
 
 #modal-content-area {
-    flex-grow: 1; /* This makes it fill the available space */
-    overflow-y: auto; /* Add scrollbar *only* if content is too tall */
-    
-    /* --- UPDATED: These control the content inside --- */
+    flex-grow: 1; 
+    overflow-y: auto; 
     display: flex;
-    flex-direction: column; /* Stack content vertically */
-    justify-content: flex-start; /* Align content to the top */
-    align-items: center; /* Center content horizontally */
+    flex-direction: column;
+    justify-content: flex-start; /* Aligns content (like HTML) to the top */
+    align-items: center; 
 }
 
+/* --- NEW: Photo Album Specific Styles --- */
+/* Style for the album cards themselves */
+#photo-album-list .card-item {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Keep the shadow */
+    border-radius: 6px;
+    overflow: hidden; /* Contain the image */
+}
+
+/* The image inside an album card */
+#photo-album-list .card-item img.card-image {
+    height: auto; /* Let height be natural */
+    margin-bottom: 0;
+    border: none;
+    display: block; /* Remove bottom space */
+}
+
+/* Hide the <a> text on album cards */
+#photo-album-list .card-item a {
+    font-size: 0;
+}
+
+/* --- END: Photo Album Styles --- */
+
+
 /* --- UPDATED: Image Wrapper (for images) --- */
+/* This now *only* applies inside the modal */
 #modal-content-area .image-wrapper {
-    /* This wrapper is now created by JS *only* for images */
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
     height: 100%;
-    padding: 0; /* REMOVED old padding */
+    padding: 0; 
 }
 
 /* --- UPDATED: Image aspect ratio fix --- */
@@ -755,13 +776,13 @@ code {
     max-width: 100%; 
     max-height: 100%; 
     object-fit: contain; /* Maintain aspect ratio */
-    border-radius: 6px; /* Added for consistency */
+    border-radius: 6px; 
 }
 
 /* --- UPDATED: Iframe --- */
 #modal-content-area .loaded-iframe {
     width: 100%;
-    height: 100%; /* Make it fill the content area */
+    height: 100%; 
     border: none;
     border-radius: 6px;
     background: #fff; 
