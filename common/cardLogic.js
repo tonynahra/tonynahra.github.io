@@ -251,8 +251,6 @@ function resultsLoop(data, Cat, BKcol) {
         const desc = item.snippet.description ? decodeText(item.snippet.description.substring(0, 100) + '...') : 'No description available.';
         const vid = item.snippet.resourceId.videoId;
 
-        // --- THIS IS THE FIX ---
-        // Added the missing ':' to https://
         $('#Grid').append(`
         <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
             <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
@@ -263,7 +261,6 @@ function resultsLoop(data, Cat, BKcol) {
             </a>
         </div>
         `);
-        // --- END FIX ---
     });
 }
 
