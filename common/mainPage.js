@@ -1,5 +1,22 @@
 var lastContentPage = 'tech-posts.html'; 
 
+/**
+ * Helper function to safely decode text.
+ */
+function decodeText(text) {
+    if (!text) return "";
+    try {
+        var $textarea = $('<textarea></textarea>');
+        $textarea.html(text);
+        let decoded = $textarea.val();
+        decoded = decodeURIComponent(decoded);
+        return decoded;
+    } catch (e) {
+        return text;
+    }
+}
+
+
 $(document).ready(function () {
     
     initializeCollapsibleSections();
@@ -9,8 +26,15 @@ $(document).ready(function () {
     $('body').on('click', '.expand-button', function() {
         toggleCollapsibleSection($(this));
     });
+    
+    $('body').on('click', '.toggle-card-button', function() {
+        const $button = $(this);
+        const $list = $button.prev('.card-list');
+        if ($list.length) {
+            showMoreCards($button, $list);
+        }
+    });
 
-    // Listener for LEFT MENU
     $('body').on('click', '.nav-link', function(e) {
         e.preventDefault();
         
@@ -29,45 +53,115 @@ $(document).ready(function () {
         loadContent(pageUrl, initialLoad);
     });
 
-    // Theme Switcher Logic
-    function applyTheme(theme) {
-        $('body').removeClass('theme-light theme-pastel theme-forest theme-cool');
-        if (theme !== 'theme-dark') { $('body').addClass(theme); }
-        localStorage.setItem('theme', theme);
-        $('.theme-dot').removeClass('active');
-        $(`.theme-dot[data-theme="${theme}"]`).addClass('active');
-    }
-    $('body').on('click', '.theme-dot', function() {
-        applyTheme($(this).data('theme'));
-    });
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) { applyTheme(savedTheme); }
-    else { $('.theme-dot[data-theme="theme-dark"]').addClass('active'); }
+    // Listener for ALL CARDS
+    $('body').on('click', '.card-item, .item', function(e) {
+        const $link = $(this).find('a').first(); 
+        if (!$link.length) { return; } 
+        if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
+            return;
+        }
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        
+        const loadUrl = $link.attr('href');
+        const $contentArea = $('#content-area');
+        const loadType = $link.data('load-type'); // Get the *explicit* type
 
+        // ONLY load content in-page if data-load-type is specified.
+        if (loadType) {
+            const $cardPage = $contentArea.find('.card-list-page').first();
+            if ($cardPage.length) {
+                $cardPage.hide();
+            } else {
+                console.warn("Could not find .card-list-page to hide.");
+            }
 
-    // --- Scroll-to-Top Button Logic ---
-    $('body').append('<button class="scroll-to-top" title="Go to top">&uarr;</button>');
-    const $scrollTopBtn = $('.scroll-to-top');
-    $(window).on('scroll', function() {
-        if ($(window).scrollTop() > 300) {
-            $scrollTopBtn.addClass('show');
-        } else {
-            $scrollTopBtn.removeClass('show');
+            const backButtonHtml = `
+                <div class="back-button-wrapper">
+                    <button class="js-back-to-list">
+                        &larr; Back
+                    </button>
+                    <a href="${loadUrl}" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                        Open in new window &nearr;
+                    </a>
+                </div>
+            `;
+            const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
+            $contentWrapper.html(backButtonHtml); 
+            $contentArea.prepend($contentWrapper);
+            
+            const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
+            if ($scrollToElement.length) {
+                const scrollToTarget = $scrollToElement.offset().top - 20;
+                // Use native INSTANT scroll
+                window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+            }
+
+            const customHeight = $link.data('height') || '85vh';
+
+            switch (loadType) {
+                case 'html':
+                    $.ajax({
+                        url: loadUrl, type: 'GET',
+                        success: function(data) { $contentWrapper.append(data); },
+                        error: function() { $contentWrapper.append('<div class="error-message">Could not load content.</div>'); }
+                    });
+                    break;
+                case 'image':
+                    $contentWrapper.append(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
+                    break;
+                case 'iframe':
+                    $contentWrapper.append(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
+                    break;
+                default:
+                    window.open(loadUrl, '_blank');
+            }
+        } 
+        else {
+            window.open(loadUrl, '_blank');
         }
     });
-    
-    $('body').on('click', '.scroll-to-top', function() {
-        window.scrollTo({ top: 0, behavior: 'auto' });
+
+    // Listener for the "Back" button
+    $('body').on('click', '.js-back-to-list', function() {
+        const $contentArea = $('#content-area');
+        $contentArea.find('.loaded-content-wrapper').remove();
+        const $cardPage = $contentArea.find('.card-list-page').first().show();
+
+        if ($cardPage.length) {
+            const scrollToTarget = $cardPage.offset().top - 20;
+            // Use native INSTANT scroll
+            window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+        }
     });
 
-    // Load initial content
-    const initialPage = $('.nav-link.active-nav');
-    if (initialPage.length) {
-        const pageUrl = initialPage.data('page');
-        const initialLoad = initialPage.data('initial-load');
-        lastContentPage = pageUrl;
-        loadContent(pageUrl, initialLoad);
-    }
+    // --- All filter listeners ---
+    $('body').on('input', '#youtube-search-box', filterYouTubeCards);
+    $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
+    $('body').on('input', '#post-search-box', filterPostCards);
+    $('body').on('change', '#post-category-filter', filterPostCards);
+    $('body').on('change', '#post-keyword-filter', filterPostCards);
+    $('body').on('input', '#cert-search-box', filterCertCards);
+    $('body').on('change', '#cert-category-filter', filterCertCards);
+    $('body').on('change', '#cert-keyword-filter', filterCertCards);
+    
+    $('body').on('input', '#album-search-box', filterAlbumCards);
+    $('body').on('change', '#album-category-filter', filterAlbumCards);
+    $('body').on('change', '#album-keyword-filter', filterAlbumCards);
+    
+    $('body').on('input', '#research-search-box', filterResearchCards);
+    $('body').on('change', '#research-category-filter', filterResearchCards);
+    $('body').on('change', '#research-keyword-filter', filterResearchCards);
+
+    // --- Research Tab listener ---
+    $('#content-modal').on('click', '.tab-button', function() {
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+        
+        const htmlUrl = $(this).data('content-url');
+        loadModalTabContent(htmlUrl, '#research-tab-content-modal');
+    });
+
 });
 
 
@@ -175,8 +269,6 @@ function loadContent(pageUrl, initialLoadOverride) {
                 populateCategoryFilter('#research-card-list', '#research-category-filter'); // <-- ADDED
             }
             
-            // This function is from an old script, but we keep the call
-            // in case you are still using it for certificates.
             if (typeof initializeImageModal === 'function') {
                 initializeImageModal(); 
             }
@@ -186,4 +278,3 @@ function loadContent(pageUrl, initialLoadOverride) {
         }
     });
 }
-
