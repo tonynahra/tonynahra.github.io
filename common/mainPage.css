@@ -50,6 +50,11 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
+/* --- NEW: Freeze background scroll when modal is open --- */
+body.modal-open {
+    overflow: hidden;
+}
+
 body::before {
     content: none !important;
 }
@@ -423,7 +428,7 @@ a:hover {
     padding: 20px;
 }
 
-/* --- Modal Button Styles --- */
+/* --- UPDATED: Modal Button Styles --- */
 .modal-header {
     margin-bottom: 20px;
     padding-bottom: 15px;
@@ -435,18 +440,16 @@ a:hover {
     gap: 15px;
 }
 
-/* --- NEW: Button Groups for Modal --- */
 .modal-nav-left, .modal-nav-right {
     display: flex;
     gap: 10px;
     align-items: center;
 }
 
-/* --- NEW: Styles for all modal buttons --- */
 .modal-header .modal-close-btn,
 .modal-header .modal-prev-btn,
 .modal-header .modal-next-btn,
-.modal-header .modal-info-btn { /* Added info-btn */
+.modal-header .modal-info-btn { 
     padding: 8px 15px;
     background: var(--bg-medium);
     color: var(--text-accent);
@@ -463,13 +466,12 @@ a:hover {
 .modal-header .modal-close-btn:hover,
 .modal-header .modal-prev-btn:hover,
 .modal-header .modal-next-btn:hover,
-.modal-header .modal-info-btn:hover { /* Added info-btn */
+.modal-header .modal-info-btn:hover { 
     background: var(--text-accent);
     color: var(--bg-dark);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-/* Disabled state for Prev/Next */
 .modal-header .modal-prev-btn:disabled,
 .modal-header .modal-next-btn:disabled {
     background: var(--bg-dark);
@@ -477,16 +479,12 @@ a:hover {
     border-color: var(--bg-medium);
     opacity: 0.5;
     cursor: not-allowed;
-}
-.modal-header .modal-prev-btn:disabled:hover,
-.modal-header .modal-next-btn:disabled:hover {
     box-shadow: none;
 }
-/* Hide info button by default */
-.modal-header .modal-info-btn {
-    display: none;
-}
 
+.modal-header .modal-info-btn {
+    display: none; /* Hidden by default, shown by JS */
+}
 
 .modal-header .open-new-window {
     padding: 8px 15px;
@@ -507,15 +505,6 @@ a:hover {
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-
-/* --- Loaded Content (Images/IFrames) --- */
-.loaded-iframe {
-    width: 100%;
-    height: 85vh; /* Default height */
-    border: none;
-    border-radius: 6px;
-    background: #fff; 
-}
 
 /* --- About Me Page Styles --- */
 .about-me-container h2 {
@@ -758,7 +747,7 @@ code {
     flex-direction: column;
     justify-content: flex-start; 
     align-items: center; 
-    position: relative; /* For photo info overlay */
+    position: relative; 
 }
 
 /* --- Photo Album Card Styles --- */
