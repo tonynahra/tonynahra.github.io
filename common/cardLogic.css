@@ -119,7 +119,9 @@
 #cert-keyword-filter,
 #youtube-keyword-filter,
 #album-category-filter, 
-#album-keyword-filter { 
+#album-keyword-filter,
+#research-category-filter,  /* Added Research */
+#research-keyword-filter {  /* Added Research */
     width: 100%;
     padding: 12px 15px;
     background-color: var(--bg-dark);
@@ -137,7 +139,9 @@
 #cert-keyword-filter:focus,
 #youtube-keyword-filter:focus,
 #album-category-filter:focus, 
-#album-keyword-filter:focus { 
+#album-keyword-filter:focus,
+#research-category-filter:focus,  /* Added Research */
+#research-keyword-filter:focus {  /* Added Research */
     outline: none;
     border-color: var(--text-accent);
 }
@@ -145,7 +149,8 @@
 #youtube-search-box,
 #post-search-box,
 #cert-search-box,
-#album-search-box { 
+#album-search-box,
+#research-search-box { /* Added Research */
     width: 100%;
     padding: 12px 15px;
     background-color: var(--bg-dark);
@@ -160,7 +165,8 @@
 #youtube-search-box:focus,
 #post-search-box:focus,
 #cert-search-box:focus,
-#album-search-box:focus { 
+#album-search-box:focus,
+#research-search-box:focus { /* Added Research */
     outline: none;
     border-color: var(--text-accent);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
@@ -194,14 +200,14 @@
     flex-direction: column;
 }
 
+/* --- THIS IS THE FIX --- */
+/* This is the main content box inside the modal */
 #modal-content-area {
     flex-grow: 1; 
-    overflow-y: auto; 
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; 
-    align-items: center; 
-    position: relative; 
+    overflow-y: auto; /* Add scrollbar *only* if content is too tall */
+    /* REMOVED: display:flex and centering properties */
+    /* This ensures HTML/Research content aligns to the top */
+    position: relative; /* Anchor for info overlays */
 }
 
 /* Modal Button Styles */
@@ -259,7 +265,12 @@
 }
 
 .modal-header .modal-info-btn {
-    display: none; /* Hidden by default, shown by JS */
+    display: none; 
+}
+
+/* Special mode for Research modal: hide nav buttons */
+.modal-backdrop.research-mode .modal-nav-left {
+    display: none;
 }
 
 .modal-header .open-new-window {
@@ -282,6 +293,8 @@
 }
 
 /* Modal Image/Iframe Styles */
+
+/* Wrapper for Images and IFrames (for info overlay) */
 #modal-content-area .image-wrapper,
 #modal-content-area .iframe-wrapper {
     position: relative; 
@@ -340,10 +353,10 @@
     color: #eee;
     margin: 0;
 }
+/* --- END CSS FIX --- */
+
 
 /* --- Page-Specific Card Styles --- */
-
-/* Certificate Card Layout */
 #cert-card-list .card-item {
     padding: 10px;
     justify-content: flex-start; 
@@ -444,4 +457,8 @@
 
 .tab-content {
     padding: 20px 0;
+    /* Styles for content loaded inside tabs */
+}
+.tab-content h3 {
+    color: var(--text-accent);
 }
