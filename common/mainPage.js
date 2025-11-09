@@ -1,24 +1,5 @@
 var lastContentPage = 'tech-posts.html'; 
 
-/**
- * Helper function to safely decode text.
- * @param {string} text - The text to decode.
- * @returns {string} - The decoded text.
- */
-function decodeText(text) {
-    if (!text) return "";
-    try {
-        var $textarea = $('<textarea></textarea>');
-        $textarea.html(text);
-        let decoded = $textarea.val();
-        decoded = decodeURIComponent(decoded);
-        return decoded;
-    } catch (e) {
-        return text;
-    }
-}
-
-
 $(document).ready(function () {
     
     initializeCollapsibleSections();
@@ -95,11 +76,7 @@ function initializeCollapsibleSections() {
     $('.expand-button').each(function() {
         const $button = $(this);
         const targetId = $button.data('target');
-        
-        // --- THIS IS THE FIX ---
-        const $target = $('#' + targetId); // Changed from $('#'AS $target);
-        // --- END FIX ---
-
+        const $target = $('#' + targetId);
         const $items = $target.find('a'); 
         const totalItems = $items.length;
         const initialLimit = parseInt($button.data('initial-load') || 3);
@@ -173,9 +150,11 @@ function loadContent(pageUrl, initialLoadOverride) {
             } else if (isPostsPage) {
                 handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#posts-card-list', '#post-keyword-filter');
+                populateCategoryFilter('#posts-card-list', '#post-category-filter'); // <-- ADDED
             } else if (isCertsPage) { 
                 handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#cert-card-list', '#cert-keyword-filter');
+                populateCategoryFilter('#cert-card-list', '#cert-category-filter'); // <-- ADDED
             } else if (isAlbumPage) { 
                 const queryString = pageUrl.split('?')[1];
                 if (queryString) {
@@ -183,7 +162,7 @@ function loadContent(pageUrl, initialLoadOverride) {
                     const jsonUrl = urlParams.get('json');
                     
                     if (jsonUrl) {
-                        loadPhotoAlbum(jsonUrl, initialLoadOverride);
+                        loadPhotoAlbum(jsonUrl, initialLoadOverride); // This now calls populateCategoryFilter
                     } else {
                         $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
                     }
@@ -193,6 +172,7 @@ function loadContent(pageUrl, initialLoadOverride) {
             } else if (isResearchPage) { 
                 handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#research-card-list', '#research-keyword-filter');
+                populateCategoryFilter('#research-card-list', '#research-category-filter'); // <-- ADDED
             }
             
             if (typeof initializeImageModal === 'function') {
