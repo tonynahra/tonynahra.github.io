@@ -221,13 +221,14 @@
 }
 
 /* --- THIS IS THE FIX --- */
+/* This is the main content box inside the modal */
 #modal-content-area {
     flex-grow: 1; 
     overflow-y: auto; /* This is the *only* scrollbar */
     position: relative; 
-    display: block; /* Revert from flex */
+    /* REMOVED all flex properties to fix HTML/iFrame trimming */
+    display: block;
 }
-/* --- END FIX --- */
 
 /* Modal Button Styles */
 .modal-header {
@@ -310,17 +311,16 @@
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-/* --- THIS IS THE FIX (PART 2) --- */
 /* Modal Image/Iframe Styles */
+/* This wrapper is now *only* for images/iframes */
 #modal-content-area .image-wrapper,
 #modal-content-area .iframe-wrapper {
     position: relative; 
-    /* Use flex just for centering, but give it a specific height */
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-    height: 100%; /* Fill the container */
+    height: 100%; /* Make the wrapper fill the modal area */
     padding: 0; 
 }
 
@@ -335,7 +335,7 @@
 
 #modal-content-area .loaded-iframe {
     width: 100%;
-    height: 100%; /* Fill the wrapper */
+    height: 100%; /* Make iframe fill its wrapper */
     border: none;
     border-radius: 6px;
     background: #fff; 
@@ -351,14 +351,16 @@
     padding: 40px 20px 20px;
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
-    display: none; 
+    /* --- THIS IS THE FIX --- */
+    display: none; /* Changed from opacity */ 
+    /* --- END FIX --- */
     transform: translateY(0); 
     transition: all 0.3s ease;
     pointer-events: none; 
 }
 
 .modal-photo-info.info-visible {
-    display: block; 
+    display: block; /* Changed from opacity */
 }
 
 .modal-photo-info h3 {
