@@ -1,5 +1,10 @@
 var lastContentPage = 'tech-posts.html'; 
 
+/**
+ * Helper function to safely decode text.
+ * @param {string} text - The text to decode.
+ * @returns {string} - The decoded text.
+ */
 function decodeText(text) {
     if (!text) return "";
     try {
