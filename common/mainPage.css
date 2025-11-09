@@ -487,28 +487,9 @@ a:hover {
 
 
 /* --- Loaded Content (Images/IFrames) --- */
-/* This is a fall-back for local .html fragments */
-.image-wrapper {
-    text-align: center;
-    padding: 20px;
-}
+/* REMOVED conflicting rules for .image-wrapper, .loaded-image, .loaded-iframe
+*/
 
-.loaded-image {
-    max-width: 100%; 
-    max-height: 80vh; 
-    height: auto;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    background: #fff; 
-}
-
-.loaded-iframe {
-    width: 100%;
-    height: 85vh; /* Default height */
-    border: none;
-    border-radius: 6px;
-    background: #fff; 
-}
 
 /* --- About Me Page Styles --- */
 .about-me-container h2 {
@@ -739,16 +720,21 @@ code {
     border-radius: 8px;
     width: 90%; 
     max-width: 1400px;
+    /* --- UPDATED: Use flex-height --- */
     height: calc(100vh - 60px); /* 100% height minus top/bottom margin */
     display: flex;
     flex-direction: column;
 }
 
-/* --- UPDATED: Modal Content Area --- */
 #modal-content-area {
-    flex-grow: 1; 
-    overflow: auto; /* This will scroll if content is too tall */
-    /* REMOVED: display: flex and centering properties */
+    flex-grow: 1; /* This makes it fill the available space */
+    overflow-y: auto; /* Add scrollbar *only* if content is too tall */
+    
+    /* --- UPDATED: These control the content inside --- */
+    display: flex;
+    flex-direction: column; /* Stack content vertically */
+    justify-content: flex-start; /* Align content to the top */
+    align-items: center; /* Center content horizontally */
 }
 
 /* --- UPDATED: Image Wrapper (for images) --- */
@@ -759,19 +745,24 @@ code {
     align-items: center;
     width: 100%;
     height: 100%;
+    padding: 0; /* REMOVED old padding */
 }
 
 /* --- UPDATED: Image aspect ratio fix --- */
 #modal-content-area .loaded-image {
-    width: auto; /* Let width be auto */
-    height: auto; /* Let height be auto */
-    max-width: 100%; /* Don't exceed container width */
-    max-height: 100%; /* Don't exceed container height */
+    width: auto; 
+    height: auto; 
+    max-width: 100%; 
+    max-height: 100%; 
     object-fit: contain; /* Maintain aspect ratio */
+    border-radius: 6px; /* Added for consistency */
 }
 
+/* --- UPDATED: Iframe --- */
 #modal-content-area .loaded-iframe {
     width: 100%;
-    height: 100%;
-    min-height: 60vh;
+    height: 100%; /* Make it fill the content area */
+    border: none;
+    border-radius: 6px;
+    background: #fff; 
 }
