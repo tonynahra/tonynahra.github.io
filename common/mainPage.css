@@ -816,8 +816,12 @@ code {
 /* --- END: Photo Album Styles --- */
 
 
-/* --- Modal Image/Iframe Styles --- */
-#modal-content-area .image-wrapper {
+/* --- MODAL IMAGE/IFRAME STYLES (THE FIX) --- */
+
+/* This new wrapper holds the content (image/iframe) */
+#modal-content-area .image-wrapper,
+#modal-content-area .iframe-wrapper {
+    position: relative; /* This is the new anchor */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -843,7 +847,7 @@ code {
     background: #fff; 
 }
 
-/* --- NEW: Modal Photo Info Overlay --- */
+/* This info box is now positioned *inside* the wrappers */
 .modal-photo-info {
     position: absolute;
     bottom: 0;
@@ -853,11 +857,10 @@ code {
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
     
-    /* Hide by default */
     opacity: 0;
     transform: translateY(20px);
     transition: all 0.3s ease;
-    pointer-events: none; /* Don't block clicking image */
+    pointer-events: none; 
 }
 
 .modal-photo-info.info-visible {
