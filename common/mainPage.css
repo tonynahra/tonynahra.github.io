@@ -28,6 +28,16 @@ body.theme-pastel {
     --text-primary: #2c3e50; /* Dark slate text */
 }
 
+/* --- NEW: Forest Theme Definition --- */
+body.theme-forest {
+    --bg-dark: #2a3d2a; /* Dark forest green */
+    --bg-medium: #3d550c; /* Moss green */
+    --text-light: #e0e0e0; /* Light gray text */
+    --text-accent: #ec9a29; /* Amber */
+    --text-primary: #ffffff;
+}
+
+
 /* --- Global Reset and Body Styling --- */
 body {
     margin: 0;
@@ -223,7 +233,7 @@ a:hover {
     column-gap: 20px;
     list-style: none;
     padding: 0;
-    align-items: start;
+    /* align-items: start; <-- Removed, not needed for column-width */
 }
 
 .card-item {
@@ -332,8 +342,6 @@ a:hover {
     margin-bottom: 0;
 }
 
-/* --- UPDATED: Filter Dropdowns & Inputs --- */
-/* This rule now includes all 3 dropdowns */
 #post-category-filter,
 #cert-category-filter,
 #post-keyword-filter,
@@ -352,7 +360,6 @@ a:hover {
     box-sizing: border-box;
 }
 
-/* This rule now includes all 3 dropdowns */
 #post-category-filter:focus,
 #cert-category-filter:focus,
 #post-keyword-filter:focus,
@@ -364,7 +371,6 @@ a:hover {
     border-color: var(--text-accent);
 }
 
-/* This rule now includes all 3 search boxes */
 #youtube-search-box,
 #post-search-box,
 #cert-search-box,
@@ -380,7 +386,6 @@ a:hover {
     box-sizing: border-box;
 }
 
-/* This rule now includes all 3 search boxes */
 #youtube-search-box:focus,
 #post-search-box:focus,
 #cert-search-box:focus,
@@ -598,20 +603,19 @@ code {
     font-family: var(--font-code);
 }
 
-/* --- Theme Switcher Styles --- */
+/* --- UPDATED: Theme Switcher Styles --- */
 .theme-switcher {
-    position: absolute;
-    top: 25px;   
-    left: 25px;  
-    z-index: 10;
+    /* Removed position: absolute */
     display: flex;
-    flex-direction: column; 
-    gap: 10px;
+    flex-direction: row; /* Stack horizontally */
+    justify-content: center; /* Center the dots */
+    gap: 15px;
+    margin-bottom: 20px; /* Space between dots and photo */
 }
 
 .theme-dot {
-    width: 20px;
-    height: 20px;
+    width: 25px; /* Slightly larger */
+    height: 25px; /* Slightly larger */
     border-radius: 50%;
     border: 2px solid var(--text-primary);
     cursor: pointer;
@@ -632,6 +636,7 @@ code {
     opacity: 1;
 }
 
+/* --- UPDATED: Set all dot colors --- */
 .theme-dot[data-theme="theme-dark"] {
     background-color: #1f2833;
 }
@@ -641,13 +646,20 @@ code {
 .theme-dot[data-theme="theme-pastel"] {
     background-color: #f5f0e1;
 }
+.theme-dot[data-theme="theme-forest"] {
+    background-color: #3d550c;
+}
+/* --- END UPDATED THEME STYLES --- */
 
 
 /* --- Certificate Card Layout --- */
+/* --- UPDATED: Removed min-height --- */
+/*
 #posts-card-list .card-item,
 #Grid .card-item { 
     min-height: 180px; 
 }
+*/
 
 #cert-card-list .card-item {
     padding: 10px;
