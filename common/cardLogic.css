@@ -229,6 +229,7 @@
     display: block; /* Revert from flex */
     -webkit-overflow-scrolling: touch; /* Smooth scroll on mobile */
 }
+/* --- END FIX --- */
 
 /* Modal Button Styles */
 .modal-header {
@@ -241,7 +242,6 @@
     flex-wrap: wrap; 
     gap: 15px;
 }
-/* --- END FIX --- */
 
 .modal-backdrop.research-mode .modal-header {
     display: none;
@@ -314,6 +314,7 @@
 
 /* --- THIS IS THE FIX --- */
 /* Modal Image/Iframe Styles */
+/* This wrapper is now *only* for images/iframes */
 #modal-content-area .image-wrapper,
 #modal-content-area .iframe-wrapper {
     position: relative; 
@@ -344,6 +345,7 @@
 }
 /* --- END FIX --- */
 
+
 /* Modal Photo Info Overlay */
 .modal-photo-info {
     position: absolute;
@@ -353,16 +355,14 @@
     padding: 40px 20px 20px;
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
-    /* --- THIS IS THE FIX --- */
-    display: none; /* Changed from opacity */ 
-    /* --- END FIX --- */
+    display: none; 
     transform: translateY(0); 
     transition: all 0.3s ease;
     pointer-events: none; 
 }
 
 .modal-photo-info.info-visible {
-    display: block; /* Changed from opacity */
+    display: block; 
 }
 
 .modal-photo-info h3 {
