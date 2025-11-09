@@ -1,7 +1,7 @@
 var lastContentPage = 'tech-posts.html'; 
 
-var currentCardList = []; // NEW: Stores the list of cards for modal navigation
-var currentCardIndex = 0; // NEW: Stores the current position in the modal
+var currentCardList = []; // Stores the list of cards for modal navigation
+var currentCardIndex = 0; // Stores the current position in the modal
 
 // --- List of common words to ignore ---
 const STOP_WORDS = new Set([
@@ -36,20 +36,21 @@ function decodeText(text) {
 
 $(document).ready(function () {
     
-    // --- UPDATED: Inject the modal HTML with new buttons ---
+    // --- Inject the modal HTML on page load ---
     $('body').append(`
         <div id="content-modal" class="modal-backdrop">
             <div class="modal-content">
                 <div class="modal-header">
                     <div class="modal-nav-left">
-                        <button class="modal-prev-btn">&larr; Prev</button>
-                        <button class="modal-next-btn">Next &rarr;</button>
+                        <button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button>
+                        <button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button>
+                        <button class="modal-info-btn" title="Toggle Info (I)">Info</button>
                     </div>
                     <div class="modal-nav-right">
                         <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
                             Open in new window &nearr;
                         </a>
-                        <button class="modal-close-btn">&times; Close</button>
+                        <button class="modal-close-btn" title="Close (Esc)">&times; Close</button>
                     </div>
                 </div>
                 <div id="modal-content-area">
@@ -58,7 +59,6 @@ $(document).ready(function () {
             </div>
         </div>
     `);
-    // --- END UPDATED ---
 
     initializeCollapsibleSections();
     
@@ -100,22 +100,20 @@ $(document).ready(function () {
         const $link = $clickedCard.find('a').first();
         if (!$link.length) { return; } 
         
-        if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
-            // Allow clicks on "Open in new window" *inside the modal* to work
-            if ($(e.target).hasClass('open-new-window') || $(e.target).closest('.open-new-window').length) {
-                return;
-            }
-            // If it's a *different* link (like in a post body), open in new tab
-            if (!$(e.target).closest('.card-item').length && !$(e.target).closest('.item').length) {
-                 window.open($link.attr('href'), '_blank');
-                 return;
-            }
+        // --- THIS IS THE FIX ---
+        // ONLY stop the event if the click was *not* on a link *inside* the card.
+        // This allows "Read More" and "Open in new window" to work as normal links.
+        const $clickedLink = $(e.target).closest('a');
+        if ($clickedLink.length > 0 && !$clickedLink.is($link)) {
+            // User clicked a different link (e.g., in a post summary).
+            // Let the browser handle it (which is to do nothing, as it's not the main link)
+            return;
         }
-
+        // --- END FIX ---
+        
         e.preventDefault(); 
         e.stopPropagation(); 
         
-        // --- NEW: Build the list for modal navigation ---
         const $cardList = $clickedCard.closest('.card-list');
         const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible');
         
@@ -128,7 +126,12 @@ $(document).ready(function () {
         
         if (currentCardList.length > 0) {
             loadModalContent(currentCardIndex);
+            
+            // --- FIX: Add modal-open class to body ---
+            $('body').addClass('modal-open');
             $('#content-modal').fadeIn(200);
+            
+            $(document).on('keydown.modalNav', handleModalKeys);
         }
     });
 
@@ -136,12 +139,16 @@ $(document).ready(function () {
     $('body').on('click', '.modal-close-btn', function() {
         const $modal = $('#content-modal');
         const $modalContent = $('#modal-content-area');
-        $modal.fadeOut(200);
-        $modalContent.html('');
         
-        // Clear the state
+        // --- FIX: Remove modal-open class from body ---
+        $('body').removeClass('modal-open');
+        $modal.fadeOut(200);
+        
+        $modalContent.html(''); 
+        
         currentCardList = [];
         currentCardIndex = 0;
+        $(document).off('keydown.modalNav');
     });
     
     // Optional: Click backdrop to close
@@ -151,7 +158,7 @@ $(document).ready(function () {
         }
     });
     
-    // --- NEW: Modal Prev/Next button listeners ---
+    // --- Modal Prev/Next/Info button listeners ---
     $('body').on('click', '.modal-prev-btn', function() {
         if (currentCardIndex > 0) {
             loadModalContent(currentCardIndex - 1);
@@ -163,8 +170,10 @@ $(document).ready(function () {
             loadModalContent(currentCardIndex + 1);
         }
     });
-    // --- END MODAL LOGIC ---
 
+    $('body').on('click', '.modal-info-btn', function() {
+        $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible');
+    });
 
     // --- All filter listeners ---
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
@@ -419,6 +428,7 @@ function resultsLoop(data, Cat, BKcol) {
 
         $('#Grid').append(`
         <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
+            <!-- YOUTUBE LINKS MUST have data-load-type="iframe" -->
             <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
                <img class="YTi" src="${thumb}" alt="${title}" >
                <h3>${title}</h3>
@@ -452,6 +462,7 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
                      data-category="${category}" 
                      data-keywords="${title},${description}">
                     
+                    <!-- ALBUM LINKS MUST have data-load-type="image" -->
                     <a href="${photo.url}" data-load-type="image">
                         <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
                         
@@ -559,26 +570,55 @@ function getCardSearchableText($card) {
 
 
 /* === --- NEW: MODAL NAVIGATION HELPER --- === */
+
+/**
+ * Handles the modal keyboard shortcuts.
+ * @param {Event} e - The keyboard event.
+ */
+function handleModalKeys(e) {
+    switch (e.key) {
+        case "Escape":
+            $('.modal-close-btn').click();
+            break;
+        case "ArrowLeft":
+            $('.modal-prev-btn').click();
+            break;
+        case "ArrowRight":
+            $('.modal-next-btn').click();
+            break;
+        case " ": // Spacebar
+            // --- FIX: Prevent spacebar from scrolling page ---
+            e.preventDefault(); 
+            $('.modal-next-btn').click();
+            break;
+        case "i":
+            e.preventDefault(); 
+            $('.modal-info-btn').click();
+            break;
+    }
+}
+
+/**
+ * Loads the content for a specific card into the modal.
+ * @param {number} index - The index of the card in the global 'currentCardList'.
+ */
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) {
         return; // Index out of bounds
     }
 
-    // Get the link from our stored list
     const $link = currentCardList[index];
     if (!$link.length) return;
     
-    // Update global index
     currentCardIndex = index;
     
     const loadUrl = $link.attr('href');
     let loadType = $link.data('load-type');
     
-    // Auto-guess type if not provided
     if (!loadType) {
         if (loadUrl.startsWith('http')) {
             if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
-                loadType = 'blocked'; // Special type for blocked iframes
+                loadType = 'blocked'; 
             } else {
                 loadType = 'iframe';
             }
@@ -587,31 +627,65 @@ function loadModalContent(index) {
         } else if (loadUrl.endsWith('.html')) {
             loadType = 'html';
         } else {
-            loadType = 'newtab'; // Failsafe for unknown links
+            loadType = 'newtab'; 
         }
     }
 
     const $modalContent = $('#modal-content-area');
     const $modalOpenLink = $('#content-modal .open-new-window');
+    const $modalInfoBtn = $('#content-modal .modal-info-btn');
     
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     $modalOpenLink.attr('href', loadUrl);
+    
+    // Clear any existing info overlays
+    $modalContent.find('.modal-photo-info').remove();
+    $modalInfoBtn.hide(); // Hide info button by default
 
     const customHeight = $link.data('height') || '85vh';
+    
+    // --- NEW: Info is now extracted for *all* types ---
+    const $card = $link.closest('.card-item');
+    const title = $card.find('h3').text() || $card.find('img').attr('alt');
+    const desc = $card.find('p').text();
+    let infoHtml = '';
+
+    if (title) {
+        infoHtml = `
+            <div class="modal-photo-info">
+                <h3>${title}</h3>
+                <p>${desc}</p>
+            </div>`;
+    }
+    // --- END NEW ---
 
     switch (loadType) {
         case 'html':
             $.ajax({
                 url: loadUrl, type: 'GET',
-                success: function(data) { $modalContent.html(data); },
+                success: function(data) { 
+                    $modalContent.html(data); 
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
+                },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
             break;
         case 'image':
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
+            if (infoHtml) {
+                $modalContent.append(infoHtml);
+                $modalInfoBtn.show(); 
+            }
             break;
         case 'iframe':
             $modalContent.html(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
+            if (infoHtml) {
+                $modalContent.append(infoHtml);
+                $modalInfoBtn.show(); 
+            }
             break;
         case 'blocked':
             $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here. Please use the "Open in new window" button.</div>');
@@ -622,8 +696,8 @@ function loadModalContent(index) {
     }
     
     // Update Prev/Next button visibility
-    $('.modal-prev-btn').toggle(index > 0);
-    $('.modal-next-btn').toggle(index < currentCardList.length - 1);
+    $('.modal-prev-btn').prop('disabled', index <= 0);
+    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
 
 
