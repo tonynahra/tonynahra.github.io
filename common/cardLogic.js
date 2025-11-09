@@ -1,7 +1,6 @@
-/* === GLOBAL VARIABLES === */
 var currentCardList = []; // Stores the list of cards for modal navigation
 var currentCardIndex = 0; // Stores the current position in the modal
-var isModalInfoVisible = false; // --- NEW: Stores the state of the info toggle ---
+var isModalInfoVisible = false; // Stores the state of the info toggle
 
 // --- List of common words to ignore ---
 const STOP_WORDS = new Set([
@@ -137,7 +136,7 @@ $(document).ready(function () {
         
         currentCardList = [];
         currentCardIndex = 0;
-        isModalInfoVisible = false; // --- NEW: Reset info state ---
+        isModalInfoVisible = false; 
         $(document).off('keydown.modalNav');
     });
     
@@ -161,7 +160,6 @@ $(document).ready(function () {
         }
     });
 
-    // --- UPDATED: Info Button now toggles the global state ---
     $('body').on('click', '.modal-info-btn', function() {
         isModalInfoVisible = !isModalInfoVisible; // Toggle state
         $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible', isModalInfoVisible);
@@ -426,6 +424,7 @@ function loadModalTabContent(htmlUrl, targetId) {
 
 
 /* === --- SMART KEYWORD LOGIC --- === */
+// --- UPDATED: This function is now much smarter ---
 function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return; 
@@ -450,10 +449,12 @@ function populateSmartKeywords(listId, filterId) {
             words.forEach(word => {
                 let cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
                 
+                // --- FIX: Apply replacements ---
                 if (REPLACEMENT_MAP[cleanWord]) {
                     cleanWord = REPLACEMENT_MAP[cleanWord];
                 }
                 
+                // --- FIX: Ignore long words ---
                 if (cleanWord.length > 2 && cleanWord.length <= 15 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
                     wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
                 }
@@ -462,18 +463,19 @@ function populateSmartKeywords(listId, filterId) {
 
         const sortedKeywords = Object.entries(wordCounts)
             .sort(([,a], [,b]) => b - a)
-            .slice(0, 30)
-            .map(([word]) => word);
+            .slice(0, 30); // Get top 30 [word, count] pairs
 
         $filter.children('option:not(:first)').remove();
         
-        sortedKeywords.forEach(key => {
-            const displayText = key.length > 8 ? key.substring(0, 8) + '...' : key;
+        sortedKeywords.forEach(([key, count]) => {
+            // --- FIX: Trim at 15 chars and add count ---
+            const displayText = key.length > 15 ? key.substring(0, 15) + '...' : key;
             
             $filter.append($('<option>', {
                 value: key,
-                text: displayText
+                text: `${displayText} (${count})` // e.g., "beethoven (5)"
             }));
+            // --- END FIX ---
         });
     
     } catch (error) {
