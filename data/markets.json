@@ -2,19 +2,19 @@
   "title": "Stock Ticker Research",
   "tickers": [
     { 
-      "id": "msft", 
-      "name": "MSFT", 
-      "contentUrl": "data/msft.html" 
+      "id": "aapl", 
+      "name": "AAPL", 
+      "contentUrl": "https://mediamaze.com/invest/files/AAPL_chart.html" 
     },
     { 
-      "id": "nvda", 
-      "name": "NVDA", 
-      "contentUrl": "data/nvda.html" 
+      "id": "amat", 
+      "name": "AMAT", 
+      "contentUrl": "https://mediamaze.com/invest/files/AMAT_1_forecast.png" 
     },
     { 
       "id": "orcl", 
       "name": "ORCL", 
-      "contentUrl": "data/orcl.html" 
+      "contentUrl": "https://mediamaze.com/invest/Ratings.php?T=ORCL" 
     }
   ]
 }
