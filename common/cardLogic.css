@@ -1,464 +1,854 @@
-/* --- Card View & "Show More" Button --- */
-.card-list {
-    column-width: 300px;
-    column-gap: 20px;
-    list-style: none;
-    padding: 0;
+/* === GLOBAL VARIABLES === */
+var currentCardList = []; // Stores the list of cards for modal navigation
+var currentCardIndex = 0; // Stores the current position in the modal
+
+// --- List of common words to ignore ---
+const STOP_WORDS = new Set([
+    'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have', 
+    'he', 'in', 'is', 'it', 'its', 'of', 'on', 'or', 'that', 'the', 'to', 'was', 
+    'were', 'will', 'with', 'part', 'op', 'web', 'at', 'al', 'com', 'org', 'www',
+    'https', 'http', 'pdf', 'html', 'sheet', 'cheat', 'for', 'github', 'master',
+    'file', 'files', 'user', 'users', 'server', 'servers', 'link', 'more', 'read',
+    'view', 'full', 'size', 'click', 'introductory', 'introduction', 'advanced',
+    'comprehensive', 'dummies', 'glance', 'handout', 'part 1', 'v1',
+    'photo', 'usa', 'new', 'york', 'amazing', 'island'
+]);
+
+// --- NEW: Keyword Dictionaries ---
+
+// A. REPLACEMENT_MAP: Cleans up keywords *before* they are added to the dropdown.
+// (e.g., "javascript" becomes "js")
+const REPLACEMENT_MAP = {
+    'javascript': 'js',
+    'artificial': 'ai',
+    'intelligence': 'ai',
+    'llms': 'llm',
+    'python': 'python',
+    'statistics': 'stats',
+    'statistical': 'stats',
+    'powerbi': 'bi',
+    'power': 'bi',
+    'analysis': 'data',
+    'analytics': 'data'
+};
+
+// B. SYNONYM_MAP: Expands search *when* a filter is selected.
+// (e.g., filtering for "js" also finds "javascript")
+const SYNONYM_MAP = {
+    'js': ['javascript'],
+    'ai': ['artificial', 'intelligence'],
+    'llm': ['llms'],
+    'stats': ['statistics', 'statistical'],
+    'bi': ['powerbi', 'power'],
+    'data': ['analysis', 'analytics']
+};
+// --- END NEW ---
+
+
+/**
+ * Helper function to safely decode text.
+ */
+function decodeText(text) {
+    if (!text) return "";
+    try {
+        var $textarea = $('<textarea></textarea>');
+        $textarea.html(text);
+        let decoded = $textarea.val();
+        decoded = decodeURIComponent(decoded);
+        return decoded;
+    } catch (e) {
+        return text;
+    }
 }
 
-.card-item {
-    background-color: var(--bg-medium);
-    padding: 15px;
-    border-radius: 6px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    border-left: 3px solid var(--text-accent);
-    display: flex; 
-    flex-direction: column;
-    justify-content: space-between;
-    break-inside: avoid; 
-    margin-bottom: 20px; 
-    width: 100%; 
-    box-sizing: border-box; 
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.card-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-}
-
-.card-item h3 {
-    margin-top: 0;
-    color: var(--text-accent);
-    font-size: 1.15rem;
-}
-
-.card-item p {
-    font-size: 0.95rem;
-}
-
-.card-category {
-    font-family: var(--font-code);
-    font-size: 0.85rem;
-    color: var(--text-light);
-    opacity: 0.7;
-    margin-bottom: 10px;
-}
-
-/* Card images (YouTube and Raindrop) - DEFAULT */
-.card-item img.card-image,
-.card-item img.YTi {
-    width: 100%;
-    height: 150px; 
-    object-fit: contain; 
-    background-color: var(--bg-dark); 
-    border-radius: 4px;
-    margin-bottom: 15px;
-    border: 1px solid var(--bg-medium);
-}
-
-.hidden-card-item {
-    display: none !important;
-}
-
-.toggle-card-button {
-    display: block;
-    margin: 20px auto 40px auto;
-    padding: 10px 20px;
-    background-color: var(--bg-medium);
-    color: var(--text-accent);
-    border: 1px solid var(--text-accent);
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: var(--font-code);
-    font-size: 1rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.toggle-card-button:hover {
-    background-color: var(--text-accent);
-    color: var(--bg-dark);
-}
-
-/* --- Filter Bar --- */
-.filter-bar {
-    display: flex;
-    flex-wrap: wrap; 
-    gap: 15px;
-    margin-bottom: 25px;
+/* === --- EVENT LISTENERS (DELEGATED) --- === */
+$(document).ready(function () {
     
-    background-color: var(--bg-medium);
-    padding: 20px;
-    border-radius: 8px;
+    // --- Inject the modal HTML on page load ---
+    $('body').append(`
+        <div id="content-modal" class="modal-backdrop">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-nav-left">
+                        <button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button>
+                        <button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button>
+                        <button class="modal-info-btn" title="Toggle Info (I)">Info</button>
+                    </div>
+                    <div class="modal-nav-right">
+                        <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                            Open in new window &nearr;
+                        </a>
+                        <button class="modal-close-btn" title="Close (Esc)">&times; Close</button>
+                    </div>
+                </div>
+                <div id="modal-content-area">
+                    <!-- Content (iframe, image, html, research tabs) will be loaded here -->
+                </div>
+            </div>
+        </div>
+    `);
+
+    // Listener for "Show More" (Cards)
+    $('body').on('click', '.toggle-card-button', function() {
+        const $button = $(this);
+        const $list = $button.prev('.card-list');
+        if ($list.length) {
+            showMoreCards($button, $list);
+        }
+    });
+
+    // Listener for ALL CARDS (opens modal)
+    $('body').on('click', '.card-item, .item', function(e) {
+        const $clickedCard = $(this);
+        const $link = $clickedCard.find('a').first();
+        if (!$link.length) { return; } 
+        
+        const $clickedLink = $(e.target).closest('a');
+        // This check is now only for links *inside* the modal header
+        if ($clickedLink.length > 0 && $clickedLink.closest('.modal-header').length > 0) {
+            return;
+        }
+        
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        
+        const $cardList = $clickedCard.closest('.card-list');
+        const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible');
+        
+        currentCardList = [];
+        $allVisibleCards.each(function() {
+            currentCardList.push($(this).find('a').first());
+        });
+        
+        currentCardIndex = $allVisibleCards.index($clickedCard);
+        
+        if (currentCardList.length > 0) {
+            loadModalContent(currentCardIndex);
+            
+            $('body').addClass('modal-open');
+            $('#content-modal').fadeIn(200);
+            
+            $(document).on('keydown.modalNav', handleModalKeys);
+        }
+    });
+
+    // Listener for Modal "Close" button
+    $('body').on('click', '.modal-close-btn', function() {
+        const $modal = $('#content-modal');
+        const $modalContent = $('#modal-content-area');
+        
+        $('body').removeClass('modal-open');
+        $modal.fadeOut(200);
+        
+        $modalContent.html(''); 
+        
+        currentCardList = [];
+        currentCardIndex = 0;
+        $(document).off('keydown.modalNav');
+    });
     
-    position: sticky;
-    top: 0;
-    z-index: 50;
-}
+    // Listener for Modal backdrop click
+    $('body').on('click', '#content-modal', function(e) {
+        if (e.target.id === 'content-modal') {
+            $(this).find('.modal-close-btn').click();
+        }
+    });
+    
+    // Listeners for Modal Prev/Next/Info buttons
+    $('body').on('click', '.modal-prev-btn', function() {
+        if (currentCardIndex > 0) {
+            loadModalContent(currentCardIndex - 1);
+        }
+    });
+    
+    $('body').on('click', '.modal-next-btn', function() {
+        if (currentCardIndex < currentCardList.length - 1) {
+            loadModalContent(currentCardIndex + 1);
+        }
+    });
 
-.filter-bar .search-wrapper {
-    flex: 1 1 250px; 
-    min-width: 200px; 
-}
-.filter-bar .category-wrapper {
-    flex: 0 0 220px; 
-}
-.filter-bar .keyword-wrapper {
-    flex: 0 0 200px; 
-}
+    $('body').on('click', '.modal-info-btn', function() {
+        $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible');
+    });
 
-.search-wrapper {
-    margin-bottom: 0;
-}
+    // --- All filter listeners ---
+    $('body').on('input', '#youtube-search-box', filterYouTubeCards);
+    $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
+    $('body').on('input', '#post-search-box', filterPostCards);
+    $('body').on('change', '#post-category-filter', filterPostCards);
+    $('body').on('change', '#post-keyword-filter', filterPostCards);
+    $('body').on('input', '#cert-search-box', filterCertCards);
+    $('body').on('change', '#cert-category-filter', filterCertCards);
+    $('body').on('change', '#cert-keyword-filter', filterCertCards);
+    $('body').on('input', '#album-search-box', filterAlbumCards);
+    $('body').on('change', '#album-category-filter', filterAlbumCards);
+    $('body').on('change', '#album-keyword-filter', filterAlbumCards);
+    
+    $('body').on('input', '#research-search-box', filterResearchCards);
+    $('body').on('change', '#research-category-filter', filterResearchCards);
+    $('body').on('change', '#research-keyword-filter', filterResearchCards);
 
-/* Filter Dropdowns & Inputs */
-#post-category-filter,
-#cert-category-filter,
-#post-keyword-filter,
-#cert-keyword-filter,
-#youtube-keyword-filter,
-#album-category-filter, 
-#album-keyword-filter,
-#research-category-filter,  /* Added Research */
-#research-keyword-filter {  /* Added Research */
-    width: 100%;
-    padding: 12px 15px;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--bg-medium);
-    border-radius: 4px;
-    color: var(--text-primary);
-    font-family: var(--font-code);
-    font-size: 1rem;
-    box-sizing: border-box;
-}
+    // --- NEW: Research Tab listener (moved from mainPage.js) ---
+    // Note: We delegate from #modal-content-area for tabs inside the modal
+    $('#modal-content-area').on('click', '.tab-button', function() {
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+        
+        const htmlUrl = $(this).data('content-url');
+        loadModalTabContent(htmlUrl, '#research-tab-content-modal');
+    });
 
-#post-category-filter:focus,
-#cert-category-filter:focus,
-#post-keyword-filter:focus,
-#cert-keyword-filter:focus,
-#youtube-keyword-filter:focus,
-#album-category-filter:focus, 
-#album-keyword-filter:focus,
-#research-category-filter:focus,  /* Added Research */
-#research-keyword-filter:focus {  /* Added Research */
-    outline: none;
-    border-color: var(--text-accent);
-}
-
-#youtube-search-box,
-#post-search-box,
-#cert-search-box,
-#album-search-box,
-#research-search-box { /* Added Research */
-    width: 100%;
-    padding: 12px 15px;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--bg-medium);
-    border-radius: 4px;
-    color: var(--text-primary);
-    font-family: var(--font-code);
-    font-size: 1rem;
-    box-sizing: border-box;
-}
-
-#youtube-search-box:focus,
-#post-search-box:focus,
-#cert-search-box:focus,
-#album-search-box:focus,
-#research-search-box:focus { /* Added Research */
-    outline: none;
-    border-color: var(--text-accent);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
+});
 
 
-/* --- Modal Styles --- */
-.modal-backdrop {
-    display: none; 
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.8); 
-    backdrop-filter: blur(5px);
+/* === CARD VIEW (Show More) LOGIC === */
+function handleCardView($scope, initialLoadOverride) {
+    $scope.find('.card-list').each(function() {
+        const $list = $(this);
+        const $items = $list.children('.card-item');
+        const totalItems = $items.length;
+        const initialLimit = parseInt(initialLoadOverride) || 10;
+        const increment = 10;
+        
+        $list.next('.toggle-card-button').remove(); 
+        
+        if (totalItems > initialLimit) {
+            $items.slice(initialLimit).addClass('hidden-card-item');
+            const remaining = totalItems - initialLimit;
+            const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
+            
+            $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
+            $list.after($button);
+        }
+    });
 }
 
-.modal-content {
-    background-color: var(--bg-dark);
-    margin: 20px auto; 
-    padding: 20px;
-    border: 1px solid var(--bg-medium);
-    border-radius: 8px;
-    width: 90%; 
-    max-width: 1400px;
-    height: calc(100vh - 60px); 
-    display: flex;
-    flex-direction: column;
+function showMoreCards($button, $list) {
+    const $items = $list.children('.card-item');
+    const totalItems = parseInt($button.data('total-items') || 0);
+    const increment = parseInt($button.data('increment') || 10);
+    const visibleCount = parseInt($button.data('visible-count') || 0);
+    const newVisibleCount = visibleCount + increment;
+    
+    $items.slice(visibleCount, newVisibleCount).removeClass('hidden-card-item');
+    $button.data('visible-count', newVisibleCount);
+    
+    const remaining = totalItems - newVisibleCount;
+    if (remaining <= 0) { $button.hide(); } 
+    else { $button.text(`Show More (${remaining} more) \u25BC`); }
 }
 
-/* --- THIS IS THE FIX --- */
-/* This is the main content box inside the modal */
-#modal-content-area {
-    flex-grow: 1; 
-    overflow-y: auto; /* Add scrollbar *only* if content is too tall */
-    /* REMOVED: display:flex and centering properties */
-    /* This ensures HTML/Research content aligns to the top */
-    position: relative; /* Anchor for info overlays */
+
+/* === YOUTUBE PLAYLIST CORE FUNCTIONS === */
+var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; // Your API Key
+var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
+
+function loadVids(PL, Category, BKcol, initialLoadOverride) {
+    $('#Grid').empty(); 
+    var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
+
+    $.getJSON(URL, options, function (data) {
+        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
+        $('#playlist-description').text(`The latest videos from the ${Category.replace(/_/g, ' ')} playlist.`);
+
+        if (data.error) {
+             $('#Grid').html(`<p class="error-message">API Key/Access Error: ${data.error.message}.</p>`);
+             return; 
+        }
+        if (!data.items || data.items.length === 0) {
+             $('#Grid').html(`<p class="error-message">Playlist is valid but contains no public videos.</p>`);
+             return;
+        }
+
+        resultsLoop(data, Category, BKcol);
+        handleCardView($('#content-area'), initialLoadOverride);
+        populateSmartKeywords('#Grid', '#youtube-keyword-filter');
+
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        $('#Grid').html(`<p class="error-message">API Error (Hard): ${jqXHR.status} - ${errorThrown}.</p>`);
+    });
+}
+    
+function resultsLoop(data, Cat, BKcol) {
+    $.each(data.items, function (i, item) {
+        if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) {
+            console.warn("Skipping playlist item, missing resourceId:", item);
+            return; // skip this item
+        }
+        
+        let thumb = 'https://placehold.co/320x180/2c3e50/66fcf1?text=Video';
+        if (item.snippet.thumbnails) { 
+            if (item.snippet.thumbnails.medium && item.snippet.thumbnails.medium.url) {
+                thumb = item.snippet.thumbnails.medium.url;
+            } else if (item.snippet.thumbnails.default && item.snippet.thumbnails.default.url) {
+                thumb = item.snippet.thumbnails.default.url;
+            }
+        }
+        
+        const title = decodeText(item.snippet.title);
+        const desc = item.snippet.description ? decodeText(item.snippet.description.substring(0, 100) + '...') : 'No description available.';
+        const vid = item.snippet.resourceId.videoId;
+
+        $('#Grid').append(`
+        <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
+            <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
+               <img class="YTi" src="${thumb}" alt="${title}" >
+               <h3>${title}</h3>
+               <p>${desc}</p>
+            </a>
+        </div>
+        `);
+    });
 }
 
-/* Modal Button Styles */
-.modal-header {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--bg-medium);
-    display: flex;
-    justify-content: space-between; 
-    align-items: center;
-    flex-wrap: wrap; 
-    gap: 15px;
+/* === PHOTO ALBUM LOGIC === */
+function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
+    const $albumList = $('#photo-album-list');
+    
+    $.getJSON(jsonUrl, function (albumData) {
+        $('#album-title').text(decodeText(albumData.albumTitle));
+        $albumList.empty(); 
+        
+        const categories = new Set();
+
+        $.each(albumData.photos, function(index, photo) {
+            const title = decodeText(photo.title);
+            const category = decodeText(photo.category);
+            const description = decodeText(photo.description);
+            
+            categories.add(category);
+
+            const cardHtml = `
+                <div class="card-item" 
+                     data-category="${category}" 
+                     data-keywords="${title},${description}">
+                    
+                    <a href="${photo.url}" data-load-type="image">
+                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
+                        
+                        <div class="photo-details">
+                            <h3>${title}</h3>
+                            <p>${description}</p>
+                        </div>
+                    </a>
+                </div>
+            `;
+            $albumList.append(cardHtml);
+        });
+        
+        populateAlbumCategories(categories);
+        populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
+        handleCardView($('#content-area'), initialLoadOverride);
+
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        $('#album-title').text("Error Loading Album");
+        $albumList.html(`<p class="error-message">Could not load album data from ${jsonUrl}. Error: ${textStatus}</p>`);
+        console.error("Photo Album AJAX failed:", textStatus, errorThrown);
+    });
 }
 
-.modal-nav-left, .modal-nav-right {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+function populateAlbumCategories(categories) {
+    const $filter = $('#album-category-filter');
+    if (!$filter.length) return;
+    const sortedCategories = Array.from(categories).sort();
+    sortedCategories.forEach(key => {
+        $filter.append($('<option>', {
+            value: key,
+            text: key
+        }));
+    });
 }
 
-.modal-header .modal-close-btn,
-.modal-header .modal-prev-btn,
-.modal-header .modal-next-btn,
-.modal-header .modal-info-btn { 
-    padding: 8px 15px;
-    background: var(--bg-medium);
-    color: var(--text-accent);
-    border: 1px solid var(--bg-medium); 
-    border-radius: 4px;
-    text-decoration: none;
-    font-family: var(--font-code);
-    font-weight: 700;
-    transition: all 0.3s;
-    cursor: pointer;
-    font-size: 0.9rem;
+/* === --- NEW: RESEARCH TAB LOGIC --- === */
+
+/**
+ * Builds the tabbed interface inside the modal.
+ * @param {string} jsonUrl - The URL of the main data file (e.g., data/markets.json).
+ */
+function buildResearchModal(jsonUrl) {
+    const $modalContent = $('#modal-content-area');
+    
+    // --- THIS IS THE FIX ---
+    // 1. Create a new header for the research title and the modal buttons
+    //    We move the buttons from the main modal header into this one.
+    const researchHtml = `
+        <div class="research-modal-header">
+            <h2 id="research-title-modal">Loading Research...</h2>
+            <div class="modal-nav-right">
+                <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                    Open in new window &nearr;
+                </a>
+                <button class="modal-close-btn" title="Close (Esc)">&times; Close</button>
+            </div>
+        </div>
+        <div class="tab-nav" id="research-tab-nav-modal"></div>
+        <div class="tab-content" id="research-tab-content-modal">
+            <div class="content-loader"><div class="spinner"></div></div>
+        </div>
+    `;
+    $modalContent.html(researchHtml);
+    // --- END FIX ---
+
+    // 2. Fetch the JSON data
+    $.getJSON(jsonUrl, function (data) {
+        $('#research-title-modal').text(decodeText(data.title));
+        
+        // --- NEW: Update the "Open in new window" href to the JSON file ---
+        $modalContent.find('.open-new-window').attr('href', jsonUrl);
+        
+        const $tabNav = $('#research-tab-nav-modal');
+        $tabNav.empty(); 
+
+        // 3. Create a tab button for each ticker
+        $.each(data.tickers, function(index, ticker) {
+            const $button = $(`<button class="tab-button"></button>`);
+            $button.text(ticker.name);
+            $button.attr('data-content-url', ticker.contentUrl);
+            
+            if (index === 0) {
+                $button.addClass('active');
+                // 4. Load the first tab's content
+                loadModalTabContent(ticker.contentUrl, '#research-tab-content-modal');
+            }
+            $tabNav.append($button);
+        });
+
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        $('#research-title-modal').text("Error Loading Research");
+        $('#research-tab-content-modal').html(`<p class="error-message">Could not load research data from ${jsonUrl}. Error: ${textStatus}</p>`);
+    });
 }
 
-.modal-header .modal-close-btn:hover,
-.modal-header .modal-prev-btn:hover,
-.modal-header .modal-next-btn:hover,
-.modal-header .modal-info-btn:hover { 
-    background: var(--text-accent);
-    color: var(--bg-dark);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+/**
+ * Fetches an HTML fragment and loads it into the *modal's* tab container.
+ */
+function loadModalTabContent(htmlUrl, targetId) {
+    const $target = $(targetId);
+    $target.html('<div class="content-loader"><div class="spinner"></div></div>'); 
+    
+    $.ajax({
+        url: htmlUrl,
+        type: 'GET',
+        success: function(data) {
+            $target.html(data);
+        },
+        error: function() {
+            $target.html('<div class="error-message">Could not load content.</div>');
+        }
+    });
 }
 
-.modal-header .modal-prev-btn:disabled,
-.modal-header .modal-next-btn:disabled {
-    background: var(--bg-dark);
-    color: var(--text-light);
-    border-color: var(--bg-medium);
-    opacity: 0.5;
-    cursor: not-allowed;
-    box-shadow: none;
+
+/* === --- SMART KEYWORD LOGIC --- === */
+function populateSmartKeywords(listId, filterId) {
+    const $filter = $(filterId);
+    if (!$filter.length) return; 
+
+    const wordCounts = {};
+    
+    try {
+        $(`${listId} .card-item`).each(function() {
+            const $card = $(this);
+            const textSources = [
+                $card.find('h3').text(),
+                $card.find('p').text(),
+                $card.find('.card-category').text(),
+                $card.find('img').attr('alt'),
+                $card.data('category'), 
+                $card.data('keywords') 
+            ];
+            
+            const combinedText = decodeText(textSources.join(' '));
+            const words = combinedText.split(/[^a-zA-Z0-9'-]+/); 
+            
+            words.forEach(word => {
+                let cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
+                
+                // --- NEW: Apply replacements ---
+                if (REPLACEMENT_MAP[cleanWord]) {
+                    cleanWord = REPLACEMENT_MAP[cleanWord];
+                }
+                
+                if (cleanWord.length > 2 && cleanWord.length <= 15 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
+                    wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
+                }
+            });
+        });
+
+        const sortedKeywords = Object.entries(wordCounts)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 30)
+            .map(([word]) => word);
+
+        $filter.children('option:not(:first)').remove();
+        
+        sortedKeywords.forEach(key => {
+            const displayText = key.length > 8 ? key.substring(0, 8) + '...' : key;
+            
+            $filter.append($('<option>', {
+                value: key,
+                text: displayText
+            }));
+        });
+    
+    } catch (error) {
+        console.error("Error populating smart keywords:", error);
+    }
 }
 
-.modal-header .modal-info-btn {
-    display: none; 
+function getCardSearchableText($card) {
+    const textSources = [
+        $card.find('h3').text(),
+        $card.find('p').text(),
+        $card.find('.card-category').text(),
+        $card.find('img').attr('alt'),
+        $card.data('category'),
+        $card.data('keywords')
+    ];
+    return decodeText(textSources
+        .map(text => String(text || '')) 
+        .join(' ')
+        .toLowerCase());
 }
 
-/* Special mode for Research modal: hide nav buttons */
-.modal-backdrop.research-mode .modal-nav-left {
-    display: none;
+
+/* === --- MODAL NAVIGATION HELPER --- === */
+function handleModalKeys(e) {
+    if (!$('#content-modal').is(':visible')) {
+        $(document).off('keydown.modalNav');
+        return;
+    }
+    
+    // Don't interfere if user is typing in a tab
+    if ($(e.target).is('input, textarea, select')) {
+        return;
+    }
+
+    switch (e.key) {
+        case "Escape":
+            $('.modal-close-btn').click();
+            break;
+        case "ArrowLeft":
+            $('.modal-prev-btn').click();
+            break;
+        case "ArrowRight":
+            $('.modal-next-btn').click();
+            break;
+        case " ": // Spacebar
+            e.preventDefault(); 
+            $('.modal-next-btn').click();
+            break;
+        case "i":
+            e.preventDefault(); 
+            $('.modal-info-btn').click();
+            break;
+    }
 }
 
-.modal-header .open-new-window {
-    padding: 8px 15px;
-    background: transparent;
-    color: var(--text-accent);
-    border: 1px solid var(--text-accent); 
-    border-radius: 4px;
-    text-decoration: none;
-    font-family: var(--font-code);
-    font-weight: 700;
-    transition: all 0.3s;
-    font-size: 0.9rem;
+function loadModalContent(index) {
+    if (index < 0 || index >= currentCardList.length) {
+        return;
+    }
+
+    const $link = currentCardList[index];
+    if (!$link.length) return;
+    
+    currentCardIndex = index;
+    
+    const $modal = $('#content-modal');
+    const $modalContent = $('#modal-content-area');
+    const $modalOpenLink = $modal.find('.open-new-window');
+    const $modalInfoBtn = $modal.find('.modal-info-btn');
+
+    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
+    
+    const loadUrl = $link.attr('href');
+    let loadType = $link.data('load-type');
+    const jsonUrl = $link.data('json-url');
+    
+    // --- THIS IS THE FIX ---
+    // Show/Hide modal buttons based on card type
+    if (loadType === 'research' && jsonUrl) {
+        // This is a special research tab card
+        $modal.addClass('research-mode'); // Hides main header, prev/next
+        $modalOpenLink.attr('href', jsonUrl); 
+        buildResearchModal(jsonUrl); // Build the tab interface
+        return; // Stop here
+    } 
+    
+    // This is a regular card (image, iframe, html)
+    $modal.removeClass('research-mode'); // Show main header, prev/next
+    $modalOpenLink.attr('href', loadUrl);
+    $modalContent.find('.modal-photo-info').remove();
+    $modalInfoBtn.hide(); 
+    // --- END FIX ---
+    
+    
+    if (!loadType) {
+        if (loadUrl.startsWith('http')) {
+            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
+                loadType = 'blocked'; 
+            } else {
+                loadType = 'iframe';
+            }
+        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+            loadType = 'image';
+        } else if (loadUrl.endsWith('.html')) {
+            loadType = 'html';
+        } else {
+            loadType = 'newtab'; 
+        }
+    }
+
+    const customHeight = $link.data('height') || '85vh';
+    
+    const $card = $link.closest('.card-item');
+    const title = $card.find('h3').text() || $card.find('img').attr('alt');
+    const desc = $card.find('p').text();
+    let infoHtml = '';
+
+    if (title) {
+        infoHtml = `
+            <div class="modal-photo-info">
+                <h3>${title}</h3>
+                <p>${desc}</p>
+            </div>`;
+    }
+
+    switch (loadType) {
+        case 'html':
+            $.ajax({
+                url: loadUrl, type: 'GET',
+                success: function(data) { 
+                    $modalContent.html(data); 
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
+                },
+                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
+            });
+            break;
+        case 'image':
+            $modalContent.html(`
+                <div class="image-wrapper">
+                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'iframe':
+            $modalContent.html(`
+                <div class="iframe-wrapper">
+                    <iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'blocked':
+            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
+            break;
+        default: // newtab
+            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
+            break;
+    }
+    
+    $('.modal-prev-btn').prop('disabled', index <= 0);
+    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
 
-.modal-header .open-new-window:hover {
-    background: var(--text-accent);
-    color: var(--bg-dark);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+
+/* === --- FILTERING LOGIC --- === */
+
+/**
+ * Checks if a card's text matches a keyword, including synonyms.
+ * @param {string} cardText - The pre-compiled text from the card.
+ * @param {string} selectedKeyword - The keyword selected from the dropdown.
+ * @returns {boolean} - True if it's a match.
+ */
+function checkKeywordMatch(cardText, selectedKeyword) {
+    if (selectedKeyword === "all") return true;
+
+    // Get the base keyword and its synonyms
+    const keywordsToMatch = [selectedKeyword, ...(SYNONYM_MAP[selectedKeyword] || [])];
+    
+    // Check if the card text includes *any* of the keywords
+    return keywordsToMatch.some(key => cardText.includes(key));
 }
 
-/* Modal Image/Iframe Styles */
 
-/* Wrapper for Images and IFrames (for info overlay) */
-#modal-content-area .image-wrapper,
-#modal-content-area .iframe-wrapper {
-    position: relative; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    padding: 0; 
-}
+function filterYouTubeCards() {
+    const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
+    const selectedKeyword = $('#youtube-keyword-filter').val();
+    
+    const $grid = $('#Grid');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#youtube-no-results');
+    
+    let visibleCount = 0;
 
-#modal-content-area .loaded-image {
-    width: auto; 
-    height: auto; 
-    max-width: 100%; 
-    max-height: 100%; 
-    object-fit: contain; 
-    border-radius: 6px; 
-}
+    if (searchTerm.length > 0 || selectedKeyword !== "all") {
+        $showMoreButton.hide();
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardText = getCardSearchableText($card); 
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            // --- UPDATED: Use new synonym checker ---
+            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
 
-#modal-content-area .loaded-iframe {
-    width: 100%;
-    height: 100%; 
-    border: none;
-    border-radius: 6px;
-    background: #fff; 
+            if (searchMatch && keywordMatch) {
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else { $card.hide(); }
+        });
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
+    } else {
+        $noResultsMessage.hide();
+        $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
+    }
 }
+function filterPostCards() {
+    const searchTerm = decodeText($('#post-search-box').val().toLowerCase());
+    const selectedCategory = $('#post-category-filter').val();
+    const selectedKeyword = $('#post-keyword-filter').val();
+    
+    const $grid = $('#posts-card-list');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#posts-no-results');
+    
+    let visibleCount = 0;
 
-/* Modal Photo Info Overlay */
-.modal-photo-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 40px 20px 20px;
-    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-    color: #fff;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
-    pointer-events: none; 
-}
+    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
+        $showMoreButton.hide();
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardCategory = $card.data('category'); 
+            const cardText = getCardSearchableText($card); 
+            const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            // --- UPDATED: Use new synonym checker ---
+            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
 
-.modal-photo-info.info-visible {
-    opacity: 1;
-    transform: translateY(0);
+            if (categoryMatch && searchMatch && keywordMatch) {
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else { $card.hide(); }
+        });
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
+    } else {
+        $noResultsMessage.hide();
+        $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page="posts.html"]').data('initial-load')) || 10);
+    }
 }
+function filterCertCards() {
+    const searchTerm = decodeText($('#cert-search-box').val().toLowerCase());
+    const selectedCategory = $('#cert-category-filter').val();
+    const selectedKeyword = $('#cert-keyword-filter').val();
+    
+    const $grid = $('#cert-card-list');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#cert-no-results');
+    
+    let visibleCount = 0;
 
-.modal-photo-info h3 {
-    font-size: 1.2rem;
-    color: #fff;
-    margin-bottom: 5px;
-}
-.modal-photo-info p {
-    font-size: 1rem;
-    color: #eee;
-    margin: 0;
-}
-/* --- END CSS FIX --- */
+    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
+        $showMoreButton.hide();
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardCategories = $card.data('category') || ''; 
+            const cardText = getCardSearchableText($card); 
+            const categoryMatch = (selectedCategory === "all" || cardCategories.includes(selectedCategory));
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            // --- UPDATED: Use new synonym checker ---
+            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword); 
 
+            if (categoryMatch && searchMatch && keywordMatch) {
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else { $card.hide(); }
+        });
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
+    } else {
+        $noResultsMessage.hide();
+        $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page="certificates.html"]').data('initial-load')) || 10);
+    }
+}
+function filterAlbumCards() {
+    const searchTerm = decodeText($('#album-search-box').val().toLowerCase());
+    const selectedCategory = $('#album-category-filter').val();
+    const selectedKeyword = $('#album-keyword-filter').val();
+    
+    const $grid = $('#photo-album-list');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#album-no-results');
+    
+    let visibleCount = 0;
 
-/* --- Page-Specific Card Styles --- */
-#cert-card-list .card-item {
-    padding: 10px;
-    justify-content: flex-start; 
+    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
+        $showMoreButton.hide();
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardCategory = $card.data('category'); 
+            const cardText = getCardSearchableText($card); 
+            const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            // --- UPDATED: Use new synonym checker ---
+            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
+            if (categoryMatch && searchMatch && keywordMatch) {
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else { $card.hide(); }
+        });
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
+    } else {
+        $noResultsMessage.hide();
+        $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="album.html"]').data('initial-load')) || 10);
+    }
 }
-#cert-card-list .card-item .card-category {
-    margin-bottom: 5px;
-    font-size: 0.75rem; 
-}
-#cert-card-list .card-item a {
-    font-size: 0.8rem; 
-}
-#cert-card-list .card-item img.card-image {
-    height: 300px; 
-}
+function filterResearchCards() {
+    const searchTerm = decodeText($('#research-search-box').val().toLowerCase());
+    const selectedCategory = $('#research-category-filter').val();
+    const selectedKeyword = $('#research-keyword-filter').val();
+    
+    const $grid = $('#research-card-list');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#research-no-results');
+    
+    let visibleCount = 0;
 
-/* Photo Album Card Styles */
-#photo-album-list .card-item {
-    position: relative;
-    padding: 0;
-    background: transparent;
-    border: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
-    border-radius: 6px;
-    overflow: hidden; 
-}
-#photo-album-list .card-item a {
-    display: block;
-    font-size: 0; 
-}
-#photo-album-list .card-item img.card-image {
-    height: auto; 
-    margin-bottom: 0;
-    border: none;
-    display: block; 
-    transition: transform 0.3s ease;
-}
-#photo-album-list .card-item .photo-details {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 40px 15px 15px; 
-    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-    color: #fff;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
-    pointer-events: none; 
-}
-#photo-album-list .card-item:hover .photo-details {
-    opacity: 1;
-    transform: translateY(0);
-}
-#photo-album-list .card-item:hover img.card-image {
-    transform: scale(1.05);
-}
-#photo-album-list .card-item .photo-details h3 {
-    font-size: 1rem;
-    color: #fff; 
-    margin-bottom: 5px;
-}
-#photo-album-list .card-item .photo-details p {
-    font-size: 0.85rem;
-    color: #eee;
-    margin: 0;
-}
-
-/* --- NEW: Research Page / Tab Styles --- */
-.tab-nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--bg-medium);
-}
-
-.tab-button {
-    padding: 10px 20px;
-    background: transparent;
-    border: none;
-    border-bottom: 3px solid transparent;
-    color: var(--text-light);
-    font-family: var(--font-code);
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.tab-button:hover {
-    color: var(--text-primary);
-    background: var(--bg-medium);
-}
-
-.tab-button.active {
-    color: var(--text-accent);
-    border-bottom-color: var(--text-accent);
-}
-
-.tab-content {
-    padding: 20px 0;
-    /* Styles for content loaded inside tabs */
-}
-.tab-content h3 {
-    color: var(--text-accent);
+    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
+        $showMoreButton.hide();
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardCategory = $card.data('category'); 
+            const cardText = getCardSearchableText($card); 
+            const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            // --- UPDATED: Use new synonym checker ---
+            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
+            if (categoryMatch && searchMatch && keywordMatch) {
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else { $card.hide(); }
+        });
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
+    } else {
+        $noResultsMessage.hide();
+        $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page="research.html"]').data('initial-load')) || 10);
+    }
 }
