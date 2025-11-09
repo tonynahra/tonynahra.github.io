@@ -1,15 +1,355 @@
-<section class="research-page">
+<section class="research-page card-list-page">
+    <h2>Research & Analysis</h2>
     
-    <h2 id="research-title">Loading Research...</h2>
-    
-    <!-- Tabs will be dynamically added here by JS -->
-    <div class="tab-nav" id="research-tab-nav">
-        <!-- e.g., <button class="tab-button active" data-content-url="...">MSFT</button> -->
+    <!-- Filter Bar for Research -->
+    <div class="filter-bar">
+        <div class="search-wrapper">
+            <input type="search" id="research-search-box" placeholder="Filter by title/desc...">
+        </div>
+        <div class="category-wrapper">
+            <select id="research-category-filter">
+                <option value="all">All Categories</option>
+                <option value="Finance">Finance</option>
+                <option value="Tech">Tech</option>
+                <option value="AI">AI</option>
+                <option value="Economics">Economics</option>
+            </select>
+        </div>
+        <div class="keyword-wrapper">
+            <select id="research-keyword-filter">
+                <option value="all">Top Keywords</option>
+                <!-- This will be auto-populated by JS -->
+            </select>
+        </div>
+    </div>
+
+    <!-- Card List Container -->
+    <div id="research-card-list" class="card-list">
+        
+        <!-- 
+          NEW RESEARCH CARD TYPE
+          - data-load-type="research"
+          - data-json-url="path/to/your.json"
+        -->
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <img src="https://placehold.co/400x200/2c3e50/27ae60?text=Markets" class="card-image" alt="Markets Stocks Tickers">
+            <h3>Stock Ticker Research</h3>
+            <p>An analysis of MSFT, NVDA, and ORCL. Click to see tabbed content.</p>
+            <span class="card-category">Finance</span>
+            <a href="data/markets.json" 
+               data-load-type="research" 
+               data-json-url="data/markets.json">View Research &rarr;</a>
+        </div>
+
+        <!-- 49 Dummy Cards for Testing -->
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Large Language Model Efficiency</h3>
+            <p>A paper on reducing token compute cost for LLMs.</p>
+            <span class="card-category">AI</span>
+            <a href="https-arxiv.org/abs/2305.11111" target="_blank">Read Paper &rarr;</a>
+        </div>
+        
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>Quantum Computing Explained</h3>
+            <p>A simple breakdown of quantum annealing vs. gate-based systems.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/quantum_explained.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>Monetary Policy Impact</h3>
+            <p>Analyzing the effect of interest rate hikes on emerging markets.</p>
+            <span class="card-category">Economics</span>
+            <a href="posts/econ_impact.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>Portfolio Diversification Strategies</h3>
+            <p>Beyond stocks and bonds: including commodities and real estate.</p>
+            <span class="card-category">Finance</span>
+            <a href="https://www.investopedia.com/terms/d/diversification.asp" target="_blank">Read More &rarr;</a>
+        </div>
+        
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>The Rise of WASM</h3>
+            <p>WebAssembly's role in server-side applications and high-performance computing.</p>
+            <span class="card-category">Tech</span>
+            <a href="https://webassembly.org/" target="_blank">Read More &rarr;</a>
+        </div>
+        
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Generative Adversarial Networks (GANs)</h3>
+            <p>Deep dive into image generation models and StyleGAN.</p>
+            <span class="card-category">AI</span>
+            <a href="posts/gan_deep_dive.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>Supply Chain Bottlenecks Post-2023</h3>
+            <p>A look at the lasting impacts on global shipping and logistics.</p>
+            <span class="card-category">Economics</span>
+            <a href="https-www.imf.org/en/Home" target="_blank">Read More &rarr;</a>
+        </div>
+
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>Algorithmic Trading Models</h3>
+            <p>Comparing statistical arbitrage and machine learning models in trading.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/algo_trading.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>Database Sharding Techniques</h3>
+            <p>Horizontal vs. Vertical partitioning in distributed SQL systems.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/db_sharding.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Reinforcement Learning</h3>
+            <p>Case study of AlphaGo and its impact on AI research.</p>
+            <span class="card-category">AI</span>
+            <a href="https://deepmind.google/discover/blog/alphago-the-story-so-far/" target="_blank">Read More &rarr;</a>
+        </div>
+        
+        <!-- Adding more cards to reach 50 total -->
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>Venture Capital Trends</h3>
+            <p>Investment shifts in SaaS and AI startups for 2025.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/vc-trends.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>5G Network Slicing</h3>
+            <p>How virtualization is changing telecommunications infrastructure.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/5g-slicing.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Natural Language Processing (NLP)</h3>
+            <p>The evolution from BERT to modern transformer models.</p>
+            <span class="card-category">AI</span>
+            <a href="posts/nlp-evolution.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>Carbon Credit Markets</h3>
+            <p>An economic analysis of emerging carbon offset trading platforms.</p>
+            <span class="card-category">Economics</span>
+            <a href="posts/carbon-credits.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>DeFi Regulation</h3>
+            <p>How governments are approaching decentralized finance protocols.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/defi-reg.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>Edge Computing vs. Cloud</h3>
+            <p>Use cases for processing data locally on IoT devices.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/edge-computing.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Computer Vision in Healthcare</h3>
+            <p>Using AI for medical image analysis (MRIs, CT Scans).</p>
+            <span class="card-category">AI</span>
+            <a href="posts/ai-healthcare.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>The Gig Economy</h3>
+            <p>Labor market flexibility vs. worker stability.</p>
+            <span class="card-category">Economics</span>
+            <a href="posts/gig-economy.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>High-Frequency Trading</h3>
+            <p>The infrastructure and algorithms behind HFT.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/hft.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>Post-Quantum Cryptography (PQC)</h3>
+            <p>Preparing for the threat of quantum computers on encryption.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/pqc.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Ethical AI Frameworks</h3>
+            <p>Implementing principles for fairness, transparency, and accountability.</p>
+            <span class="card-category">AI</span>
+            <a href="posts/ethical-ai.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>Robo-Advisors</h3>
+            <p>The technology behind automated investment management platforms.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/robo-advisors.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>Serverless Architecture</h3>
+            <p>Benefits and drawbacks of AWS Lambda and Azure Functions.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/serverless.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Federated Learning</h3>
+            <p>Training models on decentralized data without compromising privacy.</p>
+            <span class="card-category">AI</span>
+            <a href="posts/federated-learning.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>Real Estate Market Analysis</h3>
+            <p>Impact of remote work on commercial vs. residential property values.</p>
+            <span class="card-category">Economics</span>
+            <a href="posts/real-estate.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>Credit Risk Modeling</h3>
+            <p>Using machine learning for more accurate credit scoring.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/credit-risk.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>Digital Twin Technology</h3>
+            <p>Creating real-time virtual replicas of physical assets and systems.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/digital-twin.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Explainable AI (XAI)</h3>
+            <p>Techniques for making "black box" models understandable.</p>
+            <span class="card-category">AI</span>
+            <a href="posts/xai.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>Global Inflation Drivers</h3>
+            <p>A comparative study of post-pandemic inflation worldwide.</p>
+            <span class="card-category">Economics</span>
+            <a href="posts/inflation.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>ESG Investing</h3>
+            <p>Measuring the real-world impact and financial performance of ESG funds.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/esg.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>Container Orchestration</h3>
+            <p>A deep dive into Kubernetes architecture and service mesh.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/kubernetes.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>AI in Drug Discovery</h3>
+            <p>How AlphaFold and other models are accelerating pharmaceutical R&D.</p>
+            <span class="card-category">AI</span>
+            <a href="posts/ai-drugs.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>Behavioral Economics</h3>
+            <p>How cognitive biases influence financial decision-making.</p>
+            <span class="card-category">Economics</span>
+            <a href="posts/behavioral-econ.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>Central Bank Digital Currencies (CBDCs)</h3>
+            <p>The future of digital finance and its implications for monetary policy.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/cbdc.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>Data Lakehouse Architecture</h3>
+            <p>Combining the benefits of data lakes and data warehouses.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/lakehouse.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Autonomous Driving Systems</h3>
+            <p>Challenges in Lidar vs. Vision-only approaches for self-driving cars.</p>
+            <span class="card-category">AI</span>
+            <a href="posts/autonomous.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>Renewable Energy Economics</h3>
+            <p>Analysis of grid-scale battery storage and solar viability.</p>
+            <span class="card-category">Economics</span>
+            <a href="posts/renewables.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>Private Equity Strategies</h3>
+            <p>An overview of leveraged buyouts (LBOs) and growth equity.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/private-equity.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>API Security Best Practices</h3>
+            <p>Authentication, authorization, and rate-limiting (OAuth 2.0, JWT).</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/api-security.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Graph Neural Networks (GNNs)</h3>
+            <p>Applying neural networks to graph-structured data like social networks.</p>
+            <span class="card-category">AI</span>
+            <a href="posts/gnn.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>Universal Basic Income (UBI)</h3>
+            <p>A review of recent UBI experiments and their economic outcomes.</p>
+            <span class="card-category">Economics</span>
+            <a href="posts/ubi.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>Mortgage-Backed Securities (MBS)</h3>
+            <p>Understanding the structure and risks of securitized debt.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/mbs.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>Zero-Knowledge Proofs</h3>
+            <p>Cryptographic methods for proving knowledge without revealing data.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/zkp.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Sentiment Analysis Models</h3>
+            <p>Using NLP to gauge market sentiment from news and social media.</p>
+            <span class="card-category">AI</span>
+            <a href="posts/sentiment.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>Game Theory in Business</h3>
+            <p>Applying the Nash Equilibrium to corporate pricing strategies.</p>
+            <span class="card-category">Economics</span>
+            <a href="posts/game-theory.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Finance" style="border-left-color: #27ae60;">
+            <h3>Options Trading: Greeks</h3>
+            <p>Explaining Delta, Gamma, Theta, and Vega in options pricing.</p>
+            <span class="card-category">Finance</span>
+            <a href="posts/options-greeks.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Tech" style="border-left-color: #007acc;">
+            <h3>Microservices vs. Monoliths</h3>
+            <p>An architectural comparison for modern web applications.</p>
+            <span class="card-category">Tech</span>
+            <a href="posts/microservices.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="AI" style="border-left-color: #8e44ad;">
+            <h3>Deepfake Detection</h3>
+            <p>Techniques for identifying AI-generated video and audio.</p>
+            <span class="card-category">AI</span>
+            <a href="posts/deepfake.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+        <div class="card-item" data-category="Economics" style="border-left-color: #e67e22;">
+            <h3>International Trade Policy</h3>
+            <p>The economic impact of tariffs and trade agreements.</p>
+            <span class="card-category">Economics</span>
+            <a href="posts/trade-policy.html" data-load-type="html">Read More &rarr;</a>
+        </div>
+
     </div>
     
-    <!-- Tab content will be loaded here -->
-    <div class="tab-content" id="research-tab-content">
-        <div class="content-loader"><div class="spinner"></div></div>
-    </div>
-    
+    <!-- Message for when no results are found -->
+    <p id="research-no-results" class="error-message" style="display: none;">No items match your filter.</p>
 </section>
