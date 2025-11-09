@@ -8,7 +8,8 @@ const STOP_WORDS = new Set([
     'https', 'http', 'pdf', 'html', 'sheet', 'cheat', 'for', 'github', 'master',
     'file', 'files', 'user', 'users', 'server', 'servers', 'link', 'more', 'read',
     'view', 'full', 'size', 'click', 'introductory', 'introduction', 'advanced',
-    'comprehensive', 'dummies', 'glance', 'handout', 'part 1', 'v1'
+    'comprehensive', 'dummies', 'glance', 'handout', 'part 1', 'v1',
+    'photo', 'usa', 'new', 'york', 'amazing', 'island' // Added album-specific stop words
 ]);
 
 /**
@@ -170,6 +171,11 @@ $(document).ready(function () {
     $('body').on('change', '#cert-category-filter', filterCertCards);
     $('body').on('change', '#cert-keyword-filter', filterCertCards);
     
+    // --- NEW: Album filter listeners ---
+    $('body').on('input', '#album-search-box', filterAlbumCards);
+    $('body').on('change', '#album-category-filter', filterAlbumCards);
+    $('body').on('change', '#album-keyword-filter', filterAlbumCards);
+    
     // Theme Switcher Logic
     function applyTheme(theme) {
         $('body').removeClass('theme-light theme-pastel');
@@ -267,7 +273,6 @@ function loadContent(pageUrl) {
     window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
 
     $.ajax({
-        // We only want the base page, so strip any URL params
         url: pageUrl.split('?')[0],
         type: 'GET',
         success: function(data) {
@@ -276,7 +281,7 @@ function loadContent(pageUrl) {
             const isYouTubePage = pageUrl.includes('youtube_page.html');
             const isPostsPage = pageUrl.includes('posts.html'); 
             const isCertsPage = pageUrl.includes('certificates.html');
-            const isAlbumPage = pageUrl.includes('album.html'); // <-- NEW CHECK
+            const isAlbumPage = pageUrl.includes('album.html'); 
 
             if (isYouTubePage) {
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
@@ -294,15 +299,12 @@ function loadContent(pageUrl) {
                 populateSmartKeywords('#cert-card-list', '#cert-keyword-filter');
             } else if (isAlbumPage) { 
                 // --- THIS IS THE FIX ---
-                // 1. Get the full query string (e.g., "json=birds.json")
                 const queryString = pageUrl.split('?')[1];
                 if (queryString) {
-                    // 2. Parse the query string to find the value of "json"
                     const urlParams = new URLSearchParams(queryString);
                     const jsonUrl = urlParams.get('json');
                     
                     if (jsonUrl) {
-                        // 3. Call loadPhotoAlbum with the extracted URL
                         loadPhotoAlbum(jsonUrl);
                     } else {
                         $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
@@ -423,7 +425,7 @@ function resultsLoop(data, Cat, BKcol) {
     });
 }
 
-// --- NEW: Photo Album Logic ---
+// --- UPDATED: Photo Album Logic ---
 /**
  * Fetches JSON data from a URL and populates the photo album.
  * @param {string} jsonUrl - The URL of the album JSON file.
@@ -437,17 +439,36 @@ function loadPhotoAlbum(jsonUrl) {
         $('#album-title').text(decodeText(albumData.albumTitle));
         $albumList.empty(); 
         
+        const categories = new Set();
+
         $.each(albumData.photos, function(index, photo) {
             const title = decodeText(photo.title);
+            const category = decodeText(photo.category);
+            const description = decodeText(photo.description);
+            
+            // Add to our set of categories
+            categories.add(category);
+
             const cardHtml = `
-                <div class="card-item">
+                <div class="card-item" 
+                     data-category="${category}" 
+                     data-keywords="${title},${description}">
+                    
                     <a href="${photo.url}" data-load-type="image">
                         <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
+                        <!-- We add title/desc here for filtering, but hide them with CSS -->
+                        <h3 style="display: none;">${title}</h3>
+                        <p style="display: none;">${description}</p>
+                        <span class="card-category" style="display: none;">${category}</span>
                     </a>
                 </div>
             `;
             $albumList.append(cardHtml);
         });
+        
+        // --- NEW: Populate filters after loading ---
+        populateAlbumCategories(categories);
+        populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
         
         // After all cards are added, initialize the "Show More" button
         handleCardView($('#content-area'));
@@ -460,9 +481,26 @@ function loadPhotoAlbum(jsonUrl) {
     });
 }
 
+/**
+ * --- NEW: Populates the category dropdown for the album
+ * @param {Set<string>} categories - A set of unique category names.
+ */
+function populateAlbumCategories(categories) {
+    const $filter = $('#album-category-filter');
+    if (!$filter.length) return;
 
-/* === --- SMART KEYWORD LOGIC (UPDATED) --- === */
+    const sortedCategories = Array.from(categories).sort();
+    
+    sortedCategories.forEach(key => {
+        $filter.append($('<option>', {
+            value: key,
+            text: key
+        }));
+    });
+}
 
+
+/* === --- SMART KEYWORD LOGIC --- === */
 function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return; 
@@ -478,6 +516,7 @@ function populateSmartKeywords(listId, filterId) {
                 $card.find('.card-category').text(),
                 $card.find('img').attr('alt'),
                 $card.data('category'), 
+                $card.data('keywords') // Also read from data-keywords
             ];
             
             const combinedText = decodeText(textSources.join(' '));
@@ -519,7 +558,8 @@ function getCardSearchableText($card) {
         $card.find('p').text(),
         $card.find('.card-category').text(),
         $card.find('img').attr('alt'),
-        $card.data('category')
+        $card.data('category'),
+        $card.data('keywords')
     ];
     return decodeText(textSources
         .map(text => String(text || '')) 
@@ -528,7 +568,7 @@ function getCardSearchableText($card) {
 }
 
 
-/* === --- FILTERING LOGIC (UPDATED FOR NEW KEYWORDS) --- === */
+/* === --- FILTERING LOGIC --- === */
 
 function filterYouTubeCards() {
     const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
@@ -638,6 +678,49 @@ function filterCertCards() {
             }
         });
 
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
+        
+    } else {
+        $noResultsMessage.hide();
+        $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'));
+    }
+}
+
+/**
+ * --- NEW: Filter function for the Photo Album
+ */
+function filterAlbumCards() {
+    const searchTerm = decodeText($('#album-search-box').val().toLowerCase());
+    const selectedCategory = $('#album-category-filter').val();
+    const selectedKeyword = $('#album-keyword-filter').val();
+    
+    const $grid = $('#photo-album-list');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#album-no-results');
+    
+    let visibleCount = 0;
+
+    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
+        $showMoreButton.hide();
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardCategory = $card.data('category'); 
+            const cardText = getCardSearchableText($card); 
+
+            const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            const keywordMatch = (selectedKeyword === "all" || cardText.includes(selectedKeyword));
+
+            if (categoryMatch && searchMatch && keywordMatch) {
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else {
+                $card.hide();
+            }
+        });
         if (visibleCount === 0) { $noResultsMessage.show(); } 
         else { $noResultsMessage.hide(); }
         
