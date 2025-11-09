@@ -296,7 +296,8 @@ function loadContent(pageUrl) {
             const isYouTubePage = pageUrl.includes('youtube_page.html');
             const isPostsPage = pageUrl.includes('posts.html'); 
             const isCertsPage = pageUrl.includes('certificates.html');
-            
+            const isAlbumPage = pageUrl.includes('album.html'); // <-- NEW CHECK
+
             if (isYouTubePage) {
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
                 const params = paramString.split(',');
@@ -311,6 +312,9 @@ function loadContent(pageUrl) {
             } else if (isCertsPage) { 
                 handleCardView($contentArea);
                 populateSmartKeywords('#cert-card-list', '#cert-keyword-filter');
+            } else if (isAlbumPage) { // <-- NEW
+                handleCardView($contentArea);
+                // No keywords for album
             }
             
             if (typeof initializeImageModal === 'function') {
