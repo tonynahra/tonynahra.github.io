@@ -1,12 +1,4 @@
 var lastContentPage = 'tech-posts.html'; 
-
-var currentCardList = []; // Stores the list of cards for modal navigation
-var currentCardIndex = 0; // Stores the current position in the modal
-var isModalInfoVisible = false; // Stores the state of the info toggle
-
-// --- STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are now in filterConfig.js ---
-
-
 /**
  * Helper function to safely decode text.
  */
@@ -23,34 +15,17 @@ function decodeText(text) {
     }
 }
 
-/* === --- EVENT LISTENERS (DELEGATED) --- === */
+
 $(document).ready(function () {
     
-    // --- Inject the modal HTML on page load ---
-    $('body').append(`
-        <div id="content-modal" class="modal-backdrop">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-nav-left">
-                        <button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button>
-                        <button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button>
-                        <button class="modal-info-btn" title="Toggle Info (I)">Info</button>
-                    </div>
-                    <div class="modal-nav-right">
-                        <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
-                            Open in new window &nearr;
-                        </a>
-                        <button class="modal-close-btn" title="Close (Esc)">&times; Close</button>
-                    </div>
-                </div>
-                <div id="modal-content-area">
-                    <!-- Content (iframe, image, html, research tabs) will be loaded here -->
-                </div>
-            </div>
-        </div>
-    `);
+    initializeCollapsibleSections();
+    
+    // --- EVENT LISTENERS (DELEGATED) ---
 
-    // Listener for "Show More" (Cards)
+    $('body').on('click', '.expand-button', function() {
+        toggleCollapsibleSection($(this));
+    });
+    
     $('body').on('click', '.toggle-card-button', function() {
         const $button = $(this);
         const $list = $button.prev('.card-list');
@@ -59,79 +34,110 @@ $(document).ready(function () {
         }
     });
 
-    // Listener for ALL CARDS (opens modal)
-    $('body').on('click', '.card-item, .item', function(e) {
-        const $clickedCard = $(this);
-        const $link = $clickedCard.find('a').first();
-        if (!$link.length) { return; } 
+    $('body').on('click', '.nav-link', function(e) {
+        e.preventDefault();
         
-        const $clickedLink = $(e.target).closest('a');
-        if ($clickedLink.length > 0 && !$clickedLink.is($link)) {
-            return;
+        if ($(this).closest('.profile-summary').length) {
+            $('.nav-link').removeClass('active-nav');
+            $(this).addClass('active-nav');
         }
         
+        const pageUrl = $(this).data('page');
+        
+        if (pageUrl && pageUrl.includes('.html') && !pageUrl.includes('guide.html') && !pageUrl.includes('about.html')) {
+            lastContentPage = pageUrl; 
+        }
+        
+        const initialLoad = $(this).data('initial-load');
+        loadContent(pageUrl, initialLoad);
+    });
+
+    // Listener for ALL CARDS
+    $('body').on('click', '.card-item, .item', function(e) {
+        const $link = $(this).find('a').first(); 
+        if (!$link.length) { return; } 
+        if (e.target.tagName === 'A' || $(e.target).closest('a').length) {
+            return;
+        }
         e.preventDefault(); 
         e.stopPropagation(); 
         
-        const $cardList = $clickedCard.closest('.card-list');
-        const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible');
-        
-        currentCardList = [];
-        $allVisibleCards.each(function() {
-            currentCardList.push($(this).find('a').first());
-        });
-        
-        currentCardIndex = $allVisibleCards.index($clickedCard);
-        
-        if (currentCardList.length > 0) {
-            loadModalContent(currentCardIndex);
+        const loadUrl = $link.attr('href');
+        const $contentArea = $('#content-area');
+        const loadType = $link.data('load-type'); // Get the *explicit* type
+
+        // ONLY load content in-page if data-load-type is specified.
+        if (loadType) {
+            const $cardPage = $contentArea.find('.card-list-page').first();
+            if ($cardPage.length) {
+                $cardPage.hide();
+            } else {
+                console.warn("Could not find .card-list-page to hide.");
+            }
+
+            const backButtonHtml = `
+                <div class="back-button-wrapper">
+                    <button class="js-back-to-list">
+                        &larr; Back
+                    </button>
+                    <a href="${loadUrl}" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                        Open in new window &nearr;
+                    </a>
+                </div>
+            `;
+            const $contentWrapper = $('<div class="loaded-content-wrapper"></div>');
+            $contentWrapper.html(backButtonHtml); 
             
-            $('body').addClass('modal-open');
-            $('#content-modal').fadeIn(200);
+            // --- THIS IS THE FIX ---
+            // 1. PREPEND the new content, so it's at the top.
+            $contentArea.prepend($contentWrapper);
             
-            $(document).on('keydown.modalNav', handleModalKeys);
+            // 2. NOW, find the wrapper we just prepended and scroll to it.
+            const $scrollToElement = $contentArea.find('.loaded-content-wrapper');
+            if ($scrollToElement.length) {
+                const scrollToTarget = $scrollToElement.offset().top - 20; // 20px offset
+                // Use native INSTANT scroll
+                window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+            }
+            // --- END FIX ---
+
+            const customHeight = $link.data('height') || '85vh';
+
+            switch (loadType) {
+                case 'html':
+                    $.ajax({
+                        url: loadUrl, type: 'GET',
+                        success: function(data) { $contentWrapper.append(data); },
+                        error: function() { $contentWrapper.append('<div class="error-message">Could not load content.</div>'); }
+                    });
+                    break;
+                case 'image':
+                    $contentWrapper.append(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
+                    break;
+                case 'iframe':
+                    $contentWrapper.append(`<iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>`);
+                    break;
+                default:
+                    window.open(loadUrl, '_blank');
+            }
+        } 
+        else {
+            window.open(loadUrl, '_blank');
         }
     });
 
-    // Listener for Modal "Close" button
-    $('body').on('click', '.modal-close-btn', function() {
-        const $modal = $('#content-modal');
-        const $modalContent = $('#modal-content-area');
-        
-        $('body').removeClass('modal-open');
-        $modal.fadeOut(200);
-        
-        $modalContent.html(''); 
-        
-        currentCardList = [];
-        currentCardIndex = 0;
-        isModalInfoVisible = false; 
-        $(document).off('keydown.modalNav');
-    });
-    
-    // Listener for Modal backdrop click
-    $('body').on('click', '#content-modal', function(e) {
-        if (e.target.id === 'content-modal') {
-            $(this).find('.modal-close-btn').click();
-        }
-    });
-    
-    // Listeners for Modal Prev/Next/Info buttons
-    $('body').on('click', '.modal-prev-btn', function() {
-        if (currentCardIndex > 0) {
-            loadModalContent(currentCardIndex - 1);
-        }
-    });
-    
-    $('body').on('click', '.modal-next-btn', function() {
-        if (currentCardIndex < currentCardList.length - 1) {
-            loadModalContent(currentCardIndex + 1);
-        }
-    });
+    // Listener for the "Back" button
+    $('body').on('click', '.js-back-to-list', function() {
+        const $contentArea = $('#content-area');
+        $contentArea.find('.loaded-content-wrapper').remove();
+        const $cardPage = $contentArea.find('.card-list-page').first().show();
 
-    $('body').on('click', '.modal-info-btn', function() {
-        isModalInfoVisible = !isModalInfoVisible; // Toggle state
-        $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible', isModalInfoVisible);
+        // --- THIS IS THE SCROLL FIX ---
+        if ($cardPage.length) {
+            const scrollToTarget = $cardPage.offset().top - 20;
+            // Use native INSTANT scroll
+            window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+        }
     });
 
     // --- All filter listeners ---
@@ -143,6 +149,7 @@ $(document).ready(function () {
     $('body').on('input', '#cert-search-box', filterCertCards);
     $('body').on('change', '#cert-category-filter', filterCertCards);
     $('body').on('change', '#cert-keyword-filter', filterCertCards);
+    
     $('body').on('input', '#album-search-box', filterAlbumCards);
     $('body').on('change', '#album-category-filter', filterAlbumCards);
     $('body').on('change', '#album-keyword-filter', filterAlbumCards);
@@ -163,6 +170,123 @@ $(document).ready(function () {
 });
 
 
+/* === COLLAPSIBLE MENU LOGIC (LEFT-SIDE PLAYLISTS) === */
+function initializeCollapsibleSections() {
+    $('.expand-button').each(function() {
+        const $button = $(this);
+        const targetId = $button.data('target');
+        const $target = $('#' + targetId);
+        const $items = $target.find('a'); 
+        const totalItems = $items.length;
+        const initialLimit = parseInt($button.data('initial-load') || 3);
+        const increment = 3; 
+
+        if (totalItems > initialLimit) {
+            $items.slice(initialLimit).addClass('hidden-item');
+            const remaining = totalItems - initialLimit;
+            $button.text(`Show More (${remaining} more) \u25BC`);
+            $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
+            $button.show();
+        } else {
+            $button.hide(); 
+        }
+    });
+}
+
+function toggleCollapsibleSection($button) {
+    const targetId = $button.data('target');
+    const $target = $('#' + targetId);
+    const $items = $target.find('a');
+
+    const totalItems = parseInt($button.data('total-items') || 0);
+    const increment = parseInt($button.data('increment') || 3);
+    const visibleCount = parseInt($button.data('visible-count') || 0);
+    
+    const newVisibleCount = visibleCount + increment;
+
+    $items.slice(visibleCount, newVisibleCount).removeClass('hidden-item');
+    $button.data('visible-count', newVisibleCount);
+    
+    const remaining = totalItems - newVisibleCount;
+    
+    if (remaining <= 0) {
+        $button.hide();
+    } else {
+        $button.text(`Show More (${remaining} more) \u25BC`);
+    }
+}
+
+
+/* === DYNAMIC CONTENT LOADING IMPLEMENTATION === */
+function loadContent(pageUrl, initialLoadOverride) {
+    const $contentArea = $('#content-area');
+    $contentArea.empty();
+    $contentArea.html('<div class="content-loader"><div class="spinner"></div><p>Loading Content...</p></div>');
+    
+    // --- THIS IS THE SCROLL FIX ---
+    const scrollToTarget = $contentArea.offset().top - 20; 
+    // Use native INSTANT scroll
+    window.scrollTo({ top: scrollToTarget, behavior: 'auto' });
+    // --- END FIX ---
+
+    $.ajax({
+        url: pageUrl.split('?')[0],
+        type: 'GET',
+        success: function(data) {
+            $contentArea.html(data); 
+
+            const isYouTubePage = pageUrl.includes('youtube_page.html');
+            const isPostsPage = pageUrl.includes('posts.html'); 
+            const isCertsPage = pageUrl.includes('certificates.html');
+            const isAlbumPage = pageUrl.includes('album.html');
+            const isResearchPage = pageUrl.includes('research.html'); 
+
+            if (isYouTubePage) {
+                const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
+                const params = paramString.split(',');
+                if (params.length === 3 && typeof loadVids === 'function') {
+                    loadVids(params[0], params[1], params[2], initialLoadOverride);
+                } else {
+                    $contentArea.html('<div class="error-message">YouTube parameter error.</div>');
+                }
+            } else if (isPostsPage) {
+                handleCardView($contentArea, initialLoadOverride);
+                populateSmartKeywords('#posts-card-list', '#post-keyword-filter');
+                populateCategoryFilter('#posts-card-list', '#post-category-filter'); // <-- ADDED
+            } else if (isCertsPage) { 
+                handleCardView($contentArea, initialLoadOverride);
+                populateSmartKeywords('#cert-card-list', '#cert-keyword-filter');
+                populateCategoryFilter('#cert-card-list', '#cert-category-filter'); // <-- ADDED
+            } else if (isAlbumPage) { 
+                const queryString = pageUrl.split('?')[1];
+                if (queryString) {
+                    const urlParams = new URLSearchParams(queryString);
+                    const jsonUrl = urlParams.get('json');
+                    
+                    if (jsonUrl) {
+                        loadPhotoAlbum(jsonUrl, initialLoadOverride); // This now calls populateCategoryFilter
+                    } else {
+                        $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
+                    }
+                } else {
+                     $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
+                }
+            } else if (isResearchPage) { 
+                handleCardView($contentArea, initialLoadOverride);
+                populateSmartKeywords('#research-card-list', '#research-keyword-filter');
+                populateCategoryFilter('#research-card-list', '#research-category-filter'); // <-- ADDED
+            }
+            
+            if (typeof initializeImageModal === 'function') {
+                initializeImageModal(); 
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            $contentArea.html(`<div class="error-message">Could not load content from ${pageUrl}. Status: ${textStatus} (${errorThrown})</div>`);
+        }
+    });
+}
+
 /* === CARD VIEW (Show More) LOGIC === */
 function handleCardView($scope, initialLoadOverride) {
     $scope.find('.card-list').each(function() {
@@ -180,6 +304,7 @@ function handleCardView($scope, initialLoadOverride) {
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
             
             $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
+            // We rely on the global delegated listener in $(document).ready()
             $list.after($button);
         }
     });
@@ -225,6 +350,7 @@ function loadVids(PL, Category, BKcol, initialLoadOverride) {
         resultsLoop(data, Category, BKcol);
         handleCardView($('#content-area'), initialLoadOverride);
         populateSmartKeywords('#Grid', '#youtube-keyword-filter');
+        // --- NEW: Populate YouTube categories (which is just the one) ---
         populateCategoryFilter('#Grid', '#youtube-category-filter');
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -296,6 +422,7 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
             $albumList.append(cardHtml);
         });
         
+        // --- UPDATED: Call the new general category populator ---
         populateCategoryFilter('#photo-album-list', '#album-category-filter');
         populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
         handleCardView($('#content-area'), initialLoadOverride);
@@ -355,32 +482,27 @@ function buildResearchModal(jsonUrl) {
     });
 }
 
-/**
- * --- THIS IS THE FIX ---
- * Fetches an HTML fragment and loads it into the *modal's* tab container
- * using an IFRAME to avoid CORS errors.
- */
 function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
-    $target.html(''); // Clear the spinner
+    $target.html('<div class="content-loader"><div class="spinner"></div></div>'); 
     
-    // Use an iframe to load the remote content. This bypasses CORS.
-    // We add the 'loaded-iframe' class so it gets the correct 100% height style.
-    // We also add the wrapper to ensure layout consistency.
-    const iframeHtml = `
-        <div class="iframe-wrapper" style="height: 100%;">
-            <iframe src="${htmlUrl}" class="loaded-iframe" style="height: 100%;"></iframe>
-        </div>
-    `;
-    $target.html(iframeHtml);
+    $.ajax({
+        url: htmlUrl,
+        type: 'GET',
+        success: function(data) {
+            $target.html(data);
+        },
+        error: function() {
+            $target.html('<div class="error-message">Could not load content.</div>');
+        }
+    });
 }
-// --- END FIX ---
 
 
 /* === --- SMART KEYWORD/CATEGORY LOGIC --- === */
 
 /**
- * --- Populates the CATEGORY dropdown with counts ---
+ * --- NEW: Populates the CATEGORY dropdown with counts ---
  */
 function populateCategoryFilter(listId, filterId) {
     const $filter = $(filterId);
@@ -392,6 +514,7 @@ function populateCategoryFilter(listId, filterId) {
         $(`${listId} .card-item`).each(function() {
             const categories = $(this).data('category');
             if (categories) {
+                // Split categories like "Data,SQL,BI"
                 String(categories).split(',').forEach(cat => {
                     const cleanCat = cat.trim();
                     if (cleanCat) {
