@@ -233,7 +233,6 @@ a:hover {
     column-gap: 20px;
     list-style: none;
     padding: 0;
-    /* align-items: start; <-- Removed, not needed for column-width */
 }
 
 .card-item {
@@ -436,7 +435,17 @@ a:hover {
     gap: 15px;
 }
 
-.modal-header .modal-close-btn {
+/* --- NEW: Button Groups for Modal --- */
+.modal-nav-left, .modal-nav-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* --- NEW: Styles for all modal buttons --- */
+.modal-header .modal-close-btn,
+.modal-header .modal-prev-btn,
+.modal-header .modal-next-btn {
     padding: 8px 15px;
     background: var(--bg-medium);
     color: var(--text-accent);
@@ -450,11 +459,28 @@ a:hover {
     font-size: 0.9rem;
 }
 
-.modal-header .modal-close-btn:hover {
+.modal-header .modal-close-btn:hover,
+.modal-header .modal-prev-btn:hover,
+.modal-header .modal-next-btn:hover {
     background: var(--text-accent);
     color: var(--bg-dark);
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
+
+/* Disabled state for Prev/Next */
+.modal-header .modal-prev-btn:disabled,
+.modal-header .modal-next-btn:disabled {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    border-color: var(--bg-medium);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.modal-header .modal-prev-btn:disabled:hover,
+.modal-header .modal-next-btn:disabled:hover {
+    box-shadow: none;
+}
+
 
 .modal-header .open-new-window {
     padding: 8px 15px;
@@ -477,20 +503,6 @@ a:hover {
 
 
 /* --- Loaded Content (Images/IFrames) --- */
-/* This is a fall-back for local .html fragments */
-.image-wrapper {
-    text-align: center;
-}
-
-.loaded-image {
-    max-width: 100%; 
-    max-height: 80vh; 
-    height: auto;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    background: #fff; 
-}
-
 .loaded-iframe {
     width: 100%;
     height: 85vh; /* Default height */
@@ -603,19 +615,18 @@ code {
     font-family: var(--font-code);
 }
 
-/* --- UPDATED: Theme Switcher Styles --- */
+/* --- Theme Switcher Styles --- */
 .theme-switcher {
-    /* Removed position: absolute */
     display: flex;
-    flex-direction: row; /* Stack horizontally */
-    justify-content: center; /* Center the dots */
+    flex-direction: row; 
+    justify-content: center; 
     gap: 15px;
-    margin-bottom: 20px; /* Space between dots and photo */
+    margin-bottom: 20px; 
 }
 
 .theme-dot {
-    width: 25px; /* Slightly larger */
-    height: 25px; /* Slightly larger */
+    width: 25px; 
+    height: 25px; 
     border-radius: 50%;
     border: 2px solid var(--text-primary);
     cursor: pointer;
@@ -636,7 +647,6 @@ code {
     opacity: 1;
 }
 
-/* --- UPDATED: Set all dot colors --- */
 .theme-dot[data-theme="theme-dark"] {
     background-color: #1f2833;
 }
@@ -649,17 +659,13 @@ code {
 .theme-dot[data-theme="theme-forest"] {
     background-color: #3d550c;
 }
-/* --- END UPDATED THEME STYLES --- */
 
 
 /* --- Certificate Card Layout --- */
-/* --- UPDATED: Removed min-height --- */
-/*
 #posts-card-list .card-item,
 #Grid .card-item { 
-    min-height: 180px; 
+    /* min-height: 180px;  <-- REMOVED to let masonry work */
 }
-*/
 
 #cert-card-list .card-item {
     padding: 10px;
@@ -676,7 +682,7 @@ code {
 }
 
 #cert-card-list .card-item img.card-image {
-    height: 300px; /* Double the default 150px */
+    height: 300px; 
 }
 
 /* --- Scroll to Top Button --- */
@@ -712,9 +718,9 @@ code {
     display: block;
 }
 
-/* --- NEW: Modal Styles --- */
+/* --- Modal Styles --- */
 .modal-backdrop {
-    display: none; /* Hidden by default */
+    display: none; 
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -722,7 +728,7 @@ code {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.8); /* Dim background */
+    background-color: rgba(0, 0, 0, 0.8); 
     backdrop-filter: blur(5px);
 }
 
@@ -748,8 +754,9 @@ code {
     align-items: center; 
 }
 
-/* --- NEW: Photo Album Specific Styles --- */
+/* --- Photo Album Card Styles --- */
 #photo-album-list .card-item {
+    position: relative;
     padding: 0;
     background: transparent;
     border: none;
@@ -758,21 +765,61 @@ code {
     overflow: hidden; 
 }
 
+#photo-album-list .card-item a {
+    display: block;
+    font-size: 0; 
+}
+
 #photo-album-list .card-item img.card-image {
     height: auto; 
     margin-bottom: 0;
     border: none;
     display: block; 
+    transition: transform 0.3s ease;
+}
+            
+/* The text overlay */
+#photo-album-list .card-item .photo-details {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 40px 15px 15px; 
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    color: #fff;
+    
+    /* Hide by default */
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
 }
 
-#photo-album-list .card-item a {
-    font-size: 0;
+/* Show on hover */
+#photo-album-list .card-item:hover .photo-details {
+    opacity: 1;
+    transform: translateY(0);
 }
 
+/* Zoom image slightly on hover */
+#photo-album-list .card-item:hover img.card-image {
+    transform: scale(1.05);
+}
+
+/* Make text visible */
+#photo-album-list .card-item .photo-details h3 {
+    font-size: 1rem;
+    color: #fff; 
+    margin-bottom: 5px;
+}
+#photo-album-list .card-item .photo-details p {
+    font-size: 0.85rem;
+    color: #eee;
+    margin: 0;
+}
 /* --- END: Photo Album Styles --- */
 
 
-/* --- UPDATED: Image Wrapper (for images) --- */
+/* --- Modal Image/Iframe Styles --- */
 #modal-content-area .image-wrapper {
     display: flex;
     justify-content: center;
@@ -782,7 +829,6 @@ code {
     padding: 0; 
 }
 
-/* --- UPDATED: Image aspect ratio fix --- */
 #modal-content-area .loaded-image {
     width: auto; 
     height: auto; 
@@ -792,7 +838,6 @@ code {
     border-radius: 6px; 
 }
 
-/* --- UPDATED: Iframe --- */
 #modal-content-area .loaded-iframe {
     width: 100%;
     height: 100%; 
