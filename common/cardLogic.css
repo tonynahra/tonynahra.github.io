@@ -500,7 +500,12 @@
 }
 
 .tab-content {
-    padding: 20px 0;
+    /* --- THIS IS THE FIX --- */
+    /* This makes the tab content fill the space in the modal */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    /* --- END FIX --- */
 }
 .tab-content h3 {
     color: var(--text-accent);
