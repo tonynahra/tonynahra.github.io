@@ -270,15 +270,11 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
         $('#album-title').text(decodeText(albumData.albumTitle));
         $albumList.empty(); 
         
-        const categories = new Set();
-
         $.each(albumData.photos, function(index, photo) {
             const title = decodeText(photo.title);
             const category = decodeText(photo.category);
             const description = decodeText(photo.description);
             
-            categories.add(category);
-
             const cardHtml = `
                 <div class="card-item" 
                      data-category="${category}" 
@@ -297,7 +293,8 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
             $albumList.append(cardHtml);
         });
         
-        populateAlbumCategories(categories);
+        // --- UPDATED: Call the new general category populator ---
+        populateCategoryFilter('#photo-album-list', '#album-category-filter');
         populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
         handleCardView($('#content-area'), initialLoadOverride);
 
@@ -308,20 +305,10 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
     });
 }
 
-function populateAlbumCategories(categories) {
-    const $filter = $('#album-category-filter');
-    if (!$filter.length) return;
-    
-    // --- NEW: This function now populates with counts ---
-    populateCategoryFilter('#photo-album-list', '#album-category-filter');
-}
+// --- REMOVED: populateAlbumCategories (now replaced by generic one) ---
 
 
 /* === --- RESEARCH TAB LOGIC --- === */
-
-/**
- * Builds the tabbed interface inside the modal.
- */
 function buildResearchModal(jsonUrl) {
     const $modalContent = $('#modal-content-area');
     
@@ -368,9 +355,6 @@ function buildResearchModal(jsonUrl) {
     });
 }
 
-/**
- * Fetches an HTML fragment and loads it into the *modal's* tab container.
- */
 function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
     $target.html('<div class="content-loader"><div class="spinner"></div></div>'); 
@@ -388,7 +372,7 @@ function loadModalTabContent(htmlUrl, targetId) {
 }
 
 
-/* === --- SMART KEYWORD LOGIC --- === */
+/* === --- SMART KEYWORD/CATEGORY LOGIC --- === */
 
 /**
  * --- NEW: Populates the CATEGORY dropdown with counts ---
@@ -404,7 +388,7 @@ function populateCategoryFilter(listId, filterId) {
             const categories = $(this).data('category');
             if (categories) {
                 // Split categories like "Data,SQL,BI"
-                categories.split(',').forEach(cat => {
+                String(categories).split(',').forEach(cat => {
                     const cleanCat = cat.trim();
                     if (cleanCat) {
                         categoryCounts[cleanCat] = (categoryCounts[cleanCat] || 0) + 1;
