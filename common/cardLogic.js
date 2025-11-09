@@ -3,6 +3,12 @@ var currentCardList = []; // Stores the list of cards for modal navigation
 var currentCardIndex = 0; // Stores the current position in the modal
 var isModalInfoVisible = false; // Stores the state of the info toggle
 
+// --- STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are now in filterConfig.js ---
+
+
+/**
+ * Helper function to safely decode text.
+ */
 function decodeText(text) {
     if (!text) return "";
     try {
@@ -305,14 +311,11 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
 function populateAlbumCategories(categories) {
     const $filter = $('#album-category-filter');
     if (!$filter.length) return;
-    const sortedCategories = Array.from(categories).sort();
-    sortedCategories.forEach(key => {
-        $filter.append($('<option>', {
-            value: key,
-            text: key
-        }));
-    });
+    
+    // --- NEW: This function now populates with counts ---
+    populateCategoryFilter('#photo-album-list', '#album-category-filter');
 }
+
 
 /* === --- RESEARCH TAB LOGIC --- === */
 
@@ -386,17 +389,58 @@ function loadModalTabContent(htmlUrl, targetId) {
 
 
 /* === --- SMART KEYWORD LOGIC --- === */
-// --- UPDATED: This function is now much smarter ---
+
+/**
+ * --- NEW: Populates the CATEGORY dropdown with counts ---
+ */
+function populateCategoryFilter(listId, filterId) {
+    const $filter = $(filterId);
+    if (!$filter.length) return;
+
+    const categoryCounts = {};
+
+    try {
+        $(`${listId} .card-item`).each(function() {
+            const categories = $(this).data('category');
+            if (categories) {
+                // Split categories like "Data,SQL,BI"
+                categories.split(',').forEach(cat => {
+                    const cleanCat = cat.trim();
+                    if (cleanCat) {
+                        categoryCounts[cleanCat] = (categoryCounts[cleanCat] || 0) + 1;
+                    }
+                });
+            }
+        });
+
+        const sortedCategories = Object.entries(categoryCounts)
+            .sort(([,a], [,b]) => b - a); // Sort by count
+
+        $filter.children('option:not(:first)').remove(); // Clear old options
+
+        sortedCategories.forEach(([key, count]) => {
+            $filter.append($('<option>', {
+                value: key,
+                text: `${key} (${count})`
+            }));
+        });
+
+    } catch (error) {
+        console.error("Error populating category filter:", error);
+    }
+}
+
+
 function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return; 
 
-    const wordCounts = {}; // Global counts
+    const wordCounts = {}; 
     
     try {
         $(`${listId} .card-item`).each(function() {
             const $card = $(this);
-            const localCardKeywords = new Set(); // --- NEW: Unique keywords *per card*
+            const localCardKeywords = new Set(); 
             
             const textSources = [
                 $card.find('h3').text(),
@@ -418,33 +462,28 @@ function populateSmartKeywords(listId, filterId) {
                 }
                 
                 if (cleanWord.length > 2 && cleanWord.length <= 15 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
-                    // Add to the *local* set for this card
                     localCardKeywords.add(cleanWord);
                 }
             });
 
-            // --- NEW: Now, update global counts *once per card* ---
             localCardKeywords.forEach(key => {
                 wordCounts[key] = (wordCounts[key] || 0) + 1;
             });
-            // --- END NEW ---
         });
 
         const sortedKeywords = Object.entries(wordCounts)
             .sort(([,a], [,b]) => b - a)
-            .slice(0, 30); // Get top 30 [word, count] pairs
+            .slice(0, 30); 
 
         $filter.children('option:not(:first)').remove();
         
         sortedKeywords.forEach(([key, count]) => {
-            // --- NEW: Trim at 15 chars and add count ---
             const displayText = key.length > 15 ? key.substring(0, 15) + '...' : key;
             
             $filter.append($('<option>', {
                 value: key,
-                text: `${displayText} (${count})` // e.g., "beethoven (5)"
+                text: `${displayText} (${count})` 
             }));
-            // --- END NEW ---
         });
     
     } catch (error) {
@@ -500,7 +539,6 @@ function handleModalKeys(e) {
     }
 }
 
-// --- UPDATED: This function now persists the Info state ---
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) {
         return;
@@ -559,15 +597,12 @@ function loadModalContent(index) {
     let infoHtml = '';
 
     if (title) {
-        // --- THIS IS THE FIX ---
-        // Check the global state to see if info should be visible
         const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
         infoHtml = `
             <div class="modal-photo-info ${infoVisibleClass}">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
-        // --- END FIX ---
     }
 
     switch (loadType) {
