@@ -1,3 +1,4 @@
+/* === GLOBAL VARIABLES === */
 var currentCardList = []; // Stores the list of cards for modal navigation
 var currentCardIndex = 0; // Stores the current position in the modal
 
