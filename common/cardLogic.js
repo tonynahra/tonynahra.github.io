@@ -1,6 +1,7 @@
 /* === GLOBAL VARIABLES === */
 var currentCardList = []; // Stores the list of cards for modal navigation
 var currentCardIndex = 0; // Stores the current position in the modal
+var isModalInfoVisible = false; // --- NEW: Stores the state of the info toggle ---
 
 // --- List of common words to ignore ---
 const STOP_WORDS = new Set([
@@ -14,7 +15,7 @@ const STOP_WORDS = new Set([
     'photo', 'usa', 'new', 'york', 'amazing', 'island'
 ]);
 
-// --- NEW: Keyword Dictionaries ---
+// --- Keyword Dictionaries ---
 const REPLACEMENT_MAP = {
     'javascript': 'js',
     'artificial': 'ai',
@@ -36,7 +37,6 @@ const SYNONYM_MAP = {
     'bi': ['powerbi', 'power'],
     'data': ['analysis', 'analytics']
 };
-// --- END NEW ---
 
 
 /**
@@ -137,6 +137,7 @@ $(document).ready(function () {
         
         currentCardList = [];
         currentCardIndex = 0;
+        isModalInfoVisible = false; // --- NEW: Reset info state ---
         $(document).off('keydown.modalNav');
     });
     
@@ -160,8 +161,10 @@ $(document).ready(function () {
         }
     });
 
+    // --- UPDATED: Info Button now toggles the global state ---
     $('body').on('click', '.modal-info-btn', function() {
-        $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible');
+        isModalInfoVisible = !isModalInfoVisible; // Toggle state
+        $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible', isModalInfoVisible);
     });
 
     // --- All filter listeners ---
@@ -447,17 +450,13 @@ function populateSmartKeywords(listId, filterId) {
             words.forEach(word => {
                 let cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
                 
-                // --- THIS IS THE FIX ---
-                // Apply replacements
                 if (REPLACEMENT_MAP[cleanWord]) {
                     cleanWord = REPLACEMENT_MAP[cleanWord];
                 }
                 
-                // Check length *after* replacement
                 if (cleanWord.length > 2 && cleanWord.length <= 15 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
                     wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
                 }
-                // --- END FIX ---
             });
         });
 
@@ -469,10 +468,7 @@ function populateSmartKeywords(listId, filterId) {
         $filter.children('option:not(:first)').remove();
         
         sortedKeywords.forEach(key => {
-            // --- THIS IS THE FIX ---
-            // Truncate display text to 8 chars, but use full word as value
             const displayText = key.length > 8 ? key.substring(0, 8) + '...' : key;
-            // --- END FIX ---
             
             $filter.append($('<option>', {
                 value: key,
@@ -508,7 +504,6 @@ function handleModalKeys(e) {
         return;
     }
     
-    // Don't interfere if user is typing
     if ($(e.target).is('input, textarea, select')) {
         return;
     }
@@ -534,6 +529,7 @@ function handleModalKeys(e) {
     }
 }
 
+// --- UPDATED: This function now persists the Info state ---
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) {
         return;
@@ -592,11 +588,15 @@ function loadModalContent(index) {
     let infoHtml = '';
 
     if (title) {
+        // --- THIS IS THE FIX ---
+        // Check the global state to see if info should be visible
+        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
         infoHtml = `
-            <div class="modal-photo-info">
+            <div class="modal-photo-info ${infoVisibleClass}">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
+        // --- END FIX ---
     }
 
     switch (loadType) {
@@ -700,7 +700,7 @@ function filterPostCards() {
             const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
-V
+
             if (categoryMatch && searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
