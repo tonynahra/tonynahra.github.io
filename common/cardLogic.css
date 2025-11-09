@@ -85,7 +85,7 @@
 .filter-bar {
     display: flex;
     flex-wrap: wrap; 
-    gap: 20px; /* Increased gap */
+    gap: 20px; 
     margin-bottom: 25px;
     
     background-color: var(--bg-medium);
@@ -96,37 +96,40 @@
     top: 0;
     z-index: 50;
 
-    /* --- NEW: Aligns title (left) and controls (right) --- */
     align-items: center;
-    justify-content: space-between;
+    /* justify-content: space-between; <-- REMOVED */
 }
 
-/* --- NEW: Title inside the filter bar --- */
 .filter-bar h2 {
     margin: 0;
     padding: 0;
     color: var(--text-primary);
     font-size: 1.5rem;
-    flex-grow: 1; /* Allows title to take up space */
+    flex-grow: 1; /* Title still takes up space */
+    /* Add a small right margin to space it from filters */
+    margin-right: 20px; 
 }
 
-/* --- NEW: Wrapper for all filter inputs --- */
 .filter-controls {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
 }
 
+/* --- THIS IS THE FIX --- */
+/* The search wrapper can grow, but the others cannot */
 .filter-bar .search-wrapper {
     flex: 1 1 250px; 
     min-width: 200px; 
 }
 .filter-bar .category-wrapper {
-    flex: 0 0 220px; 
+    flex: 0 0 220px; /* Does not grow, basis is 220px */
 }
 .filter-bar .keyword-wrapper {
-    flex: 0 0 200px; 
+    flex: 0 0 200px; /* Does not grow, basis is 200px */
 }
+/* --- END FIX --- */
+
 
 .search-wrapper {
     margin-bottom: 0;
@@ -345,20 +348,14 @@
     padding: 40px 20px 20px;
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
-    
-    /* --- THIS IS THE FIX --- */
-    display: none; /* Changed from opacity */
-    /* --- END FIX --- */
-    
-    transform: translateY(0); /* Removed transform */
+    display: none; 
+    transform: translateY(0); 
     transition: all 0.3s ease;
     pointer-events: none; 
 }
 
 .modal-photo-info.info-visible {
-    /* --- THIS IS THE FIX --- */
-    display: block; /* Changed from opacity */
-    /* --- END FIX --- */
+    display: block; 
 }
 
 .modal-photo-info h3 {
