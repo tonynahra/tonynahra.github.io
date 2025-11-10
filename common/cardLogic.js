@@ -354,26 +354,20 @@ function buildResearchModal(jsonUrl) {
     });
 }
 
-/**
- * --- THIS IS THE FIX ---
- * Fetches an HTML fragment and loads it into the *modal's* tab container
- * using an IFRAME to avoid CORS errors.
- */
 function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
     $target.html(''); // Clear the spinner
     
-    // Use an iframe to load the remote content. This bypasses CORS.
-    // We add the 'loaded-iframe' class so it gets the correct 100% height style.
-    // We also add the wrapper to ensure layout consistency.
+    // --- THIS IS THE FIX ---
+    // Create an iframe wrapper that will fill the .tab-content area
     const iframeHtml = `
-        <div class="iframe-wrapper" style="height: 100%;">
-            <iframe src="${htmlUrl}" class="loaded-iframe" style="height: 100%;"></iframe>
+        <div class="iframe-wrapper">
+            <iframe src="${htmlUrl}" class="loaded-iframe"></iframe>
         </div>
     `;
     $target.html(iframeHtml);
+    // --- END FIX ---
 }
-// --- END FIX ---
 
 
 /* === --- SMART KEYWORD/CATEGORY LOGIC --- === */
@@ -547,15 +541,12 @@ function loadModalContent(index) {
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
     
-    // --- THIS IS THE FIX ---
-    // Check for research type *first*
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', jsonUrl); 
         buildResearchModal(jsonUrl); 
-        return; // Stop here
+        return; 
     } 
-    // --- END FIX ---
     
     $modal.removeClass('research-mode'); 
     $modalOpenLink.attr('href', loadUrl);
