@@ -137,7 +137,7 @@
 #cert-category-filter,
 #post-keyword-filter,
 #cert-keyword-filter,
-#youtube-category-filter,
+#youtube-category-filter, 
 #youtube-keyword-filter,
 #album-category-filter, 
 #album-keyword-filter,
@@ -158,7 +158,7 @@
 #cert-category-filter:focus,
 #post-keyword-filter:focus,
 #cert-keyword-filter:focus,
-#youtube-category-filter:focus,
+#youtube-category-filter:focus, 
 #youtube-keyword-filter:focus,
 #album-category-filter:focus, 
 #album-keyword-filter:focus,
@@ -222,16 +222,13 @@
     flex-direction: column;
 }
 
-/* --- THIS IS THE FIX --- */
-/* This is the main content box inside the modal */
 #modal-content-area {
-    flex-grow: 1; /* Take up all available space */
-    overflow-y: auto; /* This is the *only* scrollbar */
+    flex-grow: 1; 
+    overflow-y: auto; 
     position: relative; 
-    display: block; /* Revert from flex */
+    display: block; 
     -webkit-overflow-scrolling: touch; 
 }
-/* --- END FIX --- */
 
 /* Modal Button Styles */
 .modal-header {
@@ -314,7 +311,7 @@
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-/* --- THIS IS THE FIX (PART 2) --- */
+/* --- THIS IS THE FIX --- */
 /* Modal Image/Iframe Styles */
 #modal-content-area .image-wrapper,
 #modal-content-area .iframe-wrapper {
@@ -323,8 +320,10 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    /* Height is 100% of the modal content area
-      This will be 100% of the visible, scrollable area.
+    /* This is the key fix: 
+      Use 100% height for images/iframes in the main modal,
+      but auto-height for HTML content so it flows naturally.
+      The .iframe-wrapper created by research tabs will get its height from .tab-content.
     */
     height: 100%; 
     padding: 0; 
