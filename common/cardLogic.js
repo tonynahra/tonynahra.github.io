@@ -331,7 +331,10 @@ function buildResearchModal(jsonUrl) {
     $.getJSON(jsonUrl, function (data) {
         $('#research-title-modal').text(decodeText(data.title));
         
+        // --- THIS IS THE FIX ---
+        // We set the "Open" link to the *JSON* file URL by default
         $modalContent.find('.open-new-window').attr('href', jsonUrl);
+        // --- END FIX ---
         
         const $tabNav = $('#research-tab-nav-modal');
         $tabNav.empty(); 
@@ -354,27 +357,32 @@ function buildResearchModal(jsonUrl) {
     });
 }
 
+/**
+ * --- THIS IS THE FIX ---
+ * Loads content into the modal's tab container and updates the "Open in new window" link.
+ */
 function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
     $target.html(''); // Clear the spinner
     
-    // --- THIS IS THE FIX ---
-    // Create an iframe wrapper that will fill the .tab-content area
+    // --- NEW: Update the "Open in new window" link to the current tab's URL ---
+    // We find the button in the research header, which is *outside* the targetId
+    $target.closest('#modal-content-area')
+           .find('.research-modal-header .open-new-window')
+           .attr('href', htmlUrl);
+    // --- END NEW ---
+
     const iframeHtml = `
         <div class="iframe-wrapper">
             <iframe src="${htmlUrl}" class="loaded-iframe"></iframe>
         </div>
     `;
     $target.html(iframeHtml);
-    // --- END FIX ---
 }
+// --- END FIX ---
 
 
 /* === --- SMART KEYWORD/CATEGORY LOGIC --- === */
-
-/**
- * --- Populates the CATEGORY dropdown with counts ---
- */
 function populateCategoryFilter(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return;
@@ -543,7 +551,6 @@ function loadModalContent(index) {
     
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
-        $modalOpenLink.attr('href', jsonUrl); 
         buildResearchModal(jsonUrl); 
         return; 
     } 
@@ -569,6 +576,10 @@ function loadModalContent(index) {
             loadType = 'newtab'; 
         }
     }
+
+    // --- THIS IS THE FIX ---
+    // Removed the inline style="height: ..."
+    // --- END FIX ---
     
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
@@ -607,8 +618,6 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'iframe':
-            // --- THIS IS THE FIX ---
-            // Removed the inline style="height: ..."
             $modalContent.html(`
                 <div class="iframe-wrapper">
                     <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
@@ -616,7 +625,6 @@ function loadModalContent(index) {
                 </div>`);
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
-            // --- END FIX ---
         case 'blocked':
             $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
             break;
