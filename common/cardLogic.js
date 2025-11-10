@@ -3,7 +3,7 @@ var currentCardList = []; // Stores the list of cards for modal navigation
 var currentCardIndex = 0; // Stores the current position in the modal
 var isModalInfoVisible = false; // Stores the state of the info toggle
 
-// --- STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are in filterConfig.js ---
+// --- STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are now in filterConfig.js ---
 
 
 /**
@@ -66,8 +66,6 @@ $(document).ready(function () {
         
         const $clickedLink = $(e.target).closest('a');
         if ($clickedLink.length > 0 && !$clickedLink.is($link)) {
-            // This was a click on a *different* link inside the card (like in a post description)
-            // Let the browser handle it (e.g., open in a new tab)
             return;
         }
         
@@ -358,19 +356,17 @@ function buildResearchModal(jsonUrl) {
 
 /**
  * --- THIS IS THE FIX ---
- * Fetches an HTML fragment and loads it into the *modal's* tab container
- * using an IFRAME to avoid CORS errors.
+ * Loads content into the modal's tab container.
+ * It now uses an iframe to prevent CORS errors.
  */
 function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
     $target.html(''); // Clear the spinner
     
-    // Use an iframe to load the remote content. This bypasses CORS.
-    // We add the 'loaded-iframe' class so it gets the correct 100% height style.
-    // We also add the wrapper to ensure layout consistency.
+    // Create an iframe wrapper that will fill the .tab-content area
     const iframeHtml = `
-        <div class="iframe-wrapper" style="height: 100%;">
-            <iframe src="${htmlUrl}" class="loaded-iframe" style="height: 100%;"></iframe>
+        <div class="iframe-wrapper">
+            <iframe src="${htmlUrl}" class="loaded-iframe"></iframe>
         </div>
     `;
     $target.html(iframeHtml);
@@ -549,7 +545,7 @@ function loadModalContent(index) {
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
     
-    // --- THIS IS THE FIX ---
+    // --- THIS IS THE FIX (Part 1) ---
     // Check for research type *first*
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
@@ -581,10 +577,7 @@ function loadModalContent(index) {
         }
     }
 
-    // --- THIS IS THE FIX ---
-    // Use 90vh for iframes (posts/youtube), but 100% for research tabs
     const customHeight = $link.data('height') || '90vh';
-    // --- END FIX ---
     
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
@@ -623,11 +616,11 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'iframe':
-            // --- THIS IS THE FIX ---
-            // Apply the 90vh height to the *wrapper*, not the iframe
+            // --- THIS IS THE FIX (Part 2) ---
+            // REMOVED the inline style="height: ${customHeight}"
             $modalContent.html(`
-                <div class="iframe-wrapper" style="height: ${customHeight};">
-                    <iframe src="${loadUrl}" class="loaded-iframe" style="height: 100%;"></iframe>
+                <div class="iframe-wrapper">
+                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
                     ${infoHtml}
                 </div>`);
             if (infoHtml) { $modalInfoBtn.show(); }
