@@ -569,11 +569,6 @@ function loadModalContent(index) {
             loadType = 'newtab'; 
         }
     }
-
-    // --- THIS IS THE FIX ---
-    // We no longer set inline height, the CSS will handle it
-    // const customHeight = $link.data('height') || '90vh'; 
-    // --- END FIX ---
     
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
@@ -613,7 +608,7 @@ function loadModalContent(index) {
             break;
         case 'iframe':
             // --- THIS IS THE FIX ---
-            // Removed the inline style="height: ${customHeight}"
+            // Removed the inline style="height: ..."
             $modalContent.html(`
                 <div class="iframe-wrapper">
                     <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
