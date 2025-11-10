@@ -137,7 +137,7 @@
 #cert-category-filter,
 #post-keyword-filter,
 #cert-keyword-filter,
-#youtube-category-filter, 
+#youtube-category-filter,
 #youtube-keyword-filter,
 #album-category-filter, 
 #album-keyword-filter,
@@ -158,7 +158,7 @@
 #cert-category-filter:focus,
 #post-keyword-filter:focus,
 #cert-keyword-filter:focus,
-#youtube-category-filter:focus, 
+#youtube-category-filter:focus,
 #youtube-keyword-filter:focus,
 #album-category-filter:focus, 
 #album-keyword-filter:focus,
@@ -222,13 +222,16 @@
     flex-direction: column;
 }
 
+/* --- THIS IS THE FIX --- */
+/* This is the main content box inside the modal */
 #modal-content-area {
     flex-grow: 1; 
-    overflow-y: auto; 
+    overflow-y: auto; /* This is the *only* scrollbar */
     position: relative; 
-    display: block; 
+    display: block; /* Revert from flex */
     -webkit-overflow-scrolling: touch; 
 }
+/* --- END FIX --- */
 
 /* Modal Button Styles */
 .modal-header {
@@ -311,7 +314,7 @@
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-/* --- THIS IS THE FIX --- */
+/* --- THIS IS THE FIX (PART 2) --- */
 /* Modal Image/Iframe Styles */
 #modal-content-area .image-wrapper,
 #modal-content-area .iframe-wrapper {
@@ -320,13 +323,16 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    /* This is the key fix: 
-      Use 100% height for images/iframes in the main modal,
-      but auto-height for HTML content so it flows naturally.
-      The .iframe-wrapper created by research tabs will get its height from .tab-content.
-    */
-    height: 100%; 
-    padding: 0; 
+    padding: 0;
+    /* --- UPDATED --- */ 
+    /* Set a specific height for post/youtube iframes */
+    /* This will be overridden by .tab-content for research */
+    height: 90vh;
+}
+
+/* This is for images, which can be 100% of the wrapper */
+#modal-content-area .image-wrapper {
+    height: 100%;
 }
 
 #modal-content-area .loaded-image {
@@ -503,9 +509,12 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    height: 100%; /* Ensure it has a height to grow into */
+    min-height: 400px; /* Failsafe height */
 }
 .tab-content .iframe-wrapper {
     flex-grow: 1; /* Ensure the wrapper fills the tab content area */
+    height: 100%;
 }
 /* --- END FIX --- */
 
