@@ -224,6 +224,7 @@ function loadVids(PL, Category, BKcol, initialLoadOverride) {
         resultsLoop(data, Category, BKcol);
         handleCardView($('#content-area'), initialLoadOverride);
         populateSmartKeywords('#Grid', '#youtube-keyword-filter');
+        // --- NEW: Populate YouTube categories (which is just the one) ---
         populateCategoryFilter('#Grid', '#youtube-category-filter');
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -295,6 +296,7 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
             $albumList.append(cardHtml);
         });
         
+        // --- UPDATED: Call the new general category populator ---
         populateCategoryFilter('#photo-album-list', '#album-category-filter');
         populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
         handleCardView($('#content-area'), initialLoadOverride);
@@ -354,32 +356,27 @@ function buildResearchModal(jsonUrl) {
     });
 }
 
-/**
- * --- THIS IS THE FIX ---
- * Fetches an HTML fragment and loads it into the *modal's* tab container
- * using an IFRAME to avoid CORS errors.
- */
 function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
-    $target.html(''); // Clear the spinner
+    $target.html('<div class="content-loader"><div class="spinner"></div></div>'); 
     
-    // Use an iframe to load the remote content. This bypasses CORS.
-    // We add the 'loaded-iframe' class so it gets the correct 100% height style.
-    // We also add the wrapper to ensure layout consistency.
-    const iframeHtml = `
-        <div class="iframe-wrapper" style="height: 100%;">
-            <iframe src="${htmlUrl}" class="loaded-iframe" style="height: 100%;"></iframe>
-        </div>
-    `;
-    $target.html(iframeHtml);
+    $.ajax({
+        url: htmlUrl,
+        type: 'GET',
+        success: function(data) {
+            $target.html(data);
+        },
+        error: function() {
+            $target.html('<div class="error-message">Could not load content.</div>');
+        }
+    });
 }
-// --- END FIX ---
 
 
 /* === --- SMART KEYWORD/CATEGORY LOGIC --- === */
 
 /**
- * --- Populates the CATEGORY dropdown with counts ---
+ * --- NEW: Populates the CATEGORY dropdown with counts ---
  */
 function populateCategoryFilter(listId, filterId) {
     const $filter = $(filterId);
@@ -391,6 +388,7 @@ function populateCategoryFilter(listId, filterId) {
         $(`${listId} .card-item`).each(function() {
             const categories = $(this).data('category');
             if (categories) {
+                // Split categories like "Data,SQL,BI"
                 String(categories).split(',').forEach(cat => {
                     const cleanCat = cat.trim();
                     if (cleanCat) {
