@@ -356,17 +356,19 @@ function buildResearchModal(jsonUrl) {
 
 /**
  * --- THIS IS THE FIX ---
- * Loads content into the modal's tab container.
- * It now uses an iframe to prevent CORS errors.
+ * Fetches an HTML fragment and loads it into the *modal's* tab container
+ * using an IFRAME to avoid CORS errors.
  */
 function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
     $target.html(''); // Clear the spinner
     
-    // Create an iframe wrapper that will fill the .tab-content area
+    // Use an iframe to load the remote content. This bypasses CORS.
+    // We add the 'loaded-iframe' class so it gets the correct 100% height style.
+    // We also add the wrapper to ensure layout consistency.
     const iframeHtml = `
-        <div class="iframe-wrapper">
-            <iframe src="${htmlUrl}" class="loaded-iframe"></iframe>
+        <div class="iframe-wrapper" style="height: 100%;">
+            <iframe src="${htmlUrl}" class="loaded-iframe" style="height: 100%;"></iframe>
         </div>
     `;
     $target.html(iframeHtml);
@@ -545,7 +547,7 @@ function loadModalContent(index) {
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
     
-    // --- THIS IS THE FIX (Part 1) ---
+    // --- THIS IS THE FIX ---
     // Check for research type *first*
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
@@ -577,7 +579,10 @@ function loadModalContent(index) {
         }
     }
 
-    const customHeight = $link.data('height') || '90vh';
+    // --- THIS IS THE FIX ---
+    // We no longer set inline height, the CSS will handle it
+    // const customHeight = $link.data('height') || '90vh'; 
+    // --- END FIX ---
     
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
@@ -616,8 +621,8 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'iframe':
-            // --- THIS IS THE FIX (Part 2) ---
-            // REMOVED the inline style="height: ${customHeight}"
+            // --- THIS IS THE FIX ---
+            // Removed the inline style="height: ${customHeight}"
             $modalContent.html(`
                 <div class="iframe-wrapper">
                     <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
