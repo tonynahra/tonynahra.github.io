@@ -225,11 +225,14 @@
 /* --- THIS IS THE FIX --- */
 /* This is the main content box inside the modal */
 #modal-content-area {
-    flex-grow: 1; 
+    flex-grow: 1; /* Make it fill the remaining height */
     overflow-y: auto; /* This is the *only* scrollbar */
     position: relative; 
-    display: block; /* Revert from flex */
     -webkit-overflow-scrolling: touch; 
+    
+    /* NEW: Use flex to make direct children fill height */
+    display: flex;
+    flex-direction: column;
 }
 /* --- END FIX --- */
 
@@ -323,16 +326,8 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    padding: 0;
-    /* --- UPDATED --- */ 
-    /* Set a specific height for post/youtube iframes */
-    /* This will be overridden by .tab-content for research */
-    height: 90vh;
-}
-
-/* This is for images, which can be 100% of the wrapper */
-#modal-content-area .image-wrapper {
-    height: 100%;
+    padding: 0; 
+    flex-grow: 1; /* Make wrapper fill the content area */
 }
 
 #modal-content-area .loaded-image {
@@ -453,6 +448,7 @@
 }
 
 /* --- Research Page / Tab Styles --- */
+/* This is the new header *inside* the modal */
 .research-modal-header {
     display: flex;
     justify-content: space-between;
@@ -461,6 +457,8 @@
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
+    /* --- NEW: Don't let it shrink --- */
+    flex-shrink: 0;
 }
 .research-modal-header h2 {
     margin: 0;
@@ -479,6 +477,8 @@
     gap: 10px;
     margin-bottom: 20px;
     border-bottom: 2px solid var(--bg-medium);
+    /* --- NEW: Don't let it shrink --- */
+    flex-shrink: 0;
 }
 
 .tab-button {
@@ -506,11 +506,10 @@
 /* --- THIS IS THE FIX --- */
 /* This makes the tab content fill the space in the modal */
 .tab-content {
-    flex-grow: 1;
-    display: flex;
+    flex-grow: 1; /* This makes it fill the remaining space */
+    display: flex; /* Use flex to make its children fill its height */
     flex-direction: column;
-    height: 100%; /* Ensure it has a height to grow into */
-    min-height: 400px; /* Failsafe height */
+    overflow: hidden; /* Prevent its own scrollbar */
 }
 .tab-content .iframe-wrapper {
     flex-grow: 1; /* Ensure the wrapper fills the tab content area */
