@@ -3,7 +3,7 @@ var currentCardList = []; // Stores the list of cards for modal navigation
 var currentCardIndex = 0; // Stores the current position in the modal
 var isModalInfoVisible = false; // Stores the state of the info toggle
 
-// --- STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are now in filterConfig.js ---
+// --- STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are in filterConfig.js ---
 
 
 /**
@@ -66,6 +66,8 @@ $(document).ready(function () {
         
         const $clickedLink = $(e.target).closest('a');
         if ($clickedLink.length > 0 && !$clickedLink.is($link)) {
+            // This was a click on a *different* link inside the card (like in a post description)
+            // Let the browser handle it (e.g., open in a new tab)
             return;
         }
         
@@ -224,7 +226,6 @@ function loadVids(PL, Category, BKcol, initialLoadOverride) {
         resultsLoop(data, Category, BKcol);
         handleCardView($('#content-area'), initialLoadOverride);
         populateSmartKeywords('#Grid', '#youtube-keyword-filter');
-        // --- NEW: Populate YouTube categories (which is just the one) ---
         populateCategoryFilter('#Grid', '#youtube-category-filter');
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -296,7 +297,6 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
             $albumList.append(cardHtml);
         });
         
-        // --- UPDATED: Call the new general category populator ---
         populateCategoryFilter('#photo-album-list', '#album-category-filter');
         populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
         handleCardView($('#content-area'), initialLoadOverride);
@@ -356,27 +356,32 @@ function buildResearchModal(jsonUrl) {
     });
 }
 
+/**
+ * --- THIS IS THE FIX ---
+ * Fetches an HTML fragment and loads it into the *modal's* tab container
+ * using an IFRAME to avoid CORS errors.
+ */
 function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
-    $target.html('<div class="content-loader"><div class="spinner"></div></div>'); 
+    $target.html(''); // Clear the spinner
     
-    $.ajax({
-        url: htmlUrl,
-        type: 'GET',
-        success: function(data) {
-            $target.html(data);
-        },
-        error: function() {
-            $target.html('<div class="error-message">Could not load content.</div>');
-        }
-    });
+    // Use an iframe to load the remote content. This bypasses CORS.
+    // We add the 'loaded-iframe' class so it gets the correct 100% height style.
+    // We also add the wrapper to ensure layout consistency.
+    const iframeHtml = `
+        <div class="iframe-wrapper" style="height: 100%;">
+            <iframe src="${htmlUrl}" class="loaded-iframe" style="height: 100%;"></iframe>
+        </div>
+    `;
+    $target.html(iframeHtml);
 }
+// --- END FIX ---
 
 
 /* === --- SMART KEYWORD/CATEGORY LOGIC --- === */
 
 /**
- * --- NEW: Populates the CATEGORY dropdown with counts ---
+ * --- Populates the CATEGORY dropdown with counts ---
  */
 function populateCategoryFilter(listId, filterId) {
     const $filter = $(filterId);
@@ -388,7 +393,6 @@ function populateCategoryFilter(listId, filterId) {
         $(`${listId} .card-item`).each(function() {
             const categories = $(this).data('category');
             if (categories) {
-                // Split categories like "Data,SQL,BI"
                 String(categories).split(',').forEach(cat => {
                     const cleanCat = cat.trim();
                     if (cleanCat) {
@@ -545,12 +549,15 @@ function loadModalContent(index) {
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
     
+    // --- THIS IS THE FIX ---
+    // Check for research type *first*
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', jsonUrl); 
         buildResearchModal(jsonUrl); 
-        return; 
+        return; // Stop here
     } 
+    // --- END FIX ---
     
     $modal.removeClass('research-mode'); 
     $modalOpenLink.attr('href', loadUrl);
@@ -574,7 +581,10 @@ function loadModalContent(index) {
         }
     }
 
+    // --- THIS IS THE FIX ---
+    // Use 90vh for iframes (posts/youtube), but 100% for research tabs
     const customHeight = $link.data('height') || '90vh';
+    // --- END FIX ---
     
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
@@ -613,13 +623,16 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'iframe':
+            // --- THIS IS THE FIX ---
+            // Apply the 90vh height to the *wrapper*, not the iframe
             $modalContent.html(`
-                <div class="iframe-wrapper">
-                    <iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>
+                <div class="iframe-wrapper" style="height: ${customHeight};">
+                    <iframe src="${loadUrl}" class="loaded-iframe" style="height: 100%;"></iframe>
                     ${infoHtml}
                 </div>`);
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
+            // --- END FIX ---
         case 'blocked':
             $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
             break;
