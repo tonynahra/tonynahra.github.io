@@ -29,7 +29,6 @@ body {
     border-right: 1px solid #e9ecef;
     padding-right: 20px;
 }
-/* ... (rest of sidebar styles) ... */
 #tna-sidebar-nav h3 {
     font-size: 1rem;
     font-weight: 600;
@@ -39,27 +38,22 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-
 #tna-sidebar-nav .tna-nav-section-spacer {
     margin-top: 2rem; 
 }
-
 #tna-sidebar-nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
-
 #tna-sidebar-nav li {
     margin-bottom: 0.5rem;
 }
-
 #tna-sidebar-nav li.tna-nav-separator {
     border-bottom: 1px solid #e9ecef; 
     padding-bottom: 8px; 
     margin-bottom: 8px;
 }
-
 #tna-sidebar-nav a {
     font-size: 0.9rem;
     color: #495057;
@@ -69,7 +63,6 @@ body {
     line-height: 1.4;
     border-radius: 4px;
 }
-
 #tna-sidebar-nav a:hover {
     color: #0056b3;
     background-color: #e6f2ff;
@@ -90,7 +83,6 @@ header {
     margin-bottom: 30px;
     padding-bottom: 20px;
 }
-/* NEW: Clearfix for the floating image */
 header::after {
     content: "";
     display: table;
@@ -126,7 +118,6 @@ h2 {
     margin-top: 40px;
     border-bottom: 1px solid #e9ecef;
     padding-bottom: 10px;
-    /* Clearfix for floating images */
     clear: both;
 }
 
@@ -153,14 +144,12 @@ ol {
     counter-reset: pillar-counter;
     padding-left: 0;
 }
-
 ol > li {
     position: relative;
     counter-increment: pillar-counter;
     margin-bottom: 30px;
     padding-left: 35px;
 }
-
 ol > li::before {
     content: counter(pillar-counter) ".";
     position: absolute;
@@ -179,14 +168,12 @@ ol > li ul {
     margin-bottom: 15px;
     padding-left: 40px; 
 }
-
 main ul li,
 ol > li ul li {
     margin-bottom: 8px;
     padding-left: 0; 
     position: static; 
 }
-
 ol > li ul li::before {
     content: none; 
 }
@@ -225,11 +212,11 @@ blockquote {
         padding: 15px 20px;
     }
 
-    /* NEW: Un-float the image on mobile */
-    .tna-image-float-right {
+    /* UPDATED: Targets .tna-icon */
+    .tna-icon {
         float: none;
         width: 100%;
-        max-width: 400px; /* Or as needed */
+        max-width: 250px; /* Use max-width from original style */
         margin-left: auto;
         margin-right: auto;
         display: block;
@@ -245,10 +232,8 @@ blockquote {
     padding: 15px 20px;
     margin-top: 25px;
     margin-bottom: 25px;
-    /* Clearfix for floats */
     overflow: auto; 
 }
-
 .tna-competitive-analysis h4 {
     font-size: 1.2em;
     color: #0056b3; 
@@ -256,25 +241,21 @@ blockquote {
     margin-top: 0;
     margin-bottom: 15px;
 }
-
 .tna-competitive-analysis ul {
     list-style-type: disc;
     padding-left: 20px;
     margin: 0;
 }
-
 .tna-competitive-analysis ul li {
     margin-bottom: 10px;
 }
 .tna-competitive-analysis ul li strong {
     color: #343a40;
 }
-
 .tna-label-pro {
     font-weight: 600;
     color: #057a55; /* Dark Green */
 }
-
 .tna-label-con {
     font-weight: 600;
     color: #c81e1e; /* Dark Red */
@@ -291,7 +272,6 @@ blockquote {
     border-radius: 8px;
     overflow: hidden; 
 }
-
 .tna-matrix-table th,
 .tna-matrix-table td {
     border: 1px solid #dee2e6;
@@ -299,11 +279,9 @@ blockquote {
     text-align: left;
     vertical-align: middle;
 }
-
 .tna-matrix-table thead {
     background-color: #f8f9fa;
 }
-
 .tna-matrix-table thead th {
     font-weight: 600;
     color: #343a40;
@@ -312,63 +290,52 @@ blockquote {
     padding-bottom: 12px;
     vertical-align: top; 
 }
-
 .tna-matrix-subtitle {
     display: block;
     font-size: 0.85em;
     color: #495057;
     margin-top: 2px;
 }
-
-/* UPDATED: Styles the <strong> tag */
 .tna-matrix-subtitle strong {
     font-weight: 700;
     color: #343a40;
 }
-
-
 .tna-matrix-table tbody tr:nth-child(even) {
     background-color: #f8f9fa;
 }
-
 .tna-matrix-table td {
     text-align: center;
     color: #495057;
 }
-
 .tna-matrix-table td strong {
     color: #212529;
     font-size: 1.1em;
 }
-
 .tna-matrix-table tbody td:first-child {
     text-align: left;
     font-weight: 600;
     color: #343a40;
 }
-
 .tna-matrix-table tfoot {
     background-color: #e9ecef;
 }
-
 .tna-matrix-table tfoot td {
     text-align: center;
     font-weight: 600;
     color: #212529;
 }
-
 .tna-matrix-table tfoot strong {
     font-size: 1.1em;
 }
 
 /* --- 8. Shared Article Styles --- */
-
-.tna-article-image {
-    box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5);
-    width: 90%;
-    max-width: 700px;
-    border-radius: 8px;
-    margin: 1rem auto; /* Center with auto margins */
+/* REPLACED: .tna-article-image with .tna-box */
+.tna-box { 
+    box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5); 
+    width: 90%; 
+    max-width: 700px; 
+    border-radius: 8px; /* Added from my old style */
+    margin: 1rem auto;
     display: block;
 }
 
@@ -378,45 +345,41 @@ main ul.tna-sub-list {
     margin-top: 10px;
     margin-bottom: 15px;
 }
-
 .tna-references-section {
     margin-top: 3rem;
     padding-top: 1.5rem;
     border-top: 1px solid #e9ecef;
 }
-
 .tna-references-section h3 {
     font-size: 1.5em; 
     color: #343a40;
     margin-bottom: 1.5rem;
 }
-
 .tna-references-list {
     list-style-type: none;
     padding-left: 0;
 }
-
 .tna-references-list li {
     font-size: 0.9rem;
     color: #555;
     margin-bottom: 0.75rem;
     line-height: 1.5;
 }
-
 .tna-references-list .tna-ref-number {
     font-weight: 600;
     margin-right: 5px;
 }
 
-/* --- 9. NEW: Floating Image --- */
-.tna-image-float-right {
-    float: right;
-    width: 200px; /* Adjust as needed */
-    margin-left: 20px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    border: 1px solid #dee2e6;
+/* --- 9. Floating Image --- */
+/* REPLACED: .tna-image-float-right with .tna-icon */
+.tna-icon { 
+    box-shadow:10px 10px 15px rgba(0, 0, 0, 0.5); 
+    max-width: 250px;
+    border-radius:10px;
+    width:30%;
+    float:right;
+    margin-left: 20px; /* Added margin */
+    margin-bottom: 10px; /* Added margin */
 }
 
 /* Clearfix for float - applies to sections */
