@@ -29,7 +29,7 @@ body {
     border-right: 1px solid #e9ecef;
     padding-right: 20px;
 }
-
+/* ... (rest of sidebar styles) ... */
 #tna-sidebar-nav h3 {
     font-size: 1rem;
     font-weight: 600;
@@ -75,13 +75,13 @@ body {
     background-color: #e6f2ff;
 }
 
+
 /* --- 4. Main Article Content --- */
 main {
     background-color: #ffffff;
     border: 1px solid #dee2e6;
     border-radius: 8px;
     padding: 20px 40px;
-    /* Fixes potential layout issue */
     overflow: hidden; 
 }
 
@@ -90,6 +90,13 @@ header {
     margin-bottom: 30px;
     padding-bottom: 20px;
 }
+/* NEW: Clearfix for the floating image */
+header::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
 
 h1 {
     color: #212529;
@@ -119,6 +126,8 @@ h2 {
     margin-top: 40px;
     border-bottom: 1px solid #e9ecef;
     padding-bottom: 10px;
+    /* Clearfix for floating images */
+    clear: both;
 }
 
 h3 {
@@ -215,6 +224,16 @@ blockquote {
     main {
         padding: 15px 20px;
     }
+
+    /* NEW: Un-float the image on mobile */
+    .tna-image-float-right {
+        float: none;
+        width: 100%;
+        max-width: 400px; /* Or as needed */
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+    }
 }
 
 /* --- 6. Competitive Analysis Box --- */
@@ -226,6 +245,8 @@ blockquote {
     padding: 15px 20px;
     margin-top: 25px;
     margin-bottom: 25px;
+    /* Clearfix for floats */
+    overflow: auto; 
 }
 
 .tna-competitive-analysis h4 {
@@ -249,7 +270,6 @@ blockquote {
     color: #343a40;
 }
 
-/* NEW: Styles for Pro/Con labels */
 .tna-label-pro {
     font-weight: 600;
     color: #057a55; /* Dark Green */
@@ -290,16 +310,22 @@ blockquote {
     text-align: center;
     padding-top: 12px;
     padding-bottom: 12px;
-    vertical-align: top; /* Aligns company name to top */
+    vertical-align: top; 
 }
 
 .tna-matrix-subtitle {
     display: block;
     font-size: 0.85em;
-    font-weight: 500;
     color: #495057;
     margin-top: 2px;
 }
+
+/* UPDATED: Styles the <strong> tag */
+.tna-matrix-subtitle strong {
+    font-weight: 700;
+    color: #343a40;
+}
+
 
 .tna-matrix-table tbody tr:nth-child(even) {
     background-color: #f8f9fa;
@@ -335,19 +361,19 @@ blockquote {
     font-size: 1.1em;
 }
 
-/* --- 8. NEW: Shared Article Styles --- */
+/* --- 8. Shared Article Styles --- */
 
 .tna-article-image {
     box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5);
     width: 90%;
     max-width: 700px;
     border-radius: 8px;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+    margin: 1rem auto; /* Center with auto margins */
+    display: block;
 }
 
 main ul.tna-sub-list {
-    list-style-type: circle; /* Or 'square' */
+    list-style-type: circle; 
     margin-left: 40px;
     margin-top: 10px;
     margin-bottom: 15px;
@@ -360,7 +386,7 @@ main ul.tna-sub-list {
 }
 
 .tna-references-section h3 {
-    font-size: 1.5em; /* Make "References" a bit larger */
+    font-size: 1.5em; 
     color: #343a40;
     margin-bottom: 1.5rem;
 }
@@ -380,4 +406,22 @@ main ul.tna-sub-list {
 .tna-references-list .tna-ref-number {
     font-weight: 600;
     margin-right: 5px;
+}
+
+/* --- 9. NEW: Floating Image --- */
+.tna-image-float-right {
+    float: right;
+    width: 200px; /* Adjust as needed */
+    margin-left: 20px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
+}
+
+/* Clearfix for float - applies to sections */
+section::after {
+    content: "";
+    display: table;
+    clear: both;
 }
