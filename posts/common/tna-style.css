@@ -249,6 +249,18 @@ blockquote {
     color: #343a40;
 }
 
+/* NEW: Styles for Pro/Con labels */
+.tna-label-pro {
+    font-weight: 600;
+    color: #057a55; /* Dark Green */
+}
+
+.tna-label-con {
+    font-weight: 600;
+    color: #c81e1e; /* Dark Red */
+}
+
+
 /* --- 7. Conclusion Matrix Table --- */
 .tna-matrix-table {
     width: 100%;
@@ -278,9 +290,9 @@ blockquote {
     text-align: center;
     padding-top: 12px;
     padding-bottom: 12px;
+    vertical-align: top; /* Aligns company name to top */
 }
 
-/* NEW: Style for the subtitle in the matrix */
 .tna-matrix-subtitle {
     display: block;
     font-size: 0.85em;
@@ -321,4 +333,51 @@ blockquote {
 
 .tna-matrix-table tfoot strong {
     font-size: 1.1em;
+}
+
+/* --- 8. NEW: Shared Article Styles --- */
+
+.tna-article-image {
+    box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 700px;
+    border-radius: 8px;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+main ul.tna-sub-list {
+    list-style-type: circle; /* Or 'square' */
+    margin-left: 40px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.tna-references-section {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.tna-references-section h3 {
+    font-size: 1.5em; /* Make "References" a bit larger */
+    color: #343a40;
+    margin-bottom: 1.5rem;
+}
+
+.tna-references-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.tna-references-list li {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.tna-references-list .tna-ref-number {
+    font-weight: 600;
+    margin-right: 5px;
 }
