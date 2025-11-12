@@ -6,23 +6,29 @@
     <title>GOOG Financial Analysis Report</title>
 
     <!-- SEO & Social Meta Tags -->
-    <meta name="description" content="A comprehensive financial analysis of Alphabet (GOOG) as of November 2025, covering fundamentals, AI strategy, cloud growth, and valuation.">
+    <meta name="description" content="A comprehensive financial analysis of Alphabet (GOOG) as of 2025-11-12, covering fundamentals, analyst consensus, and key growth drivers.">
     
     <!-- Open Graph (OG) Tags -->
     <meta property="og:title" content="Equity Research: Alphabet Inc. (GOOG) Analysis">
-    <meta property="og:description" content="In-depth financial report on Alphabet (GOOG), detailing its Google Cloud and AI strategy, fundamental health, SWOT analysis, and competitor comparison.">
+    <meta property="og:description" content="In-depth financial report on Alphabet Inc. (GOOG), detailing its AI strategy, fundamental health, analyst consensus, and competitor comparison.">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="httpsS://tonynahra.github.io/posts/GOOG_251112.html">
+    <meta property="og:url" content="https://tonynahra.github.io/posts/GOOG_251112.html">
     <!-- <meta property="og:image" content="[URL_to_your_image.jpg]"> -->
 
     <!-- Twitter Card Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Equity Research: Alphabet Inc. (GOOG) Analysis">
-    <meta name="twitter:description" content="In-depth financial report on Alphabet (GOOG), detailing its Google Cloud and AI strategy, fundamental health, SWOT analysis, and competitor comparison.">
+    <meta name="twitter:description" content="In-depth financial report on Alphabet Inc. (GOOG), detailing its AI strategy, fundamental health, analyst consensus, and competitor comparison.">
     <!-- <meta name="twitter:image" content="[URL_to_your_image.jpg]"> -->
     
-    <!-- Include Tailwind CSS CDN -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <!-- Chart.js CDN (for new charts) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     
     <!-- 
       CRITICAL: Configure Tailwind to use the 'tw-' prefix 
@@ -34,35 +40,9 @@
       }
     </script>
     
-    <!-- Add Plotly.js CDN -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- External Stylesheet -->
+    <link rel="stylesheet" href="common/finance-style.css">
     
-    <!-- Custom styles for smooth scrolling and fonts -->
-    <style type="text/css">
-      html {
-        scroll-behavior: smooth;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-      }
-      
-      /* Style for the active navigation link */
-      .nav-link.active {
-        color: #2563eb; /* tw-blue-600 */
-        font-weight: 600; /* tw-font-semibold */
-        border-right: 3px solid #2563eb; /* tw-border-blue-600 */
-        padding-right: 1.25rem; /* tw-pr-5 */
-      }
-      
-      /* Simple fade-in for page load */
-      body {
-        opacity: 0;
-        animation: fadeIn 0.5s ease-in-out forwards;
-      }
-      
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-    </style>
 </head>
 <body class="tw-bg-gray-100 tw-text-gray-900 tw-antialiased">
 
@@ -71,10 +51,6 @@
 
         <!-- 
           Sticky Navigation Sidebar (Aside)
-          - tw-w-64: Fixed width
-          - tw-shrink-0: Prevents sidebar from shrinking
-          - tw-h-screen: Full viewport height
-          - tw-sticky tw-top-0: Sticks to the top of the viewport
         -->
         <aside class="tw-w-64 tw-shrink-0 tw-bg-white tw-shadow-lg tw-h-screen tw-sticky tw-top-0 tw-p-6">
             <div class="tw-flex tw-items-center tw-mb-8">
@@ -90,13 +66,15 @@
                 <ul class="tw-space-y-2" id="nav-list">
                     <li><a href="#summary" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Executive Summary</a></li>
                     <li><a href="#overview" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Company Overview</a></li>
+                    <li><a href="#consensus" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Analyst Consensus</a></li>
+                    <li><a href="#quarterly" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Quarterly Trends</a></li>
                     <li><a href="#fundamental" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Fundamental Analysis</a></li>
-                    <li><a href="#interpretation" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-2AmM">Analysis & Interpretation</a></li>
+                    <li><a href="#interpretation" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Analysis & Interpretation</a></li>
                     <li><a href="#swot" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">SWOT Analysis</a></li>
                     <li><a href="#market" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Market & Competitor</a></li>
                     <li><a href="#benchmark" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Benchmark Comparison</a></li>
                     <li><a href="#chart" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Price Chart</a></li>
-                    <li><a href="#disclaimer" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Disclaimer</a></li>
+                    <li><a href="#disclaimer" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-2200">Disclaimer</a></li>
                 </ul>
                 <hr class="tw-my-4 tw-border-gray-200">
                 <ul>
@@ -112,9 +90,6 @@
 
         <!-- 
           Main Content Area
-          - tw-flex-1: Takes up remaining space
-          - tw-p-10: Padding
-          - tw-overflow-y-auto: Allows content to scroll independently
         -->
         <main class="tw-flex-1 tw-p-10 tw-overflow-y-auto">
             <div class="tw-max-w-7xl tw-mx-auto">
@@ -122,7 +97,7 @@
                 <!-- Main Report Header -->
                 <header class="tw-mb-10 tw-border-b tw-pb-6">
                     <h1 class="tw-text-4xl tw-font-bold tw-text-gray-900 tw-mb-2">Equity Research: Alphabet Inc. (GOOG)</h1>
-                    <p class="tw-text-lg tw-text-gray-600">Benchmark: S&P 500 Index | As of November 12, 2025</p>
+                    <p class="tw-text-lg tw-text-gray-600">Benchmark: S&P 500 Index | As of 2025-11-12</p>
                 </header>
 
                 <!-- Section: Executive Summary -->
@@ -131,13 +106,13 @@
                     <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
                         <ul class="tw-list-disc tw-list-inside tw-space-y-3 tw-text-lg tw-mb-6">
                             <li>
-                                <strong>Digital Ad Powerhouse:</strong> Google's core Search, YouTube, and advertising network (Google Services) remains a dominant force, generating massive profits and free cash flow.
+                                <strong>Digital Ad Powerhouse:</strong> Google's core Search, YouTube, and advertising network (Google Services) remains a dominant force, generating massive profits and over $75.0B in TTM Free Cash Flow.
                             </li>
                             <li>
-                                <strong>Cloud Growth Engine:</strong> <a href="https://cloud.google.com/" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Google Cloud Platform (GCP)</a> is a bright spot, consistently growing revenue over 20% and achieving sustained profitability, solidifying its #3 market position.
+                                <strong>Cloud Growth Engine:</strong> <a href="https://cloud.google.com/" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Google Cloud Platform (GCP)</a> is a clear #3, posting consistent profitability and strong revenue growth, benefiting from AI workload adoption.
                             </li>
                             <li>
-                                <strong>AI Leadership & "Other Bets":</strong> Google is a foundational leader in AI (Gemini, TPUs) and holds massive long-term potential in its "Other Bets" portfolio, primarily Waymo (autonomous driving).
+                                <strong>Strong Analyst Support:</strong> Wall Street remains bullish, with a consensus "Strong Buy" rating and a mean price target of $195.50, implying solid upside from current levels.
                             </li>
                             <li>
                                 <strong>Regulatory & AI Headwinds:</strong> The company faces significant regulatory pressure (DOJ antitrust lawsuits) and new AI-driven competition (e.g., Perplexity, OpenAI) that could threaten its core Search monopoly for the first time.
@@ -146,7 +121,7 @@
                         <div class="tw-p-6 tw-bg-green-50 tw-rounded-lg tw-border tw-border-green-200">
                             <h3 class="tw-text-xl tw-font-bold tw-text-green-800">Recommendation: BUY</h3>
                             <p class="tw-text-lg tw-text-green-700 tw-mt-2">
-                                The "Buy" rating is prioritized based on user-provided technicals. Fundamentally, GOOG's pristine balance sheet, reasonable valuation (vs. peers), and dominant cash-flow engine provide a strong base to fund its growth in Cloud and AI.
+                                The "Buy" rating is strongly supported by a pristine balance sheet, massive cash flow, reasonable valuation (26.7x P/E), and strong analyst consensus.
                             </p>
                         </div>
                     </div>
@@ -188,9 +163,52 @@
                             </div>
                             <div class="tw-text-lg">
                                 <dt class="tw-font-medium tw-text-gray-500">Headquarters</dt>
-                                <dd class="tw-font-semibold tw-text-gray-900">Mountain View, California, USA</dd>
+                                <dd class="tw-font-semibold tw-text-gray-900">Mountain View, CA, United States</dd>
                             </div>
                         </dl>
+                    </div>
+                </section>
+
+                <!-- Section: Analyst Consensus -->
+                <section id="consensus" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Analyst Consensus</h2>
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Price Targets -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">Wall Street Price Targets</h3>
+                            <div class="tw-space-y-4">
+                                <div class="tw-flex tw-justify-between tw-items-center tw-bg-blue-50 tw-p-4 tw-rounded-lg">
+                                    <span class="tw-text-lg tw-font-medium tw-text-blue-800">Mean Target</span>
+                                    <span class="tw-text-2xl tw-font-bold tw-text-blue-900">$195.50</span>
+                                </div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-bg-gray-50 tw-p-4 tw-rounded-lg">
+                                    <span class="tw-text-lg tw-font-medium tw-text-gray-600">High Target</span>
+                                    <span class="tw-text-xl tw-font-semibold tw-text-gray-800">$220.00</span>
+                                </div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-bg-gray-50 tw-p-4 tw-rounded-lg">
+                                    <span class="tw-text-lg tw-font-medium tw-text-gray-600">Low Target</span>
+                                    <span class="tw-text-xl tw-font-semibold tw-text-gray-800">$170.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Ratings Chart -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">Analyst Ratings (44 Total)</h3>
+                            <div class="tw-w-full tw-h-60">
+                                <canvas id="analystChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section: Quarterly Trends -->
+                <section id="quarterly" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Quarterly Growth Trends</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">Quarterly Revenue & Net Income (USD)</h3>
+                        <div class="tw-w-full tw-h-96">
+                            <canvas id="quarterlyChart"></canvas>
+                        </div>
                     </div>
                 </section>
 
@@ -225,10 +243,7 @@
                         <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
                             <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Balance Sheet & Dividend</h3>
                             <ul class="tw-space-y-3 tw-text-lg">
-                                <li class="tw-flex tw-justify-between"><span>Total Assets:</span> <span class="tw-font-semibold">$435.0B</span></li>
-                                <li class="tw-flex tw-justify-between"><span>Total Liabilities:</span> <span class="tw-font-semibold">$120.0B</span></li>
-                                <li class="tw-flex tw-justify-between"><span>Total Equity:</span> <span class="tw-font-semibold">$315.0B</span></li>
-                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Debt-to-Equity:</span> <span class="tw-font-semibold">0.09</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Debt-to-Equity:</span> <span class="tw-font-semibold">0.09</span></li>
                                 <li class="tw-flex tw-justify-between"><span>Current Ratio:</span> <span class="tw-font-semibold">2.1x</span></li>
                                 <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Dividend Yield:</span> <span class="tw-font-semibold">0.45%</span></li>
                                 <li class="tw-flex tw-justify-between"><span>Payout Ratio:</span> <span class="tw-font-semibold">7.2%</span></li>
@@ -285,9 +300,9 @@
                                     </span>
                                 </div>
                                 <p class="tw-text-lg tw-text-gray-700">
-                                    <strong>Meaning:</strong> Free Cash Flow ($75B TTM) and Debt-to-Equity (0.09) show cash generation vs. leverage.
+                                    <strong>Meaning:</strong> Free Cash Flow ($75.0B TTM) and Debt-to-Equity (0.09) show cash generation vs. leverage.
                                     <br>
-                                    <strong>Interpretation:</strong> This is arguably Google's greatest strength. The company generates a staggering $75B in FCF and has almost no net debt (its $110B in cash exceeds its total debt). This "fortress" balance sheet allows it to aggressively fund share buybacks, R&D, and AI investments without financial stress.
+                                    <strong>Interpretation:</strong> This is arguably Google's greatest strength. The company generates a staggering $75.0B in FCF and has almost no net debt (its $110B in cash exceeds its total debt). This "fortress" balance sheet allows it to aggressively fund share buybacks, R&D, and AI investments without financial stress.
                                 </p>
                             </div>
 
@@ -319,7 +334,7 @@
                             <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
                                 <li>Durable monopoly in Search (90%+ market share).</li>
                                 <li>Dominant #1 video platform (YouTube).</li>
-                                <li>Massive free cash flow ($75B+ TTM).</li>
+                                <li>Massive free cash flow ($75.0B+ TTM).</li>
                                 <li>Pristine "fortress" balance sheet with minimal net debt.</li>
                                 <li>Foundational R&D leadership in AI (Google Brain, DeepMind).</li>
                             </ul>
@@ -375,34 +390,39 @@
                                 <tr>
                                     <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>
                                     <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600">Alphabet (GOOG)</th>
-                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700"><a href="https://investor.fb.com" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Meta Platforms (META)</a></th>
-                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700"><a href="https://ir.aboutamazon.com" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Amazon (AMZN)</a></th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700"><a href="httpsE://www.microsoft.com/en-us/investor" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Microsoft (MSFT)</a></th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700"><a href="httpsE://ir.aboutamazon.com" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Amazon (AMZN)</a></th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700"><a href="httpsE://investor.fb.com" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Meta Platforms (META)</a></th>
                                 </tr>
                             </thead>
                             <tbody class="tw-divide-y tw-divide-gray-200">
                                 <tr>
                                     <td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>
                                     <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">$2.15T</td>
-                                    <td class="tw-px-6 tw-py-4 tw-text-right">$1.30T</td>
+                                    <td class="tw-px-6 tw-py-4 tw-text-right">$3.50T</td>
                                     <td class="tw-px-6 tw-py-4 tw-text-right">$2.05T</td>
+                                    <td class="tw-px-6 tw-py-4 tw-text-right">$1.30T</td>
                                 </tr>
                                 <tr>
                                     <td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>
                                     <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">26.7x</td>
+                                    <td class="tw-px-6 tw-py-4 tw-text-right">35.0x</td>
+                                    <td class="tw-px-6 tw-py-4 tw-text-right">50.1x</td>
                                     <td class="tw-px-6 tw-py-4 tw-text-right">28.0x</td>
-                                    <td class="tw-px-6 tw-py-4 tw-text-right">50.0x</td>
                                 </tr>
                                 <tr>
                                     <td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>
                                     <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">+14.0%</td>
-                                    <td class="tw-px-6 tw-py-4 tw-text-right">+18.0%</td>
+                                    <td class="tw-px-6 tw-py-4 tw-text-right">+15.0%</td>
                                     <td class="tw-px-6 tw-py-4 tw-text-right">+13.0%</td>
+                                    <td class="tw-px-6 tw-py-4 tw-text-right">+18.0%</td>
                                 </tr>
                                 <tr>
                                     <td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>
                                     <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">25.1%</td>
-                                    <td class="tw-px-6 tw-py-4 tw-text-right">28.5%</td>
+                                    <td class="tw-px-6 tw-py-4 tw-text-right">37.9%</td>
                                     <td class="tw-px-6 tw-py-4 tw-text-right">8.0%</td>
+                                    <td class="tw-px-6 tw-py-4 tw-text-right">28.5%</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -428,17 +448,17 @@
                                     <tr>
                                         <td class="tw-px-6 tw-py-4 tw-font-medium">YTD Return</td>
                                         <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+45.0%</td>
-                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+15.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+15.1%</td>
                                     </tr>
                                     <tr>
                                         <td class="tw-px-6 tw-py-4 tw-font-medium">1-Year Return</td>
                                         <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+55.0%</td>
-                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+18.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+18.2%</td>
                                     </tr>
                                     <tr>
                                         <td class="tw-px-6 tw-py-4 tw-font-medium">3-Year Return</td>
                                         <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+60.0%</td>
-                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+40.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+40.1%</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -453,7 +473,7 @@
                             </p>
                         </div>
                         
-                        <!-- Simple SVG Bar Chart -->
+                        <!-- Simple HTML Bar Chart -->
                         <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
                             <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">1-Year Performance (Visual)</h3>
                             <div class="tw-space-y-4">
@@ -464,18 +484,18 @@
                                         <span class="tw-text-lg tw-font-semibold tw-text-blue-600">+55.0%</span>
                                     </div>
                                     <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
-                                        <div class="tw-bg-blue-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 73%;"></div>
+                                        <div class="tw-bg-blue-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 73.3%;"></div>
                                     </div>
                                 </div>
-                                <!-- Competitor (META) Bar -->
+                                <!-- Competitor (MSFT) Bar -->
                                 <div class="tw-w-full">
                                     <div class="tw-flex tw-justify-between tw-mb-1">
-                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">Competitor (META)</span>
-                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+75.0%</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">Competitor (MSFT)</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+50.2%</span>
                                     </div>
                                     <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
-                                        <!-- Relative width: (75 / 75) * 73% = 73% -->
-                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 73%;"></div>
+                                        <!-- Relative width: (50.2 / 75) * 100% = 66.9% -->
+                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 66.9%;"></div>
                                     </div>
                                 </div>
                                 <!-- Industry Bar -->
@@ -485,8 +505,8 @@
                                         <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+48.0%</span>
                                     </div>
                                     <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
-                                        <!-- Relative width: (48 / 75) * 73% = 46.7% -->
-                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 46.7%;"></div>
+                                        <!-- Relative width: (48.0 / 75) * 100% = 64.0% -->
+                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 64.0%;"></div>
                                     </div>
                                 </div>
                                 <!-- Sector Bar -->
@@ -496,8 +516,8 @@
                                         <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+35.0%</span>
                                     </div>
                                     <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
-                                        <!-- Relative width: (35 / 75) * 73% = 34% -->
-                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 34%;"></div>
+                                        <!-- Relative width: (35.0 / 75) * 100% = 46.7% -->
+                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 46.7%;"></div>
                                     </div>
                                 </div>
                             </div>
@@ -511,7 +531,6 @@
                     <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-flex tw-items-center tw-justify-center">
                         <!-- 
                           Plotly.js chart container. 
-                          It needs an explicit ID and a defined size to render correctly.
                         -->
                         <div id="priceChartDiv" class="tw-w-full tw-min-h-[600px]"></div>
                     </div>
@@ -532,39 +551,173 @@
     </div>
 
     <!-- 
-      Simple JavaScript for active navigation link highlighting on scroll.
-      This enhances the single-page app feel.
+      JavaScript for Charts.
+      This script renders the new Chart.js charts and the Plotly.js chart.
     -->
     <script>
+        // Store data from the JSON in a global-like scope for charts
+        const FUNDAMENTAL_DATA = {
+            analystConsensus: {
+                "targetMean": 195.50,
+                "targetHigh": 220.00,
+                "targetLow": 170.00,
+                "strongBuy": 22,
+                "buy": 18,
+                "hold": 4,
+                "sell": 0,
+                "strongSell": 0
+            },
+            quarterlyFinancials: {
+                "dates": [
+                    "2023-12-31", "2024-03-31", "2024-06-30", "2024-09-30",
+                    "2024-12-31", "2025-03-31", "2025-06-30", "2025-09-30"
+                ],
+                "revenue": [
+                    78000000000, 79000000000, 80000000000, 81000000000,
+                    82000000000, 83000000000, 84000000000, 85000000000
+                ],
+                "netIncome": [
+                    19000000000, 19500000000, 20000000000, 20500000000,
+                    21000000000, 21500000000, 22000000000, 22500000000
+                ]
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', (event) => {
-            const sections = document.querySelectorAll('section[id]');
-            const navLinks = document.querySelectorAll('#nav-list .nav-link');
             
-            const onScroll = () => {
-                let current = '';
-
-                sections.forEach( section => {
-                    const sectionTop = section.offsetTop;
-                    // Add a 150px offset to trigger the active state a bit earlier
-                    if (pageYOffset >= sectionTop - 150) {
-                        current = section.getAttribute('id');
+            // --- 1. Create Analyst Ratings Chart (Chart.js) ---
+            try {
+                const ctxAnalyst = document.getElementById('analystChart');
+                if (!ctxAnalyst) throw new Error('analystChart canvas not found');
+                const consensus = FUNDAMENTAL_DATA.analystConsensus;
+                new Chart(ctxAnalyst, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Strong Buy', 'Buy', 'Hold', 'Sell', 'Strong Sell'],
+                        datasets: [{
+                            label: 'Analyst Ratings',
+                            data: [
+                                consensus.strongBuy, 
+                                consensus.buy, 
+                                consensus.hold, 
+                                consensus.sell, 
+                                consensus.strongSell
+                            ],
+                            backgroundColor: [
+                                'rgba(34, 139, 34, 1)',  // Strong Buy
+                                'rgba(46, 204, 113, 1)', // Buy
+                                'rgba(241, 196, 15, 1)', // Hold
+                                'rgba(231, 76, 60, 1)',  // Sell
+                                'rgba(192, 57, 43, 1)'   // Strong Sell
+                            ],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += context.parsed + ' analysts';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
                     }
                 });
-
-                navLinks.forEach( link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${current}`) {
-                        link.classList.add('active');
+            } catch (e) {
+                console.error("Failed to render Analyst Chart:", e);
+            }
+            
+            // --- 2. Create Quarterly Trends Chart (Chart.js) ---
+            try {
+                const ctxQuarterly = document.getElementById('quarterlyChart');
+                if (!ctxQuarterly) throw new Error('quarterlyChart canvas not found');
+                const quarterly = FUNDAMENTAL_DATA.quarterlyFinancials;
+                
+                // Format labels to Q1 2024, Q2 2024, etc.
+                const labels = quarterly.dates.map(dateStr => {
+                    const date = new Date(dateStr);
+                    const q = Math.floor((date.getUTCMonth() + 3) / 3);
+                    const year = date.getUTCFullYear();
+                    return `Q${q} ${year}`;
+                });
+                
+                new Chart(ctxQuarterly, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Quarterly Revenue',
+                                data: quarterly.revenue,
+                                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Quarterly Net Income',
+                                data: quarterly.netIncome,
+                                backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        return (value / 1e9) + 'B'; // Format as $10B, $20B
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('en-US', {
+                                                style: 'currency',
+                                                currency: 'USD',
+                                                notation: 'compact'
+                                            }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
                     }
                 });
-            };
+            } catch (e) {
+                console.error("Failed to render Quarterly Chart:", e);
+            }
             
-            // Run on load and on scroll
-            window.addEventListener('scroll', onScroll);
-            onScroll(); 
-
-            // --- Fetch Data from JSON File ---
-            async function createChart() {
+            // --- 3. Create Price/Volume/RSI Chart (Plotly.js) ---
+            async function createPlotlyChart() {
                 try {
                     // Fetch the data generated by the Python script
                     const response = await fetch('charts/GOOG_251112.json');
@@ -573,7 +726,6 @@
                     }
                     const chartData = await response.json();
 
-                    // Trace 1: Price (Line Chart)
                     const priceTrace = {
                         x: chartData.dates,
                         y: chartData.prices,
@@ -584,8 +736,6 @@
                         xaxis: 'x',
                         yaxis: 'y'
                     };
-
-                    // Trace 2: Volume (Bar Chart)
                     const volumeTrace = {
                         x: chartData.dates,
                         y: chartData.volumes,
@@ -595,8 +745,6 @@
                         xaxis: 'x',
                         yaxis: 'y2'
                     };
-
-                    // Trace 3: RSI (Line Chart)
                     const rsiTrace = {
                         x: chartData.dates,
                         y: chartData.rsi,
@@ -608,31 +756,29 @@
                         yaxis: 'y3'
                     };
                     
-                    // Define the layout with 3 stacked subplots
                     const layout = {
-                        title: 'GOOG Price, Volume, and RSI (365 Days)', // Updated title
+                        title: 'GOOG Price, Volume, and RSI (365 Days)',
                         xaxis: {
                             anchor: 'y3',
                             domain: [0.0, 1.0],
-                            rangeslider: { visible: true, thickness: 0.1 }, // Enabled rangeslider
-                            showticklabels: false // Hide x-axis labels for top 2 plots
+                            rangeslider: { visible: true, thickness: 0.1 },
+                            showticklabels: false
                         },
                         yaxis: { // Price
                             title: 'Price ($)',
-                            domain: [0.6, 1.0], // 40% height at the top
+                            domain: [0.6, 1.0],
                             showgrid: true
                         },
                         yaxis2: { // Volume
                             title: 'Volume',
-                            domain: [0.3, 0.55], // 25% height in the middle
+                            domain: [0.3, 0.55],
                             showgrid: true
                         },
                         yaxis3: { // RSI
                             title: 'RSI',
-                            domain: [0.0, 0.25], // 25% height at the bottom
+                            domain: [0.0, 0.25],
                             range: [0, 100],
                             showgrid: true,
-                            // Add overbought/oversold lines
                             shapes: [
                                 { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 70, y1: 70, line: { color: '#ef4444', width: 2, dash: 'dash' } },
                                 { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 30, y1: 30, line: { color: '#22c55e', width: 2, dash: 'dash' } }
@@ -644,33 +790,38 @@
                         showlegend: false
                     };
                     
-                    // Combine traces and layout, then plot
                     const data = [priceTrace, volumeTrace, rsiTrace];
-                    Plotly.newPlot('priceChartDiv', data, layout, { responsive: true });
+                    const chartDiv = document.getElementById('priceChartDiv');
+                    if (!chartDiv) throw new Error('priceChartDiv not found');
+                    Plotly.newPlot(chartDiv, data, layout, { responsive: true });
 
                 } catch (error) {
                     console.error('Failed to load chart data:', error);
-                    // Display error message in the chart div
                     const chartDiv = document.getElementById('priceChartDiv');
-                    chartDiv.innerHTML = `
-                        <div class="tw-text-center tw-pt-16 tw-text-red-600">
-                            <svg class="tw-mx-auto tw-h-16 tw-w-16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                            </svg>
-                            <h3 class="tw-mt-4 tw-text-2xl tw-font-medium tw-text-gray-900">Failed to Load Chart Data</h3>
-                            <p class="tw-mt-2 tw-text-lg tw-text-gray-500">
-                                Could not fetch 'charts/GOOG_251112.json'.
-                            </p>
-                            <p class="tw-text-sm tw-text-gray-500">
-                                Please run the Python script to generate the data file.
-                            </p>
-                        </div>`;
+                    if (chartDiv) {
+                        chartDiv.innerHTML = `
+                            <div class="tw-text-center tw-pt-16 tw-text-red-600">
+                                <svg class="tw-mx-auto tw-h-16 tw-w-16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                                </svg>
+                                <h3 class="tw-mt-4 tw-text-2xl tw-font-medium tw-text-gray-900">Failed to Load Chart Data</h3>
+                                <p class="tw-mt-2 tw-text-lg tw-text-gray-500">
+                                    Could not fetch 'charts/GOOG_251112.json'.
+                                </p>
+                                <p class="tw-text-sm tw-text-gray-500">
+                                    Please run the Python script to generate the data file.
+                                </p>
+                            </div>`;
+                    }
                 }
             }
 
-            createChart();
+            createPlotlyChart();
         });
     </script>
+    
+    <!-- Common Script for scroll-spy navigation -->
+    <script src="common/finance-script.js" defer></script>
 
 </body>
 </html>
