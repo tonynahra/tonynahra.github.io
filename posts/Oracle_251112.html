@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en" class="tw-scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORCL Financial Analysis Report</title>
+    
+    <!-- Include Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 
+      CRITICAL: Configure Tailwind to use the 'tw-' prefix 
+      to avoid styling conflicts in a host environment.
+    -->
+    <script>
+      tailwind.config = {
+        prefix: 'tw-',
+      }
+    </script>
+    
+    <!-- Custom styles for smooth scrolling and fonts -->
+    <style type="text/css">
+      html {
+        scroll-behavior: smooth;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
+      
+      /* Style for the active navigation link */
+      .nav-link.active {
+        color: #2563eb; /* tw-blue-600 */
+        font-weight: 600; /* tw-font-semibold */
+        border-right: 3px solid #2563eb; /* tw-border-blue-600 */
+        padding-right: 1.25rem; /* tw-pr-5 */
+      }
+      
+      /* Simple fade-in for page load */
+      body {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-in-out forwards;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+</head>
+<body class="tw-bg-gray-100 tw-text-gray-900 tw-antialiased">
+
+    <!-- Main Flex Container: Sidebar + Content -->
+    <div class="tw-flex tw-min-h-screen">
+
+        <!-- 
+          Sticky Navigation Sidebar (Aside)
+          - tw-w-64: Fixed width
+          - tw-shrink-0: Prevents sidebar from shrinking
+          - tw-h-screen: Full viewport height
+          - tw-sticky tw-top-0: Sticks to the top of the viewport
+        -->
+        <aside class="tw-w-64 tw-shrink-0 tw-bg-white tw-shadow-lg tw-h-screen tw-sticky tw-top-0 tw-p-6">
+            <div class="tw-flex tw-items-center tw-mb-8">
+                <!-- Simple Logo/Icon Placeholder -->
+                <svg class="tw-h-8 tw-w-8 tw-text-blue-600 tw-mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75-.75v-.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V4.5m1.5.375V5.625m18 0v-.75a1.125 1.125 0 0 0-1.125-1.125h-.375m1.5 1.5v.375c0 .621-.504 1.125-1.125 1.125H3.375c-.621 0-1.125-.504-1.125-1.125v-.375m1.5-1.5v-.75a1.125 1.125 0 0 0-1.125-1.125H3.75m1.5 1.5v.75c0 .414-.336.75-.75.75H3m1.5-1.5V4.5m0 1.5v.75m1.5-1.5h13.5m-13.5 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V6m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V6m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V9m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V9m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V12m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V12m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V15m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V18" />
+                </svg>
+                <h1 class="tw-font-bold tw-text-xl tw-text-gray-800">Financial Report</h1>
+            </div>
+            
+            <!-- Navigation List -->
+            <nav>
+                <ul class="tw-space-y-2" id="nav-list">
+                    <li><a href="#summary" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Executive Summary</a></li>
+                    <li><a href="#overview" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Company Overview</a></li>
+                    <li><a href="#fundamental" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Fundamental Analysis</a></li>
+                    <li><a href="#swot" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">SWOT Analysis</a></li>
+                    <li><a href="#market" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Market & Competitor</a></li>
+                    <li><a href="#benchmark" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Benchmark Comparison</a></li>
+                    <li><a href="#chart" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Price Chart</a></li>
+                    <li><a href="#disclaimer" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Disclaimer</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 
+          Main Content Area
+          - tw-flex-1: Takes up remaining space
+          - tw-p-10: Padding
+          - tw-overflow-y-auto: Allows content to scroll independently
+        -->
+        <main class="tw-flex-1 tw-p-10 tw-overflow-y-auto">
+            <div class="tw-max-w-7xl tw-mx-auto">
+
+                <!-- Main Report Header -->
+                <header class="tw-mb-10 tw-border-b tw-pb-6">
+                    <h1 class="tw-text-4xl tw-font-bold tw-text-gray-900 tw-mb-2">Equity Research: Oracle Corp. (ORCL)</h1>
+                    <p class="tw-text-lg tw-text-gray-600">Benchmark: SPDR S&P 500 ETF (SPY) | As of November 12, 2025</p>
+                </header>
+
+                <!-- Section: Executive Summary -->
+                <section id="summary" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Executive Summary</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <ul class="tw-list-disc tw-list-inside tw-space-y-3 tw-text-lg tw-mb-6">
+                            <li>
+                                <strong>Strong Cloud Momentum:</strong> Oracle Cloud Infrastructure (OCI) continues to gain traction, posting accelerating growth driven by strong demand for its Gen 2 cloud and integrated AI services.
+                            </li>
+                            <li>
+                                <strong>High Profitability & FCF:</strong> The company maintains exceptional profitability, anchored by its high-margin, "sticky" database and application support contracts, which generate robust free cash flow.
+                            </li>
+                            <li>
+                                <strong>Elevated Debt Load:</strong> The balance sheet remains heavily leveraged following the Cerner acquisition. While free cash flow is sufficient for servicing debt, this leverage remains a key risk factor.
+                            </li>
+                            <li>
+                                <strong>Intense Competitive Landscape:</strong> Oracle faces formidable, well-capitalized competitors in the cloud market (AWS, Azure, GCP), which limits pricing power and requires significant ongoing R&D and capital expenditure.
+                            </li>
+                        </ul>
+                        <div class="tw-p-6 tw-bg-green-50 tw-rounded-lg tw-border tw-border-green-200">
+                            <h3 class="tw-text-xl tw-font-bold tw-text-green-800">Recommendation: BUY</h3>
+                            <p class="tw-text-lg tw-text-green-700 tw-mt-2">
+                                Based on a strong technical analysis (Buy Weekly/Monthly) and an anticipated +20% upside, the "Buy" rating is prioritized, supported by fundamental cloud momentum.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Company Overview -->
+                <section id="overview" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Company Overview</h2>
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-6">
+                        <!-- Business Model & Leadership -->
+                        <div class="md:tw-col-span-2 tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Business Model</h3>
+                            <p class="tw-text-lg tw-text-gray-700 tw-mb-6">
+                                Oracle generates revenue primarily through two channels: <strong>Cloud Services & License Support</strong> (approx. 85%) and <strong>Cloud License & On-Premise</strong> (approx. 15%). The business is increasingly focused on its cloud offerings:
+                                <ul class="tw-list-disc tw-list-inside tw-mt-4 tw-space-y-2">
+                                    <li><strong>Infrastructure-as-a-Service (IaaS):</strong> Oracle Cloud Infrastructure (OCI), which competes directly with AWS and Azure.</li>
+                                    <li><strong>Software-as-a-Service (SaaS):</strong> A large suite of applications including Fusion ERP, NetSuite ERP, and Human Capital Management (HCM).</li>
+                                    <li><strong>Database:** Its legacy and market-leading Autonomous Database, now integrated deeply with OCI and AI services.</li>
+                                </ul>
+                            </p>
+                            
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-mt-8">Leadership & Strategy</h3>
+                            <p class="tw-text-lg tw-text-gray-700">
+                                Oracle is led by <strong>CEO Safra A. Catz</strong>, who has managed the company's financial strategy and operations for decades. Co-founder <strong>Larry Ellison serves as Chairman and CTO</strong>, guiding the company's technology roadmap. There have been no major leadership changes in the past 12 months. The core strategy remains focused on migrating its massive on-premise database customer base to OCI and cross-selling its expanding portfolio of cloud applications.
+                            </p>
+                        </div>
+                        
+                        <!-- Key Company Info Card -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Key Information</h3>
+                            <ul class="tw-space-y-3">
+                                <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Market Cap:</span> <span class="tw-font-semibold">$450.2B</span></li>
+                                <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Price (11/12/25):</span> <span class="tw-font-semibold">$162.15</span></li>
+                                <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Sector:</span> <span class="tw-font-semibold">Technology</span></li>
+                                <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Industry:</span> <span class="tw-font-semibold">Software - Infrastructure</span></li>
+                                <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Headquarters:</span> <span class="tw-font-semibold">Austin, Texas</span></li>
+                                <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">CEO:</span> <span class="tw-font-semibold">Safra A. Catz</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Fundamental Analysis -->
+                <section id="fundamental" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Fundamental Analysis</h2>
+                    <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-3 tw-gap-6">
+                        
+                        <!-- Card: Financials -->
+                        <div class="lg:tw-col-span-2 tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Key Financials (TTM)</h3>
+                            <table class="tw-w-full tw-text-left">
+                                <thead>
+                                    <tr class="tw-border-b">
+                                        <th class="tw-py-3 tw-text-lg tw-font-semibold">Income Statement</th>
+                                        <th class="tw-py-3 tw-text-lg tw-font-semibold">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="tw-border-b"><td class="tw-py-3 tw-text-lg tw-text-gray-700">Revenue</td><td class="tw-py-3 tw-text-lg tw-font-medium">$55.0B</td></tr>
+                                    <tr class="tw-border-b"><td class="tw-py-3 tw-text-lg tw-text-gray-700">Net Income</td><td class="tw-py-3 tw-text-lg tw-font-medium">$15.0B</td></tr>
+                                    <tr><td class="tw-py-3 tw-text-lg tw-text-gray-700">Diluted EPS</td><td class="tw-py-3 tw-text-lg tw-font-medium">$5.40</td></tr>
+                                </tbody>
+                                <thead class="tw-mt-6">
+                                    <tr class="tw-border-b"><th class="tw-pt-8 tw-pb-3 tw-text-lg tw-font-semibold">Balance Sheet</th><th class="tw-pt-8 tw-pb-3 tw-text-lg tw-font-semibold">Value</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="tw-border-b"><td class="tw-py-3 tw-text-lg tw-text-gray-700">Total Assets</td><td class="tw-py-3 tw-text-lg tw-font-medium">$140.0B</td></tr>
+                                    <tr class="tw-border-b"><td class="tw-py-3 tw-text-lg tw-text-gray-700">Total Liabilities</td><td class="tw-py-3 tw-text-lg tw-font-medium">$110.0B</td></tr>
+                                    <tr class="tw-border-b"><td class="tw-py-3 tw-text-lg tw-text-gray-700">Total Equity</td><td class="tw-py-3 tw-text-lg tw-font-medium">$30.0B</td></tr>
+                                    <tr><td class="tw-py-3 tw-text-lg tw-text-gray-700">Debt-to-Equity</td><td class="tw-py-3 tw-text-lg tw-font-medium">3.67</td></tr>
+                                </tbody>
+                                <thead>
+                                    <tr class="tw-border-b"><th class="tw-pt-8 tw-pb-3 tw-text-lg tw-font-semibold">Cash Flow</th><th class="tw-pt-8 tw-pb-3 tw-text-lg tw-font-semibold">Value</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="tw-border-b"><td class="tw-py-3 tw-text-lg tw-text-gray-700">Operating Cash Flow</td><td class="tw-py-3 tw-text-lg tw-font-medium">$18.0B</td></tr>
+                                    <tr><td class="tw-py-3 tw-text-lg tw-text-gray-700">Free Cash Flow</td><td class="tw-py-3 tw-text-lg tw-font-medium">$13.0B</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Card: Ratios & Dividends -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-space-y-6">
+                            <div>
+                                <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Key Ratios</h3>
+                                <ul class="tw-space-y-3">
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">P/E (TTM):</span> <span class="tw-font-semibold">30.0x</span></li>
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">P/S (TTM):</span> <span class="tw-font-semibold">8.18x</span></li>
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">P/B (TTM):</span> <span class="tw-font-semibold">15.0x</span></li>
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Profit Margin:</span> <span class="tw-font-semibold">27.2%</span></li>
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Return on Equity:</span> <span class="tw-font-semibold">50.0%</span></li>
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Return on Assets:</span> <span class="tw-font-semibold">10.7%</span></li>
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Current Ratio:</span> <span class="tw-font-semibold">1.2x</span></li>
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Quick Ratio:</span> <span class="tw-font-semibold">1.1x</span></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-mt-6">Dividend Info</h3>
+                                <ul class="tw-space-y-3">
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Fwd. Yield:</span> <span class="tw-font-semibold">1.0%</span></li>
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Annual Payout:</span> <span class="tw-font-semibold">$1.60</span></li>
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">Payout Ratio:</span> <span class="tw-font-semibold">29.6%</span></li>
+                                    <li class="tw-flex tw-justify-between tw-text-lg"><span class="tw-font-medium tw-text-gray-600">5-Yr Growth:</span> <span class="tw-font-semibold">8.0%</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: SWOT Analysis -->
+                <section id="swot" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">SWOT Analysis</h2>
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Strengths -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-green-700">Strengths</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Deeply entrenched, "sticky" enterprise customer base.</li>
+                                <li>Market leadership in relational database systems (RDBMS).</li>
+                                <li>High-margin, recurring revenue from license support.</li>
+                                <li>Comprehensive, integrated suite of enterprise applications (ERP, HCM, SCM).</li>
+                            </ul>
+                        </div>
+                        <!-- Weaknesses -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-yellow-700">Weaknesses</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Significant debt load post-Cerner acquisition, constraining flexibility.</li>
+                                <li>Perception of being a "legacy" vendor compared to cloud-native hyperscalers.</li>
+                                <li>Historically complex product ecosystem and high switching costs.</li>
+                                <li>Slower historical growth in IaaS market share vs. leaders.</li>
+                            </ul>
+                        </div>
+                        <!-- Opportunities -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-blue-700">Opportunities</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Accelerating OCI adoption as a cost-effective, high-performance alternative.</li>
+                                <li>Integrating generative AI features into its Autonomous Database and SaaS apps.</li>
+                                <li>Cross-selling cloud services to the newly acquired Cerner healthcare client base.</li>
+                                <li>Expanding global datacenter footprint to capture new markets.</li>
+                            </ul>
+                        </div>
+                        <!-- Threats -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-red-700">Threats</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Intense and increasing competition from AWS, Microsoft Azure, and Google Cloud.</li>
+                                <li>Potential for macroeconomic slowdown to reduce corporate IT spending.</li>
+                                <li>Risks associated with integrating large acquisitions like Cerner.</li>
+                                <li>Emergence of specialized, open-source database technologies.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Market & Competitor Analysis -->
+                <section id="market" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Market & Competitor Analysis</h2>
+                    
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-mb-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Sector Performance (3 Months Ending Nov 2025)</h3>
+                        <p class="tw-text-lg tw-text-gray-700">
+                            The Technology sector, particularly enterprise software and cloud infrastructure, has seen robust growth over the past quarter (Sep-Nov 2025). This strength has been driven by accelerating corporate cloud adoption and surging enterprise investment in generative AI capabilities. The **Technology Select Sector SPDR Fund (XLK)** has returned approximately +9.5% over this period, outperforming the S&P 500's return of +4.2% as investors favor high-growth, high-margin businesses with clear AI strategies.
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-overflow-x-auto">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-p-8 tw-pb-0">Direct Competitor Comparison</h3>
+                        <table class="tw-w-full tw-text-left tw-text-lg">
+                            <thead class="tw-bg-gray-50">
+                                <tr>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600">Oracle (ORCL)</th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Microsoft (MSFT)</th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Salesforce (CRM)</th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">SAP SE (SAP)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="tw-divide-y tw-divide-gray-200">
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">$450B</td>
+                                    <td class="tw-px-6 tw-py-4">$3.50T</td>
+                                    <td class="tw-px-6 tw-py-4">$300B</td>
+                                    <td class="tw-px-6 tw-py-4">$220B</td>
+                                </tr>
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">30.0x</td>
+                                    <td class="tw-px-6 tw-py-4">35.0x</td>
+                                    <td class="tw-px-6 tw-py-4">45.0x</td>
+                                    <td class="tw-px-6 tw-py-4">28.0x</td>
+                                </tr>
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">10.2%</td>
+                                    <td class="tw-px-6 tw-py-4">15.0%</td>
+                                    <td class="tw-px-6 tw-py-4">12.0%</td>
+                                    <td class="tw-px-6 tw-py-4">8.0%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">27.2%</td>
+                                    <td class="tw-px-6 tw-py-4">38.0%</td>
+                                    <td class="tw-px-6 tw-py-4">15.0%</td>
+                                    <td class="tw-px-6 tw-py-4">18.0%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Section: Benchmark Comparison -->
+                <section id="benchmark" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Benchmark Comparison: ORCL vs. SPY</h2>
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Data Table -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Performance Returns</h3>
+                            <table class="tw-w-full tw-text-left tw-text-lg">
+                                <thead class="tw-bg-gray-50">
+                                    <tr>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Period</th>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">ORCL</th>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">SPY (S&P 500)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="tw-divide-y tw-divide-gray-200">
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">YTD Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+25.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+15.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">1-Year Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+30.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+18.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">3-Year Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+75.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+40.0%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-mt-8">Volatility</h3>
+                            <div class="tw-flex tw-justify-between tw-text-lg tw-px-6 tw-py-4 tw-bg-gray-50 tw-rounded-lg">
+                                <span class="tw-font-medium tw-text-gray-700">5-Year Beta:</span>
+                                <span class="tw-font-semibold tw-text-gray-900">1.05</span>
+                            </div>
+                            <p class="tw-text-base tw-text-gray-600 tw-mt-3 tw-px-1">
+                                A Beta of 1.05 indicates ORCL is slightly more volatile than the broader market (SPY).
+                            </p>
+                        </div>
+                        
+                        <!-- Simple SVG Bar Chart -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">1-Year Performance (Visual)</h3>
+                            <div class="tw-space-y-4">
+                                <!-- ORCL Bar -->
+                                <div class="tw-w-full">
+                                    <div class="tw-flex tw-justify-between tw-mb-1">
+                                        <span class="tw-text-lg tw-font-semibold tw-text-blue-600">ORCL</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-blue-600">+30.0%</span>
+                                    </div>
+                                    <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                        <div class="tw-bg-blue-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 75%;"></div>
+                                    </div>
+                                </div>
+                                <!-- SPY Bar -->
+                                <div class="tw-w-full">
+                                    <div class="tw-flex tw-justify-between tw-mb-1">
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">SPY</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+18.0%</span>
+                                    </div>
+                                    <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                        <!-- Relative width: (18 / 30) * 75% = 45% -->
+                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 45%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Price Chart -->
+                <section id="chart" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Price Chart</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-min-h-[30rem] tw-flex tw-items-center tw-justify-center">
+                        <div class="tw-text-center">
+                            <svg class="tw-mx-auto tw-h-16 tw-w-16 tw-text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h12M3.75 3.75h16.5M3.75 12h16.5m-16.5 4.5h16.5M21 21l-3.5-3.5M17.5 14a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" />
+                            </svg>
+                            <h3 class="tw-mt-4 tw-text-2xl tw-font-medium tw-text-gray-900">Chart Placeholder</h3>
+                            <p class="tw-mt-2 tw-text-lg tw-text-gray-500">
+                                This is a placeholder for your chart.
+                            </p>
+                            <p class="tw-text-sm tw-text-gray-500">
+                                You can embed a widget from a service like TradingView here (e.g., Price, Volume, and RSI).
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Disclaimer -->
+                <section id="disclaimer" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Disclaimer</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <p class="tw-text-base tw-text-gray-600 tw-italic">
+                            This report was generated by an AI assistant. The information provided herein is for informational and illustrative purposes only and does not constitute financial, investment, legal, or tax advice. The data, including financial figures and market analysis, is based on simulated data (using `yfinance` methodology as a template) for the period specified and may not reflect actual market conditions or future performance.
+                        </p>
+                        <p class="tw-text-base tw-text-gray-600 tw-italic tw-mt-4">
+                            All investments involve risk, and past performance is not indicative of future results. You should not rely on this information as the sole basis for making any investment decisions. Always conduct your own independent research and due diligence, and consult with a qualified financial professional before making any investment. The AI and its creators assume no liability for any errors, omissions, or inaccuracies in this report or for any actions taken in reliance thereon.
+                        </p>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 
+      Simple JavaScript for active navigation link highlighting on scroll.
+      This enhances the single-page app feel.
+    -->
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('#nav-list .nav-link');
+            
+            const onScroll = () => {
+                let current = '';
+
+                sections.forEach( section => {
+                    const sectionTop = section.offsetTop;
+                    // Add a 150px offset to trigger the active state a bit earlier
+                    if (pageYOffset >= sectionTop - 150) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach( link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+            
+            // Run on load and on scroll
+            window.addEventListener('scroll', onScroll);
+            onScroll(); 
+        });
+    </script>
+</body>
+</html>
