@@ -163,6 +163,8 @@ Sector Performance (Last 3 Months ending [CURRENT DATE]): Briefly describe the p
 
 Direct Competitor Comparison: Identify 2-3 direct competitors and create a table comparing them on Market Cap, P/E, Revenue Growth (YoY), and Net Margin.
 
+Table Styling: In the competitor table, ensure all data cells (Market Cap, P/E, etc.) are right-aligned (tw-text-right) for numerical readability.
+
 Section 7: Benchmark Comparison (id="benchmark")
 
 Compare the performance of [TICKER SYMBOL] against the [BENCHMARK INDEX] (e.g., "S&P 500 Index").
