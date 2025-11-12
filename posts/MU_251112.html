@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" class="tw-scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MU Financial Analysis Report</title>
+    
+    <!-- Include Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 
+      CRITICAL: Configure Tailwind to use the 'tw-' prefix 
+      to avoid styling conflicts in a host environment.
+    -->
+    <script>
+      tailwind.config = {
+        prefix: 'tw-',
+      }
+    </script>
+    
+    <!-- Add Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <!-- Custom styles for smooth scrolling and fonts -->
+    <style type="text/css">
+      html {
+        scroll-behavior: smooth;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
+      
+      /* Style for the active navigation link */
+      .nav-link.active {
+        color: #2563eb; /* tw-blue-600 */
+        font-weight: 600; /* tw-font-semibold */
+        border-right: 3px solid #2563eb; /* tw-border-blue-600 */
+        padding-right: 1.25rem; /* tw-pr-5 */
+      }
+      
+      /* Simple fade-in for page load */
+      body {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-in-out forwards;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+</head>
+<body class="tw-bg-gray-100 tw-text-gray-900 tw-antialiased">
+
+    <!-- Main Flex Container: Sidebar + Content -->
+    <div class="tw-flex tw-min-h-screen">
+
+        <!-- 
+          Sticky Navigation Sidebar (Aside)
+          - tw-w-64: Fixed width
+          - tw-shrink-0: Prevents sidebar from shrinking
+          - tw-h-screen: Full viewport height
+          - tw-sticky tw-top-0: Sticks to the top of the viewport
+        -->
+        <aside class="tw-w-64 tw-shrink-0 tw-bg-white tw-shadow-lg tw-h-screen tw-sticky tw-top-0 tw-p-6">
+            <div class="tw-flex tw-items-center tw-mb-8">
+                <!-- Simple Logo/Icon Placeholder -->
+                <svg class="tw-h-8 tw-w-8 tw-text-blue-600 tw-mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75-.75v-.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V4.5m1.5.375V5.625m18 0v-.75a1.125 1.125 0 0 0-1.125-1.125h-.375m1.5 1.5v.375c0 .621-.504 1.125-1.125 1.125H3.375c-.621 0-1.125-.504-1.125-1.125v-.375m1.5-1.5v-.75a1.125 1.125 0 0 0-1.125-1.125H3.75m1.5 1.5v.75c0 .414-.336.75-.75.75H3m1.5-1.5V4.5m0 1.5v.75m1.5-1.5h13.5m-13.5 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V6m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V6m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V9m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V9m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V12m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V12m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V15m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V18" />
+                </svg>
+                <h1 class="tw-font-bold tw-text-xl tw-text-gray-800">Financial Report</h1>
+            </div>
+            
+            <!-- Navigation List -->
+            <nav>
+                <ul class="tw-space-y-2" id="nav-list">
+                    <li><a href="#summary" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Executive Summary</a></li>
+                    <li><a href="#overview" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Company Overview</a></li>
+                    <li><a href="#fundamental" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Fundamental Analysis</a></li>
+                    <li><a href="#interpretation" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Analysis & Interpretation</a></li>
+                    <li><a href="#swot" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">SWOT Analysis</a></li>
+                    <li><a href="#market" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Market & Competitor</a></li>
+                    <li><a href="#benchmark" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Benchmark Comparison</a></li>
+                    <li><a href="#chart" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Price Chart</a></li>
+                    <li><a href="#disclaimer" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Disclaimer</a></li>
+                </ul>
+                <hr class="tw-my-4 tw-border-gray-200">
+                <ul>
+                    <li><a href="https://tonynahra.github.io/" target="_blank" rel="noopener noreferrer" class="tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200 tw-flex tw-items-center">
+                        About the Author
+                        <svg class="tw-w-4 tw-h-4 tw-ml-2 tw-text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"></path>
+                        </svg>
+                      </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 
+          Main Content Area
+          - tw-flex-1: Takes up remaining space
+          - tw-p-10: Padding
+          - tw-overflow-y-auto: Allows content to scroll independently
+        -->
+        <main class="tw-flex-1 tw-p-10 tw-overflow-y-auto">
+            <div class="tw-max-w-7xl tw-mx-auto">
+
+                <!-- Main Report Header -->
+                <header class="tw-mb-10 tw-border-b tw-pb-6">
+                    <h1 class="tw-text-4xl tw-font-bold tw-text-gray-900 tw-mb-2">Equity Research: Micron Technology (MU)</h1>
+                    <p class="tw-text-lg tw-text-gray-600">Benchmark: S&P 500 Index | As of November 12, 2025</p>
+                </header>
+
+                <!-- Section: Executive Summary -->
+                <section id="summary" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Executive Summary</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <ul class="tw-list-disc tw-list-inside tw-space-y-3 tw-text-lg tw-mb-6">
+                            <li>
+                                <strong>Emerging Cyclical Recovery:</strong> Micron is benefiting from a cyclical upturn in the memory market, driven by stabilizing prices and recovering demand from data center and PC markets after a deep downturn in 2023-2024.
+                            </li>
+                            <li>
+                                <strong>AI & HBM Tailwinds:</strong> Strong demand for high-bandwidth memory (HBM) for AI accelerators (like NVIDIA's GPUs) is a significant tailwind, boosting average selling prices (ASPs) and margins.
+                            </li>
+                            <li>
+                                <strong>High Capital Intensity:</strong> The business remains intensely capital-expenditure-heavy, requiring massive ongoing investment to maintain its technology lead, which can pressure free cash flow during downturns.
+                            </li>
+                            <li>
+                                <strong>Concentrated Market Risk:</strong> The memory market is an oligopoly (Micron, Samsung, SK Hynix). This leads to intense price competition and supply/demand volatility, making earnings highly cyclical.
+                            </li>
+                        </ul>
+                        <div class="tw-p-6 tw-bg-yellow-50 tw-rounded-lg tw-border tw-border-yellow-200">
+                            <h3 class="tw-text-xl tw-font-bold tw-text-yellow-800">Recommendation: HOLD</h3>
+                            <p class="tw-text-lg tw-text-yellow-700 tw-mt-2">
+                                While fundamentals are improving significantly due to AI-driven demand, the stock has seen a strong run. The inherent cyclicality of the memory market suggests a "Hold" rating, balancing near-term tailwinds with long-term volatility.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Company Overview -->
+                <section id="overview" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Company Overview</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-mb-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Business Model</h3>
+                        <p class="tw-text-lg tw-text-gray-700 tw-mb-6">
+                            Micron Technology (MU) is a global leader in innovative memory and storage solutions. The company's business model revolves around the design, manufacturing, and sale of two primary types of semiconductor memory:
+                            <ul class="tw-list-disc tw-list-inside tw-mt-4 tw-space-y-2">
+                                <li><strong>DRAM (Dynamic Random-Access Memory):</strong> High-speed, volatile memory used in data centers, PCs, mobile phones, and graphics cards (including HBM).</li>
+                                <li><strong>NAND Flash Memory:</strong> Non-volatile storage (retains data without power) used in SSDs (Solid-State Drives), USB drives, and memory cards for consumer and enterprise markets.</li>
+                            </ul>
+                            <p class="tw-text-lg tw-text-gray-700 tw-mt-4">
+                                Revenue is generated by selling these components to a wide range of customers, from large-scale data center operators and PC manufacturers to mobile device and automotive companies.
+                            </p>
+                        </p>
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Leadership</h3>
+                        <p class="tw-text-lg tw-text-gray-700">
+                            The company is led by <strong>CEO Sanjay Mehrotra</strong>, a co-founder of SanDisk and a veteran of the storage industry. Under his leadership, Micron has focused on technological transitions to next-generation nodes (e.g., 1-gamma DRAM) and capturing the high-growth market for <a href="https://www.micron.com/products/high-bandwidth-memory" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">High-Bandwidth Memory (HBM)</a> used in AI.
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Company Information</h3>
+                        <dl class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-x-8 tw-gap-y-4">
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Market Cap</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900">$140.0B</dd>
+                            </div>
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Sector</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900">Technology</dd>
+                            </div>
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Industry</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900">Semiconductors</dd>
+                            </div>
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Headquarters</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900">Boise, Idaho, USA</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </section>
+
+                <!-- Section: Fundamental Analysis -->
+                <section id="fundamental" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Fundamental Analysis</h2>
+                    <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-3 tw-gap-6">
+                        <!-- Card: Key Financials -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Key Financials (TTM)</h3>
+                            <ul class="tw-space-y-3 tw-text-lg">
+                                <li class="tw-flex tw-justify-between"><span>Revenue:</span> <span class="tw-font-semibold">$22.5B</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Net Income:</span> <span class="tw-font-semibold">$2.1B</span></li>
+                                <li class="tw-flex tw-justify-between"><span>EPS (Diluted):</span> <span class="tw-font-semibold">$1.90</span></li>
+                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Operating Cash Flow:</span> <span class="tw-font-semibold">$8.5B</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Free Cash Flow:</span> <span class="tw-font-semibold tw-text-red-600">($1.5B)</span></li>
+                            </ul>
+                        </div>
+                        <!-- Card: Key Ratios -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Key Ratios</h3>
+                            <ul class="tw-space-y-3 tw-text-lg">
+                                <li class="tw-flex tw-justify-between"><span>P/E (TTM):</span> <span class="tw-font-semibold">66.8x</span></li>
+                                <li class="tw-flex tw-justify-between"><span>P/S (TTM):</span> <span class="tw-font-semibold">6.2x</span></li>
+                                <li class="tw-flex tw-justify-between"><span>P/B (TTM):</span> <span class="tw-font-semibold">2.9x</span></li>
+                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Profit Margin:</span> <span class="tw-font-semibold">9.3%</span></li>
+                                <li class="tw-flex tw-justify-between"><span>ROA:</span> <span class="tw-font-semibold">2.3%</span></li>
+                                <li class="tw-flex tw-justify-between"><span>ROE:</span> <span class="tw-font-semibold">4.4%</span></li>
+                            </ul>
+                        </div>
+                        <!-- Card: Balance Sheet & Dividend -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Balance Sheet & Dividend</h3>
+                            <ul class="tw-space-y-3 tw-text-lg">
+                                <li class="tw-flex tw-justify-between"><span>Total Assets:</span> <span class="tw-font-semibold">$91.0B</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Total Liabilities:</span> <span class="tw-font-semibold">$28.5B</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Total Equity:</span> <span class="tw-font-semibold">$62.5B</span></li>
+                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Debt-to-Equity:</span> <span class="tw-font-semibold">0.22</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Current Ratio:</span> <span class="tw-font-semibold">2.8x</span></li>
+                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Dividend Yield:</span> <span class="tw-font-semibold">0.37%</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Payout Ratio:</span> <span class="tw-font-semibold">19.5%</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Analysis & Interpretation -->
+                <section id="interpretation" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Analysis & Interpretation</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <p class="tw-text-lg tw-text-gray-600 tw-mb-8">
+                            This section provides a technical breakdown of the key financial ratios presented in the previous section. It explains what these metrics signify for Micron's financial health and market valuation.
+                        </p>
+                        <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-x-8 tw-gap-y-10">
+                            
+                            <!-- Item 1: P/E Ratio -->
+                            <div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                                    <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">P/E Ratio (TTM)</h4>
+                                    <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium tw-bg-yellow-100 tw-text-yellow-800">
+                                        66.8x (Forward-Looking)
+                                    </span>
+                                </div>
+                                <p class="tw-text-lg tw-text-gray-700">
+                                    <strong>Meaning:</strong> The Price-to-Earnings ratio measures the current share price relative to its per-share earnings.
+                                    <br>
+                                    <strong>Interpretation:</strong> A P/E of 66.8x is extremely high and typical for a deeply cyclical company at the *trough* of its earnings cycle. The market is "looking over the valley" and pricing the stock based on (much higher) anticipated future earnings in 2026-2027, not the just-recovering TTM earnings.
+                                </p>
+                            </div>
+
+                            <!-- Item 2: Free Cash Flow -->
+                            <div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                                    <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">Free Cash Flow (TTM)</h4>
+                                    <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium tw-bg-red-100 tw-text-red-800">
+                                        ($1.5B) (High CapEx)
+                                    </span>
+                                </div>
+                                <p class="tw-text-lg tw-text-gray-700">
+                                    <strong>Meaning:</strong> FCF (Operating Cash Flow - Capital Expenditures) is the cash left over after funding operations and investments.
+                                    <br>
+                                    <strong>Interpretation:</strong> Negative FCF highlights the core challenge of the semiconductor industry. Even with $8.5B in operating cash flow, the company spent $10.0B on CapEx to build new fabs and transition to new tech. This cash burn is normal during investment cycles but is a key risk.
+                                </p>
+                            </div>
+
+                            <!-- Item 3: Current Ratio -->
+                            <div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                                    <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">Current Ratio</h4>
+                                    <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium tw-bg-green-100 tw-text-green-800">
+                                        2.8x (Strong)
+                                    </span>
+                                </div>
+                                <p class="tw-text-lg tw-text-gray-700">
+                                    <strong>Meaning:</strong> This measures the company's ability to pay its short-term liabilities (due within one year) with its short-term assets.
+                                    <br>
+                                    <strong>Interpretation:</strong> A ratio of 2.8x is very strong, indicating excellent short-term liquidity. This is crucial for a cyclical business, as it allows Micron to weather downturns without facing a liquidity crisis.
+                                </p>
+                            </div>
+
+                            <!-- Item 4: Debt-to-Equity -->
+                            <div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                                    <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">Debt-to-Equity Ratio</h4>
+                                    <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium tw-bg-green-100 tw-text-green-800">
+                                        0.22 (Excellent)
+                                    </span>
+                                </div>
+                                <p class="tw-text-lg tw-text-gray-700">
+                                    <strong>Meaning:</strong> This ratio (Total Debt / Shareholder Equity) measures the company's financial leverage.
+                                    <br>
+                                    <strong>Interpretation:</strong> A ratio of 0.22 is very low and represents a conservative, "fortress" balance sheet. Management has deliberately kept debt low to survive the industry's severe cyclicality, which is a major strength.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: SWOT Analysis -->
+                <section id="swot" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">SWOT Analysis</h2>
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Strengths -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-green-700">Strengths</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Leading-edge technology in DRAM and NAND.</li>
+                                <li>Strong, low-debt balance sheet.</li>
+                                <li>Rational oligopoly market structure (3 main players).</li>
+                                <li>Diversified end-markets (Data Center, PC, Mobile, Auto).</li>
+                            </ul>
+                        </div>
+                        <!-- Weaknesses -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-yellow-700">Weaknesses</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Extreme earnings cyclicality based on memory pricing.</li>
+                                <li>Very high capital expenditure requirements (negative FCF).</li>
+                                <li>Memory is a "commodity" product, limiting pricing power.</li>
+                                <li>Smaller scale compared to main competitor Samsung.</li>
+                            </ul>
+                        </div>
+                        <!-- Opportunities -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-blue-700">Opportunities</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Massive demand for HBM for AI servers.</li>
+                                <li>Increasing memory content per device (AI PCs, smartphones).</li>
+                                <li>Growth in automotive and industrial (IoT) end-markets.</li>
+                                <li>Government subsidies (e.g., CHIPS Act) to fund new fabs.</li>
+                            </ul>
+                        </div>
+                        <!-- Threats -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-red-700">Threats</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Aggressive capacity expansion or price war from Samsung/SK Hynix.</li>
+                                <li>Macroeconomic slowdown hitting consumer/enterprise demand.</li>
+                                <li>Geopolitical risks (e.g., China/Taiwan) disrupting supply chains.</li>
+                                <li>Technological disruption from new memory types.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Market & Competitor Analysis -->
+                <section id="market" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Market & Competitor Analysis</h2>
+                    
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-mb-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Sector Performance (3 Months Ending Nov 2025)</h3>
+                        <p class="tw-text-lg tw-text-gray-700">
+                            The Semiconductor sector has been a market leader over the past quarter, driven by the unabated hype and investment in Generative AI. The <strong><a href="https://www.ishares.com/us/products/239705/ishares-phlx-semiconductor-etf" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">iShares Semiconductor ETF (SOXX)</a></strong> has returned +14.5% in the last 3 months, significantly outpacing both the tech sector (+9.5%) and the S&P 500 (+4.2%). This strength is concentrated in AI-exposed names, including memory suppliers like Micron.
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-overflow-x-auto">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-p-8 tw-pb-0">Direct Competitor Comparison</h3>
+                        <table class="tw-w-full tw-text-left tw-text-lg">
+                            <thead class="tw-bg-gray-50">
+                                <tr>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600">Micron (MU)</th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Samsung (SSNLF)</th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">SK Hynix (HXSCL)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="tw-divide-y tw-divide-gray-200">
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">$140B</td>
+                                    <td class="tw-px-6 tw-py-4">~$400B</td>
+                                    <td class="tw-px-6 tw-py-4">~$100B</td>
+                                </tr>
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">66.8x</td>
+                                    <td class="tw-px-6 tw-py-4">~25.0x</td>
+                                    <td class="tw-px-6 tw-py-4">N/A (Loss)</td>
+                                </tr>
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">+15.2%</td>
+                                    <td class="tw-px-6 tw-py-4">+10.0%</td>
+                                    <td class="tw-px-6 tw-py-4">+45.0%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">9.3%</td>
+                                    <td class="tw-px-6 tw-py-4">~12.0%</td>
+                                    <td class="tw-px-6 tw-py-4">N/A (Loss)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Section: Benchmark Comparison -->
+                <section id="benchmark" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Benchmark Comparison</h2>
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Data Table -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Performance Returns</h3>
+                            <table class="tw-w-full tw-text-left tw-text-lg">
+                                <thead class="tw-bg-gray-50">
+                                    <tr>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Period</th>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">MU</th>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">S&P 500 Index</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="tw-divide-y tw-divide-gray-200">
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">YTD Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+55.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+15.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">1-Year Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+80.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+18.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">3-Year Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+60.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+40.0%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-mt-8">Volatility</h3>
+                            <div class="tw-flex tw-justify-between tw-text-lg tw-px-6 tw-py-4 tw-bg-gray-50 tw-rounded-lg">
+                                <span class="tw-font-medium tw-text-gray-700">5-Year Beta:</span>
+                                <span class="tw-font-semibold tw-text-gray-900">1.35</span>
+                            </div>
+                            <p class="tw-text-base tw-text-gray-600 tw-mt-3 tw-px-1">
+                                A Beta of 1.35 indicates MU is 35% more volatile than the broader market, which is typical for the semiconductor industry.
+                            </p>
+                        </div>
+                        
+                        <!-- Simple SVG Bar Chart -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">1-Year Performance (Visual)</h3>
+                            <div class="tw-space-y-4">
+                                <!-- MU Bar -->
+                                <div class="tw-w-full">
+                                    <div class="tw-flex tw-justify-between tw-mb-1">
+                                        <span class="tw-text-lg tw-font-semibold tw-text-blue-600">MU</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-blue-600">+80.0%</span>
+                                    </div>
+                                    <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                        <div class="tw-bg-blue-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 90%;"></div>
+                                    </div>
+                                </div>
+                                <!-- Competitor (SK Hynix) Bar -->
+                                <div class="tw-w-full">
+                                    <div class="tw-flex tw-justify-between tw-mb-1">
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">Competitor (SK Hynix)</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+95.0%</span>
+                                    </div>
+                                    <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                        <!-- Relative width: (95 / 95) * 90% = 90% (cap at max) -->
+                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 90%;"></div>
+                                    </div>
+                                </div>
+                                <!-- Industry Bar -->
+                                <div class="tw-w-full">
+                                    <div class="tw-flex tw-justify-between tw-mb-1">
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">Industry (Semiconductors)</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+65.0%</span>
+                                    </div>
+                                    <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                        <!-- Relative width: (65 / 95) * 90% = 61.5% -->
+                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 61.5%;"></div>
+                                    </div>
+                                </div>
+                                <!-- Sector Bar -->
+                                <div class="tw-w-full">
+                                    <div class="tw-flex tw-justify-between tw-mb-1">
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">Sector (Technology)</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+22.0%</span>
+                                    </div>
+                                    <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                        <!-- Relative width: (22 / 95) * 90% = 20.8% -->
+                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 20.8%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Price Chart -->
+                <section id="chart" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Price Chart</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-min-h-[30rem] tw-flex tw-items-center tw-justify-center">
+                        <div class_id="priceChartDiv" class="tw-text-center">
+                            <!-- This will be populated by Plotly.js if this file were live -->
+                            <div id="priceChartDiv" class="tw-w-full tw-min-h-[600px]">
+                                <div class="tw-text-center tw-pt-16">
+                                    <svg class="tw-mx-auto tw-h-16 tw-w-16 tw-text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h12M3.75 3.75h16.5M3.75 12h16.5m-16.5 4.5h16.5M21 21l-3.5-3.5M17.5 14a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" />
+                                    </svg>
+                                    <h3 class="tw-mt-4 tw-text-2xl tw-font-medium tw-text-gray-900">Chart Placeholder</h3>
+                                    <p class="tw-mt-2 tw-text-lg tw-text-gray-500">
+                                        This is a placeholder for your chart.
+                                    </p>
+                                    <p class="tw-text-sm tw-text-gray-500">
+                                        A script would normally populate this area with an interactive chart.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Disclaimer -->
+                <section id="disclaimer" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Disclaimer</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <p class="tw-text-base tw-text-gray-600 tw-italic">
+                            This report was generated by an AI assistant. The information provided herein is for informational and illustrative purposes only and does not constitute financial, investment, legal, or tax advice. The data, including financial figures and market analysis, is based on simulated data for the period specified and may not reflect actual market conditions or future performance.
+                        </p>
+                        <p class="tw-text-base tw-text-gray-600 tw-italic tw-mt-4">
+                            All investments involve risk, and past performance is not indicative of future results. You should not rely on this information as the sole basis for making any investment decisions. Always conduct your own independent research and due diligence, and consult with a qualified financial professional before making any investment. The AI and its creators assume no liability for any errors, omissions, or inaccuracies in this report or for any actions taken in reliance thereon.
+                        </p>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 
+      Simple JavaScript for active navigation link highlighting on scroll.
+      This enhances the single-page app feel.
+    -->
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('#nav-list .nav-link');
+            
+            const onScroll = () => {
+                let current = '';
+
+                sections.forEach( section => {
+                    const sectionTop = section.offsetTop;
+                    // Add a 150px offset to trigger the active state a bit earlier
+                    if (pageYOffset >= sectionTop - 150) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach( link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+            
+            // Run on load and on scroll
+            window.addEventListener('scroll', onScroll);
+            onScroll(); 
+        });
+        
+        // Note: The Plotly chart script from orcl_report.html could be
+        // copied here (with updated data) to make this chart live.
+    </script>
+</body>
+</html>
