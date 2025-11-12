@@ -252,13 +252,15 @@ def main():
     # --- Fetch Competitor Data (Subset) ---
     for comp_ticker in competitor_tickers:
         print(f"\nFetching competitor data for {comp_ticker}...")
-        comp_info = yf.Ticker(comp_ticker).info
+        comp_obj = yf.Ticker(comp_ticker)
+        comp_info = comp_obj.info
         if comp_info and 'symbol' in comp_info:
             fundamental_data["competitors"][comp_ticker] = {
                 "marketCap": comp_info.get('marketCap'),
                 "peTTM": comp_info.get('trailingPE'),
                 "revenueGrowthYoY": comp_info.get('revenueGrowth'),
-                "profitMargin": comp_info.get('profitMargins')
+                "profitMargin": comp_info.get('profitMargins'),
+                "oneYearReturn": comp_info.get('fiftyTwoWeekChange') # Added 1-Year Return
             }
             print(f"Successfully fetched competitor {comp_ticker}")
         else:
@@ -266,7 +268,9 @@ def main():
 
     # --- Save to JSON File ---
     output_dir = "fundamentals"
-    filename = f"{main_ticker}_fundamentals.json"
+    # Format date as YYMMDD
+    file_date = datetime.date.today().strftime('%y%m%d')
+    filename = f"{main_ticker}_{file_date}.json"
     output_path = os.path.join(output_dir, filename)
     
     if not os.path.exists(output_dir):
