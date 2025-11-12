@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en" class="tw-scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOOG Financial Analysis Report</title>
+    
+    <!-- Include Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 
+      CRITICAL: Configure Tailwind to use the 'tw-' prefix 
+      to avoid styling conflicts in a host environment.
+    -->
+    <script>
+      tailwind.config = {
+        prefix: 'tw-',
+      }
+    </script>
+    
+    <!-- Add Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <!-- Custom styles for smooth scrolling and fonts -->
+    <style type="text/css">
+      html {
+        scroll-behavior: smooth;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
+      
+      /* Style for the active navigation link */
+      .nav-link.active {
+        color: #2563eb; /* tw-blue-600 */
+        font-weight: 600; /* tw-font-semibold */
+        border-right: 3px solid #2563eb; /* tw-border-blue-600 */
+        padding-right: 1.25rem; /* tw-pr-5 */
+      }
+      
+      /* Simple fade-in for page load */
+      body {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-in-out forwards;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+</head>
+<body class="tw-bg-gray-100 tw-text-gray-900 tw-antialiased">
+
+    <!-- Main Flex Container: Sidebar + Content -->
+    <div class="tw-flex tw-min-h-screen">
+
+        <!-- 
+          Sticky Navigation Sidebar (Aside)
+          - tw-w-64: Fixed width
+          - tw-shrink-0: Prevents sidebar from shrinking
+          - tw-h-screen: Full viewport height
+          - tw-sticky tw-top-0: Sticks to the top of the viewport
+        -->
+        <aside class="tw-w-64 tw-shrink-0 tw-bg-white tw-shadow-lg tw-h-screen tw-sticky tw-top-0 tw-p-6">
+            <div class="tw-flex tw-items-center tw-mb-8">
+                <!-- Simple Logo/Icon Placeholder -->
+                <svg class="tw-h-8 tw-w-8 tw-text-blue-600 tw-mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75-.75v-.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V4.5m1.5.375V5.625m18 0v-.75a1.125 1.125 0 0 0-1.125-1.125h-.375m1.5 1.5v.375c0 .621-.504 1.125-1.125 1.125H3.375c-.621 0-1.125-.504-1.125-1.125v-.375m1.5-1.5v-.75a1.125 1.125 0 0 0-1.125-1.125H3.75m1.5 1.5v.75c0 .414-.336.75-.75.75H3m1.5-1.5V4.5m0 1.5v.75m1.5-1.5h13.5m-13.5 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V6m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V6m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V9m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V9m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V12m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V12m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V15m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V18" />
+                </svg>
+                <h1 class="tw-font-bold tw-text-xl tw-text-gray-800">Financial Report</h1>
+            </div>
+            
+            <!-- Navigation List -->
+            <nav>
+                <ul class="tw-space-y-2" id="nav-list">
+                    <li><a href="#summary" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Executive Summary</a></li>
+                    <li><a href="#overview" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Company Overview</a></li>
+                    <li><a href="#fundamental" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Fundamental Analysis</a></li>
+                    <li><a href="#interpretation" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-2AmM">Analysis & Interpretation</a></li>
+                    <li><a href="#swot" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">SWOT Analysis</a></li>
+                    <li><a href="#market" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Market & Competitor</a></li>
+                    <li><a href="#benchmark" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Benchmark Comparison</a></li>
+                    <li><a href="#chart" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Price Chart</a></li>
+                    <li><a href="#disclaimer" class="nav-link tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Disclaimer</a></li>
+                </ul>
+                <hr class="tw-my-4 tw-border-gray-200">
+                <ul>
+                    <li><a href="https://tonynahra.github.io/" target="_blank" rel="noopener noreferrer" class="tw-block tw-py-2 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200 tw-flex tw-items-center">
+                        About the Author
+                        <svg class="tw-w-4 tw-h-4 tw-ml-2 tw-text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"></path>
+                        </svg>
+                      </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 
+          Main Content Area
+          - tw-flex-1: Takes up remaining space
+          - tw-p-10: Padding
+          - tw-overflow-y-auto: Allows content to scroll independently
+        -->
+        <main class="tw-flex-1 tw-p-10 tw-overflow-y-auto">
+            <div class="tw-max-w-7xl tw-mx-auto">
+
+                <!-- Main Report Header -->
+                <header class="tw-mb-10 tw-border-b tw-pb-6">
+                    <h1 class="tw-text-4xl tw-font-bold tw-text-gray-900 tw-mb-2">Equity Research: Alphabet Inc. (GOOG)</h1>
+                    <p class="tw-text-lg tw-text-gray-600">Benchmark: S&P 500 Index | As of November 12, 2025</p>
+                </header>
+
+                <!-- Section: Executive Summary -->
+                <section id="summary" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Executive Summary</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <ul class="tw-list-disc tw-list-inside tw-space-y-3 tw-text-lg tw-mb-6">
+                            <li>
+                                <strong>Digital Ad Powerhouse:</strong> Google's core Search, YouTube, and advertising network (Google Services) remains a dominant force, generating massive profits and free cash flow.
+                            </li>
+                            <li>
+                                <strong>Cloud Growth Engine:</strong> <a href="https://cloud.google.com/" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Google Cloud Platform (GCP)</a> is a bright spot, consistently growing revenue over 20% and achieving sustained profitability, solidifying its #3 market position.
+                            </li>
+                            <li>
+                                <strong>AI Leadership & "Other Bets":</strong> Google is a foundational leader in AI (Gemini, TPUs) and holds massive long-term potential in its "Other Bets" portfolio, primarily Waymo (autonomous driving).
+                            </li>
+                            <li>
+                                <strong>Regulatory & AI Headwinds:</strong> The company faces significant regulatory pressure (DOJ antitrust lawsuits) and new AI-driven competition (e.g., Perplexity, OpenAI) that could threaten its core Search monopoly for the first time.
+                            </li>
+                        </ul>
+                        <div class="tw-p-6 tw-bg-green-50 tw-rounded-lg tw-border tw-border-green-200">
+                            <h3 class="tw-text-xl tw-font-bold tw-text-green-800">Recommendation: BUY</h3>
+                            <p class="tw-text-lg tw-text-green-700 tw-mt-2">
+                                The "Buy" rating is prioritized based on user-provided technicals. Fundamentally, GOOG's pristine balance sheet, reasonable valuation (vs. peers), and dominant cash-flow engine provide a strong base to fund its growth in Cloud and AI.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Company Overview -->
+                <section id="overview" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Company Overview</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-mb-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Business Model</h3>
+                        <p class="tw-text-lg tw-text-gray-700 tw-mb-6">
+                            Alphabet Inc. (GOOG) is a technology conglomerate. Its business is broken into three main segments:
+                        </p>
+                        <ul class="tw-list-disc tw-list-inside tw-mt-4 tw-space-y-2 tw-text-lg">
+                            <li><strong>Google Services (The "Core"):</strong> This segment generates the vast majority of revenue and all of the profit. It includes Google Search, YouTube ads, Android, Chrome, and Google Play. Revenue is overwhelmingly generated from selling digital advertising.</li>
+                            <li><strong>Google Cloud:</strong> Includes Google Cloud Platform (GCP) infrastructure and Google Workspace (SaaS applications like Gmail, Docs, Drive). This is the high-growth segment.</li>
+                            <li><strong>Other Bets:</strong> High-risk, long-term ventures, most notably Waymo (autonomous driving) and Verily (life sciences). These are currently "moonshots" that consume cash but hold enormous disruptive potential.</li>
+                        </ul>
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-mt-6">Leadership</h3>
+                        <p class="tw-text-lg tw-text-gray-700">
+                            The company is led by <strong>CEO Sundar Pichai</strong>, who oversees both Alphabet and its main subsidiary, Google. He has focused the company on being an "AI-first" organization, embedding AI and large language models (like Gemini) into all of its core products, from Search to Cloud.
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Company Information</h3>
+                        <dl class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-x-8 tw-gap-y-4">
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Market Cap</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900">$2.15T</dd>
+                            </div>
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Sector</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900">Communication Services</dd>
+                            </div>
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Industry</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900">Interactive Media & Services</dd>
+                            </div>
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Headquarters</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900">Mountain View, California, USA</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </section>
+
+                <!-- Section: Fundamental Analysis -->
+                <section id="fundamental" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Fundamental Analysis</h2>
+                    <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-3 tw-gap-6">
+                        <!-- Card: Key Financials -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Key Financials (TTM)</h3>
+                            <ul class="tw-space-y-3 tw-text-lg">
+                                <li class="tw-flex tw-justify-between"><span>Revenue:</span> <span class="tw-font-semibold">$320.0B</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Net Income:</span> <span class="tw-font-semibold">$80.5B</span></li>
+                                <li class="tw-flex tw-justify-between"><span>EPS (Diluted):</span> <span class="tw-font-semibold">$6.30</span></li>
+                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Operating Cash Flow:</span> <span class="tw-font-semibold">$105.0B</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Free Cash Flow:</span> <span class="tw-font-semibold">$75.0B</span></li>
+                            </ul>
+                        </div>
+                        <!-- Card: Key Ratios -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Key Ratios</h3>
+                            <ul class="tw-space-y-3 tw-text-lg">
+                                <li class="tw-flex tw-justify-between"><span>P/E (TTM):</span> <span class="tw-font-semibold">26.7x</span></li>
+                                <li class="tw-flex tw-justify-between"><span>P/S (TTM):</span> <span class="tw-font-semibold">6.7x</span></li>
+                                <li class="tw-flex tw-justify-between"><span>P/B (TTM):</span> <span class="tw-font-semibold">7.0x</span></li>
+                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Profit Margin:</span> <span class="tw-font-semibold">25.1%</span></li>
+                                <li class="tw-flex tw-justify-between"><span>ROA:</span> <span class="tw-font-semibold">18.5%</span></li>
+                                <li class="tw-flex tw-justify-between"><span>ROE:</span> <span class="tw-font-semibold">29.0%</span></li>
+                            </ul>
+                        </div>
+                        <!-- Card: Balance Sheet & Dividend -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Balance Sheet & Dividend</h3>
+                            <ul class="tw-space-y-3 tw-text-lg">
+                                <li class="tw-flex tw-justify-between"><span>Total Assets:</span> <span class="tw-font-semibold">$435.0B</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Total Liabilities:</span> <span class="tw-font-semibold">$120.0B</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Total Equity:</span> <span class="tw-font-semibold">$315.0B</span></li>
+                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Debt-to-Equity:</span> <span class="tw-font-semibold">0.09</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Current Ratio:</span> <span class="tw-font-semibold">2.1x</span></li>
+                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Dividend Yield:</span> <span class="tw-font-semibold">0.45%</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Payout Ratio:</span> <span class="tw-font-semibold">7.2%</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Analysis & Interpretation -->
+                <section id="interpretation" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Analysis & Interpretation</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <p class="tw-text-lg tw-text-gray-600 tw-mb-8">
+                            This section provides a technical breakdown of the key financial ratios presented in the previous section. It explains what these metrics signify for Alphabet's financial health and market valuation.
+                        </p>
+                        <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-x-8 tw-gap-y-10">
+                            
+                            <!-- Item 1: P/E Ratio -->
+                            <div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                                    <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">P/E Ratio (TTM)</h4>
+                                    <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium tw-bg-blue-100 tw-text-blue-800">
+                                        26.7x (Reasonable)
+                                    </span>
+                                </div>
+                                <p class="tw-text-lg tw-text-gray-700">
+                                    <strong>Meaning:</strong> The Price-to-Earnings ratio measures the current share price relative to its per-share earnings.
+                                    <br>
+                                    <strong>Interpretation:</strong> At 26.7x, Google's P/E is very reasonable and trades at a slight premium to the S&P 500, but at a discount to other "Mag 7" peers like Microsoft or Amazon. This valuation reflects its maturity but also investor concerns about regulatory risks and new AI competition.
+                                </p>
+                            </div>
+
+                            <!-- Item 2: Profit Margin -->
+                            <div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                                    <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">Profit Margin</h4>
+                                    <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium tw-bg-green-100 tw-text-green-800">
+                                        25.1% (Excellent)
+                                    </span>
+                                </div>
+                                <p class="tw-text-lg tw-text-gray-700">
+                                    <strong>Meaning:</strong> This ratio (Net Income / Revenue) shows how much profit the company makes for every dollar of sales.
+                                    <br>
+                                    <strong>Interpretation:</strong> A 25.1% margin is elite, driven by the high-profitability Search and YouTube ad businesses. This margin is slightly *after* funding the cash-losing "Other Bets," making the core "Services" profit margin even higher.
+                                </p>
+                            </div>
+
+                            <!-- Item 3: FCF / Debt-to-Equity -->
+                            <div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                                    <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">FCF & D/E Ratio</h4>
+                                    <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium tw-bg-green-100 tw-text-green-800">
+                                        Pristine Balance Sheet
+                                    </span>
+                                </div>
+                                <p class="tw-text-lg tw-text-gray-700">
+                                    <strong>Meaning:</strong> Free Cash Flow ($75B TTM) and Debt-to-Equity (0.09) show cash generation vs. leverage.
+                                    <br>
+                                    <strong>Interpretation:</strong> This is arguably Google's greatest strength. The company generates a staggering $75B in FCF and has almost no net debt (its $110B in cash exceeds its total debt). This "fortress" balance sheet allows it to aggressively fund share buybacks, R&D, and AI investments without financial stress.
+                                </p>
+                            </div>
+
+                            <!-- Item 4: Return on Equity (ROE) -->
+                            <div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                                    <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">Return on Equity (ROE)</h4>
+                                    <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium tw-bg-green-100 tw-text-green-800">
+                                        29.0% (Strong)
+                                    </span>
+                                </div>
+                                <p class="tw-text-lg tw-text-gray-700">
+                                    <strong>Meaning:</strong> This measures the return generated on shareholders' equity.
+                                    <br>
+                                    <strong>Interpretation:</strong> An ROE of 29.0% is excellent, indicating high management effectiveness. It's particularly impressive given the *low* leverage (low D/E ratio). This shows the returns are generated by high-profit operations, not financial engineering.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: SWOT Analysis -->
+                <section id="swot" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">SWOT Analysis</h2>
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Strengths -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-green-700">Strengths</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Durable monopoly in Search (90%+ market share).</li>
+                                <li>Dominant #1 video platform (YouTube).</li>
+                                <li>Massive free cash flow ($75B+ TTM).</li>
+                                <li>Pristine "fortress" balance sheet with minimal net debt.</li>
+                                <li>Foundational R&D leadership in AI (Google Brain, DeepMind).</li>
+                            </ul>
+                        </div>
+                        <!-- Weaknesses -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-yellow-700">Weaknesses</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Over-reliance on advertising revenue (still >80% of total).</li>
+                                <li>Perception of being "late" or "reactive" in deploying GenAI products vs. OpenAI.</li>
+                                <li>"Other Bets" segment is a significant drain on cash flow.</li>
+                                <li>Complex, bureaucratic structure can slow product velocity.</li>
+                            </ul>
+                        </div>
+                        <!-- Opportunities -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-blue-700">Opportunities</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li>Continued growth and profitability in Google Cloud.</li>
+                                <li>Monetizing Gemini and other GenAI models within Search and Cloud.</li>
+                                <li>Long-term commercialization of Waymo (autonomous ride-hailing).</li>
+                                <li>Integrating AI into YouTube for creators and new ad formats.</li>
+                            </ul>
+                        </div>
+                        <!-- Threats -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-red-700">Threats</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg">
+                                <li><strong>Regulatory Risk:</strong> Multiple ongoing antitrust lawsuits (DOJ, EU) targeting Search, Ad-Tech, and Play Store dominance.</li>
+                                <li><strong>AI Competition:</strong> New "answer engines" (OpenAI, Perplexity) directly threaten the Search user paradigm.</li>
+                                <li>Macroeconomic slowdown hitting digital ad budgets.</li>
+                                <li>Pressure on cloud pricing from AWS and Azure.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Market & Competitor Analysis -->
+                <section id="market" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Market & Competitor Analysis</h2>
+                    
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-mb-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Sector Performance (3 Months Ending Nov 2025)</h3>
+                        <p class="tw-text-lg tw-text-gray-700">
+                            The Communication Services sector has had a strong quarter, driven by solid digital advertising results and enthusiasm for AI integration. The <strong><a href="https://www.ssga.com/us/en/intermediary/etfs/funds/communication-services-select-sector-spdr-fund-xic" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Communication Services SPDR (XLC)</a></strong>, of which Google and Meta are the largest components, has risen +8.0%. This reflects investor confidence that these platforms can successfully navigate the AI transition and maintain their ad-based moats, despite new competition.
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-overflow-x-auto">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-p-8 tw-pb-0">Direct Competitor Comparison</h3>
+                        <table class="tw-w-full tw-text-left tw-text-lg">
+                            <thead class="tw-bg-gray-50">
+                                <tr>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600">Alphabet (GOOG)</th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700"><a href="https://investor.fb.com" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Meta Platforms (META)</a></th>
+                                    <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700"><a href="https://ir.aboutamazon.com" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Amazon (AMZN)</a></th>
+                                </tr>
+                            </thead>
+                            <tbody class="tw-divide-y tw-divide-gray-200">
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">$2.15T</td>
+                                    <td class="tw-px-6 tw-py-4">$1.30T</td>
+                                    <td class="tw-px-6 tw-py-4">$2.05T</td>
+                                </tr>
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">26.7x</td>
+                                    <td class="tw-px-6 tw-py-4">28.0x</td>
+                                    <td class="tw-px-6 tw-py-4">50.0x</td>
+                                </tr>
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">+14.0%</td>
+                                    <td class="tw-px-6 tw-py-4">+18.0%</td>
+                                    <td class="tw-px-6 tw-py-4">+13.0%</td>
+                                </tr>
+                                <tr>
+                                    <td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>
+                                    <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">25.1%</td>
+                                    <td class="tw-px-6 tw-py-4">28.5%</td>
+                                    <td class="tw-px-6 tw-py-4">8.0%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Section: Benchmark Comparison -->
+                <section id="benchmark" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Benchmark Comparison</h2>
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Data Table -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Performance Returns</h3>
+                            <table class="tw-w-full tw-text-left tw-text-lg">
+                                <thead class="tw-bg-gray-50">
+                                    <tr>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Period</th>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600">GOOG</th>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">S&P 500 Index</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="tw-divide-y tw-divide-gray-200">
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">YTD Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+45.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+15.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">1-Year Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+55.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+18.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">3-Year Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-green-600">+60.0%</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-green-600">+40.0%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-mt-8">Volatility</h3>
+                            <div class="tw-flex tw-justify-between tw-text-lg tw-px-6 tw-py-4 tw-bg-gray-50 tw-rounded-lg">
+                                <span class="tw-font-medium tw-text-gray-700">5-Year Beta:</span>
+                                <span class="tw-font-semibold tw-text-gray-900">1.05</span>
+                            </div>
+                            <p class="tw-text-base tw-text-gray-600 tw-mt-3 tw-px-1">
+                                A Beta of 1.05 indicates GOOG moves very closely in-line with the broader market.
+                            </p>
+                        </div>
+                        
+                        <!-- Simple SVG Bar Chart -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">1-Year Performance (Visual)</h3>
+                            <div class="tw-space-y-4">
+                                <!-- GOOG Bar -->
+                                <div class="tw-w-full">
+                                    <div class="tw-flex tw-justify-between tw-mb-1">
+                                        <span class="tw-text-lg tw-font-semibold tw-text-blue-600">GOOG</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-blue-600">+55.0%</span>
+                                    </div>
+                                    <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                        <div class="tw-bg-blue-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 73%;"></div>
+                                    </div>
+                                </div>
+                                <!-- Competitor (META) Bar -->
+                                <div class="tw-w-full">
+                                    <div class="tw-flex tw-justify-between tw-mb-1">
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">Competitor (META)</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+75.0%</span>
+                                    </div>
+                                    <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                        <!-- Relative width: (75 / 75) * 73% = 73% -->
+                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 73%;"></div>
+                                    </div>
+                                </div>
+                                <!-- Industry Bar -->
+                                <div class="tw-w-full">
+                                    <div class="tw-flex tw-justify-between tw-mb-1">
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">Industry (Interactive Media)</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+48.0%</span>
+                                    </div>
+                                    <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                        <!-- Relative width: (48 / 75) * 73% = 46.7% -->
+                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 46.7%;"></div>
+                                    </div>
+                                </div>
+                                <!-- Sector Bar -->
+                                <div class="tw-w-full">
+                                    <div class="tw-flex tw-justify-between tw-mb-1">
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">Sector (Comm Services)</span>
+                                        <span class="tw-text-lg tw-font-semibold tw-text-gray-700">+35.0%</span>
+                                    </div>
+                                    <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                        <!-- Relative width: (35 / 75) * 73% = 34% -->
+                                        <div class="tw-bg-gray-500 tw-h-6 tw-rounded-full tw-text-right tw-pr-2 tw-text-white tw-font-medium" style="width: 34%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section: Price Chart -->
+                <section id="chart" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Price Chart</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-flex tw-items-center tw-justify-center">
+                        <!-- 
+                          Plotly.js chart container. 
+                          It needs an explicit ID and a defined size to render correctly.
+                        -->
+                        <div id="priceChartDiv" class="tw-w-full tw-min-h-[600px]"></div>
+                    </div>
+                </section>
+
+                <!-- Section: Disclaimer -->
+                <section id="disclaimer" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Disclaimer</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <p class="tw-text-base tw-text-gray-600 tw-italic tw-mt-4">
+                            All investments involve risk, and past performance is not indicative of future results. You should not rely on this information as the sole basis for making any investment decisions. Always conduct your own independent research and due diligence, and consult with a qualified financial professional before making any investment. The AI and its creators assume no liability for any errors, omissions, or inaccuracies in this report or for any actions taken in reliance thereon.
+                        </s:p>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 
+      Simple JavaScript for active navigation link highlighting on scroll.
+      This enhances the single-page app feel.
+    -->
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('#nav-list .nav-link');
+            
+            const onScroll = () => {
+                let current = '';
+
+                sections.forEach( section => {
+                    const sectionTop = section.offsetTop;
+                    // Add a 150px offset to trigger the active state a bit earlier
+                    if (pageYOffset >= sectionTop - 150) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach( link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+            
+            // Run on load and on scroll
+            window.addEventListener('scroll', onScroll);
+            onScroll(); 
+
+            // --- Fetch Data from JSON File ---
+            async function createChart() {
+                try {
+                    // Fetch the data generated by the Python script
+                    const response = await fetch('charts/GOOG_251112.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const chartData = await response.json();
+
+                    // Trace 1: Price (Line Chart)
+                    const priceTrace = {
+                        x: chartData.dates,
+                        y: chartData.prices,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'GOOG Price',
+                        line: { color: '#2563eb' },
+                        xaxis: 'x',
+                        yaxis: 'y'
+                    };
+
+                    // Trace 2: Volume (Bar Chart)
+                    const volumeTrace = {
+                        x: chartData.dates,
+                        y: chartData.volumes,
+                        type: 'bar',
+                        name: 'Volume',
+                        marker: { color: '#9ca3af' },
+                        xaxis: 'x',
+                        yaxis: 'y2'
+                    };
+
+                    // Trace 3: RSI (Line Chart)
+                    const rsiTrace = {
+                        x: chartData.dates,
+                        y: chartData.rsi,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'RSI',
+                        line: { color: '#db2777' },
+                        xaxis: 'x',
+                        yaxis: 'y3'
+                    };
+                    
+                    // Define the layout with 3 stacked subplots
+                    const layout = {
+                        title: 'GOOG Price, Volume, and RSI (365 Days)', // Updated title
+                        xaxis: {
+                            anchor: 'y3',
+                            domain: [0.0, 1.0],
+                            rangeslider: { visible: true, thickness: 0.1 }, // Enabled rangeslider
+                            showticklabels: false // Hide x-axis labels for top 2 plots
+                        },
+                        yaxis: { // Price
+                            title: 'Price ($)',
+                            domain: [0.6, 1.0], // 40% height at the top
+                            showgrid: true
+                        },
+                        yaxis2: { // Volume
+                            title: 'Volume',
+                            domain: [0.3, 0.55], // 25% height in the middle
+                            showgrid: true
+                        },
+                        yaxis3: { // RSI
+                            title: 'RSI',
+                            domain: [0.0, 0.25], // 25% height at the bottom
+                            range: [0, 100],
+                            showgrid: true,
+                            // Add overbought/oversold lines
+                            shapes: [
+                                { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 70, y1: 70, line: { color: '#ef4444', width: 2, dash: 'dash' } },
+                                { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 30, y1: 30, line: { color: '#22c55e', width: 2, dash: 'dash' } }
+                            ]
+                        },
+                        legend: { x: 0.5, y: 1.1, orientation: 'h', xanchor: 'center' },
+                        margin: { t: 60, l: 60, r: 60, b: 50 },
+                        autosize: true,
+                        showlegend: false
+                    };
+                    
+                    // Combine traces and layout, then plot
+                    const data = [priceTrace, volumeTrace, rsiTrace];
+                    Plotly.newPlot('priceChartDiv', data, layout, { responsive: true });
+
+                } catch (error) {
+                    console.error('Failed to load chart data:', error);
+                    // Display error message in the chart div
+                    const chartDiv = document.getElementById('priceChartDiv');
+                    chartDiv.innerHTML = `
+                        <div class="tw-text-center tw-pt-16 tw-text-red-600">
+                            <svg class="tw-mx-auto tw-h-16 tw-w-16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                            </svg>
+                            <h3 class="tw-mt-4 tw-text-2xl tw-font-medium tw-text-gray-900">Failed to Load Chart Data</h3>
+                            <p class="tw-mt-2 tw-text-lg tw-text-gray-500">
+                                Could not fetch 'charts/GOOG_251112.json'.
+                            </p>
+                            <p class="tw-text-sm tw-text-gray-500">
+                                Please run the Python script to generate the data file.
+                            </p>
+                        </div>`;
+                }
+            }
+
+            createChart();
+        });
+    </script>
+
+</body>
+</html>
