@@ -82,7 +82,7 @@
                     <li><a href="#interpretation" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Analysis & Interpretation</a></li>
                     <li><a href="#swot" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">SWOT Analysis</a></li>
                     <li><a href="#market" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Market & Competitor</a></li>
-                    <li><a href="#benchmark" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-2loc-200">Benchmark Comparison</a></li>
+                    <li><a href="#benchmark" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Benchmark Comparison</a></li>
                     <li><a href="#chart" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Price Chart</a></li>
                     <li><a href="#disclaimer" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Disclaimer</a></li>
                 </ul>
@@ -469,7 +469,6 @@
         /**
          * Formats a number as a currency.
          * @param {number} num - The number.
-         *GET / 
          * @returns {string} The formatted currency string (e.g., $6.30).
          */
         const formatCurrency = (num) => {
@@ -803,7 +802,7 @@
          */
         const populateCompetitors = (data) => {
             // AI-generated Sector Performance
-            setHTML('sector-performance', `The Communication Services sector has had a strong quarter, driven by solid digital advertising results and enthusiasm for AI integration. The <strong><a href="https.../communication-services-select-sector-spdr-fund-xic" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Communication Services SPDR (XLC)</a></strong>, of which Google and Meta are the largest components, has risen +8.0%. This reflects investor confidence that these platforms can successfully navigate the AI transition.`);
+            setHTML('sector-performance', `The Communication Services sector has had a strong quarter, driven by solid digital advertising results and enthusiasm for AI integration. The <strong><a href="https://www.ssga.com/us/en/intermediary/etfs/funds/communication-services-select-sector-spdr-fund-xlc" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">Communication Services SPDR (XLC)</a></strong>, of which Google and Meta are the largest components, has risen +8.0%. This reflects investor confidence that these platforms can successfully navigate the AI transition.`);
             
             const main = data.mainTicker;
             const competitors = data.competitors;
@@ -812,16 +811,16 @@
 
             let headers = [`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>`, `<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600 tw-text-right">${main.ticker}</th>`];
             let marketCapRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatLargeNumber(main.marketCap)}</td>`];
-            let peRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
+            let peRow = [`<td class"tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
             let growthRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.revenueGrowthYoY)}</td>`];
-            let marginRow = [`<td class"tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.profitMargin)}</td>`];
+            let marginRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.profitMargin)}</td>`];
 
             for (const [ticker, stats] of Object.entries(competitors)) {
                 headers.push(`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-right">${ticker}</th>`);
                 marketCapRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatLargeNumber(stats.marketCap)}</td>`);
                 peRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatRatio(stats.peTTM)}</td>`);
                 growthRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.revenueGrowthYoY)}</td>`);
-                marginRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
+                marginRow.push(`<td class"tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
             }
 
             head.innerHTML = `<tr>${headers.join('')}</tr>`;
@@ -894,17 +893,19 @@
                 const colorClass = item.color === 'blue' ? 'tw-bg-blue-500' : 'tw-bg-gray-500';
                 const textClass = item.color === 'blue' ? 'tw-text-blue-600' : 'tw-text-gray-700';
                 
+                // --- TYPO FIX: class="tw-w-full..." ---
                 return `
                     <div class="tw-w-full">
                         <div class="tw-flex tw-justify-between tw-mb-1">
                             <span class="tw-text-lg tw-font-semibold ${textClass}">${item.label}</span>
                             <span class="tw-text-lg tw-font-semibold ${textClass}">${displayText}</span>
                         </div>
-                        <div class"tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                        <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
                             <div class="${colorClass} tw-h-6 tw-rounded-full" style="width: ${width}%;"></div>
                         </div>
                     </div>
                 `;
+                // --- END TYPO FIX ---
             }).join('');
         };
 
