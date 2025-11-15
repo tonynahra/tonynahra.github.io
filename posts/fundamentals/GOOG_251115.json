@@ -27,12 +27,12 @@
         "beta": 1.082,
         "ytdReturn": null,
         "oneYearReturn": 0.5998175631995889,
-        "threeYearReturn": 1.8249134224364163,
+        "threeYearReturn": 1.8249136422487027,
         "technicalAnalysis": {
             "currentPrice": 276.98,
             "sma30": 265.40733337402344,
             "sma90": 232.21947191026476,
-            "rsi": 55.97711448657948,
+            "rsi": 55.97711448659282,
             "percentRange52w": 0.8972611890447563,
             "low52w": 142.66,
             "high52w": 292.36
@@ -83,8 +83,8 @@
     "benchmark": {
         "ticker": "SPY",
         "ytdReturn": 14.74103,
-        "oneYearReturn": 0.16107377878650933,
-        "threeYearReturn": 0.7569994730869357
+        "oneYearReturn": 0.16107390124128132,
+        "threeYearReturn": 0.7569997535007246
     },
     "competitors": {
         "MSFT": {
