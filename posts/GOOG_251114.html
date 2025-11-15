@@ -228,7 +228,7 @@
                             <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Key Ratios</h3>
                             <ul class="tw-space-y-3 tw-text-lg">
                                 <li class="tw-flex tw-justify-between"><span>P/E (TTM):</span> <span class="tw-font-semibold" id="ratio-pe">--</span></li>
-                                <li class="tw-flex tw-justify-between"><span>P/S (TTM):</span> <span class="tw-font-semibold" id="ratio-ps">--</span></li>
+                                <li class_name="tw-flex tw-justify-between"><span>P/S (TTM):</span> <span class="tw-font-semibold" id="ratio-ps">--</span></li>
                                 <li class="tw-flex tw-justify-between"><span>P/B (TTM):</span> <span class="tw-font-semibold" id="ratio-pb">--</span></li>
                                 <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Profit Margin:</span> <span class="tw-font-semibold" id="ratio-margin">--</span></li>
                                 <li class="tw-flex tw-justify-between"><span>ROA:</span> <span class="tw-font-semibold" id="ratio-roa">--</span></li>
@@ -812,9 +812,9 @@
             let headers = [`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>`, `<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600 tw-text-right">${main.ticker}</th>`];
             let marketCapRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatLargeNumber(main.marketCap)}</td>`];
             
-            // --- FINAL TYPO FIX: class="... ---
+            // --- THE BUG WAS HERE ---
             let peRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
-            // --- END FIX ---
+            // --- END BUG FIX ---
             
             let growthRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.revenueGrowthYoY)}</td>`];
             let marginRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.profitMargin)}</td>`];
@@ -825,9 +825,9 @@
                 peRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatRatio(stats.peTTM)}</td>`);
                 growthRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.revenueGrowthYoY)}</td>`);
                 
-                // --- FINAL TYPO FIX: class="... ---
+                // --- THE BUG WAS HERE ---
                 marginRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
-                // --- END FIX ---
+                // --- END BUG FIX ---
             }
 
             head.innerHTML = `<tr>${headers.join('')}</tr>`;
