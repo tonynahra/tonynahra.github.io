@@ -564,7 +564,7 @@
                 
             } catch (e) {
                 console.error("Error populating summary:", e);
-                setHTML('summary', '<p class="tw-text-lg tw-text-red-500">Executive summary analysis is not available.</p>');
+                setHTML('summary-points', '<li class="tw-text-red-500">Executive summary analysis is not available. Please check the Python script.</li>');
             }
         };
 
@@ -884,7 +884,7 @@
                     for (const [ticker, stats] of Object.entries(competitors)) {
                         headers.push(`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-right">${ticker}</th>`);
                         marketCapRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatLargeNumber(stats.marketCap)}</td>`);
-                        peRow.push(`<td class"tw-px-6 tw-py-4 tw-text-right">${formatRatio(stats.peTTM)}</td>`);
+                        peRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatRatio(stats.peTTM)}</td>`);
                         growthRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.revenueGrowthYoY)}</td>`);
                         marginRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
                     }
@@ -1025,6 +1025,7 @@
                 setTextContent('tech-52w-text', `Currently at ${rangePercent}% of its 52-week range.`);
 
                 // Card 4: Summary
+                // BUG FIX: Check if qualitative data exists
                 setHTML('technical-summary-text', data.mainTicker.technicalSummary || "N/A");
 
             } catch (e) {
