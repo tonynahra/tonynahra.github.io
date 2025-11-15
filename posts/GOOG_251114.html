@@ -6,7 +6,7 @@
     <title>GOOG Financial Analysis Report</title>
 
     <!-- SEO & Social Meta Tags -->
-    <meta name="description" content="A comprehensive financial analysis of Alphabet (GOOG), covering fundamentals, analyst consensus, and key growth drivers.">
+    <meta name="description" content="A comprehensive financial analysis of Alphabet (GOOG) as of 251112, covering fundamentals, analyst consensus, and key growth drivers.">
     
     <!-- Open Graph (OG) Tags -->
     <meta property="og:title" content="Equity Research: Alphabet Inc. (GOOG) Analysis">
@@ -82,7 +82,7 @@
                     <li><a href="#interpretation" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Analysis & Interpretation</a></li>
                     <li><a href="#swot" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">SWOT Analysis</a></li>
                     <li><a href="#market" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Market & Competitor</a></li>
-                    <li><a href="#benchmark" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-2Two.js-200">Benchmark Comparison</a></li>
+                    <li><a href="#benchmark" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-2loc-200">Benchmark Comparison</a></li>
                     <li><a href="#chart" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Price Chart</a></li>
                     <li><a href="#disclaimer" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Disclaimer</a></li>
                 </ul>
@@ -469,6 +469,7 @@
         /**
          * Formats a number as a currency.
          * @param {number} num - The number.
+         *GET / 
          * @returns {string} The formatted currency string (e.g., $6.30).
          */
         const formatCurrency = (num) => {
@@ -813,7 +814,7 @@
             let marketCapRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatLargeNumber(main.marketCap)}</td>`];
             let peRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
             let growthRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.revenueGrowthYoY)}</td>`];
-            let marginRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.profitMargin)}</td>`];
+            let marginRow = [`<td class"tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.profitMargin)}</td>`];
 
             for (const [ticker, stats] of Object.entries(competitors)) {
                 headers.push(`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-right">${ticker}</th>`);
@@ -871,10 +872,25 @@
             }
             items.push({ label: `Sector (Comm Services)`, value: 0.35, color: 'gray' }); // AI-generated placeholder
             
-            const maxVal = Math.max(0.01, ...items.map(i => i.value)); // Avoid division by zero
+            // --- FIX for 'oneYearReturn' parsing ---
+            // Filter out invalid values before calculating maxVal
+            const validValues = items
+                .map(i => parseFloat(i.value)) // Convert to float first
+                .filter(v => !isNaN(v)); // Check if it's a valid number
+
+            const maxVal = Math.max(0.01, ...validValues); // Avoid division by zero
+            // --- END FIX ---
             
             visualChart.innerHTML = items.map(item => {
-                const width = Math.max(0, (item.value / maxVal) * 100);
+                // --- FIX for 'oneYearReturn' parsing ---
+                const value = parseFloat(item.value); // Convert to float
+                const isValid = !isNaN(value); // Check if it's a valid number
+                // --- END FIX ---
+                
+                const displayValue = isValid ? value : 0;
+                const displayText = isValid ? formatPercent(value) : '--';
+
+                const width = Math.max(0, (displayValue / maxVal) * 100);
                 const colorClass = item.color === 'blue' ? 'tw-bg-blue-500' : 'tw-bg-gray-500';
                 const textClass = item.color === 'blue' ? 'tw-text-blue-600' : 'tw-text-gray-700';
                 
@@ -882,9 +898,9 @@
                     <div class="tw-w-full">
                         <div class="tw-flex tw-justify-between tw-mb-1">
                             <span class="tw-text-lg tw-font-semibold ${textClass}">${item.label}</span>
-                            <span class="tw-text-lg tw-font-semibold ${textClass}">${formatPercent(item.value)}</span>
+                            <span class="tw-text-lg tw-font-semibold ${textClass}">${displayText}</span>
                         </div>
-                        <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                        <div class"tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
                             <div class="${colorClass} tw-h-6 tw-rounded-full" style="width: ${width}%;"></div>
                         </div>
                     </div>
