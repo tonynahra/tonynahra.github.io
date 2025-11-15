@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MU Financial Analysis Report</title>
+    <!-- Title will be set dynamically by JavaScript -->
+    <title>Financial Analysis Report</title>
 
-    <!-- SEO & Social Meta Tags -->
-    <meta name="description" content="A comprehensive financial analysis of Micron (MU) as of 251115, covering fundamentals, analyst consensus, and key growth drivers.">
+    <!-- SEO & Social Meta Tags (will be populated by JS) -->
+    <meta id="meta-desc" name="description" content="A comprehensive financial analysis, covering fundamentals, analyst consensus, and key growth drivers.">
     
-    <!-- Open Graph (OG) Tags -->
-    <meta property="og:title" content="Equity Research: Micron (MU) Analysis">
-    <meta property="og:description" content="In-depth financial report on Micron (MU), detailing its key themes, fundamental health, analyst consensus, and competitor comparison.">
+    <!-- Open Graph (OG) Tags (will be populated by JS) -->
+    <meta id="meta-og-title" property="og:title" content="Equity Research Analysis">
+    <meta id="meta-og-desc" property="og:description" content="In-depth financial report detailing key themes, fundamental health, analyst consensus, and competitor comparison.">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://tonynahra.github.io/posts/MU_251115.html">
+    <meta id="meta-og-url" property="og:url" content="">
     <!-- <meta property="og:image" content="[URL_to_your_image.jpg]"> -->
 
-    <!-- Twitter Card Tags -->
+    <!-- Twitter Card Tags (will be populated by JS) -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Equity Research: Micron (MU) Analysis">
-    <meta name="twitter:description" content="In-depth financial report on Micron (MU), detailing its key themes, fundamental health, analyst consensus, and competitor comparison.">
+    <meta id="meta-tw-title" name="twitter:title" content="Equity Research Analysis">
+    <meta id="meta-tw-desc" name="twitter:description" content="In-depth financial report detailing key themes, fundamental health, analyst consensus, and competitor comparison.">
     <!-- <meta name="twitter:image" content="[URL_to_your_image.jpg]"> -->
     
     <!-- Tailwind CSS CDN -->
@@ -557,144 +558,23 @@
             // Populate from JSON
             setHTML('summary-points', main.executiveSummary.points.map(p => `<li>${p}</li>`).join(''));
 
-            // Default Recommendation: HOLD (can be overridden by user prompt)
-            setTextContent('recommendation-text', 'HOLD');
+            // Dynamically set Recommendation text and color
+            const rec = main.executiveSummary.recommendation || "Hold"; // Default to Hold
+            const recBox = document.getElementById('recommendation-box');
+            const recText = document.getElementById('recommendation-text');
+            
+            setTextContent('recommendation-text', rec.toUpperCase());
             setTextContent('recommendation-rationale', main.executiveSummary.rationale);
-            document.getElementById('recommendation-box').className = 'tw-p-6 tw-bg-yellow-50 tw-rounded-lg tw-border tw-border-yellow-200';
-            document.getElementById('recommendation-text').className = 'tw-font-bold tw-text-yellow-800';
-        };
-
-        /**
-         * Populates the Overview section.
-         * @param {object} data - The fetched fundamental data.
-         */
-        const populateOverview = (data) => {
-            const main = data.mainTicker;
-            setTextContent('company-name-header', main.companyName);
-            setTextContent('as-of-date', data.asOfDate);
             
-            // Populate from JSON
-            setHTML('business-model', main.businessModel || 'Business model information not available.');
-            setHTML('leadership', main.leadership || 'Leadership information not available.');
-
-            // Info box
-            setTextContent('info-market-cap', formatLargeNumber(main.marketCap));
-            setTextContent('info-sector', main.sector);
-            setTextContent('info-industry', main.industry);
-            setTextContent('info-hq', main.hqLocation);
-        };
-
-        /**
-         * Populates the Analyst Consensus section and chart.
-         * @param {object} data - The fetched fundamental data.
-         */
-        const populateAnalystConsensus = (data) => {
-            const consensus = data.mainTicker.analystConsensus;
-            if (!consensus) {
-                setHTML('consensus', '<p>Analyst consensus data is not available.</p>');
-                return;
-            }
-            
-            setTextContent('analyst-mean', formatCurrency(consensus.targetMean));
-            setTextContent('analyst-high', formatCurrency(consensus.targetHigh));
-            setTextContent('analyst-low', formatCurrency(consensus.targetLow));
-
-            const totalRatings = consensus.strongBuy + consensus.buy + consensus.hold + consensus.sell + consensus.strongSell;
-            setTextContent('analyst-total', totalRatings);
-
-            try {
-                const ctxAnalyst = document.getElementById('analystChart').getContext('2d');
-                new Chart(ctxAnalyst, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Strong Buy', 'Buy', 'Hold', 'Sell', 'Strong Sell'],
-                        datasets: [{
-                            label: 'Analyst Ratings',
-                            data: [consensus.strongBuy, consensus.buy, consensus.hold, consensus.sell, consensus.strongSell],
-                            backgroundColor: ['#16a34a', '#22c55e', '#f59e0b', '#ef4444', '#b91c1c'],
-                            borderColor: '#ffffff',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'right' },
-                            tooltip: {
-                                callbacks: {
-                                    label: (context) => `${context.label}: ${context.parsed} analysts`
-                                }
-                            }
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error("Failed to render Analyst Chart:", e);
-            }
-        };
-        
-        /**
-         * Populates the Quarterly Trends chart.
-         * @param {object} data - The fetched fundamental data.
-         */
-        const populateQuarterlyTrends = (data) => {
-            const quarterly = data.mainTicker.quarterlyFinancials;
-            if (!quarterly || !quarterly.dates || quarterly.dates.length === 0) {
-                setHTML('quarterly', '<p>Quarterly financial data is not available.</p>');
-                return;
-            }
-
-            const labels = quarterly.dates.map(dateStr => {
-                const date = new Date(dateStr);
-                const q = Math.floor((date.getUTCMonth() + 3) / 3);
-                const year = date.getUTCFullYear();
-                return `Q${q} ${year}`;
-            });
-            
-            try {
-                const ctxQuarterly = document.getElementById('quarterlyChart').getContext('2d');
-                new Chart(ctxQuarterly, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: 'Quarterly Revenue',
-                                data: quarterly.revenue,
-                                backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                                borderColor: 'rgba(59, 130, 246, 1)',
-                                borderWidth: 1
-                            },
-                            {
-                                label: 'Quarterly Net Income',
-                                data: quarterly.netIncome,
-                                backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                                borderColor: 'rgba(16, 185, 129, 1)',
-                                borderWidth: 1
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { callback: (value) => (value / 1e9) + 'B' }
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: (context) => `${context.dataset.label}: ${formatLargeNumber(context.parsed.y)}`
-                                }
-                            }
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error("Failed to render Quarterly Chart:", e);
+            if (rec.toLowerCase() === 'buy' || rec.toLowerCase() === 'strong buy') {
+                recBox.className = 'tw-p-6 tw-bg-green-50 tw-rounded-lg tw-border tw-border-green-200';
+                recText.className = 'tw-font-bold tw-text-green-800';
+            } else if (rec.toLowerCase() === 'sell' || rec.toLowerCase() === 'strong sell') {
+                recBox.className = 'tw-p-6 tw-bg-red-50 tw-rounded-lg tw-border tw-border-red-200';
+                recText.className = 'tw-font-bold tw-text-red-800';
+            } else { // Hold or Neutral
+                recBox.className = 'tw-p-6 tw-bg-yellow-50 tw-rounded-lg tw-border tw-border-yellow-200';
+                recText.className = 'tw-font-bold tw-text-yellow-800';
             }
         };
 
@@ -702,33 +582,33 @@
          * Populates the Fundamental Analysis section.
          * @param {object} data - The fetched fundamental data.
          */
-        const populateFundamentals = (data) => {
-            const main = data.mainTicker;
-            setTextContent('fundamental-revenue', formatLargeNumber(main.revenueTTM));
-            setTextContent('fundamental-net-income', formatLargeNumber(main.netIncomeTTM));
-            setTextContent('fundamental-eps', formatCurrency(main.epsTTM));
-            setTextContent('fundamental-ocf', formatLargeNumber(main.operatingCashflowTTM));
-            setTextContent('fundamental-fcf', formatLargeNumber(main.freeCashflowTTM));
-
-            setTextContent('ratio-pe', formatRatio(main.peTTM));
-            setTextContent('ratio-ps', formatRatio(main.psTTM));
-            setTextContent('ratio-pb', formatRatio(main.pbTTM));
-            setTextContent('ratio-margin', formatPercent(main.profitMargin));
-            setTextContent('ratio-roa', formatPercent(main.roa));
-            setTextContent('ratio-roe', formatPercent(main.roe));
-
-            setTextContent('balance-de', main.debtToEquity ? (main.debtToEquity / 100).toFixed(2) : '--');
-            setTextContent('balance-current', formatRatio(main.currentRatio));
-            setTextContent('div-yield', formatPercent(main.dividendYield));
-            setTextContent('div-payout', formatPercent(main.payoutRatio));
-        };
-
-        /**
-         * Populates the Interpretation section.
+         * Populates the Overview section.
          * @param {object} data - The fetched fundamental data.
          */
-        const populateInterpretation = (data) => {
+        const populateOverview = (data) => {
             const main = data.mainTicker;
+            
+            // --- NEW: Populate Head/Meta Tags ---
+            const title = `${main.ticker} Financial Analysis Report | ${main.companyName}`;
+            document.title = title;
+            
+            const description = `A comprehensive financial analysis of ${main.companyName} (${main.ticker}) as of ${data.asOfDate}, covering fundamentals, analyst consensus, and key growth drivers.`;
+            document.getElementById('meta-desc').setAttribute('content', description);
+            
+            const ogTitle = `Equity Research: ${main.companyName} (${main.ticker}) Analysis`;
+            document.getElementById('meta-og-title').setAttribute('content', ogTitle);
+            document.getElementById('meta-tw-title').setAttribute('content', ogTitle);
+
+            const ogDesc = `In-depth financial report on ${main.companyName} (${main.ticker}), detailing its key themes, fundamental health, analyst consensus, and competitor comparison.`;
+            document.getElementById('meta-og-desc').setAttribute('content', ogDesc);
+            document.getElementById('meta-tw-desc').setAttribute('content', ogDesc);
+            
+            const url = `https://tonynahra.github.io/posts/${main.ticker}_${FILE_DATE}.html`;
+            document.getElementById('meta-og-url').setAttribute('content', url);
+            // --- END NEW ---
+            
+            setTextContent('company-name-header', main.companyName);
+            setTextContent('as-of-date', data.asOfDate);
             
             // Check if interpretation data exists
             if (!main.interpretation) {
