@@ -70,6 +70,7 @@
                     <li><a href="#consensus" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Analyst Consensus</a></li>
                     <li><a href="#quarterly" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Quarterly Trends</a></li>
                     <li><a href="#fundamental" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Fundamental Analysis</a></li>
+                    <!-- *** ADDED THIS LINE BACK *** -->
                     <li><a href="#interpretation" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Analysis & Interpretation</a></li>
                     <li><a href="#swot" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">SWOT Analysis</a></li>
                     <li><a href="#market" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Market & Competitor</a></li>
@@ -240,7 +241,7 @@
                     </div>
                 </section>
 
-                <!-- Section: Analysis & Interpretation -->
+                <!-- *** ADDED THIS SECTION BACK *** -->
                 <section id="interpretation" class="tw-mb-12">
                     <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Analysis & Interpretation</h2>
                     <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
@@ -539,7 +540,6 @@
          */
         const populateSummary = (data) => {
             try {
-                // BUG FIX: Check if qualitative data exists
                 if (!data.mainTicker.executiveSummary) {
                     throw new Error("executiveSummary is missing");
                 }
@@ -564,7 +564,7 @@
                 
             } catch (e) {
                 console.error("Error populating summary:", e);
-                setHTML('summary-points', '<li class="tw-text-red-500">Executive summary analysis is not available. Please check the Python script.</li>');
+                setHTML('summary-points', '<li class="tw-text-red-500">Executive summary analysis is not available. Please run the Python script to generate it.</li>');
             }
         };
 
@@ -591,9 +591,8 @@
                 setTextContent('company-name-header', main.companyName);
                 setTextContent('as-of-date', asOfDate);
                 
-                // BUG FIX: Check if qualitative data exists
-                setHTML('business-model', main.businessModel || '<p>Business model analysis is not available.</p>');
-                setHTML('leadership', main.leadership || '<p>Leadership analysis is not available.</p>');
+                setHTML('business-model', main.businessModel || '<p class="tw-text-gray-500">Business model analysis is not available.</p>');
+                setHTML('leadership', main.leadership || '<p class="tw-text-gray-500">Leadership analysis is not available.</p>');
 
                 // Info box
                 setTextContent('info-market-cap', formatLargeNumber(main.marketCap));
@@ -612,7 +611,6 @@
         const populateAnalystConsensus = (data) => {
             try {
                 const consensus = data.mainTicker.analystConsensus;
-                // BUG FIX: Check if data exists
                 if (!consensus) {
                     setHTML('consensus-content', '<p class="tw-text-lg tw-text-gray-500">Analyst consensus data is not available for this ticker.</p>');
                     return;
@@ -664,7 +662,6 @@
         const populateQuarterlyTrends = (data) => {
             try {
                 const quarterly = data.mainTicker.quarterlyFinancials;
-                // BUG FIX: Check if data exists
                 if (!quarterly || !quarterly.dates || quarterly.dates.length === 0) {
                     setHTML('quarterly-content', '<p class="tw-text-lg tw-text-gray-500">Quarterly financial data is not available for this ticker.</p>');
                     return;
@@ -759,7 +756,6 @@
         const populateInterpretation = (data) => {
             try {
                 const main = data.mainTicker;
-                // BUG FIX: Check if qualitative data exists
                 if (!main.interpretation) {
                     throw new Error("interpretation object is missing");
                 }
@@ -839,7 +835,6 @@
          */
         const populateSWOT = (data) => {
             try {
-                // BUG FIX: Check if qualitative data exists
                 if (!data.mainTicker.swot) {
                     throw new Error("swot object is missing");
                 }
@@ -867,7 +862,6 @@
                 const main = data.mainTicker;
                 const competitors = data.competitors;
                 
-                // BUG FIX: Check if qualitative data exists
                 setHTML('sector-performance', main.sectorPerformance || "Sector performance analysis is not available.");
                 
                 const head = document.getElementById('competitor-head');
@@ -982,7 +976,6 @@
          */
         const populateTechnicals = (data) => {
             try {
-                // BUG FIX: Check if qualitative data exists
                 if (!data.mainTicker.technicalAnalysis) {
                     throw new Error("technicalAnalysis object is missing");
                 }
@@ -1025,7 +1018,6 @@
                 setTextContent('tech-52w-text', `Currently at ${rangePercent}% of its 52-week range.`);
 
                 // Card 4: Summary
-                // BUG FIX: Check if qualitative data exists
                 setHTML('technical-summary-text', data.mainTicker.technicalSummary || "N/A");
 
             } catch (e) {
@@ -1160,17 +1152,20 @@
                 }
                 const data = await response.json();
                 
-                // Populate all sections
-                populateOverview(data); // Must run first for <head> tags
-                populateSummary(data);
-                populateAnalystConsensus(data);
-                populateQuarterlyTrends(data);
-                populateFundamentals(data);
-                populateInterpretation(data);
-                populateSWOT(data);
-                populateCompetitors(data);
-                populateBenchmark(data);
-                populateTechnicals(data);
+                // *** FIX: Wrap each call in its own try/catch ***
+                // This prevents one bad section (e.g., missing SWOT)
+                // from crashing the whole page.
+                
+                try { populateOverview(data); } catch(e) { console.error("Error populating Overview:", e); }
+                try { populateSummary(data); } catch(e) { console.error("Error populating Summary:", e); }
+                try { populateAnalystConsensus(data); } catch(e) { console.error("Error populating Analyst Consensus:", e); }
+                try { populateQuarterlyTrends(data); } catch(e) { console.error("Error populating Quarterly Trends:", e); }
+                try { populateFundamentals(data); } catch(e) { console.error("Error populating Fundamentals:", e); }
+                try { populateInterpretation(data); } catch(e) { console.error("Error populating Interpretation:", e); }
+                try { populateSWOT(data); } catch(e) { console.error("Error populating SWOT:", e); }
+                try { populateCompetitors(data); } catch(e) { console.error("Error populating Competitors:", e); }
+                try { populateBenchmark(data); } catch(e) { console.error("Error populating Benchmark:", e); }
+                try { populateTechnicals(data); } catch(e) { console.error("Error populating Technicals:", e); }
                 
                 // Load the Plotly chart (can run in parallel)
                 createPlotlyChart();
@@ -1187,7 +1182,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                         </svg>
                         <h3 class="tw-mt-4 tw-text-2xl tw-font-medium tw-text-gray-900">Failed to Load Report</h3>
-                        <p class="tw-mt-2 tw-text-lg tw-text-gray-500">Could not fetch '${FUNDAMENTALS_PATH}'.</Two-column flexbox layout (sidebar + main content).</p>
+                        <p class="tw-mt-2 tw-text-lg tw-text-gray-500">Could not fetch '${FUNDAMENTALS_PATH}'.</p>
                         <p class="tw-text-sm tw-text-gray-500">Please run the Python script to generate the data file. Error: ${error.message}</p>
                     </div>`;
             }
