@@ -1,0 +1,112 @@
+{
+    "asOfDate": "2025-11-15",
+    "mainTicker": {
+        "ticker": "GOOG",
+        "companyName": "Alphabet Inc.",
+        "ceo": "Mr. Sundar  Pichai",
+        "marketCap": 3364478255104,
+        "sector": "Communication Services",
+        "industry": "Internet Content & Information",
+        "hqLocation": "Mountain View, CA, United States",
+        "revenueTTM": 385476001792,
+        "netIncomeTTM": 124250996736,
+        "epsTTM": 10.14,
+        "operatingCashflowTTM": 151424008192,
+        "freeCashflowTTM": 47997751296,
+        "peTTM": 27.315582,
+        "psTTM": 8.728113,
+        "pbTTM": 8.6467085,
+        "profitMargin": 0.32233003,
+        "revenueGrowthYoY": 0.159,
+        "roa": 0.16275999,
+        "roe": 0.3545,
+        "debtToEquity": 11.424,
+        "currentRatio": 1.747,
+        "dividendYield": 0.3,
+        "payoutRatio": 0.0809,
+        "beta": 1.082,
+        "ytdReturn": null,
+        "oneYearReturn": 0.5998175631995889,
+        "threeYearReturn": 1.8249134224364163,
+        "technicalAnalysis": {
+            "currentPrice": 276.98,
+            "sma30": 265.40733337402344,
+            "sma90": 232.21947191026476,
+            "rsi": 55.97711448657948,
+            "percentRange52w": 0.8972611890447563,
+            "low52w": 142.66,
+            "high52w": 292.36
+        },
+        "analystConsensus": {
+            "targetMean": 180.5,
+            "targetHigh": 200.0,
+            "targetLow": 160.0,
+            "strongBuy": 20,
+            "buy": 15,
+            "hold": 5,
+            "sell": 0,
+            "strongSell": 0
+        },
+        "quarterlyFinancials": {
+            "dates": [
+                "2023-12-31",
+                "2024-03-31",
+                "2024-06-30",
+                "2024-09-30",
+                "2024-12-31",
+                "2025-03-31",
+                "2025-06-30",
+                "2025-09-30"
+            ],
+            "revenue": [
+                86310000000,
+                80539000000,
+                84742000000,
+                88268000000,
+                96469000000,
+                90234000000,
+                96428000000,
+                102346000000
+            ],
+            "netIncome": [
+                20687000000,
+                23662000000,
+                23619000000,
+                26301000000,
+                26536000000,
+                34540000000,
+                28196000000,
+                34979000000
+            ]
+        }
+    },
+    "benchmark": {
+        "ticker": "SPY",
+        "ytdReturn": 14.74103,
+        "oneYearReturn": 0.16107377878650933,
+        "threeYearReturn": 0.7569994730869357
+    },
+    "competitors": {
+        "MSFT": {
+            "marketCap": 3791850569728,
+            "peTTM": 36.234375,
+            "revenueGrowthYoY": 0.184,
+            "profitMargin": 0.35707,
+            "oneYearReturn": 0.23857875316320462
+        },
+        "AMZN": {
+            "marketCap": 2539781357568,
+            "peTTM": 33.10155,
+            "revenueGrowthYoY": 0.134,
+            "profitMargin": 0.11063,
+            "oneYearReturn": 0.1583337531929097
+        },
+        "META": {
+            "marketCap": 1537244659712,
+            "peTTM": 26.95533,
+            "revenueGrowthYoY": 0.262,
+            "profitMargin": 0.30892,
+            "oneYearReturn": 0.1034080873480263
+        }
+    }
+}
