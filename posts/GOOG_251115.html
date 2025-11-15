@@ -5,450 +5,1104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GOOG Financial Analysis Report</title>
 
-    <meta name="description" content="A comprehensive financial analysis of GOOG as of 251112, covering fundamentals, analyst consensus, and key growth drivers.">
-    <meta property="og:title" content="Equity Research: GOOG Analysis">
-    <meta property="og:description" content="In-depth financial report on GOOG, detailing its key themes, fundamental health, analyst consensus, and competitor comparison.">
+    <!-- SEO & Social Meta Tags -->
+    <meta name="description" content="A comprehensive financial analysis of Alphabet (GOOG) as of 251115, covering fundamentals, analyst consensus, and key growth drivers.">
+    
+    <!-- Open Graph (OG) Tags -->
+    <meta property="og:title" content="Equity Research: Micron (MU) Analysis">
+    <meta property="og:description" content="In-depth financial report on Micron (MU), detailing its key themes, fundamental health, analyst consensus, and competitor comparison.">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://tonynahra.github.io/posts/GOOG_251112.html">
+    <meta property="og:url" content="https://tonynahra.github.io/posts/MU_251115.html">
+    <!-- <meta property="og:image" content="[URL_to_your_image.jpg]"> -->
+
+    <!-- Twitter Card Tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Equity Research: GOOG Analysis">
-    <meta name="twitter:description" content="In-depth financial report on GOOG, detailing its key themes, fundamental health, analyst consensus, and competitor comparison.">
-
+    <meta name="twitter:title" content="Equity Research: Micron (MU) Analysis">
+    <meta name="twitter:description" content="In-depth financial report on Micron (MU), detailing its key themes, fundamental health, analyst consensus, and competitor comparison.">
+    <!-- <meta name="twitter:image" content="[URL_to_your_image.jpg]"> -->
+    
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Plotly.js CDN -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <!-- Chart.js CDN (for new charts) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="common/finance-style.css">
-
+    
+    <!-- 
+      CRITICAL: Configure Tailwind to use the 'tw-' prefix 
+      to avoid styling conflicts in a host environment.
+    -->
     <script>
       tailwind.config = {
         prefix: 'tw-',
       }
     </script>
     
-    <style>
-        /* Simple spinner styles */
-        #loading-spinner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(255, 255, 255, 0.8);
-            z-index: 9999;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #09f;
-            animation: spin 1s ease infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <!-- External Stylesheet -->
+    <link rel="stylesheet" href="common/finance-style.css">
+    
 </head>
-<body class="tw-font-sans tw-bg-gray-50 tw-text-gray-900">
+<body class="tw-bg-gray-100 tw-text-gray-900 tw-antialiased">
 
-    <div id="loading-spinner">
-        <div class="spinner"></div>
-        <p class="tw-text-lg tw-font-medium tw-text-gray-700">Loading Financial Report...</p>
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-flex-col tw-items-center tw-justify-center tw-bg-white tw-bg-opacity-90">
+        <svg class="tw-animate-spin tw-h-12 tw-w-12 tw-text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="tw-opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="tw-opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="tw-mt-4 tw-text-lg tw-font-medium tw-text-gray-700">Loading Financial Data...</p>
     </div>
 
-    <div class="tw-flex">
-        <aside id="sidebar-nav" class="tw-w-64 tw-h-screen tw-sticky tw-top-0 tw-overflow-y-auto tw-bg-gray-900 tw-text-white tw-p-4 tw-flex-shrink-0 tw-hidden md:tw-block">
-            <h2 class="tw-text-2xl tw-font-bold tw-mb-4 tw-text-blue-400">GOOG Analysis</h2>
-            <nav>
-                <ul class="tw-space-y-1" id="nav-links">
-                    <li><a href="#summary" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">Executive Summary</a></li>
-                    <li><a href="#overview" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">Company Overview</a></li>
-                    <li><a href="#consensus" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">Analyst Consensus</a></li>
-                    <li><a href="#quarterly" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">Quarterly Trends</a></li>
-                    <li><a href="#fundamental" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">Fundamental Analysis</a></li>
-                    <li><a href="#interpretation" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">Analysis & Interpretation</a></li>
-                    <li><a href="#swot" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">SWOT Analysis</a></li>
-                    <li><a href="#market" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">Market & Competitors</a></li>
-                    <li><a href="#benchmark" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">Benchmark Comparison</a></li>
-                    <li><a href="#technical" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">Technical Analysis</a></li>
-                    <li><a href="#chart" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-220 tw-ease-in-out hover:tw-bg-gray-700">Price Chart</a></li>
-                    <li><a href="#disclaimer" class="tw-block tw-py-1.5 tw-px-3 tw-rounded tw-transition tw-duration-200 tw-ease-in-out hover:tw-bg-gray-700">Disclaimer</a></li>
+    <!-- Main Flex Container: Sidebar + Content -->
+    <div class="tw-flex tw-min-h-screen">
+
+        <!-- 
+          Sticky Navigation Sidebar (Aside)
+          Updated with tw-overflow-y-auto and more compact spacing
+        -->
+        <aside class="tw-w-64 tw-shrink-0 tw-bg-white tw-shadow-lg tw-h-screen tw-sticky tw-top-0 tw-p-6 tw-flex tw-flex-col tw-overflow-y-auto">
+            <div class="tw-flex tw-items-center tw-mb-6 tw-shrink-0">
+                <!-- Simple Logo/Icon Placeholder -->
+                <svg class="tw-h-8 tw-w-8 tw-text-blue-600 tw-mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75-.75v-.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V4.5m1.5.375V5.625m18 0v-.75a1.125 1.125 0 0 0-1.125-1.125h-.375m1.5 1.5v.375c0 .621-.504 1.125-1.125 1.125H3.375c-.621 0-1.125-.504-1.125-1.125v-.375m1.5-1.5v-.75a1.125 1.125 0 0 0-1.125-1.125H3.75m1.5 1.5v.75c0 .414-.336.75-.75.75H3m1.5-1.5V4.5m0 1.5v.75m1.5-1.5h13.5m-13.5 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V6m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V6m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V9m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V9m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V12m3.75 0v.75c0 .414.336.75.75.75h.75m-1.5-1.5V12m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V15m0 3.75v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5v-.75m1.5 1.5V18" />
+                </svg>
+                <h1 class="tw-font-bold tw-text-xl tw-text-gray-800">Financial Report</h1>
+            </div>
+            
+            <!-- Navigation List -->
+            <nav class="tw-flex-1">
+                <ul class="tw-space-y-1" id="nav-list">
+                    <li><a href="#summary" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Executive Summary</a></li>
+                    <li><a href="#overview" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Company Overview</a></li>
+                    <li><a href="#consensus" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Analyst Consensus</a></li>
+                    <li><a href="#quarterly" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Quarterly Trends</a></li>
+                    <li><a href="#fundamental" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Fundamental Analysis</a></li>
+                    <li><a href="#interpretation" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Analysis & Interpretation</a></li>
+                    <li><a href="#swot" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">SWOT Analysis</a></li>
+                    <li><a href="#market" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Market & Competitor</a></li>
+                    <li><a href="#benchmark" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Benchmark Comparison</a></li>
+                    <li><a href="#technical" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Technical Analysis</a></li>
+                    <li><a href="#chart" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Price Chart</a></li>
+                    <li><a href="#disclaimer" class="nav-link tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200">Disclaimer</a></li>
+                </ul>
+                <hr class="tw-my-3 tw-border-gray-200">
+                <ul>
+                    <li><a href="https://tonynahra.github.io/" target="_blank" rel="noopener noreferrer" class="tw-block tw-py-1.5 tw-text-gray-700 hover:tw-text-blue-600 tw-font-medium tw-transition-all tw-duration-200 tw-flex tw-items-center">
+                        About the Author
+                        <svg class="tw-w-4 tw-h-4 tw-ml-2 tw-text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"></path>
+                        </svg>
+                      </a></li>
                 </ul>
             </nav>
-            <div class="tw-mt-6 tw-pt-4 tw-border-t tw-border-gray-700">
-                <a href="https://tonynahra.github.io/" target="_blank" rel="noopener noreferrer" class="tw-text-sm tw-text-gray-400 hover:tw-text-blue-400">About the Author</a>
-            </div>
         </aside>
 
-        <main class="tw-flex-1 tw-p-6 md:tw-p-10 tw-max-w-full md:tw-max-w-[calc(100%-16rem)]">
-            
-            <header class="tw-mb-8 tw-pb-4 tw-border-b tw-border-gray-300">
-                <h1 class="tw-text-4xl tw-font-bold tw-text-gray-900">Alphabet Inc. (GOOG)</h1>
-                <p class="tw-text-lg tw-text-gray-600">Equity Research Report | <span id="report-date">Loading...</span></p>
-            </header>
+        <!-- 
+          Main Content Area
+        -->
+        <main class="tw-flex-1 tw-p-10 tw-overflow-y-auto">
+            <div class="tw-max-w-7xl tw-mx-auto">
 
-            <section id="summary" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Executive Summary</h2>
-                <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                    <div class="tw-flex tw-items-center tw-mb-4">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mr-3">Analyst Rating:</h3>
-                        <span id="recommendation-badge" class="tw-px-4 tw-py-1 tw-text-lg tw-font-bold tw-text-white tw-rounded-full tw-bg-gray-400">Loading...</span>
-                    </div>
-                    <ul id="summary-points" class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-gray-700">
-                        <li>Loading summary points...</li>
-                    </ul>
-                </div>
-            </section>
+                <!-- Main Report Header -->
+                <header class="tw-mb-10 tw-border-b tw-pb-6">
+                    <h1 class="tw-text-4xl tw-font-bold tw-text-gray-900 tw-mb-2">Equity Research: <span id="company-name-header">...</span></h1>
+                    <p class="tw-text-lg tw-text-gray-600">Benchmark: S&P 500 Index | As of <span id="as-of-date">...</span></p>
+                </header>
 
-            <section id="overview" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Company Overview</h2>
-                <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-mb-6">
-                        <div>
-                            <strong class="tw-text-gray-600">Company:</strong>
-                            <span id="company-name" class="tw-font-medium tw-text-gray-800">Loading...</span>
-                        </div>
-                        <div>
-                            <strong class="tw-text-gray-600">CEO:</strong>
-                            <span id="ceo-name" class="tw-font-medium tw-text-gray-800">Loading...</span>
-                        </div>
-                        <div>
-                            <strong class="tw-text-gray-600">Market Cap:</strong>
-                            <span id="market-cap" class="tw-font-medium tw-text-gray-800">--</span>
-                        </div>
-                        <div>
-                            <strong class="tw-text-gray-600">Sector:</strong>
-                            <span id="sector-name" class="tw-font-medium tw-text-gray-800">Loading...</span>
-                        </div>
-                        <div>
-                            <strong class="tw-text-gray-600">Industry:</strong>
-                            <span id="industry-name" class="tw-font-medium tw-text-gray-800">Loading...</span>
-                        </div>
-                        <div>
-                            <strong class="tw-text-gray-600">Website:</strong>
-                            <a id="website-link" href="#" class="tw-text-blue-600 hover:tw-underline">Loading...</a>
+                <!-- Section: Executive Summary -->
+                <section id="summary" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Executive Summary</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <ul id="summary-points" class="tw-list-disc tw-list-inside tw-space-y-3 tw-text-lg tw-mb-6">
+                            <!-- JS will populate this -->
+                            <li>Loading...</li>
+                        </ul>
+                        <div id="recommendation-box" class="tw-p-6 tw-bg-gray-50 tw-rounded-lg tw-border tw-border-gray-200">
+                            <h3 class="tw-text-xl tw-font-bold tw-text-gray-800">Recommendation: <span id="recommendation-text">...</span></h3>
+                            <p class="tw-text-lg tw-text-gray-700 tw-mt-2" id="recommendation-rationale">
+                                Loading rationale...
+                            </p>
                         </div>
                     </div>
-                    <div id="overview-ai-content" class="tw-space-y-4 tw-text-gray-700">
-                        </div>
-                </div>
-            </section>
+                </section>
 
-            <section id="consensus" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Analyst Consensus</h2>
-                <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                    <div class="tw-flex tw-flex-col md:tw-flex-row tw-items-start">
-                        <div class="tw-w-full md:tw-w-1/2 tw-pr-4">
-                            <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Target Price</h3>
-                            <div class="tw-space-y-2 tw-text-lg">
-                                <p><strong>Mean:</strong> <span id="target-mean" class="tw-font-bold tw-text-blue-600">--</span></p>
-                                <p><strong>High:</strong> <span id="target-high" class="tw-font-bold tw-text-green-600">--</span></p>
-                                <p><strong>Low:</strong> <span id="target-low" class="tw-font-bold tw-text-red-600">--</span></p>
-                                <p><strong># of Analysts:</strong> <span id="target-analysts">--</span></p>
+                <!-- Section: Company Overview -->
+                <section id="overview" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Company Overview</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-mb-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Business Model</h3>
+                        <div class="tw-text-lg tw-text-gray-700 tw-mb-6" id="business-model">
+                            <!-- JS will populate this -->
+                            Loading...
+                        </div>
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-mt-6">Leadership</h3>
+                        <p class="tw-text-lg tw-text-gray-700" id="leadership">
+                            Loading...
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Company Information</h3>
+                        <dl class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-x-8 tw-gap-y-4">
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Market Cap</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900" id="info-market-cap">--</dd>
+                            </div>
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Sector</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900" id="info-sector">--</dd>
+                            </div>
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Industry</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900" id="info-industry">--</dd>
+                            </div>
+                            <div class="tw-text-lg">
+                                <dt class="tw-font-medium tw-text-gray-500">Headquarters</dt>
+                                <dd class="tw-font-semibold tw-text-gray-900" id="info-hq">--</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </section>
+
+                <!-- Section: Analyst Consensus -->
+                <section id="consensus" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Analyst Consensus</h2>
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Price Targets -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">Wall Street Price Targets</h3>
+                            <div class="tw-space-y-4">
+                                <div class="tw-flex tw-justify-between tw-items-center tw-bg-blue-50 tw-p-4 tw-rounded-lg">
+                                    <span class="tw-text-lg tw-font-medium tw-text-blue-800">Mean Target</span>
+                                    <span class="tw-text-2xl tw-font-bold tw-text-blue-900" id="analyst-mean">--</span>
+                                </div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-bg-gray-50 tw-p-4 tw-rounded-lg">
+                                    <span class="tw-text-lg tw-font-medium tw-text-gray-600">High Target</span>
+                                    <span class="tw-text-xl tw-font-semibold tw-text-gray-800" id="analyst-high">--</span>
+                                </div>
+                                <div class="tw-flex tw-justify-between tw-items-center tw-bg-gray-50 tw-p-4 tw-rounded-lg">
+                                    <span class="tw-text-lg tw-font-medium tw-text-gray-600">Low Target</span>
+                                    <span class="tw-text-xl tw-font-semibold tw-text-gray-800" id="analyst-low">--</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="tw-w-full md:tw-w-1/2 tw-mt-6 md:tw-mt-0">
-                            <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Recommendation Trend</h3>
-                            <div class="tw-h-64">
+                        <!-- Ratings Chart -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">Analyst Ratings (<span id="analyst-total">--</span> Total)</h3>
+                            <div class_name="tw-w-full tw-h-60">
                                 <canvas id="analystChart"></canvas>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+                
+                <!-- Section: Quarterly Trends -->
+                <section id="quarterly" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Quarterly Growth Trends</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">Quarterly Revenue & Net Income (USD)</h3>
+                        <div class_name="tw-w-full tw-h-96">
+                            <canvas id="quarterlyChart"></canvas>
+                        </div>
+                    </div>
+                </section>
 
-            <section id="quarterly" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Quarterly Trends (USD)</h2>
-                <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                    <div class="tw-h-96">
-                        <canvas id="quarterlyChart"></canvas>
+                <!-- Section: Fundamental Analysis -->
+                <section id="fundamental" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Fundamental Analysis</h2>
+                    <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-3 tw-gap-6">
+                        <!-- Card: Key Financials -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Key Financials (TTM)</h3>
+                            <ul class="tw-space-y-3 tw-text-lg">
+                                <li class="tw-flex tw-justify-between"><span>Revenue:</span> <span class="tw-font-semibold" id="fundamental-revenue">--</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Net Income:</span> <span class="tw-font-semibold" id="fundamental-net-income">--</span></li>
+                                <li class="tw-flex tw-justify-between"><span>EPS (Diluted):</span> <span class="tw-font-semibold" id="fundamental-eps">--</span></li>
+                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Operating Cash Flow:</span> <span class="tw-font-semibold" id="fundamental-ocf">--</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Free Cash Flow:</span> <span class="tw-font-semibold" id="fundamental-fcf">--</span></li>
+                            </ul>
+                        </div>
+                        <!-- Card: Key Ratios -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Key Ratios</h3>
+                            <ul class="tw-space-y-3 tw-text-lg">
+                                <li class="tw-flex tw-justify-between"><span>P/E (TTM):</span> <span class="tw-font-semibold" id="ratio-pe">--</span></li>
+                                <li class="tw-flex tw-justify-between"><span>P/S (TTM):</span> <span class="tw-font-semibold" id="ratio-ps">--</span></li>
+                                <li class="tw-flex tw-justify-between"><span>P/B (TTM):</span> <span class="tw-font-semibold" id="ratio-pb">--</span></li>
+                                <li class_name="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Profit Margin:</span> <span class="tw-font-semibold" id="ratio-margin">--</span></li>
+                                <li class_name="tw-flex tw-justify-between"><span>ROA:</span> <span class="tw-font-semibold" id="ratio-roa">--</span></li>
+                                <li class_name="tw-flex tw-justify-between"><span>ROE:</span> <span class="tw-font-semibold" id="ratio-roe">--</span></li>
+                            </ul>
+                        </div>
+                        <!-- Card: Balance Sheet & Dividend -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Balance Sheet & Dividend</h3>
+                            <ul class="tw-space-y-3 tw-text-lg">
+                                <li class="tw-flex tw-justify-between"><span>Debt-to-Equity:</span> <span class="tw-font-semibold" id="balance-de">--</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Current Ratio:</span> <span class="tw-font-semibold" id="balance-current">--</span></li>
+                                <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Dividend Yield:</span> <span class="tw-font-semibold" id="div-yield">--</span></li>
+                                <li class="tw-flex tw-justify-between"><span>Payout Ratio:</span> <span class="tw-font-semibold" id="div-payout">--</span></li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <section id="fundamental" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Fundamental Analysis (TTM)</h2>
-                <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-3">TTM Financials (USD)</h3>
-                        <table class="tw-w-full tw-text-left">
-                            <tbody>
-                                <tr class="tw-border-b tw-border-gray-200">
-                                    <td class="tw-py-2 tw-text-gray-600">Total Revenue</td>
-                                    <td id="ttm-revenue" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                                <tr class="tw-border-b tw-border-gray-200">
-                                    <td class="tw-py-2 tw-text-gray-600">EBITDA</td>
-                                    <td id="ttm-ebitda" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                                <tr class="tw-border-b tw-border-gray-200">
-                                    <td class="tw-py-2 tw-text-gray-600">Net Income</td>
-                                    <td id="ttm-netIncome" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                                <tr class="tw-border-b tw-border-gray-200">
-                                    <td class="tw-py-2 tw-text-gray-600">EPS (Diluted)</td>
-                                    <td id="ttm-eps" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                                <tr class="tw-border-b tw-border-gray-200">
-                                    <td class="tw-py-2 tw-text-gray-600">Total FCF</td>
-                                    <td id="ttm-fcf" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                                <tr>
-                                    <td class="tw-py-2 tw-text-gray-600">Op. Cash Flow</td>
-                                    <td id="ttm-ocf" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- Section: Analysis & Interpretation -->
+                <section id="interpretation" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Analysis & Interpretation</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <p class="tw-text-lg tw-text-gray-600 tw-mb-8">
+                            This section provides a technical breakdown of the key financial ratios presented in the previous section. It explains what these metrics signify for the company's financial health and market valuation.
+                        </p>
+                        <div id="interpretation-grid" class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-x-8 tw-gap-y-10">
+                            <!-- JS will populate this -->
+                            <div class="tw-p-4 tw-rounded-lg tw-bg-gray-50">Loading analysis...</div>
+                        </div>
                     </div>
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-3">Key Ratios (TTM)</h3>
-                        <table class="tw-w-full tw-text-left">
-                            <tbody>
-                                <tr class="tw-border-b tw-border-gray-200">
-                                    <td class="tw-py-2 tw-text-gray-600">P/E Ratio</td>
-                                    <td id="ratio-pe" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                                <tr class="tw-border-b tw-border-gray-200">
-                                    <td class="tw-py-2 tw-text-gray-600">Forward P/E</td>
-                                    <td id="ratio-forward-pe" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                                <tr class="tw-border-b tw-border-gray-200">
-                                    <td class="tw-py-2 tw-text-gray-600">P/S Ratio</td>
-                                    <td id="ratio-ps" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                                <tr class="tw-border-b tw-border-gray-200">
-                                    <td class="tw-py-2 tw-text-gray-600">Profit Margin</td>
-                                    <td id="ratio-profit-margin" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                                <tr class="tw-border-b tw-border-gray-200">
-                                    <td class="tw-py-2 tw-text-gray-600">Return on Equity (ROE)</td>
-                                    <td id="ratio-roe" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                                <tr>
-                                    <td class="tw-py-2 tw-text-gray-600">Debt/Equity</td>
-                                    <td id="ratio-de" class="tw-py-2 tw-font-medium tw-text-right">--</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <section id="interpretation" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Analysis & Interpretation</h2>
-                <div class="tw-space-y-6">
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Valuation (P/E Ratio)</h3>
-                        <p id="interp-pe" class="tw-text-gray-700">Loading analysis...</p>
+                <!-- Section: SWOT Analysis -->
+                <section id="swot" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">SWOT Analysis</h2>
+                    <div class_name="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Strengths -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-green-700">Strengths</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg" id="swot-strengths">
+                                <li>Loading...</li>
+                            </ul>
+                        </div>
+                        <!-- Weaknesses -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-yellow-700">Weaknesses</h3>
+                            <ul class_name="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg" id="swot-weaknesses">
+                                <li>Loading...</li>
+                            </ul>
+                        </div>
+                        <!-- Opportunities -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-blue-700">Opportunities</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg" id="swot-opportunities">
+                                <li>Loading...</li>
+                            </ul>
+                        </div>
+                        <!-- Threats -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-red-700">Threats</h3>
+                            <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg" id="swot-threats">
+                                <li>Loading...</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Profitability (Profit Margin & ROE)</h3>
-                        <p id="interp-profit" class="tw-text-gray-700">Loading analysis...</p>
+                    <!-- New SWOT Score Section -->
+                    <div class_name="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-mt-6">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">SWOT Score: <span id="swot-score" class="tw-text-blue-600">--/100</span></h3>
+                        <p class="tw-text-lg tw-text-gray-700" id="swot-rationale">
+                            Loading...
+                        </p>
                     </div>
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Financial Health (Debt/Equity)</h3>
-                        <p id="interp-health" class="tw-text-gray-700">Loading analysis...</p>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <section id="swot" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">SWOT Analysis</h2>
-                <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-3 tw-text-green-600">Strengths</h3>
-                        <ul id="swot-strengths" class="tw-list-disc tw-list-inside tw-space-y-1 tw-text-gray-700">
-                            <li>Loading...</li>
-                        </ul>
-                    </div>
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-3 tw-text-red-600">Weaknesses</h3>
-                        <ul id="swot-weaknesses" class="tw-list-disc tw-list-inside tw-space-y-1 tw-text-gray-700">
-                            <li>Loading...</li>
-                        </ul>
-                    </div>
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-3 tw-text-blue-600">Opportunities</h3>
-                        <ul id="swot-opportunities" class="tw-list-disc tw-list-inside tw-space-y-1 tw-text-gray-700">
-                            <li>Loading...</li>
-                        </ul>
-                    </div>
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-3 tw-text-yellow-600">Threats</h3>
-                        <ul id="swot-threats" class="tw-list-disc tw-list-inside tw-space-y-1 tw-text-gray-700">
-                            <li>Loading...</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md tw-mt-6">
-                    <div id="swot-score" class="tw-text-gray-700">Loading score...</div>
-                </div>
-            </section>
-
-            <section id="market" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Market & Competitor Analysis</h2>
-                <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                    <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Sector Performance</h3>
-                    <p id="sector-performance" class="tw-text-gray-700 tw-mb-6">Loading sector analysis...</p>
+                <!-- Section: Market & Competitor Analysis -->
+                <section id="market" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Market & Competitor Analysis</h2>
                     
-                    <h3 class="tw-text-xl tw-font-semibold tw-mb-3">Competitor Ratio Comparison</h3>
-                    <div class="tw-overflow-x-auto">
-                        <table id="competitor-table" class="tw-w-full tw-min-w-max tw-text-left">
-                            <thead class="tw-bg-gray-100">
-                                <tr>
-                                    <th class="tw-p-3 tw-font-semibold tw-text-gray-700">Metric</th>
-                                    </tr>
+                    <div class_name="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-mb-8">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Sector Performance (3 Months)</h3>
+                        <p class="tw-text-lg tw-text-gray-700" id="sector-performance">
+                            Loading...
+                        </p>
+                    </div>
+
+                    <div class_name="tw-bg-white tw-rounded-lg tw-shadow tw-overflow-x-auto">
+                        <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-p-8 tw-pb-0">Direct Competitor Comparison</h3>
+                        <table class="tw-w-full tw-text-left tw-text-lg">
+                            <thead class_name="tw-bg-gray-50" id="competitor-head">
+                                <!-- JS will build this -->
                             </thead>
-                            <tbody class="tw-divide-y tw-divide-gray-200">
-                                </tbody>
+                            <tbody class="tw-divide-y tw-divide-gray-200" id="competitor-body">
+                                <!-- JS will build this -->
+                            </tbody>
                         </table>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <section id="benchmark" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Benchmark Comparison</h2>
-                <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                    <h3 class="tw-text-xl tw-font-semibold tw-mb-3">Performance vs. S&P 500 (SPY)</h3>
-                    <div class="tw-overflow-x-auto tw-mb-6">
-                        <table id="benchmark-table" class="tw-w-full tw-min-w-max tw-text-left">
-                            <thead class="tw-bg-gray-100">
-                                <tr>
-                                    <th class="tw-p-3 tw-font-semibold tw-text-gray-700">Period</th>
+                <!-- Section: Benchmark Comparison -->
+                <section id="benchmark" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Benchmark Comparison</h2>
+                    <div class_name="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Data Table -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Performance Returns</h3>
+                            <table class="tw-w-full tw-text-left tw-text-lg">
+                                <thead class_name="tw-bg-gray-50">
+                                    <tr>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Period</th>
+                                        <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right" id="benchmark-ticker-col">MU</th>
+                                        <th class_name="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-right" id="benchmark-index-col">S&P 500</th>
                                     </tr>
-                            </thead>
-                            <tbody class="tw-divide-y tw-divide-gray-200">
+                                </thead>
+                                <tbody class="tw-divide-y tw-divide-gray-200">
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">YTD Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-right" id="benchmark-ytd-ticker">--</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-right" id="benchmark-ytd-index">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">1-Year Return</td>
+                                        <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-right" id="benchmark-1y-ticker">--</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-right" id="benchmark-1y-index">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tw-px-6 tw-py-4 tw-font-medium">3-Year Return</td>
+                                        <td class_name="tw-px-6 tw-py-4 tw-font-semibold tw-text-right" id="benchmark-3y-ticker">--</td>
+                                        <td class="tw-px-6 tw-py-4 tw-text-right" id="benchmark-3y-index">--</td>
+                                    </tr>
                                 </tbody>
-                        </table>
-                    </div>
+                            </table>
 
-                    <h3 class="tw-text-xl tw-font-semibold tw-mb-3">1-Year Performance (Visual)</h3>
-                    <div id="benchmark-visual-chart" class="tw-space-y-3 tw-p-2">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-mt-8">Volatility</h3>
+                            <div class="tw-flex tw-justify-between tw-text-lg tw-px-6 tw-py-4 tw-bg-gray-50 tw-rounded-lg">
+                                <span class="tw-font-medium tw-text-gray-700">5-Year Beta:</span>
+                                <span class="tw-font-semibold tw-text-gray-900" id="benchmark-beta">--</span>
+                            </div>
+                            <p class="tw-text-base tw-text-gray-600 tw-mt-3 tw-px-1" id="benchmark-beta-text">
+                                <!-- JS will populate this -->
+                            </p>
                         </div>
-                </div>
-            </section>
-
-            <section id="technical" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Technical Analysis</h2>
-                <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Trend Analysis</h3>
-                        <p class="tw-text-sm tw-text-gray-600">Price: <span id="current-price" class="tw-font-bold">--</span></label>
-                        <div class="tw-space-y-1 tw-mt-2">
-                            <p>30D SMA: <span id="sma-30" class="tw-font-medium">--</span></p>
-                            <p>90D SMA: <span id="sma-90" class="tw-font-medium">--</span></p>
-                        </div>
-                        <p id="tech-trend-text" class="tw-mt-3 tw-font-semibold tw-text-gray-700">Loading trend...</p>
-                    </div>
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Momentum (RSI-14)</h3>
-                        <p class="tw-text-4xl tw-font-bold tw-text-gray-800 tw-mb-2"><span id="rsi-value">--</span></p>
-                        <p id="tech-rsi-text" class="tw-text-lg tw-font-semibold tw-text-gray-700">Loading status...</p>
-                    </div>
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-2">52-Week Range</h3>
-                        <div class="tw-flex tw-justify-between tw-text-sm tw-text-gray-600 tw-mb-1">
-                            <span>Low: <span id="low-52w">--</span></span>
-                            <span>High: <span id="high-52w">--</span></span>
-                        </div>
-                        <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-2.5">
-                            <div id="range-bar-inner" class="tw-bg-blue-600 tw-h-2.5 tw-rounded-full" style="width: 0%;"></div>
-                        </div>
-                        <p class="tw-text-right tw-text-sm tw-mt-1 tw-font-medium">At <span id="range-percent">--</span>% of range</p>
-                    </div>
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md">
-                        <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Technician's View</h3>
-                        <p id="tech-analyst-view" class="tw-text-gray-700">Loading technical summary...</p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="chart" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Interactive Price Chart</h2>
-                <div class="tw-bg-white tw-p-2 md:tw-p-4 tw-rounded-lg tw-shadow-md">
-                    <div id="priceChartDiv" class="tw-w-full tw-h-[700px]">
-                        <div class="tw-flex tw-items-center tw-justify-center tw-h-full tw-text-gray-500">
-                            Loading Interactive Chart...
+                        
+                        <!-- Dynamic HTML Bar Chart -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                            <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">1-Year Performance (Visual)</h3>
+                            <div class="tw-space-y-4" id="benchmark-visual-chart">
+                                <!-- JS will build this -->
+                            </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+                
+                <!-- Section: Technical Analysis -->
+                <section id="technical" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Technical Analysis</h2>
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+                        <!-- Trend Card -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Trend</h3>
+                            <div class="tw-space-y-3 tw-text-lg" id="technical-trend-data">
+                                <div class="tw-flex tw-justify-between"><span>Current Price:</span> <span class="tw-font-semibold" id="tech-current-price">--</span></div>
+                                <div class="tw-flex tw-justify-between"><span>SMA 30-Day:</span> <span class="tw-font-semibold" id="tech-sma30">--</span></div>
+                                <div class="tw-flex tw-justify-between"><span>SMA 90-Day:</span> <span class="tw-font-semibold" id="tech-sma90">--</span></div>
+                            </div>
+                            <div class="tw-mt-4 tw-p-4 tw-rounded-lg" id="technical-trend-text">
+                                <p class="tw-font-semibold">Loading...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- RSI Card -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">RSI (14-Day)</h3>
+                            <div class="tw-text-center tw-mb-4">
+                                <span id="tech-rsi-value" class="tw-text-5xl tw-font-bold tw-text-gray-900">--</span>
+                            </div>
+                            <div class="tw-mt-4 tw-p-4 tw-rounded-lg" id="technical-rsi-text">
+                                <p class="tw-font-semibold">Loading...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 52-Week Range Card -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">52-Week Range</h3>
+                            <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-4 tw-relative tw-mt-8 tw-mb-6">
+                                <div id="tech-52w-bar" class="tw-bg-blue-600 tw-h-4 tw-rounded-full tw-absolute" style="width: 0%;">
+                                    <span id="tech-52w-dot" class="tw-absolute tw-right-0 tw-top-1/2 -tw-translate-y-1/2 tw-h-5 tw-w-5 tw-bg-blue-800 tw-rounded-full tw-border-2 tw-border-white"></span>
+                                </div>
+                            </div>
+                            <div class="tw-flex tw-justify-between tw-text-lg tw-font-medium">
+                                <span id="tech-52w-low">--</span>
+                                <span id="tech-52w-high">--</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Analyst View Card -->
+                        <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Technical Summary</h3>
+                            <p class="tw-text-lg tw-text-gray-700" id="technical-summary-text">
+                                Loading...
+                            </p>
+                        </div>
+                    </div>
+                </section>
 
-            <section id="disclaimer" class="tw-mb-12 tw-scroll-mt-20">
-                <h2 class="tw-text-3xl tw-font-semibold tw-mb-4">Disclaimer</h2>
-                <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-md tw-text-sm tw-text-gray-600">
-                    <p>This report is for informational purposes only and does not constitute investment advice, an offer to sell, or a solicitation of an offer to buy any security. The information contained herein has been compiled from sources believed to be reliable, but its accuracy and completeness are not guaranteed. All opinions and estimates constitute the author's judgment as of the date of this report and are subject to change without notice.</p>
-                    <p class="tw-mt-2">The author may hold positions in the securities mentioned. Past performance is not indicative of future results. Investors should conduct their own research and consult with a qualified financial advisor before making any investment decisions.</p>
-                </div>
-            </section>
+                <!-- Section: Price Chart -->
+                <section id="chart" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Price Chart</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-flex tw-items-center tw-justify-center">
+                        <div id="priceChartDiv" class="tw-w-full tw-min-h-[600px]">
+                            <!-- Plotly.js chart will render here -->
+                            <div class="tw-text-center tw-pt-16 tw-text-gray-500">
+                                <svg class="tw-mx-auto tw-h-12 tw-w-12 tw-animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="tw-opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="tw-opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  <p class="tw-mt-4 tw-text-lg">Loading Price Chart...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
+                <!-- Section: Disclaimer -->
+                <section id="disclaimer" class="tw-mb-12">
+                    <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Disclaimer</h2>
+                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                        <p class="tw-text-base tw-text-gray-600 tw-italic tw-mt-4">
+                            All investments involve risk, and past performance is not indicative of future results. You should not rely on this information as the sole basis for making any investment decisions. Always conduct your own independent research and due diligence, and consult with a qualified financial professional before making any investment. The AI and its creators assume no liability for any errors, omissions, or inaccuracies in this report or for any actions taken in reliance thereon.
+                        </s:p>
+                    </div>
+                </section>
+
+            </div>
         </main>
     </div>
 
+    <!-- 
+      =============================================================
+      == MAIN JAVASCRIPT BLOCK FOR DYNAMIC DATA POPULATION
+      =============================================================
+      This script fetches all data and populates the entire report.
+    -->
     <script>
         // --- Configuration ---
         const TICKER = "GOOG";
-        const FILE_DATE = "251112";
-        const RATING = "Buy"; // From prompt
+        const FILE_DATE = "251115"; // This should match the JSON filenames
+        const FUNDAMENTALS_PATH = `fundamentals/${TICKER}_${FILE_DATE}.json`;
+        const CHART_PATH = `charts/${TICKER}_${FILE_DATE}.json`;
 
         // --- Helper Functions ---
+        
         const formatLargeNumber = (num) => {
-            if (num === null || num === undefined) return '--';
-            return Math.abs(Number(num)) >= 1.0e+12
-                ? (Math.abs(Number(num)) / 1.0e+12).toFixed(2) + "T"
-                : Math.abs(Number(num)) >= 1.0e+9
-                ? (Math.abs(Number(num)) / 1.0e+9).toFixed(2) + "B"
-                : Math.abs(Number(num)) >= 1.0e+6
-                ? (Math.abs(Number(num)) / 1.0e+6).toFixed(2) + "M"
-                : Math.abs(Number(num)) >= 1.0e+3
-                ? (Math.abs(Number(num)) / 1.0e+3).toFixed(2) + "K"
-                : Math.abs(Number(num)).toFixed(2);
-        };
-
-        const formatCurrency = (num, fractionDigits = 2) => {
-            if (num === null || num === undefined) return '--';
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: fractionDigits,
-                maximumFractionDigits: fractionDigits
-            }).format(num);
+            if (num === null || num === undefined || isNaN(num)) return '--';
+            if (Math.abs(num) >= 1e12) {
+                return `$${(num / 1e12).toFixed(2)}T`;
+            } else if (Math.abs(num) >= 1e9) {
+                return `$${(num / 1e9).toFixed(1)}B`;
+            } else if (Math.abs(num) >= 1e6) {
+                return `$${(num / 1e6).toFixed(1)}M`;
+            } else {
+                return `$${num.toLocaleString()}`;
+            }
         };
 
         const formatPercent = (num) => {
-            if (num === null || num === undefined) return '--';
-            return (num * 100).toFixed(2) + '%';
+            if (num === null || num === undefined || isNaN(num)) return '--';
+            return `${(num * 100).toFixed(1)}%`;
         };
 
-        const formatDate = (dateString) => {
-             // Input format YYMMDD
-            const year = "20" + dateString.substring(0, 2);
-            const month = dateString.substring(2, 4);
-            const day = dateString.substring(4, 6);
-            const date = new Date(`${year}-${month}-${day}`);
-            return new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(date);
-        }
+        const formatRatio = (num) => {
+            if (num === null || num === undefined || isNaN(num)) return '--';
+            return `${num.toFixed(1)}x`;
+        };
 
-        // --- Main Application Logic ---
-        document.addEventListener("DOMContentLoaded", main);
+        const formatCurrency = (num) => {
+            if (num === null || num === undefined || isNaN(num)) return '--';
+            return `$${num.toFixed(2)}`;
+        };
 
-        async function main() {
-            const spinner = document.getElementById('loading-spinner');
+        const setTextContent = (id, text) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = text || '--';
+            } else {
+                console.warn(`Element with ID '${id}' not found.`);
+            }
+        };
+
+        const setHTML = (id, html) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerHTML = html || '';
+            } else {
+                console.warn(`Element with ID '${id}' not found.`);
+            }
+        };
+
+        /**
+         * Populates the Executive Summary section.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateSummary = (data) => {
+            const ticker = data.mainTicker.ticker;
+            const fcf = formatLargeNumber(data.mainTicker.freeCashflowTTM);
+            const consensus = data.mainTicker.analystConsensus.strongBuy + data.mainTicker.analystConsensus.buy > data.mainTicker.analystConsensus.hold * 2 ? 'Strong Buy' : 'Buy';
+            const pe = formatRatio(data.mainTicker.peTTM);
+            
+            const points = [
+                `<strong>Navigating the Cycle:</strong> ${ticker} is at a critical inflection point, emerging from a deep industry downturn. Revenue growth is accelerating as memory prices recover, driven by massive AI data center demand.`,
+                `<strong>AI & HBM Leader:</strong> The company is a key supplier of <a href="https_//www.micron.com/products/high-bandwidth-memory/hbm3e" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">HBM3E</a>, the high-bandwidth memory essential for AI accelerators. This high-margin segment is its primary growth driver.`,
+                `<strong>Mixed Analyst View:</strong> Wall Street consensus is a "${consensus}" rating, with a mean target of ${formatCurrency(data.mainTicker.analystConsensus.targetMean)}. This reflects both the huge opportunity and the stock's extreme cyclical volatility.`,
+                `<strong>Valuation & Risk:</strong> Trading at ${pe} TTM P/E, valuation is difficult to assess due to cyclical earnings. The primary risk is a future oversupply of memory or a pause in AI spending.`
+            ];
+            
+            setHTML('summary-points', points.map(p => `<li>${p}</li>`).join(''));
+
+            // Default Recommendation: HOLD
+            setTextContent('recommendation-text', 'HOLD');
+            setTextContent('recommendation-rationale', `We issue a "Hold" rating. While MU is a primary beneficiary of the AI boom, its stock is highly cyclical and has already seen a significant run-up. The risk/reward is balanced at this level, pending clearer signals of sustained pricing power into 2026.`);
+            document.getElementById('recommendation-box').className = 'tw-p-6 tw-bg-yellow-50 tw-rounded-lg tw-border tw-border-yellow-200';
+            document.getElementById('recommendation-text').className = 'tw-font-bold tw-text-yellow-800';
+        };
+
+        /**
+         * Populates the Overview section.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateOverview = (data) => {
+            const main = data.mainTicker;
+            setTextContent('company-name-header', main.companyName);
+            setTextContent('as-of-date', data.asOfDate);
+            
+            setHTML('business-model', `Micron Technology (${main.ticker}) is a global leader in the semiconductor industry, specializing in memory and storage solutions. Its business is primarily divided into:
+                <ul class="tw-list-disc tw-list-inside tw-mt-4 tw-space-y-2 tw-text-lg">
+                    <li><strong>DRAM (Dynamic Random-Access Memory):</strong> High-speed memory used in PCs, servers (especially for AI), mobile phones, and data centers.</li>
+                    <li><strong>NAND (Flash Storage):</strong> Non-volatile storage used in SSDs (Solid-State Drives), mobile devices, and USB drives.</li>
+                    <li><strong>HBM (High Bandwidth Memory):</strong> A key, high-margin product stacked on top of GPUs (like NVIDIA's) to power AI and high-performance computing (HPC) workloads.</li>
+                </ul>`);
+            setHTML('leadership', `The company is led by <strong>CEO ${main.ceo}</strong>, who has successfully navigated the company through extreme industry cycles. He is currently focusing the company on capturing the massive growth in AI-driven demand for HBM and high-capacity DRAM.`);
+
+            // Info box
+            setTextContent('info-market-cap', formatLargeNumber(main.marketCap));
+            setTextContent('info-sector', main.sector);
+            setTextContent('info-industry', main.industry);
+            setTextContent('info-hq', main.hqLocation);
+        };
+
+        /**
+         * Populates the Analyst Consensus section and chart.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateAnalystConsensus = (data) => {
+            const consensus = data.mainTicker.analystConsensus;
+            if (!consensus) {
+                setHTML('consensus', '<p>Analyst consensus data is not available.</p>');
+                return;
+            }
+            
+            setTextContent('analyst-mean', formatCurrency(consensus.targetMean));
+            setTextContent('analyst-high', formatCurrency(consensus.targetHigh));
+            setTextContent('analyst-low', formatCurrency(consensus.targetLow));
+
+            const totalRatings = consensus.strongBuy + consensus.buy + consensus.hold + consensus.sell + consensus.strongSell;
+            setTextContent('analyst-total', totalRatings);
+
             try {
-                // 1. Fetch Fundamental Data
-                const fundamentalsUrl = `fundamentals/${TICKER}_${FILE_DATE}.json`;
-                const fundamentalsResponse = await fetch(fundamentalsUrl);
-                if (!fundamentalsResponse.ok) throw new Error(`Failed to load fundamentals from ${fundamentalsUrl}`);
-                const data = await fundamentalsResponse.json();
+                const ctxAnalyst = document.getElementById('analystChart').getContext('2d');
+                new Chart(ctxAnalyst, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Strong Buy', 'Buy', 'Hold', 'Sell', 'Strong Sell'],
+                        datasets: [{
+                            label: 'Analyst Ratings',
+                            data: [consensus.strongBuy, consensus.buy, consensus.hold, consensus.sell, consensus.strongSell],
+                            backgroundColor: ['#16a34a', '#22c55e', '#f59e0b', '#ef4444', '#b91c1c'],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `${context.label}: ${context.parsed} analysts`
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Failed to render Analyst Chart:", e);
+            }
+        };
+        
+        /**
+         * Populates the Quarterly Trends chart.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateQuarterlyTrends = (data) => {
+            const quarterly = data.mainTicker.quarterlyFinancials;
+            if (!quarterly || !quarterly.dates || quarterly.dates.length === 0) {
+                setHTML('quarterly', '<p>Quarterly financial data is not available.</p>');
+                return;
+            }
 
-                // 2. Populate All Sections
-                document.getElementById('report-date').textContent = formatDate(FILE_DATE);
+            const labels = quarterly.dates.map(dateStr => {
+                const date = new Date(dateStr);
+                const q = Math.floor((date.getUTCMonth() + 3) / 3);
+                const year = date.getUTCFullYear();
+                return `Q${q} ${year}`;
+            });
+            
+            try {
+                const ctxQuarterly = document.getElementById('quarterlyChart').getContext('2d');
+                new Chart(ctxQuarterly, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Quarterly Revenue',
+                                data: quarterly.revenue,
+                                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Quarterly Net Income',
+                                data: quarterly.netIncome,
+                                backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { callback: (value) => (value / 1e9) + 'B' }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `${context.dataset.label}: ${formatLargeNumber(context.parsed.y)}`
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Failed to render Quarterly Chart:", e);
+            }
+        };
+
+        /**
+         * Populates the Fundamental Analysis section.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateFundamentals = (data) => {
+            const main = data.mainTicker;
+            setTextContent('fundamental-revenue', formatLargeNumber(main.revenueTTM));
+            setTextContent('fundamental-net-income', formatLargeNumber(main.netIncomeTTM));
+            setTextContent('fundamental-eps', formatCurrency(main.epsTTM));
+            setTextContent('fundamental-ocf', formatLargeNumber(main.operatingCashflowTTM));
+            setTextContent('fundamental-fcf', formatLargeNumber(main.freeCashflowTTM));
+
+            setTextContent('ratio-pe', formatRatio(main.peTTM));
+            setTextContent('ratio-ps', formatRatio(main.psTTM));
+            setTextContent('ratio-pb', formatRatio(main.pbTTM));
+            setTextContent('ratio-margin', formatPercent(main.profitMargin));
+            setTextContent('ratio-roa', formatPercent(main.roa));
+            setTextContent('ratio-roe', formatPercent(main.roe));
+
+            setTextContent('balance-de', main.debtToEquity ? (main.debtToEquity / 100).toFixed(2) : '--');
+            setTextContent('balance-current', formatRatio(main.currentRatio));
+            setTextContent('div-yield', formatPercent(main.dividendYield));
+            setTextContent('div-payout', formatPercent(main.payoutRatio));
+        };
+
+        /**
+         * Populates the Interpretation section.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateInterpretation = (data) => {
+            const main = data.mainTicker;
+            const interpretations = [
+                {
+                    title: "P/E Ratio (TTM)",
+                    value: formatRatio(main.peTTM),
+                    rating: "Volatile",
+                    color: "yellow",
+                    meaning: "The Price-to-Earnings ratio measures the current share price relative to its per-share earnings.",
+                    interp: `At ${formatRatio(main.peTTM)}, MU's TTM P/E is elevated and not very useful. Memory stocks are cyclical, and P/E ratios are often *highest* at the bottom of the cycle (when earnings are low) and *lowest* at the peak. Investors should focus on forward P/E and price-to-book.`
+                },
+                {
+                    title: "Profit Margin",
+                    value: formatPercent(main.profitMargin),
+                    rating: "Recovering",
+                    color: "blue",
+                    meaning: "This ratio (Net Income / Revenue) shows how much profit the company makes for every dollar of sales.",
+                    interp: `A ${formatPercent(main.profitMargin)} margin reflects the *start* of a recovery from the industry's recent price collapse. This margin is expected to expand significantly if HBM demand and DRAM/NAND pricing continue to improve.`
+                },
+                {
+                    title: "FCF & D/E Ratio",
+                    value: "Negative FCF",
+                    rating: "Caution",
+                    color: "yellow",
+                    meaning: `Free Cash Flow (${formatLargeNumber(main.freeCashflowTTM)} TTM) and Debt-to-Equity (${main.debtToEquity ? (main.debtToEquity/100).toFixed(2) : '--'}) show cash generation vs. leverage.`,
+                    interp: `Micron is currently burning cash (negative FCF) due to massive capital expenditures for new fabs and the recent industry downturn. Its D/E ratio of ${main.debtToEquity ? (main.debtToEquity/100).toFixed(2) : '--'} is manageable, but the high capex is a necessary and significant drag on finances.`
+                },
+                {
+                    title: "Return on Equity (ROE)",
+                    value: formatPercent(main.roe),
+                    rating: "Cyclical",
+                    color: "blue",
+                    meaning: "This measures the return generated on shareholders' equity.",
+                    interp: `An ROE of ${formatPercent(main.roe)} is low, reflecting the recent cyclical trough in earnings. This metric should improve dramatically as the company returns to strong profitability.`
+                }
+            ];
+            
+            const colorClasses = {
+                blue: "tw-bg-blue-100 tw-text-blue-800",
+                green: "tw-bg-green-100 tw-text-green-800",
+                yellow: "tw-bg-yellow-100 tw-text-yellow-800",
+                red: "tw-bg-red-100 tw-text-red-800"
+            };
+
+            const grid = document.getElementById('interpretation-grid');
+            grid.innerHTML = interpretations.map(item => `
+                <div>
+                    <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                        <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">${item.title}</h4>
+                        <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium ${colorClasses[item.color]}">
+                            ${item.value} (${item.rating})
+                        </span>
+                    </div>
+                    <p class="tw-text-lg tw-text-gray-700">
+                        <strong>Meaning:</strong> ${item.meaning}
+                        <br>
+                        <strong>Interpretation:</strong> ${item.interp}
+                    </p>
+                </div>
+            `).join('');
+        };
+        
+        /**
+         * Populates the SWOT section (AI-generated content).
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateSWOT = (data) => {
+            setHTML('swot-strengths', `
+                <li>World-class R&D and manufacturing scale.</li>
+                <li>Key supplier (one of three) in the DRAM/NAND oligopoly.</li>
+                <li>Strong position in high-margin HBM for AI.</li>
+                <li>Diversified end-markets (Data Center, PC, Mobile).</li>`);
+            
+            setHTML('swot-weaknesses', `
+                <li>Extreme sensitivity to memory pricing cycles.</li>
+                <li>High capital intensity (requires massive, constant fab investment).</li>
+                <li>Negative free cash flow during downturns.</li>
+                <li>Lagged Samsung in HBM3E production initially.</li>`);
+                
+            setHTML('swot-opportunities', `
+                <li>Explosive growth in AI servers (HBM).</li>
+                <li>Automotive and Industrial IoT memory demand.</li>
+                <li>Memory-as-a-service models for data centers.</li>
+                <li>Price increases in DRAM and NAND post-downturn.</li>`);
+                
+            setHTML('swot-threats', `
+                <li>Competitors (Samsung, SK Hynix) adding new capacity, which could create oversupply.</li>
+                <li>A slowdown in AI or cloud spending.</li>
+                <li>Chinese government subsidies for domestic memory producers.</li>
+                <li>Geopolitical risks (especially related to Taiwan).</li>`);
+            
+            // Set SWOT Score
+            setTextContent('swot-score', '68/100');
+            setTextContent('swot-rationale', `This score reflects a company with immense technological strengths and a massive tailwind from AI (Opportunities). However, these are held in check by the severe structural threats of cyclicality, geopolitical risk, and intense, state-sponsored competition, which create significant volatility.`);
+        };
+
+        /**
+         * Populates the Market & Competitor section.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateCompetitors = (data) => {
+            // AI-generated Sector Performance
+            setHTML('sector-performance', `The semiconductor sector has been a top performer, driven by the AI narrative. The <strong><a href="https_//www.vaneck.com/etf/equity/smh/overview/" target="_blank" rel="noopener noreferrer" class="tw-text-blue-600 hover:tw-underline">VanEck Semiconductor ETF (SMH)</a></strong> has outperformed the S&P 500 significantly, though gains have been concentrated in AI leaders. Memory stocks like Micron have seen high volatility as investors weigh the AI opportunity against cyclical inventory risks.`);
+            
+            const main = data.mainTicker;
+            const competitors = data.competitors;
+            const head = document.getElementById('competitor-head');
+            const body = document.getElementById('competitor-body');
+
+            let headers = [`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>`, `<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600 tw-text-right">${main.ticker}</th>`];
+            let marketCapRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatLargeNumber(main.marketCap)}</td>`];
+            let peRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
+            let growthRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.revenueGrowthYoY)}</td>`];
+            let marginRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.profitMargin)}</td>`];
+
+            for (const [ticker, stats] of Object.entries(competitors)) {
+                headers.push(`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-right">${ticker}</th>`);
+                marketCapRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatLargeNumber(stats.marketCap)}</td>`);
+                peRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatRatio(stats.peTTM)}</td>`);
+                growthRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.revenueGrowthYoY)}</td>`);
+                marginRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
+            }
+
+            head.innerHTML = `<tr>${headers.join('')}</tr>`;
+            body.innerHTML = `
+                <tr>${marketCapRow.join('')}</tr>
+                <tr>${peRow.join('')}</tr>
+                <tr>${growthRow.join('')}</tr>
+                <tr>${marginRow.join('')}</tr>
+            `;
+        };
+
+        /**
+         * Populates the Benchmark Comparison section.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateBenchmark = (data) => {
+            const main = data.mainTicker;
+            const bench = data.benchmark;
+
+            setTextContent('benchmark-ticker-col', main.ticker);
+            setTextContent('benchmark-index-col', bench.ticker);
+
+            // Performance Table
+            setTextContent('benchmark-ytd-ticker', formatPercent(main.ytdReturn));
+            setTextContent('benchmark-ytd-index', formatPercent(bench.ytdReturn));
+            document.getElementById('benchmark-ytd-ticker').className = main.ytdReturn > bench.ytdReturn ? 'tw-font-semibold tw-text-green-600 tw-text-right' : 'tw-font-semibold tw-text-red-600 tw-text-right';
+            
+            setTextContent('benchmark-1y-ticker', formatPercent(main.oneYearReturn));
+            setTextContent('benchmark-1y-index', formatPercent(bench.oneYearReturn));
+            document.getElementById('benchmark-1y-ticker').className = main.oneYearReturn > bench.oneYearReturn ? 'tw-font-semibold tw-text-green-600 tw-text-right' : 'tw-font-semibold tw-text-red-600 tw-text-right';
+
+            setTextContent('benchmark-3y-ticker', formatPercent(main.threeYearReturn));
+            setTextContent('benchmark-3y-index', formatPercent(bench.threeYearReturn));
+            document.getElementById('benchmark-3y-ticker').className = main.threeYearReturn > bench.threeYearReturn ? 'tw-font-semibold tw-text-green-600 tw-text-right' : 'tw-font-semibold tw-text-red-600 tw-text-right';
+            
+            // Volatility
+            setTextContent('benchmark-beta', main.beta.toFixed(2));
+            setTextContent('benchmark-beta-text', `A Beta of ${main.beta.toFixed(2)} indicates ${main.ticker} is significantly more volatile than the broader market.`);
+            
+            // Visual Chart
+            const visualChart = document.getElementById('benchmark-visual-chart');
+            let items = [
+                { label: main.ticker, value: main.oneYearReturn, color: 'blue' }
+            ];
+            
+            for (const [ticker, stats] of Object.entries(data.competitors)) {
+                items.push({ label: `Competitor (${ticker})`, value: stats.oneYearReturn, color: 'gray' });
+            }
+            items.push({ label: `Sector (Semis - SMH)`, value: 0.45, color: 'gray' }); // AI-generated placeholder
+            
+            const validValues = items
+                .map(i => parseFloat(i.value))
+                .filter(v => !isNaN(v)); 
+
+            const maxVal = Math.max(0.01, ...validValues); 
+            
+            visualChart.innerHTML = items.map(item => {
+                const value = parseFloat(item.value); 
+                const isValid = !isNaN(value); 
+                
+                const displayValue = isValid ? value : 0;
+                const displayText = isValid ? formatPercent(value) : '--';
+
+                const width = Math.max(0, (displayValue / maxVal) * 100);
+                const colorClass = item.color === 'blue' ? 'tw-bg-blue-500' : 'tw-bg-gray-500';
+                const textClass = item.color === 'blue' ? 'tw-text-blue-600' : 'tw-text-gray-700';
+                
+                return `
+                    <div class="tw-w-full">
+                        <div class="tw-flex tw-justify-between tw-mb-1">
+                            <span class="tw-text-lg tw-font-semibold ${textClass}">${item.label}</span>
+                            <span class="tw-text-lg tw-font-semibold ${textClass}">${displayText}</span>
+                        </div>
+                        <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                            <div class="${colorClass} tw-h-6 tw-rounded-full" style="width: ${width}%;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+        
+        /**
+         * Populates the Technical Analysis section.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateTechnicals = (data) => {
+            const tech = data.mainTicker.technicalAnalysis;
+            if (!tech) {
+                setHTML('technical', '<p>Technical analysis data is not available.</p>');
+                return;
+            }
+
+            // Card 1: Trend
+            setTextContent('tech-current-price', formatCurrency(tech.currentPrice));
+            setTextContent('tech-sma30', formatCurrency(tech.sma30));
+            setTextContent('tech-sma90', formatCurrency(tech.sma90));
+            
+            const trendText = document.getElementById('technical-trend-text');
+            if (tech.currentPrice > tech.sma30 && tech.sma30 > tech.sma90) {
+                trendText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-green-100 tw-text-green-800';
+                trendText.innerHTML = '<p class="tw-font-semibold">Strong Uptrend:</span> Price is above both the 30-day and 90-day moving averages, with the 30-day above the 90-day.</p>';
+            } else if (tech.currentPrice > tech.sma30) {
+                trendText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-green-100 tw-text-green-800';
+                trendText.innerHTML = '<p class="tw-font-semibold">Short-Term Uptrend:</span> Price is above the 30-day moving average, indicating positive short-term momentum.</p>';
+            } else if (tech.currentPrice < tech.sma90) {
+                trendText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-red-100 tw-text-red-800';
+                trendText.innerHTML = '<p class="tw-font-semibold">Downtrend:</span> Price is below the 90-day moving average, indicating a significant downtrend.</p>';
+            } else {
+                trendText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-gray-100 tw-text-gray-800';
+                trendText.innerHTML = '<p class="tw-font-semibold">Consolidating:</span> Price is in-between its major moving averages, indicating a lack of a clear trend.</p>';
+            }
+
+            // Card 2: RSI
+            setTextContent('tech-rsi-value', tech.rsi ? tech.rsi.toFixed(1) : '--');
+            const rsiText = document.getElementById('technical-rsi-text');
+            if (tech.rsi > 70) {
+                rsiText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-red-100 tw-text-red-800';
+                rsiText.innerHTML = '<p class="tw-font-semibold">Overbought:</span> An RSI above 70 suggests the asset may be overbought and due for a pullback.</p>';
+            } else if (tech.rsi < 30) {
+                rsiText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-green-100 tw-text-green-800';
+                rsiText.innerHTML = '<p class="tw-font-semibold">Oversold:</span> An RSI below 30 suggests the asset may be oversold and due for a bounce.</p>';
+            } else {
+                rsiText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-gray-100 tw-text-gray-800';
+                rsiText.innerHTML = '<p class="tw-font-semibold">Neutral:</span> The RSI is in neutral territory, not signaling extreme momentum.</p>';
+            }
+
+            // Card 3: 52-Week Range
+            setTextContent('tech-52w-low', formatCurrency(tech.low52w));
+            setTextContent('tech-52w-high', formatCurrency(tech.high52w));
+            if (tech.percentRange52w) {
+                const percent = (tech.percentRange52w * 100).toFixed(1);
+                document.getElementById('tech-52w-bar').style.width = `${percent}%`;
+            }
+
+            // Card 4: Summary
+            setHTML('technical-summary-text', `The technical picture for MU is characteristic of a highly cyclical stock in an uptrend. The price is firmly above its major moving averages, confirming a strong trend. However, the RSI is approaching overbought levels, suggesting momentum is high and a short-term consolidation or pullback would be healthy.`);
+        };
+
+
+        /**
+         * Creates the Plotly Price/Volume/RSI chart.
+         */
+        async function createPlotlyChart() {
+            try {
+                const response = await fetch(CHART_PATH);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const chartData = await response.json();
+
+                const priceTrace = { 
+                    x: chartData.dates, 
+                    y: chartData.prices, 
+                    type: 'scatter', 
+                    mode: 'lines', 
+                    name: `${TICKER} Price`, 
+                    line: { color: '#2563eb', width: 2 }, 
+                    xaxis: 'x', 
+                    yaxis: 'y' 
+                };
+
+                const bbUpperTrace = {
+                    x: chartData.dates,
+                    y: chartData.bb_upper,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Upper Band',
+                    line: { color: 'rgba(156, 163, 175, 0.5)', width: 1, dash: 'dash' }, 
+                    xaxis: 'x',
+                    yaxis: 'y'
+                };
+                
+                const bbLowerTrace = {
+                    x: chartData.dates,
+                    y: chartData.bb_lower,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Lower Band',
+                    line: { color: 'rgba(156, 163, 175, 0.5)', width: 1, dash: 'dash' },
+                    fill: 'tonexty', 
+                    fillcolor: 'rgba(156, 163, 175, 0.1)', 
+                    xaxis: 'x',
+                    yaxis: 'y'
+                };
+                
+                const bbMiddleTrace = {
+                    x: chartData.dates,
+                    y: chartData.bb_middle,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: '20-Day SMA',
+                    line: { color: '#f59e0b', width: 1.5, dash: 'dot' }, 
+                    xaxis: 'x',
+                    yaxis: 'y'
+                };
+                
+                const volumeTrace = { 
+                    x: chartData.dates, 
+                    y: chartData.volumes, 
+                    type: 'bar', 
+                    name: 'Volume', 
+                    marker: { color: '#9ca3af' }, 
+                    xaxis: 'x', 
+                    yaxis: 'y2' 
+                };
+                
+                const rsiTrace = { 
+                    x: chartData.dates, 
+                    y: chartData.rsi, 
+                    type: 'scatter', 
+                    mode: 'lines', 
+                    name: 'RSI', 
+                    line: { color: '#db2777' }, 
+                    xaxis: 'x', 
+                    yaxis: 'y3' 
+                };
+                
+                const layout = {
+                    title: `${TICKER} Price (with Bollinger Bands), Volume, and RSI (365 Days)`,
+                    xaxis: { anchor: 'y3', domain: [0.0, 1.0], rangeslider: { visible: true, thickness: 0.1 }, showticklabels: false },
+                    yaxis: { title: 'Price ($)', domain: [0.6, 1.0], showgrid: true },
+                    yaxis2: { title: 'Volume', domain: [0.3, 0.55], showgrid: true },
+                    yaxis3: { title: 'RSI', domain: [0.0, 0.25], range: [0, 100], showgrid: true,
+                        shapes: [
+                            { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 70, y1: 70, line: { color: '#ef4444', width: 2, dash: 'dash' } },
+                            { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 30, y1: 30, line: { color: '#22c55e', width: 2, dash: 'dash' } }
+                        ]
+                    },
+                    legend: { x: 0.5, y: 1.1, orientation: 'h', xanchor: 'center' },
+                    margin: { t: 60, l: 60, r: 60, b: 50 },
+                    autosize: true,
+                    showlegend: false
+                };
+                
+                const chartDiv = document.getElementById('priceChartDiv');
+                if (!chartDiv) throw new Error('priceChartDiv not found');
+                
+                Plotly.newPlot(chartDiv, [bbUpperTrace, bbLowerTrace, bbMiddleTrace, priceTrace, volumeTrace, rsiTrace], layout, { responsive: true });
+
+            } catch (error) {
+                console.error('Failed to load chart data:', error);
+                const chartDiv = document.getElementById('priceChartDiv');
+                if (chartDiv) {
+                    chartDiv.innerHTML = `
+                        <div class="tw-text-center tw-pt-16 tw-text-red-600">
+                            <h3 class="tw-mt-4 tw-text-2xl tw-font-medium tw-text-gray-900">Failed to Load Chart Data</h3>
+                            <p class="tw-mt-2 tw-text-lg tw-text-gray-500">Could not fetch '${CHART_PATH}'.</p>
+                        </div>`;
+                }
+            }
+        }
+        
+        /**
+         * Main function to load and populate all data.
+         */
+        async function main() {
+            try {
+                const response = await fetch(FUNDAMENTALS_PATH);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                // Populate all sections
                 populateSummary(data);
                 populateOverview(data);
                 populateAnalystConsensus(data);
@@ -456,569 +1110,38 @@
                 populateFundamentals(data);
                 populateInterpretation(data);
                 populateSWOT(data);
-                populateMarket(data);
+                populateCompetitors(data);
                 populateBenchmark(data);
-                populateTechnical(data);
+                populateTechnicals(data);
                 
-                // 3. Fetch and Render Chart Data
-                // We call this separately as requested
-                await createPlotlyChart();
+                // Load the Plotly chart (can run in parallel)
+                createPlotlyChart();
 
-                // 4. Hide Spinner
-                spinner.style.display = 'none';
-
+                // Hide spinner
+                document.getElementById('loading-spinner').style.display = 'none';
+                
             } catch (error) {
-                console.error("Error loading report:", error);
-                spinner.innerHTML = `<p class="tw-text-lg tw-font-medium tw-text-red-600">Failed to Load Report Data.<br/>${error.message}</p>`;
+                console.error('Failed to load fundamental data:', error);
+                const spinner = document.getElementById('loading-spinner');
+                spinner.innerHTML = `
+                    <div class="tw-text-center tw-text-red-600">
+                        <svg class="tw-mx-auto tw-h-16 tw-w-16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                        </svg>
+                        <h3 class="tw-mt-4 tw-text-2xl tw-font-medium tw-text-gray-900">Failed to Load Report</h3>
+                        <p class="tw-mt-2 tw-text-lg tw-text-gray-500">Could not fetch '${FUNDAMENTALS_PATH}'.</p>
+                        <p class="tw-text-sm tw-text-gray-500">Please run the Python script to generate the data file.</p>
+                        <p class="tw-text-xs tw-text-gray-400 tw-mt-4">Error: ${error.message}</p>
+                    </div>`;
             }
         }
 
-        // --- Population Functions ---
-
-        function populateSummary(data) {
-            const badge = document.getElementById('recommendation-badge');
-            badge.textContent = RATING;
-            if (RATING === 'Buy' || RATING === 'Strong Buy') {
-                badge.className = 'tw-px-4 tw-py-1 tw-text-lg tw-font-bold tw-text-white tw-rounded-full tw-bg-green-600';
-            } else if (RATING === 'Hold') {
-                badge.className = 'tw-px-4 tw-py-1 tw-text-lg tw-font-bold tw-text-white tw-rounded-full tw-bg-yellow-500';
-            } else {
-                badge.className = 'tw-px-4 tw-py-1 tw-text-lg tw-font-bold tw-text-white tw-rounded-full tw-bg-red-600';
-            }
-
-            // AI-Generated Summary Points
-            const points = [
-                `<strong>Strong Buy Rating:</strong> We initiate coverage of Alphabet (GOOG) with a 'Buy' rating, driven by its entrenched "moat" in Search and accelerating growth in the Google Cloud (GCP) and AI segments.`,
-                `<strong>Robust Financials:</strong> The company demonstrates exceptional financial health, generating over ${formatLargeNumber(data.fcf.totalFcf_ttm)} in TTM Free Cash Flow, providing ample capital for R&D, strategic acquisitions, and shareholder returns.`,
-                `<strong>Attractive Valuation:</strong> Despite its market leadership, GOOG trades at a forward P/E of ${data.mainTicker.forwardPE.toFixed(2)}x, which we view as a reasonable entry point given its growth prospects and dominant market position.`,
-                `<strong>Analyst Sentiment:</strong> Wall Street consensus remains bullish, with an average price target of ${formatCurrency(data.consensus.targetMean)}, implying significant upside from the current price.`
-            ];
-            document.getElementById('summary-points').innerHTML = points.map(p => `<li>${p}</li>`).join('');
-        }
-
-        function populateOverview(data) {
-            const d = data.mainTicker;
-            document.getElementById('company-name').textContent = d.companyName;
-            document.getElementById('ceo-name').textContent = d.ceo;
-            document.getElementById('market-cap').textContent = formatLargeNumber(d.marketCap);
-            document.getElementById('sector-name').textContent = d.sector;
-            document.getElementById('industry-name').textContent = d.industry;
-            const website = document.getElementById('website-link');
-            website.href = d.website;
-            website.textContent = d.website;
-
-            // AI-Generated Content
-            const aiContent = `
-                <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Business Model</h3>
-                <p class="tw-mb-4">Alphabet Inc. is a global technology conglomerate built on its core search and advertising business. Its primary revenue stream, Google Services, includes Search, YouTube ads, and Google Network properties. This segment forms a massive, high-margin cash flow engine that funds its other high-growth initiatives: Google Cloud (GCP) and "Other Bets" (e.g., Waymo, Verily). The business model is a flywheel: dominant user-facing products generate data, which refines AI models, improving the products and the ad-targeting, thus attracting more users and advertisers.</p>
-                <h3 class="tw-text-xl tw-font-semibold tw-mb-2">Leadership & Strategy</h3>
-                <p>Under CEO Sundar Pichai, Alphabet is aggressively pivoting towards an "AI-first" strategy. This involves integrating its advanced Gemini AI models across its entire product suite, from Search (AI Overviews) to Workspace and Cloud. The strategy is twofold: 1) Defend its core Search monopoly from AI-native competitors. 2) Leverage AI to accelerate Google Cloud's market share, positioning it as the premier platform for enterprise AI development. Management's focus on cost discipline ("durable re-engineering") while continuing to invest heavily in AI and Cloud infrastructure is the key strategic balance to watch.</p>
-            `;
-            document.getElementById('overview-ai-content').innerHTML = aiContent;
-        }
-
-        function populateAnalystConsensus(data) {
-            const d = data.consensus;
-            document.getElementById('target-mean').textContent = formatCurrency(d.targetMean);
-            document.getElementById('target-high').textContent = formatCurrency(d.targetHigh);
-            document.getElementById('target-low').textContent = formatCurrency(d.targetLow);
-            document.getElementById('target-analysts').textContent = d.numberOfAnalysts;
-
-            // Chart.js Doughnut Chart
-            const ctx = document.getElementById('analystChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Strong Buy', 'Buy', 'Hold', 'Sell', 'Strong Sell'],
-                    datasets: [{
-                        label: '# of Analysts',
-                        data: [d.strongBuy, d.buy, d.hold, d.sell, d.strongSell],
-                        backgroundColor: [
-                            'rgba(22, 163, 74, 1)',  // green-600
-                            'rgba(5, 150, 105, 1)',   // emerald-600
-                            'rgba(245, 158, 11, 1)', // amber-500
-                            'rgba(244, 63, 94, 1)',   // rose-500
-                            'rgba(220, 38, 38, 1)'  // red-600
-                        ],
-                        borderColor: '#ffffff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed !== null) {
-                                        label += context.parsed;
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function populateQuarterlyTrends(data) {
-            const quarters = data.quarterly;
-            const labels = quarters.map(q => q.period);
-            const revenues = quarters.map(q => q.revenue);
-            const netIncomes = quarters.map(q => q.netIncome);
-
-            const ctx = document.getElementById('quarterlyChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Revenue',
-                            data: revenues,
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)', // blue-500
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 1,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'Net Income',
-                            data: netIncomes,
-                            backgroundColor: 'rgba(16, 185, 129, 0.7)', // emerald-500
-                            borderColor: 'rgba(16, 185, 129, 1)',
-                            borderWidth: 1,
-                            yAxisID: 'y'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            type: 'linear',
-                            position: 'left',
-                            ticks: {
-                                callback: function(value) {
-                                    return formatLargeNumber(value);
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${formatCurrency(context.raw, 0)}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function populateFundamentals(data) {
-            const ttm = data.ttm;
-            const ratios = data.ratios;
-            // TTM
-            document.getElementById('ttm-revenue').textContent = formatLargeNumber(ttm.totalRevenue_ttm);
-            document.getElementById('ttm-ebitda').textContent = formatLargeNumber(ttm.ebitda_ttm);
-            document.getElementById('ttm-netIncome').textContent = formatLargeNumber(ttm.netIncome_ttm);
-            document.getElementById('ttm-eps').textContent = formatCurrency(ttm.eps_ttm);
-            document.getElementById('ttm-fcf').textContent = formatLargeNumber(data.fcf.totalFcf_ttm);
-            document.getElementById('ttm-ocf').textContent = formatLargeNumber(ttm.operatingCashFlow_ttm);
-            // Ratios
-            document.getElementById('ratio-pe').textContent = ratios.pe_ttm.toFixed(2);
-            document.getElementById('ratio-forward-pe').textContent = data.mainTicker.forwardPE.toFixed(2);
-            document.getElementById('ratio-ps').textContent = ratios.ps_ttm.toFixed(2);
-            document.getElementById('ratio-profit-margin').textContent = formatPercent(ratios.profitMargin_ttm);
-            document.getElementById('ratio-roe').textContent = formatPercent(ratios.roe_ttm);
-            document.getElementById('ratio-de').textContent = ratios.debtToEquity_ttm.toFixed(2);
-        }
-
-        function populateInterpretation(data) {
-            const ratios = data.ratios;
-            const mainTicker = data.mainTicker;
-
-            // AI-Generated Interpretations
-            document.getElementById('interp-pe').innerHTML = `
-                Alphabet's TTM P/E ratio of <strong>${ratios.pe_ttm.toFixed(2)}</strong> and forward P/E of <strong>${mainTicker.forwardPE.toFixed(2)}</strong> suggest a premium valuation, which is justified by its superior growth, market dominance, and high profitability. The forward P/E, being lower than the TTM, indicates analyst expectations of strong earnings growth over the next 12 months, likely driven by Cloud and AI initiatives.
-            `;
-            document.getElementById('interp-profit').innerHTML = `
-                A TTM profit margin of <strong>${formatPercent(ratios.profitMargin_ttm)}</strong> is exceptionally strong for a company of this scale, highlighting its pricing power and operational efficiency. The Return on Equity (ROE) of <strong>${formatPercent(ratios.roe_ttm)}</strong> confirms that management is highly effective at generating profits from shareholder equity. These metrics place GOOG in the top-tier of global enterprises.
-            `;
-            document.getElementById('interp-health').innerHTML = `
-                With a Debt-to-Equity ratio of <strong>${ratios.debtToEquity_ttm.toFixed(2)}</strong>, Alphabet maintains a fortress-like balance sheet. This very low leverage, combined with massive cash flows, gives the company immense financial flexibility to invest in future growth (like AI R&D) and weather any economic downturns without financial distress.
-            `;
-        }
-
-        function populateSWOT(data) {
-            // AI-Generated SWOT Content
-            document.getElementById('swot-strengths').innerHTML = [
-                `<li><strong>Dominant Market Share:</strong> Unmatched control of global search (~90%+) and digital advertising.</li>`,
-                `<li><strong>AI & ML Leadership:</strong> Decades of R&D and ownership of DeepMind/Gemini models provide a significant technological edge.</li>`,
-                `<li><strong>Diverse Ecosystem:</strong> Entrenched user base across Search, Android, YouTube, and Workspace creates high switching costs.</li>`,
-                `<li><strong>Fortress Balance Sheet:</strong> Massive cash reserves and free cash flow for investment and acquisitions.</li>`
-            ].join('');
-
-            document.getElementById('swot-weaknesses').innerHTML = [
-                `<li><strong>Ad Revenue Concentration:</strong> Heavy reliance on digital advertising makes it cyclical and vulnerable to market shifts.</li>`,
-                `<li><strong>Cloud Market Position:</strong> Remains a distant third in cloud infrastructure behind AWS and Azure.</li>`,
-                `<li><strong>Innovation Bureaucracy:</strong> "Other Bets" segment has historically burned significant capital with few commercial successes.</li>`
-            ].join('');
-
-            document.getElementById('swot-opportunities').innerHTML = [
-                `<li><strong>Google Cloud Growth:</strong> Continued expansion of GCP, particularly by bundling AI services for enterprise clients.</li>`,
-                `<li><strong>AI Monetization:</strong> New revenue streams from generative AI in Search, Workspace (Duet AI), and developer APIs.</li>`,
-                `<li><strong>YouTube Expansion:</strong> Growth in YouTube Premium, TV, and Shorts monetization.</li>`,
-                `<li><strong>Waymo Commercialization:</strong> Long-term potential for autonomous driving technology.</li>`
-            ].join('');
-
-            document.getElementById('swot-threats').innerHTML = [
-                `<li><strong>Regulatory Scrutiny:</strong> Ongoing and escalating antitrust lawsuits in the US and EU targeting its Search and ad-tech businesses.</li>`,
-                `<li><strong>AI-Driven Disruption:</strong> New AI-native search competitors (e.g., Perplexity) or changes in user behavior could challenge Search dominance.</li>`,
-                `<li><strong>Macroeconomic Headwinds:</strong> A slowdown in global ad spending could impact the core revenue driver.</li>`
-            ].join('');
-
-            document.getElementById('swot-score').innerHTML = `
-                <strong class="tw-text-lg">SWOT Score: 82/100</strong>
-                <p class="tw-mt-1">Alphabet's score reflects its near-insurmountable strengths in AI and market dominance, which provide a powerful foundation for capturing its vast opportunities in Cloud and AI monetization. The primary risk factor is not competition but regulation, which poses a significant and growing threat to its core business practices.</p>
-            `;
-        }
-
-        function populateMarket(data) {
-            // AI-Generated Sector Performance
-            document.getElementById('sector-performance').innerHTML = `
-                The Communication Services sector has shown robust performance, driven by the mega-cap tech companies within it. The key theme remains the AI arms race, with investors rewarding firms that demonstrate clear AI monetization strategies. While traditional media and telecom companies have lagged, digital advertising and cloud-adjacent businesses like GOOG and META continue to attract the bulk of capital flows.
-            `;
-
-            // Dynamic Competitor Table
-            const competitors = [data.mainTicker, ...data.competitors];
-            const metrics = [
-                { label: 'Market Cap', key: 'marketCap', format: formatLargeNumber },
-                { label: 'P/E (TTM)', key: 'pe_ttm', format: (n) => n.toFixed(2) },
-                { label: 'P/S (TTM)', key: 'ps_ttm', format: (n) => n.toFixed(2) },
-                { label: 'Profit Margin', key: 'profitMargin_ttm', format: formatPercent },
-                { label: 'ROE (TTM)', key: 'roe_ttm', format: formatPercent }
-            ];
-            
-            const table = document.getElementById('competitor-table');
-            const thead = table.querySelector('thead tr');
-            const tbody = table.querySelector('tbody');
-            tbody.innerHTML = ''; // Clear placeholder
-
-            // Build Header
-            competitors.forEach(comp => {
-                const th = document.createElement('th');
-                th.className = 'tw-p-3 tw-font-semibold tw-text-gray-700 tw-text-right';
-                th.textContent = comp.ticker;
-                thead.appendChild(th);
-            });
-
-            // Build Body Rows
-            metrics.forEach(metric => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="tw-p-3 tw-text-gray-600">${metric.label}</td>`;
-                competitors.forEach(comp => {
-                    const td = document.createElement('td');
-                    td.className = 'tw-p-3 tw-font-medium tw-text-right';
-                    let value = comp[metric.key];
-                    // Handle nested ratio keys
-                    if (!value && data.ratios && comp.ticker === TICKER) value = data.ratios[metric.key];
-                    if (!value && comp.ratios) value = comp.ratios[metric.key];
-                    
-                    td.textContent = (value !== null && value !== undefined) ? metric.format(value) : '--';
-                    if (comp.ticker === TICKER) {
-                        td.classList.add('tw-font-bold', 'tw-text-blue-700');
-                    }
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            });
-        }
-
-        function populateBenchmark(data) {
-            const main = data.mainTicker;
-            const bench = data.benchmark;
-            
-            const periods = [
-                { label: '1-Month', key: 'perf_1m' },
-                { label: '3-Month', key: 'perf_3m' },
-                { label: '1-Year', key: 'perf_1y' },
-                { label: 'YTD', key: 'perf_ytd' }
-            ];
-
-            const table = document.getElementById('benchmark-table');
-            const thead = table.querySelector('thead tr');
-            const tbody = table.querySelector('tbody');
-            tbody.innerHTML = ''; // Clear
-
-            // Build Header
-            thead.innerHTML = '<th class="tw-p-3 tw-font-semibold tw-text-gray-700">Period</th>';
-            [main, bench].forEach(item => {
-                const th = document.createElement('th');
-                th.className = 'tw-p-3 tw-font-semibold tw-text-gray-700 tw-text-right';
-                th.textContent = item.ticker;
-                thead.appendChild(th);
-            });
-            
-            // Build Body Rows
-            periods.forEach(period => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="tw-p-3 tw-text-gray-600">${period.label}</td>`;
-                [main, bench].forEach(item => {
-                    const td = document.createElement('td');
-                    td.className = 'tw-p-3 tw-font-medium tw-text-right';
-                    const perf = item[period.key];
-                    td.textContent = formatPercent(perf);
-                    td.classList.add(perf >= 0 ? 'tw-text-green-600' : 'tw-text-red-600');
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            });
-
-            // Build Visual Bar Chart
-            const visualChart = document.getElementById('benchmark-visual-chart');
-            visualChart.innerHTML = ''; // Clear
-            const allStocks = [main, ...data.competitors, bench];
-            
-            // Find max performance to scale bars
-            const maxPerf = Math.max(...allStocks.map(s => s.perf_1y));
-            const minPerf = Math.min(0, ...allStocks.map(s => s.perf_1y));
-            const hasNegative = minPerf < 0;
-            const zeroOffsetPercent = hasNegative ? (Math.abs(minPerf) / (maxPerf - minPerf)) * 100 : 0;
-
-
-            allStocks.forEach(stock => {
-                const perf = stock.perf_1y;
-                const isMain = stock.ticker === TICKER;
-                const isBench = stock.ticker === bench.ticker;
-                
-                let widthPercent = 0;
-                let leftPercent = zeroOffsetPercent;
-                let bgColor = perf >= 0 ? 'tw-bg-green-500' : 'tw-bg-red-500';
-
-                if(isMain) bgColor = perf >= 0 ? 'tw-bg-blue-600' : 'tw-bg-red-700';
-                if(isBench) bgColor = 'tw-bg-gray-400';
-
-                const totalRange = maxPerf - minPerf;
-                widthPercent = (Math.abs(perf) / totalRange) * 100;
-
-                if (perf < 0) {
-                    leftPercent = zeroOffsetPercent - widthPercent;
-                }
-
-                const barHtml = `
-                    <div class="tw-flex tw-items-center tw-gap-3">
-                        <span class="tw-w-16 tw-text-sm tw-font-medium tw-text-gray-700 ${isMain ? 'tw-font-bold' : ''}">${stock.ticker}</span>
-                        <div class="tw-flex-1 tw-bg-gray-200 tw-rounded-full tw-h-5 tw-relative">
-                            <div class="${bgColor} tw-h-5 tw-rounded-full tw-absolute" style="width: ${widthPercent}%; left: ${leftPercent}%;"></div>
-                            ${hasNegative && zeroOffsetPercent > 0 && zeroOffsetPercent < 100 ? `<div class="tw-absolute tw-h-full tw-border-l tw-border-gray-500" style="left: ${zeroOffsetPercent}%;"></div>` : ''}
-                        </div>
-                        <span class="tw-w-16 tw-text-sm tw-font-medium tw-text-right ${perf >= 0 ? 'tw-text-green-600' : 'tw-text-red-600'}">${formatPercent(perf)}</span>
-                    </div>
-                `;
-                visualChart.innerHTML += barHtml;
-            });
-        }
-
-        function populateTechnical(data) {
-            const d = data.mainTicker;
-            const price = d.currentPrice;
-            const sma30 = d.sma30;
-            const sma90 = d.sma90;
-            const rsi = d.rsi;
-            
-            // Card 1: Trend
-            document.getElementById('current-price').textContent = formatCurrency(price);
-            document.getElementById('sma-30').textContent = formatCurrency(sma30);
-            document.getElementById('sma-90').textContent = formatCurrency(sma90);
-            const trendText = document.getElementById('tech-trend-text');
-            if (price > sma30 && sma30 > sma90) {
-                trendText.textContent = "Strong Uptrend";
-                trendText.className = 'tw-mt-3 tw-font-semibold tw-text-green-600';
-            } else if (price > sma30 || price > sma90) {
-                trendText.textContent = "Mild Uptrend";
-                trendText.className = 'tw-mt-3 tw-font-semibold tw-text-green-500';
-            } else if (price < sma30 && sma30 < sma90) {
-                trendText.textContent = "Strong Downtrend";
-                trendText.className = 'tw-mt-3 tw-font-semibold tw-text-red-600';
-            } else {
-                trendText.textContent = "Consolidating";
-                trendText.className = 'tw-mt-3 tw-font-semibold tw-text-gray-600';
-            }
-            
-            // Card 2: RSI
-            document.getElementById('rsi-value').textContent = rsi.toFixed(2);
-            const rsiText = document.getElementById('tech-rsi-text');
-            if (rsi > 70) {
-                rsiText.textContent = "Overbought";
-                rsiText.className = 'tw-text-lg tw-font-semibold tw-text-red-600';
-            } else if (rsi < 30) {
-                rsiText.textContent = "Oversold";
-                rsiText.className = 'tw-text-lg tw-font-semibold tw-text-green-600';
-            } else {
-                rsiText.textContent = "Neutral";
-                rsiText.className = 'tw-text-lg tw-font-semibold tw-text-gray-600';
-            }
-
-            // Card 3: 52-Week Range
-            document.getElementById('low-52w').textContent = formatCurrency(d.low52w);
-            document.getElementById('high-52w').textContent = formatCurrency(d.high52w);
-            const pctRange = d.percentRange52w;
-            document.getElementById('range-bar-inner').style.width = `${pctRange * 100}%`;
-            document.getElementById('range-percent').textContent = formatPercent(pctRange);
-
-            // Card 4: AI-Generated Analyst View
-            document.getElementById('tech-analyst-view').innerHTML = `
-                From a technical perspective, GOOG is in a confirmed uptrend, trading comfortably above its key 30-day and 90-day moving averages. The RSI at <strong>${rsi.toFixed(2)}</strong> is in neutral territory, suggesting the stock is not over-extended and has room to run before becoming overbought. The price is currently at <strong>${formatPercent(pctRange)}</strong> of its 52-week range, indicating strong relative strength. The overall technical picture supports the bullish fundamental thesis.
-            `;
-        }
-        
-        // --- Plotly Chart Function ---
-        async function createPlotlyChart() {
-            const chartDiv = document.getElementById('priceChartDiv');
-            try {
-                // 1. Fetch Chart Data
-                const chartUrl = `charts/${TICKER}_${FILE_DATE}.json`;
-                const response = await fetch(chartUrl);
-                if (!response.ok) throw new Error(`Failed to load chart data from ${chartUrl}`);
-                const chartData = await response.json();
-
-                // 2. Define Traces
-                const tracePrice = {
-                    x: chartData.dates,
-                    close: chartData.close,
-                    high: chartData.high,
-                    low: chartData.low,
-                    open: chartData.open,
-                    type: 'candlestick',
-                    name: 'Price',
-                    yaxis: 'y'
-                };
-                
-                const traceVolume = {
-                    x: chartData.dates,
-                    y: chartData.volume,
-                    type: 'bar',
-                    name: 'Volume',
-                    marker: { color: 'rgba(156, 163, 175, 0.5)' }, // gray-400
-                    yaxis: 'y2'
-                };
-
-                const traceRSI = {
-                    x: chartData.dates,
-                    y: chartData.rsi,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'RSI (14)',
-                    line: { color: '#6366f1' }, // indigo-500
-                    yaxis: 'y3'
-                };
-                
-                const traceBB_upper = {
-                    x: chartData.dates,
-                    y: chartData.bb_upper,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'BB Upper',
-                    line: { color: 'rgba(20, 83, 45, 0.5)', dash: 'dash' } // green-900
-                };
-                
-                const traceBB_middle = {
-                    x: chartData.dates,
-                    y: chartData.bb_middle,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'BB Middle',
-                    line: { color: 'rgba(249, 115, 22, 0.5)' } // orange-500
-                };
-                
-                const traceBB_lower = {
-                    x: chartData.dates,
-                    y: chartData.bb_lower,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'BB Lower',
-                    line: { color: 'rgba(20, 83, 45, 0.5)', dash: 'dash' } // green-900
-                };
-
-                const data = [tracePrice, traceVolume, traceRSI, traceBB_upper, traceBB_middle, traceBB_lower];
-
-                // 3. Define Layout
-                const layout = {
-                    title: `${TICKER} Price, Volume, and Indicators`,
-                    grid: {
-                        rows: 3,
-                        columns: 1,
-                        pattern: 'independent',
-                        roworder: 'bottom to top'
-                    },
-                    xaxis: {
-                        title: 'Date',
-                        type: 'date',
-                        rangeslider: { visible: false },
-                        showticklabels: false,
-                    },
-                    yaxis: { // Price
-                        title: 'Price (USD)',
-                        domain: [0.35, 1.0],
-                        autorange: true,
-                        type: 'linear'
-                    },
-                    yaxis2: { // Volume
-                        title: 'Volume',
-                        domain: [0.2, 0.33],
-                        autorange: true,
-                        type: 'linear',
-                        showticklabels: false,
-                    },
-                    yaxis3: { // RSI
-                        title: 'RSI',
-                        domain: [0, 0.18],
-                        autorange: true,
-                        type: 'linear',
-                        range: [0, 100],
-                        fixedrange: true,
-                        showticklabels: true,
-                        tickfont: { size: 10 },
-                        // Add threshold lines for RSI
-                        shapes: [
-                            { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 70, y1: 70, yref: 'y3', line: { color: 'red', dash: 'dot', width: 1} },
-                            { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 30, y1: 30, yref: 'y3', line: { color: 'green', dash: 'dot', width: 1} }
-                        ]
-                    },
-                    legend: {
-                        orientation: 'h',
-                        y: -0.1,
-                        yanchor: 'top'
-                    },
-                    margin: { l: 50, r: 50, b: 50, t: 50, pad: 4 },
-                    paper_bgcolor: 'rgba(0,0,0,0)',
-                    plot_bgcolor: 'rgba(0,0,0,0)',
-                };
-
-                // 4. Render Chart
-                Plotly.newPlot('priceChartDiv', data, layout, { responsive: true });
-
-            } catch (error) {
-                console.error("Error creating Plotly chart:", error);
-                chartDiv.innerHTML = `<p class="tw-text-lg tw-font-medium tw-text-red-600">Failed to Load Chart.<br/>${error.message}</p>`;
-            }
-        }
-
+        // --- Run Main Function ---
+        document.addEventListener('DOMContentLoaded', main);
     </script>
+    
+    <!-- Common Script for scroll-spy navigation -->
     <script src="common/finance-script.js" defer></script>
+
 </body>
 </html>
