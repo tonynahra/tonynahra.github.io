@@ -812,7 +812,7 @@
             let headers = [`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>`, `<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600 tw-text-right">${main.ticker}</th>`];
             let marketCapRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatLargeNumber(main.marketCap)}</td>`];
             
-            // --- TYPO FIX: class="... ---
+            // --- FINAL TYPO FIX: class="... ---
             let peRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
             // --- END FIX ---
             
@@ -825,7 +825,7 @@
                 peRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatRatio(stats.peTTM)}</td>`);
                 growthRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.revenueGrowthYoY)}</td>`);
                 
-                // --- TYPO FIX: class="... ---
+                // --- FINAL TYPO FIX: class="... ---
                 marginRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
                 // --- END FIX ---
             }
