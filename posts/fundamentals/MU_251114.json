@@ -26,56 +26,14 @@
         "payoutRatio": 0.060599998,
         "beta": 1.552,
         "ytdReturn": null,
-        "oneYearReturn": null,
-        "threeYearReturn": 2.976041379585805,
-        "analystConsensus": {
-            "targetMean": 180.5,
-            "targetHigh": 200.0,
-            "targetLow": 160.0,
-            "strongBuy": 20,
-            "buy": 15,
-            "hold": 5,
-            "sell": 0,
-            "strongSell": 0
-        },
-        "quarterlyFinancials": {
-            "dates": [
-                "2023-11-30",
-                "2024-02-29",
-                "2024-05-31",
-                "2024-08-31",
-                "2024-11-30",
-                "2025-02-28",
-                "2025-05-31",
-                "2025-08-31"
-            ],
-            "revenue": [
-                4726000000,
-                5824000000,
-                6811000000,
-                7750000000,
-                8709000000,
-                8053000000,
-                9301000000,
-                11315000000
-            ],
-            "netIncome": [
-                -1234000000,
-                793000000,
-                332000000,
-                887000000,
-                1870000000,
-                1583000000,
-                1885000000,
-                3201000000
-            ]
-        }
+        "oneYearReturn": 1.5727691025658663,
+        "threeYearReturn": 2.976041379585805
     },
     "benchmark": {
         "ticker": "SPY",
         "ytdReturn": 14.74103,
-        "oneYearReturn": null,
-        "threeYearReturn": 0.7569996132938189
+        "oneYearReturn": 0.16107390124128132,
+        "threeYearReturn": 0.7569993328800748
     },
     "competitors": {
         "WDC": {
@@ -83,14 +41,14 @@
             "peTTM": 22.136045,
             "revenueGrowthYoY": null,
             "profitMargin": 0.25459,
-            "oneYearReturn": null
+            "oneYearReturn": 2.3350587042307107
         },
         "STX": {
             "marketCap": 57204486144,
             "peTTM": 33.66493,
             "revenueGrowthYoY": 0.213,
             "profitMargin": 0.17922,
-            "oneYearReturn": null
+            "oneYearReturn": 1.7325355091714145
         }
     }
 }

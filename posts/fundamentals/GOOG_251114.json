@@ -1,0 +1,61 @@
+{
+    "asOfDate": "2025-11-14",
+    "mainTicker": {
+        "ticker": "GOOG",
+        "companyName": "Alphabet Inc.",
+        "ceo": "Mr. Sundar  Pichai",
+        "marketCap": 3364478255104,
+        "sector": "Communication Services",
+        "industry": "Internet Content & Information",
+        "hqLocation": "Mountain View, CA, United States",
+        "revenueTTM": 385476001792,
+        "netIncomeTTM": 124250996736,
+        "epsTTM": 10.05,
+        "operatingCashflowTTM": 151424008192,
+        "freeCashflowTTM": 47997751296,
+        "peTTM": 27.5602,
+        "psTTM": 8.728113,
+        "pbTTM": 8.6467085,
+        "profitMargin": 0.32233003,
+        "revenueGrowthYoY": 0.159,
+        "roa": 0.16275999,
+        "roe": 0.3545,
+        "debtToEquity": 11.424,
+        "currentRatio": 1.747,
+        "dividendYield": 0.3,
+        "payoutRatio": 0.0809,
+        "beta": 1.082,
+        "ytdReturn": null,
+        "oneYearReturn": 0.5998175631995889,
+        "threeYearReturn": 1.8249136422487027
+    },
+    "benchmark": {
+        "ticker": "SPY",
+        "ytdReturn": 14.74103,
+        "oneYearReturn": 0.16107377878650933,
+        "threeYearReturn": 0.7569997535007246
+    },
+    "competitors": {
+        "MSFT": {
+            "marketCap": 3791850569728,
+            "peTTM": 35.852425,
+            "revenueGrowthYoY": 0.184,
+            "profitMargin": 0.35707,
+            "oneYearReturn": 0.23857875316320462
+        },
+        "META": {
+            "marketCap": 1537244659712,
+            "peTTM": 26.95533,
+            "revenueGrowthYoY": 0.262,
+            "profitMargin": 0.30892,
+            "oneYearReturn": 0.1034080873480263
+        },
+        "AMZN": {
+            "marketCap": 2539781357568,
+            "peTTM": 33.575108,
+            "revenueGrowthYoY": 0.134,
+            "profitMargin": 0.11063,
+            "oneYearReturn": 0.1583337531929097
+        }
+    }
+}
