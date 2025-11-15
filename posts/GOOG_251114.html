@@ -812,7 +812,7 @@
             let headers = [`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>`, `<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600 tw-text-right">${main.ticker}</th>`];
             let marketCapRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatLargeNumber(main.marketCap)}</td>`];
             
-            // --- THE BUG WAS HERE ---
+            // --- THE BUG WAS HERE, NOW FIXED ---
             let peRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
             // --- END BUG FIX ---
             
@@ -825,7 +825,7 @@
                 peRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatRatio(stats.peTTM)}</td>`);
                 growthRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.revenueGrowthYoY)}</td>`);
                 
-                // --- THE BUG WAS HERE ---
+                // --- THE BUG WAS HERE, NOW FIXED ---
                 marginRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
                 // --- END BUG FIX ---
             }
@@ -890,8 +890,9 @@
             visualChart.innerHTML = items.map(item => {
                 // --- FIX for 'oneYearReturn' parsing ---
                 const value = parseFloat(item.value); // Convert to float
+                // --- BUG FIX: was !isNaN(v), changed to !isNaN(value) ---
                 const isValid = !isNaN(value); // Check if it's a valid number
-                // --- END FIX ---
+                // --- END BUG FIX ---
                 
                 const displayValue = isValid ? value : 0;
                 const displayText = isValid ? formatPercent(value) : '--';
