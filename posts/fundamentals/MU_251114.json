@@ -1,0 +1,96 @@
+{
+    "asOfDate": "2025-11-14",
+    "mainTicker": {
+        "ticker": "MU",
+        "companyName": "Micron Technology, Inc.",
+        "ceo": "Mr. Sanjay  Mehrotra",
+        "marketCap": 277058289664,
+        "sector": "Technology",
+        "industry": "Semiconductors",
+        "hqLocation": "Boise, ID, United States",
+        "revenueTTM": 37377998848,
+        "netIncomeTTM": 8538999808,
+        "epsTTM": 7.9,
+        "operatingCashflowTTM": 17525000192,
+        "freeCashflowTTM": -891500032,
+        "peTTM": 31.244303,
+        "psTTM": 7.412336,
+        "pbTTM": 5.1129985,
+        "profitMargin": 0.22845,
+        "revenueGrowthYoY": 0.46,
+        "roa": 0.08055,
+        "roe": 0.17198999,
+        "debtToEquity": 28.343,
+        "currentRatio": 2.518,
+        "dividendYield": 0.19,
+        "payoutRatio": 0.060599998,
+        "beta": 1.552,
+        "ytdReturn": null,
+        "oneYearReturn": null,
+        "threeYearReturn": 2.976041379585805,
+        "analystConsensus": {
+            "targetMean": 180.5,
+            "targetHigh": 200.0,
+            "targetLow": 160.0,
+            "strongBuy": 20,
+            "buy": 15,
+            "hold": 5,
+            "sell": 0,
+            "strongSell": 0
+        },
+        "quarterlyFinancials": {
+            "dates": [
+                "2023-11-30",
+                "2024-02-29",
+                "2024-05-31",
+                "2024-08-31",
+                "2024-11-30",
+                "2025-02-28",
+                "2025-05-31",
+                "2025-08-31"
+            ],
+            "revenue": [
+                4726000000,
+                5824000000,
+                6811000000,
+                7750000000,
+                8709000000,
+                8053000000,
+                9301000000,
+                11315000000
+            ],
+            "netIncome": [
+                -1234000000,
+                793000000,
+                332000000,
+                887000000,
+                1870000000,
+                1583000000,
+                1885000000,
+                3201000000
+            ]
+        }
+    },
+    "benchmark": {
+        "ticker": "SPY",
+        "ytdReturn": 14.74103,
+        "oneYearReturn": null,
+        "threeYearReturn": 0.7569996132938189
+    },
+    "competitors": {
+        "WDC": {
+            "marketCap": 53961965568,
+            "peTTM": 22.136045,
+            "revenueGrowthYoY": null,
+            "profitMargin": 0.25459,
+            "oneYearReturn": null
+        },
+        "STX": {
+            "marketCap": 57204486144,
+            "peTTM": 33.66493,
+            "revenueGrowthYoY": 0.213,
+            "profitMargin": 0.17922,
+            "oneYearReturn": null
+        }
+    }
+}
