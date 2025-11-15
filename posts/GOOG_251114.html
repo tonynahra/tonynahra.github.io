@@ -811,7 +811,11 @@
 
             let headers = [`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>`, `<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600 tw-text-right">${main.ticker}</th>`];
             let marketCapRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatLargeNumber(main.marketCap)}</td>`];
-            let peRow = [`<td class"tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
+            
+            // --- TYPO FIX: class="... ---
+            let peRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
+            // --- END FIX ---
+            
             let growthRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.revenueGrowthYoY)}</td>`];
             let marginRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.profitMargin)}</td>`];
 
@@ -820,7 +824,10 @@
                 marketCapRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatLargeNumber(stats.marketCap)}</td>`);
                 peRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatRatio(stats.peTTM)}</td>`);
                 growthRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.revenueGrowthYoY)}</td>`);
-                marginRow.push(`<td class"tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
+                
+                // --- TYPO FIX: class="... ---
+                marginRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
+                // --- END FIX ---
             }
 
             head.innerHTML = `<tr>${headers.join('')}</tr>`;
