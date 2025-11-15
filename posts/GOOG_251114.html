@@ -228,7 +228,9 @@
                             <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Key Ratios</h3>
                             <ul class="tw-space-y-3 tw-text-lg">
                                 <li class="tw-flex tw-justify-between"><span>P/E (TTM):</span> <span class="tw-font-semibold" id="ratio-pe">--</span></li>
-                                <li class_name="tw-flex tw-justify-between"><span>P/S (TTM):</span> <span class="tw-font-semibold" id="ratio-ps">--</span></li>
+                                <!-- ***** THIS IS THE BUG. IT WAS 'class_name' ***** -->
+                                <li class="tw-flex tw-justify-between"><span>P/S (TTM):</span> <span class="tw-font-semibold" id="ratio-ps">--</span></li>
+                                <!-- ***** END BUG FIX ***** -->
                                 <li class="tw-flex tw-justify-between"><span>P/B (TTM):</span> <span class="tw-font-semibold" id="ratio-pb">--</span></li>
                                 <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Profit Margin:</span> <span class="tw-font-semibold" id="ratio-margin">--</span></li>
                                 <li class="tw-flex tw-justify-between"><span>ROA:</span> <span class="tw-font-semibold" id="ratio-roa">--</span></li>
@@ -402,7 +404,7 @@
                 <!-- Section: Disclaimer -->
                 <section id="disclaimer" class="tw-mb-12">
                     <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Disclaimer</h2>
-                    <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
+                    <div class_name="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
                         <p class="tw-text-base tw-text-gray-600 tw-italic tw-mt-4">
                             All investments involve risk, and past performance is not indicative of future results. You should not rely on this information as the sole basis for making any investment decisions. Always conduct your own independent research and due diligence, and consult with a qualified financial professional before making any investment. The AI and its creators assume no liability for any errors, omissions, or inaccuracies in this report or for any actions taken in reliance thereon.
                         </s:p>
