@@ -3,24 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Title will be set dynamically by JavaScript -->
     <title>Financial Analysis Report</title>
 
-    <!-- SEO & Social Meta Tags (will be populated by JS) -->
+    <!-- SEO & Social Meta Tags (to be populated by JS) -->
     <meta id="meta-desc" name="description" content="A comprehensive financial analysis, covering fundamentals, analyst consensus, and key growth drivers.">
-    
-    <!-- Open Graph (OG) Tags (will be populated by JS) -->
     <meta id="meta-og-title" property="og:title" content="Equity Research Analysis">
-    <meta id="meta-og-desc" property="og:description" content="In-depth financial report detailing key themes, fundamental health, analyst consensus, and competitor comparison.">
-    <meta property="og:type" content="article">
-    <meta id="meta-og-url" property="og:url" content="">
-    <!-- <meta property="og:image" content="[URL_to_your_image.jpg]"> -->
-
-    <!-- Twitter Card Tags (will be populated by JS) -->
-    <meta name="twitter:card" content="summary_large_image">
+    <meta id="meta-og-desc" property="og:description" content="In-depth financial report, detailing key themes, fundamental health, analyst consensus, and competitor comparison.">
+    <meta id="meta-og-url" property="og:url" content="https://tonynahra.github.io/posts/">
     <meta id="meta-tw-title" name="twitter:title" content="Equity Research Analysis">
-    <meta id="meta-tw-desc" name="twitter:description" content="In-depth financial report detailing key themes, fundamental health, analyst consensus, and competitor comparison.">
-    <!-- <meta name="twitter:image" content="[URL_to_your_image.jpg]"> -->
+    <meta id="meta-tw-desc" name="twitter:description" content="In-depth financial report, detailing key themes, fundamental health, analyst consensus, and competitor comparison.">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -61,7 +52,6 @@
 
         <!-- 
           Sticky Navigation Sidebar (Aside)
-          Updated with tw-overflow-y-auto and more compact spacing
         -->
         <aside class="tw-w-64 tw-shrink-0 tw-bg-white tw-shadow-lg tw-h-screen tw-sticky tw-top-0 tw-p-6 tw-flex tw-flex-col tw-overflow-y-auto">
             <div class="tw-flex tw-items-center tw-mb-6 tw-shrink-0">
@@ -192,7 +182,6 @@
                         <!-- Ratings Chart -->
                         <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
                             <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">Analyst Ratings (<span id="analyst-total">--</span> Total)</h3>
-                            <!-- ***** FIX: class_name changed to class ***** -->
                             <div class="tw-w-full tw-h-60">
                                 <canvas id="analystChart"></canvas>
                             </div>
@@ -205,7 +194,6 @@
                     <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Quarterly Growth Trends</h2>
                     <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
                         <h3 class="tw-text-2xl tw-font-semibold tw-mb-6">Quarterly Revenue & Net Income (USD)</h3>
-                        <!-- ***** FIX: class_name changed to class ***** -->
                         <div class="tw-w-full tw-h-96">
                             <canvas id="quarterlyChart"></canvas>
                         </div>
@@ -234,11 +222,8 @@
                                 <li class="tw-flex tw-justify-between"><span>P/E (TTM):</span> <span class="tw-font-semibold" id="ratio-pe">--</span></li>
                                 <li class="tw-flex tw-justify-between"><span>P/S (TTM):</span> <span class="tw-font-semibold" id="ratio-ps">--</span></li>
                                 <li class="tw-flex tw-justify-between"><span>P/B (TTM):</span> <span class="tw-font-semibold" id="ratio-pb">--</span></li>
-                                <!-- ***** FIX: class_name changed to class ***** -->
                                 <li class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Profit Margin:</span> <span class="tw-font-semibold" id="ratio-margin">--</span></li>
-                                <!-- ***** FIX: class_name changed to class ***** -->
                                 <li class="tw-flex tw-justify-between"><span>ROA:</span> <span class="tw-font-semibold" id="ratio-roa">--</span></li>
-                                <!-- ***** FIX: class_name changed to class ***** -->
                                 <li class="tw-flex tw-justify-between"><span>ROE:</span> <span class="tw-font-semibold" id="ratio-roe">--</span></li>
                             </ul>
                         </div>
@@ -272,7 +257,6 @@
                 <!-- Section: SWOT Analysis -->
                 <section id="swot" class="tw-mb-12">
                     <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">SWOT Analysis</h2>
-                    <!-- ***** FIX: class_name changed to class ***** -->
                     <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
                         <!-- Strengths -->
                         <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
@@ -284,7 +268,6 @@
                         <!-- Weaknesses -->
                         <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
                             <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-text-yellow-700">Weaknesses</h3>
-                            <!-- ***** FIX: class_name changed to class ***** -->
                             <ul class="tw-list-disc tw-list-inside tw-space-y-2 tw-text-lg" id="swot-weaknesses">
                                 <li>Loading...</li>
                             </ul>
@@ -305,7 +288,6 @@
                         </div>
                     </div>
                     <!-- New SWOT Score Section -->
-                    <!-- ***** FIX: class_name changed to class ***** -->
                     <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-mt-6">
                         <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">SWOT Score: <span id="swot-score" class="tw-text-blue-600">--/100</span></h3>
                         <p class="tw-text-lg tw-text-gray-700" id="swot-rationale">
@@ -318,7 +300,6 @@
                 <section id="market" class="tw-mb-12">
                     <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Market & Competitor Analysis</h2>
                     
-                    <!-- ***** FIX: class_name changed to class ***** -->
                     <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8 tw-mb-8">
                         <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Sector Performance (3 Months)</h3>
                         <p class="tw-text-lg tw-text-gray-700" id="sector-performance">
@@ -326,11 +307,9 @@
                         </p>
                     </div>
 
-                    <!-- ***** FIX: class_name changed to class ***** -->
                     <div class="tw-bg-white tw-rounded-lg tw-shadow tw-overflow-x-auto">
                         <h3 class="tw-text-2xl tw-font-semibold tw-mb-4 tw-p-8 tw-pb-0">Direct Competitor Comparison</h3>
                         <table class="tw-w-full tw-text-left tw-text-lg">
-                            <!-- ***** FIX: class_name changed to class ***** -->
                             <thead class="tw-bg-gray-50" id="competitor-head">
                                 <!-- JS will build this -->
                             </thead>
@@ -344,18 +323,15 @@
                 <!-- Section: Benchmark Comparison -->
                 <section id="benchmark" class="tw-mb-12">
                     <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Benchmark Comparison</h2>
-                    <!-- ***** FIX: class_name changed to class ***** -->
                     <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
                         <!-- Data Table -->
                         <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-8">
                             <h3 class="tw-text-2xl tw-font-semibold tw-mb-4">Performance Returns</h3>
                             <table class="tw-w-full tw-text-left tw-text-lg">
-                                <!-- ***** FIX: class_name changed to class ***** -->
                                 <thead class="tw-bg-gray-50">
                                     <tr>
                                         <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Period</th>
                                         <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right" id="benchmark-ticker-col">MU</th>
-                                        <!-- ***** FIX: class_name changed to class ***** -->
                                         <th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-right" id="benchmark-index-col">S&P 500</th>
                                     </tr>
                                 </thead>
@@ -372,7 +348,6 @@
                                     </tr>
                                     <tr>
                                         <td class="tw-px-6 tw-py-4 tw-font-medium">3-Year Return</td>
-                                        <!-- ***** FIX: class_name changed to class ***** -->
                                         <td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-right" id="benchmark-3y-ticker">--</td>
                                         <td class="tw-px-6 tw-py-4 tw-text-right" id="benchmark-3y-index">--</td>
                                     </tr>
@@ -403,45 +378,48 @@
                 <section id="technical" class="tw-mb-12">
                     <h2 class="tw-text-3xl tw-font-semibold tw-text-gray-800 tw-mb-6 tw-border-b tw-pb-3">Technical Analysis</h2>
                     <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
-                        <!-- Trend Card -->
+                        <!-- Card 1: Trend -->
                         <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
                             <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Trend</h3>
-                            <div class="tw-space-y-3 tw-text-lg" id="technical-trend-data">
-                                <div class="tw-flex tw-justify-between"><span>Current Price:</span> <span class="tw-font-semibold" id="tech-current-price">--</span></div>
-                                <div class="tw-flex tw-justify-between"><span>SMA 30-Day:</span> <span class="tw-font-semibold" id="tech-sma30">--</span></div>
-                                <div class="tw-flex tw-justify-between"><span>SMA 90-Day:</span> <span class="tw-font-semibold" id="tech-sma90">--</span></div>
-                            </div>
-                            <div class="tw-mt-4 tw-p-4 tw-rounded-lg" id="technical-trend-text">
-                                <p class="tw-font-semibold">Loading...</p>
+                            <div class="tw-space-y-3 tw-text-lg">
+                                <div class="tw-flex tw-justify-between"><span>Current Price:</span> <span class="tw-font-bold tw-text-gray-900" id="tech-price">--</span></div>
+                                <div class="tw-flex tw-justify-between"><span>30-Day SMA:</span> <span class="tw-font-semibold" id="tech-sma30">--</span></div>
+                                <div class="tw-flex tw-justify-between"><span>90-Day SMA:</span> <span class="tw-font-semibold" id="tech-sma90">--</span></div>
+                                <div class="tw-flex tw-justify-between tw-border-t tw-pt-3 tw-mt-3"><span>Short-Term Trend:</span> <span class="tw-font-bold" id="tech-trend-short">--</span></div>
+                                <div class="tw-flex tw-justify-between"><span>Long-Term Trend:</span> <span class="tw-font-bold" id="tech-trend-long">--</span></div>
                             </div>
                         </div>
-                        
-                        <!-- RSI Card -->
+                        <!-- Card 2: RSI -->
                         <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
-                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">RSI (14-Day)</h3>
-                            <div class="tw-text-center tw-mb-4">
-                                <span id="tech-rsi-value" class="tw-text-5xl tw-font-bold tw-text-gray-900">--</span>
+                            <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Momentum (RSI)</h3>
+                            <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                                <span class_name="tw-text-lg tw-font-medium tw-text-gray-700">14-Day RSI:</span>
+                                <span class="tw-text-3xl tw-font-bold" id="tech-rsi-val">--</span>
                             </div>
-                            <div class="tw-mt-4 tw-p-4 tw-rounded-lg" id="technical-rsi-text">
-                                <p class="tw-font-semibold">Loading...</p>
+                            <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-2.5">
+                                <div id="tech-rsi-bar" class="tw-bg-blue-600 tw-h-2.5 tw-rounded-full" style="width: 50%"></div>
                             </div>
+                            <div class="tw-flex tw-justify-between tw-text-sm tw-text-gray-500 tw-mt-2">
+                                <span>Oversold (30)</span>
+                                <span>Overbought (70)</span>
+                            </div>
+                            <p class="tw-text-center tw-text-xl tw-font-semibold tw-mt-4" id="tech-rsi-text">--</p>
                         </div>
-                        
-                        <!-- 52-Week Range Card -->
+                        <!-- Card 3: 52-Week Range -->
                         <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
                             <h3 class="tw-text-xl tw-font-semibold tw-mb-4">52-Week Range</h3>
-                            <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-4 tw-relative tw-mt-8 tw-mb-6">
-                                <div id="tech-52w-bar" class="tw-bg-blue-600 tw-h-4 tw-rounded-full tw-absolute" style="width: 0%;">
-                                    <span id="tech-52w-dot" class="tw-absolute tw-right-0 tw-top-1/2 -tw-translate-y-1/2 tw-h-5 tw-w-5 tw-bg-blue-800 tw-rounded-full tw-border-2 tw-border-white"></span>
+                            <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-4 tw-relative">
+                                <div id="tech-52w-bar" class="tw-bg-blue-500 tw-h-4 tw-rounded-full" style="width: 0%;">
+                                    <span class="tw-absolute tw-text-sm tw-font-bold tw-text-white" style="left: calc(50% - 10px); top: -2px;">|</span>
                                 </div>
                             </div>
-                            <div class="tw-flex tw-justify-between tw-text-lg tw-font-medium">
-                                <span id="tech-52w-low">--</span>
-                                <span id="tech-52w-high">--</span>
+                            <div class="tw-flex tw-justify-between tw-text-lg tw-text-gray-700 tw-mt-2">
+                                <span class="tw-font-semibold" id="tech-52w-low">--</span>
+                                <span class="tw-font-semibold" id="tech-52w-high">--</span>
                             </div>
+                            <p class="tw-text-center tw-text-lg tw-font-semibold tw-mt-4" id="tech-52w-text">--</p>
                         </div>
-                        
-                        <!-- Analyst View Card -->
+                        <!-- Card 4: Summary -->
                         <div class="tw-bg-white tw-rounded-lg tw-shadow tw-p-6">
                             <h3 class="tw-text-xl tw-font-semibold tw-mb-4">Technical Summary</h3>
                             <p class="tw-text-lg tw-text-gray-700" id="technical-summary-text">
@@ -497,6 +475,11 @@
 
         // --- Helper Functions ---
         
+        /**
+         * Formats a large number into a compact string (e.g., 1.23T, 45.6B, 78.9M).
+         * @param {number} num - The number to format.
+         * @returns {string} The formatted string.
+         */
         const formatLargeNumber = (num) => {
             if (num === null || num === undefined || isNaN(num)) return '--';
             if (Math.abs(num) >= 1e12) {
@@ -510,21 +493,41 @@
             }
         };
 
+        /**
+         * Formats a number as a percentage.
+         * @param {number} num - The number (e.g., 0.251).
+         * @returns {string} The formatted percentage string (e.g., 25.1%).
+         */
         const formatPercent = (num) => {
             if (num === null || num === undefined || isNaN(num)) return '--';
             return `${(num * 100).toFixed(1)}%`;
         };
 
+        /**
+         * Formats a number with an 'x' for ratios.
+         * @param {number} num - The number (e.g., 26.7).
+         * @returns {string} The formatted ratio string (e.g., 26.7x).
+         */
         const formatRatio = (num) => {
             if (num === null || num === undefined || isNaN(num)) return '--';
             return `${num.toFixed(1)}x`;
         };
 
+        /**
+         * Formats a number as a currency.
+         * @param {number} num - The number.
+         * @returns {string} The formatted currency string (e.g., $6.30).
+         */
         const formatCurrency = (num) => {
             if (num === null || num === undefined || isNaN(num)) return '--';
             return `$${num.toFixed(2)}`;
         };
 
+        /**
+         * Safely sets the text content of an element.
+         * @param {string} id - The ID of the element.
+         * @param {string} text - The text to set.
+         */
         const setTextContent = (id, text) => {
             const el = document.getElementById(id);
             if (el) {
@@ -534,6 +537,11 @@
             }
         };
 
+        /**
+         * Safely sets the HTML content of an element.
+         * @param {string} id - The ID of the element.
+         * @param {string} html - The HTML string to set.
+         */
         const setHTML = (id, html) => {
             const el = document.getElementById(id);
             if (el) {
@@ -544,39 +552,203 @@
         };
 
         /**
+         * Safely sets an attribute of an element.
+         * @param {string} id - The ID of the element.
+         * @param {string} attr - The attribute to set (e.g., 'content').
+         * @param {string} value - The value to set.
+         */
+        const setAttribute = (id, attr, value) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.setAttribute(attr, value || '');
+            } else {
+                console.warn(`Element with ID '${id}' not found for setAttribute.`);
+            }
+        };
+        
+        // --- BUG FIX: Moved all helper functions to the global scope ---
+
+        /**
          * Populates the Executive Summary section.
          * @param {object} data - The fetched fundamental data.
          */
         const populateSummary = (data) => {
-            const main = data.mainTicker;
-            
-            // Check if qualitative data exists
-            if (!main.executiveSummary) {
-                setHTML('summary-points', '<li>Executive summary not available.</li>');
-                setTextContent('recommendation-rationale', 'Rationale not available.');
-                return;
-            }
-            
-            // Populate from JSON
-            setHTML('summary-points', main.executiveSummary.points.map(p => `<li>${p}</li>`).join(''));
+            try {
+                const summary = data.mainTicker.executiveSummary;
+                if (!summary) throw new Error("executiveSummary is missing");
 
-            // Dynamically set Recommendation text and color
-            const rec = main.executiveSummary.recommendation || "Hold"; // Default to Hold
-            const recBox = document.getElementById('recommendation-box');
-            const recText = document.getElementById('recommendation-text');
-            
-            setTextContent('recommendation-text', rec.toUpperCase());
-            setTextContent('recommendation-rationale', main.executiveSummary.rationale);
-            
-            if (rec.toLowerCase() === 'buy' || rec.toLowerCase() === 'strong buy') {
-                recBox.className = 'tw-p-6 tw-bg-green-50 tw-rounded-lg tw-border tw-border-green-200';
-                recText.className = 'tw-font-bold tw-text-green-800';
-            } else if (rec.toLowerCase() === 'sell' || rec.toLowerCase() === 'strong sell') {
-                recBox.className = 'tw-p-6 tw-bg-red-50 tw-rounded-lg tw-border tw-border-red-200';
-                recText.className = 'tw-font-bold tw-text-red-800';
-            } else { // Hold or Neutral
-                recBox.className = 'tw-p-6 tw-bg-yellow-50 tw-rounded-lg tw-border tw-border-yellow-200';
-                recText.className = 'tw-font-bold tw-text-yellow-800';
+                setHTML('summary-points', summary.points.map(p => `<li>${p}</li>`).join(''));
+
+                const rec = summary.recommendation.toLowerCase();
+                let recColor = 'gray';
+                if (rec.includes('buy')) recColor = 'green';
+                else if (rec.includes('hold')) recColor = 'yellow';
+                else if (rec.includes('sell')) recColor = 'red';
+                
+                setTextContent('recommendation-text', summary.recommendation.toUpperCase());
+                setHTML('recommendation-rationale', summary.rationale);
+                
+                const recBox = document.getElementById('recommendation-box');
+                const recText = document.getElementById('recommendation-text');
+                
+                recBox.className = `tw-p-6 tw-bg-${recColor}-50 tw-rounded-lg tw-border tw-border-${recColor}-200`;
+                recText.className = `tw-font-bold tw-text-${recColor}-800`;
+                
+            } catch (e) {
+                console.error("Error populating summary:", e);
+                setHTML('summary-points', '<li>Failed to load summary.</li>');
+            }
+        };
+
+        /**
+         * Populates the Overview section and <head> meta tags.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateOverview = (data) => {
+            try {
+                const main = data.mainTicker;
+                const asOfDate = data.asOfDate;
+                const url = `https://tonynahra.github.io/posts/${TICKER}_${FILE_DATE}.html`;
+
+                // Populate <head>
+                document.title = `${main.ticker} Financial Analysis Report`;
+                setAttribute('meta-desc', 'content', `A comprehensive financial analysis of ${main.companyName} (${main.ticker}) as of ${asOfDate}, covering fundamentals, analyst consensus, and key growth drivers.`);
+                setAttribute('meta-og-title', 'content', `Equity Research: ${main.companyName} (${main.ticker}) Analysis`);
+                setAttribute('meta-og-desc', 'content', `In-depth financial report on ${main.companyName} (${main.ticker}), detailing its fundamental health, analyst consensus, and competitor comparison.`);
+                setAttribute('meta-og-url', 'content', url);
+                setAttribute('meta-tw-title', 'content', `Equity Research: ${main.companyName} (${main.ticker}) Analysis`);
+                setAttribute('meta-tw-desc', 'content', `In-depth financial report on ${main.companyName} (${main.ticker}), detailing its fundamental health, analyst consensus, and competitor comparison.`);
+
+                // Populate body
+                setTextContent('company-name-header', main.companyName);
+                setTextContent('as-of-date', asOfDate);
+                
+                setHTML('business-model', main.businessModel || 'N/A');
+                setHTML('leadership', main.leadership || 'N/A');
+
+                // Info box
+                setTextContent('info-market-cap', formatLargeNumber(main.marketCap));
+                setTextContent('info-sector', main.sector);
+                setTextContent('info-industry', main.industry);
+                setTextContent('info-hq', main.hqLocation);
+            } catch (e) {
+                console.error("Error populating overview:", e);
+            }
+        };
+
+        /**
+         * Populates the Analyst Consensus section and chart.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateAnalystConsensus = (data) => {
+            try {
+                const consensus = data.mainTicker.analystConsensus;
+                if (!consensus) {
+                    setHTML('consensus', '<p class="tw-text-lg tw-text-gray-500">Analyst consensus data is not available for this ticker.</p>');
+                    return;
+                }
+                
+                setTextContent('analyst-mean', formatCurrency(consensus.targetMean));
+                setTextContent('analyst-high', formatCurrency(consensus.targetHigh));
+                setTextContent('analyst-low', formatCurrency(consensus.targetLow));
+
+                const totalRatings = consensus.strongBuy + consensus.buy + consensus.hold + consensus.sell + consensus.strongSell;
+                setTextContent('analyst-total', totalRatings);
+
+                const ctxAnalyst = document.getElementById('analystChart').getContext('2d');
+                new Chart(ctxAnalyst, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Strong Buy', 'Buy', 'Hold', 'Sell', 'Strong Sell'],
+                        datasets: [{
+                            label: 'Analyst Ratings',
+                            data: [consensus.strongBuy, consensus.buy, consensus.hold, consensus.sell, consensus.strongSell],
+                            backgroundColor: ['#16a34a', '#22c55e', '#f59e0b', '#ef4444', '#b91c1c'],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `${context.label}: ${context.parsed} analysts`
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Failed to render Analyst Chart:", e);
+                setHTML('consensus', '<p class="tw-text-lg tw-text-red-500">Failed to render analyst chart.</p>');
+            }
+        };
+        
+        /**
+         * Populates the Quarterly Trends chart.
+         * @param {object} data - The fetched fundamental data.
+         */
+        const populateQuarterlyTrends = (data) => {
+            try {
+                const quarterly = data.mainTicker.quarterlyFinancials;
+                if (!quarterly || !quarterly.dates || quarterly.dates.length === 0) {
+                    setHTML('quarterly', '<p class="tw-text-lg tw-text-gray-500">Quarterly financial data is not available for this ticker.</p>');
+                    return;
+                }
+
+                const labels = quarterly.dates.map(dateStr => {
+                    const date = new Date(dateStr);
+                    const q = Math.floor((date.getUTCMonth() + 3) / 3);
+                    const year = date.getUTCFullYear();
+                    return `Q${q} ${year}`;
+                });
+                
+                const ctxQuarterly = document.getElementById('quarterlyChart').getContext('2d');
+                new Chart(ctxQuarterly, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Quarterly Revenue',
+                                data: quarterly.revenue,
+                                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Quarterly Net Income',
+                                data: quarterly.netIncome,
+                                backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { callback: (value) => (value / 1e9) + 'B' }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `${context.dataset.label}: ${formatLargeNumber(context.parsed.y)}`
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Failed to render Quarterly Chart:", e);
+                setHTML('quarterly', '<p class="tw-text-lg tw-text-red-500">Failed to render quarterly chart.</p>');
             }
         };
 
@@ -584,100 +756,105 @@
          * Populates the Fundamental Analysis section.
          * @param {object} data - The fetched fundamental data.
          */
-        /* --- BUG FIX: REMOVED STRAY COMMENT BLOCK HERE --- */
+        const populateFundamentals = (data) => {
+            try {
+                const main = data.mainTicker;
+                setTextContent('fundamental-revenue', formatLargeNumber(main.revenueTTM));
+                setTextContent('fundamental-net-income', formatLargeNumber(main.netIncomeTTM));
+                setTextContent('fundamental-eps', formatCurrency(main.epsTTM));
+                setTextContent('fundamental-ocf', formatLargeNumber(main.operatingCashflowTTM));
+                setTextContent('fundamental-fcf', formatLargeNumber(main.freeCashflowTTM));
+
+                setTextContent('ratio-pe', formatRatio(main.peTTM));
+                setTextContent('ratio-ps', formatRatio(main.psTTM));
+                setTextContent('ratio-pb', formatRatio(main.pbTTM));
+                setTextContent('ratio-margin', formatPercent(main.profitMargin));
+                setTextContent('ratio-roa', formatPercent(main.roa));
+                setTextContent('ratio-roe', formatPercent(main.roe));
+
+                setTextContent('balance-de', main.debtToEquity ? (main.debtToEquity / 100).toFixed(2) : '--'); // D/E from yfinance is often in percent
+                setTextContent('balance-current', formatRatio(main.currentRatio));
+                setTextContent('div-yield', formatPercent(main.dividendYield));
+                setTextContent('div-payout', formatPercent(main.payoutRatio));
+            } catch (e) {
+                console.error("Error populating fundamentals:", e);
+            }
+        };
+
         /**
-         * Populates the Overview section.
+         * Populates the Interpretation section.
          * @param {object} data - The fetched fundamental data.
          */
-        const populateOverview = (data) => {
-            const main = data.mainTicker;
-            
-            // --- NEW: Populate Head/Meta Tags ---
-            const title = `${main.ticker} Financial Analysis Report | ${main.companyName}`;
-            document.title = title;
-            
-            const description = `A comprehensive financial analysis of ${main.companyName} (${main.ticker}) as of ${data.asOfDate}, covering fundamentals, analyst consensus, and key growth drivers.`;
-            document.getElementById('meta-desc').setAttribute('content', description);
-            
-            const ogTitle = `Equity Research: ${main.companyName} (${main.ticker}) Analysis`;
-            document.getElementById('meta-og-title').setAttribute('content', ogTitle);
-            document.getElementById('meta-tw-title').setAttribute('content', ogTitle);
+        const populateInterpretation = (data) => {
+            try {
+                const main = data.mainTicker;
+                const interp = main.interpretation;
+                if (!interp) throw new Error("interpretation object is missing");
+                
+                const interpretations = [
+                    {
+                        title: "P/E Ratio (TTM)",
+                        value: formatRatio(main.peTTM),
+                        color: "blue",
+                        meaning: "The Price-to-Earnings ratio measures the current share price relative to its per-share earnings.",
+                        interp: interp.pe || "N/A"
+                    },
+                    {
+                        title: "Profit Margin",
+                        value: formatPercent(main.profitMargin),
+                        color: "green",
+                        meaning: "This ratio (Net Income / Revenue) shows how much profit the company makes for every dollar of sales.",
+                        interp: interp.margin || "N/A"
+                    },
+                    {
+                        title: "FCF & D/E Ratio",
+                        value: "Pristine",
+                        color: "green",
+                        meaning: `Free Cash Flow (${formatLargeNumber(main.freeCashflowTTM)} TTM) and Debt-to-Equity (${(main.debtToEquity/100).toFixed(2)}) show cash generation vs. leverage.`,
+                        interp: interp.fcf_de || "N/A"
+                    },
+                    {
+                        title: "Return on Equity (ROE)",
+                        value: formatPercent(main.roe),
+                        color: "green",
+                        meaning: "This measures the return generated on shareholders' equity.",
+                        interp: interp.roe || "N/A"
+                    }
+                ];
+                
+                const colorClasses = {
+                    blue: "tw-bg-blue-100 tw-text-blue-800",
+                    green: "tw-bg-green-100 tw-text-green-800",
+                    yellow: "tw-bg-yellow-100 tw-text-yellow-800",
+                    red: "tw-bg-red-100 tw-text-red-800"
+                };
 
-            const ogDesc = `In-depth financial report on ${main.companyName} (${main.ticker}), detailing its key themes, fundamental health, analyst consensus, and competitor comparison.`;
-            document.getElementById('meta-og-desc').setAttribute('content', ogDesc);
-            document.getElementById('meta-tw-desc').setAttribute('content', ogDesc);
-            
-            const url = `https://tonynahra.github.io/posts/${main.ticker}_${FILE_DATE}.html`;
-            document.getElementById('meta-og-url').setAttribute('content', url);
-            // --- END NEW ---
-            
-            setTextContent('company-name-header', main.companyName);
-            setTextContent('as-of-date', data.asOfDate);
-            
-            // Check if interpretation data exists
-            if (!main.interpretation) {
-                setHTML('interpretation-grid', '<p>Interpretation data not available.</p>');
-                return;
-            }
+                const grid = document.getElementById('interpretation-grid');
+                grid.innerHTML = interpretations.map(item => {
+                    // Determine rating from interp text
+                    let rating = "Neutral";
+                    if (item.interp.toLowerCase().includes("excellent") || item.interp.toLowerCase().includes("strong")) rating = "Strong";
+                    else if (item.interp.toLowerCase().includes("reasonable") || item.interp.toLowerCase().includes("solid")) rating = "Good";
+                    else if (item.interp.toLowerCase().includes("weak") || item.interp.toLowerCase().includes("concern")) rating = "Weak";
 
-            const interpretations = [
-                {
-                    title: "P/E Ratio (TTM)",
-                    value: formatRatio(main.peTTM),
-                    rating: "Volatile",
-                    color: "yellow",
-                    meaning: "The Price-to-Earnings ratio measures the current share price relative to its per-share earnings.",
-                    interp: main.interpretation.pe || "Interpretation not available."
-                },
-                {
-                    title: "Profit Margin",
-                    value: formatPercent(main.profitMargin),
-                    rating: "Recovering",
-                    color: "blue",
-                    meaning: "This ratio (Net Income / Revenue) shows how much profit the company makes for every dollar of sales.",
-                    interp: main.interpretation.margin || "Interpretation not available."
-                },
-                {
-                    title: "FCF & D/E Ratio",
-                    value: "Negative FCF",
-                    rating: "Caution",
-                    color: "yellow",
-                    meaning: `Free Cash Flow (${formatLargeNumber(main.freeCashflowTTM)} TTM) and Debt-to-Equity (${main.debtToEquity ? (main.debtToEquity/100).toFixed(2) : '--'}) show cash generation vs. leverage.`,
-                    interp: main.interpretation.fcf_de || "Interpretation not available."
-                },
-                {
-                    title: "Return on Equity (ROE)",
-                    value: formatPercent(main.roe),
-                    rating: "Cyclical",
-                    color: "blue",
-                    meaning: "This measures the return generated on shareholders' equity.",
-                    interp: main.interpretation.roe || "Interpretation not available."
-                }
-            ];
-            
-            const colorClasses = {
-                blue: "tw-bg-blue-100 tw-text-blue-800",
-                green: "tw-bg-green-100 tw-text-green-800",
-                yellow: "tw-bg-yellow-100 tw-text-yellow-800",
-                red: "tw-bg-red-100 tw-text-red-800"
-            };
-
-            const grid = document.getElementById('interpretation-grid');
-            grid.innerHTML = interpretations.map(item => `
-                <div>
-                    <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
-                        <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">${item.title}</h4>
-                        <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium ${colorClasses[item.color]}">
-                            ${item.value} (${item.rating})
-                        </span>
+                    return `
+                    <div>
+                        <div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+                            <h4 class="tw-text-xl tw-font-semibold tw-text-gray-900">${item.title}</h4>
+                            <span class="tw-inline-flex tw-items-center tw-px-3 tw-py-0.5 tw-rounded-full tw-text-sm tw-font-medium ${colorClasses[item.color]}">
+                                ${item.value} (${rating})
+                            </span>
+                        </div>
+                        <p class="tw-text-lg tw-text-gray-700">
+                            <strong>Meaning:</strong> ${item.meaning}
+                            <br>
+                            ${item.interp}
+                        </p>
                     </div>
-                    <p class="tw-text-lg tw-text-gray-700">
-                        <strong>Meaning:</strong> ${item.meaning}
-                        <br>
-                        ${item.interp}
-                    </p>
-                </div>
-            `).join('');
+                `}).join('');
+            } catch (e) {
+                console.error("Error populating interpretation:", e);
+            }
         };
         
         /**
@@ -685,20 +862,20 @@
          * @param {object} data - The fetched fundamental data.
          */
         const populateSWOT = (data) => {
-            const swot = data.mainTicker.swot;
-            if (!swot) {
-                setHTML('swot-strengths', '<li>SWOT data not available.</li>');
-                return;
+            try {
+                const swot = data.mainTicker.swot;
+                if (!swot) throw new Error("swot object is missing");
+
+                setHTML('swot-strengths', swot.strengths.map(s => `<li>${s}</li>`).join(''));
+                setHTML('swot-weaknesses', swot.weaknesses.map(w => `<li>${w}</li>`).join(''));
+                setHTML('swot-opportunities', swot.opportunities.map(o => `<li>${o}</li>`).join(''));
+                setHTML('swot-threats', swot.threats.map(t => `<li>${t}</li>`).join(''));
+                
+                setTextContent('swot-score', `${swot.score}/100`);
+                setHTML('swot-rationale', swot.rationale);
+            } catch (e) {
+                console.error("Error populating SWOT:", e);
             }
-            
-            setHTML('swot-strengths', swot.strengths.map(s => `<li>${s}</li>`).join(''));
-            setHTML('swot-weaknesses', swot.weaknesses.map(w => `<li>${w}</li>`).join(''));
-            setHTML('swot-opportunities', swot.opportunities.map(o => `<li>${o}</li>`).join(''));
-            setHTML('swot-threats', swot.threats.map(t => `<li>${t}</li>`).join(''));
-            
-            // Set SWOT Score
-            setTextContent('swot-score', `${swot.score || '--'}/100`);
-            setTextContent('swot-rationale', swot.rationale || 'Rationale not available.');
         };
 
         /**
@@ -706,35 +883,42 @@
          * @param {object} data - The fetched fundamental data.
          */
         const populateCompetitors = (data) => {
-            // Populate from JSON
-            setHTML('sector-performance', data.mainTicker.sectorPerformance || 'Sector performance data not available.');
-            
-            const main = data.mainTicker;
-            const competitors = data.competitors;
-            const head = document.getElementById('competitor-head');
-            const body = document.getElementById('competitor-body');
+            try {
+                const main = data.mainTicker;
+                const competitors = data.competitors;
+                
+                setHTML('sector-performance', main.sectorPerformance || "Sector performance analysis is not available.");
+                
+                const head = document.getElementById('competitor-head');
+                const body = document.getElementById('competitor-body');
+                if (!head || !body) return;
 
-            let headers = [`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>`, `<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600 tw-text-right">${main.ticker}</th>`];
-            let marketCapRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatLargeNumber(main.marketCap)}</td>`];
-            let peRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
-            let growthRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.revenueGrowthYoY)}</td>`];
-            let marginRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.profitMargin)}</td>`];
+                let headers = [`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700">Metric</th>`, `<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-blue-600 tw-text-right">${main.ticker}</th>`];
+                let marketCapRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Market Cap</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatLargeNumber(main.marketCap)}</td>`];
+                let peRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">P/E (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatRatio(main.peTTM)}</td>`];
+                let growthRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Revenue Growth (YoY)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.revenueGrowthYoY)}</td>`];
+                let marginRow = [`<td class="tw-px-6 tw-py-4 tw-font-medium">Net Margin (TTM)</td>`, `<td class="tw-px-6 tw-py-4 tw-font-semibold tw-text-blue-600 tw-text-right">${formatPercent(main.profitMargin)}</td>`];
 
-            for (const [ticker, stats] of Object.entries(competitors)) {
-                headers.push(`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-right">${ticker}</th>`);
-                marketCapRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatLargeNumber(stats.marketCap)}</td>`);
-                peRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatRatio(stats.peTTM)}</td>`);
-                growthRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.revenueGrowthYoY)}</td>`);
-                marginRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
+                if (competitors) {
+                    for (const [ticker, stats] of Object.entries(competitors)) {
+                        headers.push(`<th class="tw-px-6 tw-py-4 tw-font-semibold tw-text-gray-700 tw-text-right">${ticker}</th>`);
+                        marketCapRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatLargeNumber(stats.marketCap)}</td>`);
+                        peRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatRatio(stats.peTTM)}</td>`);
+                        growthRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.revenueGrowthYoY)}</td>`);
+                        marginRow.push(`<td class="tw-px-6 tw-py-4 tw-text-right">${formatPercent(stats.profitMargin)}</td>`);
+                    }
+                }
+
+                head.innerHTML = `<tr>${headers.join('')}</tr>`;
+                body.innerHTML = `
+                    <tr>${marketCapRow.join('')}</tr>
+                    <tr>${peRow.join('')}</tr>
+                    <tr>${growthRow.join('')}</tr>
+                    <tr>${marginRow.join('')}</tr>
+                `;
+            } catch (e) {
+                console.error("Error populating competitors:", e);
             }
-
-            head.innerHTML = `<tr>${headers.join('')}</tr>`;
-            body.innerHTML = `
-                <tr>${marketCapRow.join('')}</tr>
-                <tr>${peRow.join('')}</tr>
-                <tr>${growthRow.join('')}</tr>
-                <tr>${marginRow.join('')}</tr>
-            `;
         };
 
         /**
@@ -742,129 +926,130 @@
          * @param {object} data - The fetched fundamental data.
          */
         const populateBenchmark = (data) => {
-            const main = data.mainTicker;
-            const bench = data.benchmark;
+            try {
+                const main = data.mainTicker;
+                const bench = data.benchmark;
 
-            setTextContent('benchmark-ticker-col', main.ticker);
-            setTextContent('benchmark-index-col', bench.ticker);
+                setTextContent('benchmark-ticker-col', main.ticker);
+                setTextContent('benchmark-index-col', bench.ticker);
 
-            // Performance Table
-            setTextContent('benchmark-ytd-ticker', formatPercent(main.ytdReturn));
-            setTextContent('benchmark-ytd-index', formatPercent(bench.ytdReturn));
-            document.getElementById('benchmark-ytd-ticker').className = main.ytdReturn > bench.ytdReturn ? 'tw-font-semibold tw-text-green-600 tw-text-right' : 'tw-font-semibold tw-text-red-600 tw-text-right';
-            
-            setTextContent('benchmark-1y-ticker', formatPercent(main.oneYearReturn));
-            setTextContent('benchmark-1y-index', formatPercent(bench.oneYearReturn));
-            document.getElementById('benchmark-1y-ticker').className = main.oneYearReturn > bench.oneYearReturn ? 'tw-font-semibold tw-text-green-600 tw-text-right' : 'tw-font-semibold tw-text-red-600 tw-text-right';
+                // Performance Table
+                setTextContent('benchmark-ytd-ticker', formatPercent(main.ytdReturn));
+                setTextContent('benchmark-ytd-index', formatPercent(bench.ytdReturn));
+                document.getElementById('benchmark-ytd-ticker').className = main.ytdReturn > bench.ytdReturn ? 'tw-font-semibold tw-text-green-600 tw-text-right' : 'tw-font-semibold tw-text-red-600 tw-text-right';
+                
+                setTextContent('benchmark-1y-ticker', formatPercent(main.oneYearReturn));
+                setTextContent('benchmark-1y-index', formatPercent(bench.oneYearReturn));
+                document.getElementById('benchmark-1y-ticker').className = main.oneYearReturn > bench.oneYearReturn ? 'tw-font-semibold tw-text-green-600 tw-text-right' : 'tw-font-semibold tw-text-red-600 tw-text-right';
 
-            setTextContent('benchmark-3y-ticker', formatPercent(main.threeYearReturn));
-            setTextContent('benchmark-3y-index', formatPercent(bench.threeYearReturn));
-            document.getElementById('benchmark-3y-ticker').className = main.threeYearReturn > bench.threeYearReturn ? 'tw-font-semibold tw-text-green-600 tw-text-right' : 'tw-font-semibold tw-text-red-600 tw-text-right';
-            
-            // Volatility
-            setTextContent('benchmark-beta', main.beta.toFixed(2));
-            setTextContent('benchmark-beta-text', `A Beta of ${main.beta.toFixed(2)} indicates ${main.ticker} is significantly more volatile than the broader market.`);
-            
-            // Visual Chart
-            const visualChart = document.getElementById('benchmark-visual-chart');
-            let items = [
-                { label: main.ticker, value: main.oneYearReturn, color: 'blue' }
-            ];
-            
-            for (const [ticker, stats] of Object.entries(data.competitors)) {
-                items.push({ label: `Competitor (${ticker})`, value: stats.oneYearReturn, color: 'gray' });
+                setTextContent('benchmark-3y-ticker', formatPercent(main.threeYearReturn));
+                setTextContent('benchmark-3y-index', formatPercent(bench.threeYearReturn));
+                document.getElementById('benchmark-3y-ticker').className = main.threeYearReturn > bench.threeYearReturn ? 'tw-font-semibold tw-text-green-600 tw-text-right' : 'tw-font-semibold tw-text-red-600 tw-text-right';
+                
+                // Volatility
+                setTextContent('benchmark-beta', main.beta.toFixed(2));
+                setTextContent('benchmark-beta-text', `A Beta of ${main.beta.toFixed(2)} indicates ${main.ticker} moves very closely in-line with the broader market.`);
+                
+                // Visual Chart
+                const visualChart = document.getElementById('benchmark-visual-chart');
+                let items = [
+                    { label: main.ticker, value: main.oneYearReturn, color: 'blue' }
+                ];
+                
+                if (data.competitors) {
+                    for (const [ticker, stats] of Object.entries(data.competitors)) {
+                        items.push({ label: `Competitor (${ticker})`, value: stats.oneYearReturn, color: 'gray' });
+                    }
+                }
+                
+                const validValues = items
+                    .map(i => parseFloat(i.value))
+                    .filter(v => !isNaN(v));
+
+                const maxVal = Math.max(0.01, ...validValues); 
+                
+                visualChart.innerHTML = items.map(item => {
+                    const value = parseFloat(item.value);
+                    const isValid = !isNaN(value);
+                    const displayValue = isValid ? value : 0;
+                    const displayText = isValid ? formatPercent(value) : '--';
+
+                    const width = Math.max(0, (displayValue / maxVal) * 100);
+                    const colorClass = item.color === 'blue' ? 'tw-bg-blue-500' : 'tw-bg-gray-500';
+                    const textClass = item.color === 'blue' ? 'tw-text-blue-600' : 'tw-text-gray-700';
+                    
+                    return `
+                        <div class="tw-w-full">
+                            <div class="tw-flex tw-justify-between tw-mb-1">
+                                <span class="tw-text-lg tw-font-semibold ${textClass}">${item.label}</span>
+                                <span class="tw-text-lg tw-font-semibold ${textClass}">${displayText}</span>
+                            </div>
+                            <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
+                                <div class="${colorClass} tw-h-6 tw-rounded-full" style="width: ${width}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error("Error populating benchmark:", e);
             }
-            items.push({ label: `Sector (Semis - SMH)`, value: 0.45, color: 'gray' }); // AI-generated placeholder
-            
-            const validValues = items
-                .map(i => parseFloat(i.value))
-                .filter(v => !isNaN(v)); 
-
-            const maxVal = Math.max(0.01, ...validValues); 
-            
-            visualChart.innerHTML = items.map(item => {
-                const value = parseFloat(item.value); 
-                const isValid = !isNaN(value); 
-                
-                const displayValue = isValid ? value : 0;
-                const displayText = isValid ? formatPercent(value) : '--';
-
-                const width = Math.max(0, (displayValue / maxVal) * 100);
-                const colorClass = item.color === 'blue' ? 'tw-bg-blue-500' : 'tw-bg-gray-500';
-                const textClass = item.color === 'blue' ? 'tw-text-blue-600' : 'tw-text-gray-700';
-                
-                return `
-                    <div class="tw-w-full">
-                        <div class="tw-flex tw-justify-between tw-mb-1">
-                            <span class="tw-text-lg tw-font-semibold ${textClass}">${item.label}</span>
-                            <span class="tw-text-lg tw-font-semibold ${textClass}">${displayText}</span>
-                        </div>
-                        <div class="tw-w-full tw-bg-gray-200 tw-rounded-full tw-h-6">
-                            <div class="${colorClass} tw-h-6 tw-rounded-full" style="width: ${width}%;"></div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
         };
-        
+
         /**
          * Populates the Technical Analysis section.
          * @param {object} data - The fetched fundamental data.
          */
         const populateTechnicals = (data) => {
-            const tech = data.mainTicker.technicalAnalysis;
-            if (!tech) {
-                setHTML('technical', '<p>Technical analysis data is not available.</p>');
-                return;
-            }
+            try {
+                const tech = data.mainTicker.technicalAnalysis;
+                if (!tech) {
+                    setHTML('technical', '<p class="tw-text-lg tw-text-gray-500">Technical analysis data is not available for this ticker.</p>');
+                    return;
+                }
 
-            // Card 1: Trend
-            setTextContent('tech-current-price', formatCurrency(tech.currentPrice));
-            setTextContent('tech-sma30', formatCurrency(tech.sma30));
-            setTextContent('tech-sma90', formatCurrency(tech.sma90));
-            
-            const trendText = document.getElementById('technical-trend-text');
-            if (tech.currentPrice > tech.sma30 && tech.sma30 > tech.sma90) {
-                trendText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-green-100 tw-text-green-800';
-                trendText.innerHTML = '<p class="tw-font-semibold">Strong Uptrend:</span> Price is above both the 30-day and 90-day moving averages, with the 30-day above the 90-day.</p>';
-            } else if (tech.currentPrice > tech.sma30) {
-                trendText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-green-100 tw-text-green-800';
-                trendText.innerHTML = '<p class="tw-font-semibold">Short-Term Uptrend:</span> Price is above the 30-day moving average, indicating positive short-term momentum.</p>';
-            } else if (tech.currentPrice < tech.sma90) {
-                trendText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-red-100 tw-text-red-800';
-                trendText.innerHTML = '<p class="tw-font-semibold">Downtrend:</span> Price is below the 90-day moving average, indicating a significant downtrend.</p>';
-            } else {
-                trendText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-gray-100 tw-text-gray-800';
-                trendText.innerHTML = '<p class="tw-font-semibold">Consolidating:</span> Price is in-between its major moving averages, indicating a lack of a clear trend.</p>';
-            }
+                // Card 1: Trend
+                setTextContent('tech-price', formatCurrency(tech.currentPrice));
+                setTextContent('tech-sma30', formatCurrency(tech.sma30));
+                setTextContent('tech-sma90', formatCurrency(tech.sma90));
+                
+                const shortTrend = tech.currentPrice > tech.sma30 ? "Uptrend" : "Downtrend";
+                setTextContent('tech-trend-short', shortTrend);
+                document.getElementById('tech-trend-short').className = shortTrend === "Uptrend" ? 'tw-font-bold tw-text-green-600' : 'tw-font-bold tw-text-red-600';
+                
+                const longTrend = tech.currentPrice > tech.sma90 ? "Uptrend" : "Downtrend";
+                setTextContent('tech-trend-long', longTrend);
+                document.getElementById('tech-trend-long').className = longTrend === "Uptrend" ? 'tw-font-bold tw-text-green-600' : 'tw-font-bold tw-text-red-600';
 
-            // Card 2: RSI
-            setTextContent('tech-rsi-value', tech.rsi ? tech.rsi.toFixed(1) : '--');
-            const rsiText = document.getElementById('technical-rsi-text');
-            if (tech.rsi > 70) {
-                rsiText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-red-100 tw-text-red-800';
-                rsiText.innerHTML = '<p class="tw-font-semibold">Overbought:</span> An RSI above 70 suggests the asset may be overbought and due for a pullback.</p>';
-            } else if (tech.rsi < 30) {
-                rsiText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-green-100 tw-text-green-800';
-                rsiText.innerHTML = '<p class="tw-font-semibold">Oversold:</span> An RSI below 30 suggests the asset may be oversold and due for a bounce.</p>';
-            } else {
-                rsiText.className = 'tw-mt-4 tw-p-4 tw-rounded-lg tw-bg-gray-100 tw-text-gray-800';
-                rsiText.innerHTML = '<p class="tw-font-semibold">Neutral:</span> The RSI is in neutral territory, not signaling extreme momentum.</p>';
-            }
+                // Card 2: RSI
+                const rsi = tech.rsi;
+                setTextContent('tech-rsi-val', rsi.toFixed(1));
+                let rsiText = "Neutral";
+                let rsiColor = "tw-bg-blue-600";
+                if (rsi > 70) {
+                    rsiText = "Overbought";
+                    rsiColor = "tw-bg-red-600";
+                } else if (rsi < 30) {
+                    rsiText = "Oversold";
+                    rsiColor = "tw-bg-green-600";
+                }
+                setTextContent('tech-rsi-text', rsiText);
+                document.getElementById('tech-rsi-bar').style.width = `${rsi}%`;
+                document.getElementById('tech-rsi-bar').className = `tw-h-2.5 tw-rounded-full ${rsiColor}`;
 
-            // Card 3: 52-Week Range
-            setTextContent('tech-52w-low', formatCurrency(tech.low52w));
-            setTextContent('tech-52w-high', formatCurrency(tech.high52w));
-            if (tech.percentRange52w) {
-                const percent = (tech.percentRange52w * 100).toFixed(1);
-                document.getElementById('tech-52w-bar').style.width = `${percent}%`;
-            }
+                // Card 3: 52-Week Range
+                setTextContent('tech-52w-low', formatCurrency(tech.low52w));
+                setTextContent('tech-52w-high', formatCurrency(tech.high52w));
+                const rangePercent = (tech.percentRange52w * 100).toFixed(1);
+                document.getElementById('tech-52w-bar').style.width = `${rangePercent}%`;
+                setTextContent('tech-52w-text', `Currently at ${rangePercent}% of its 52-week range.`);
 
-            // Card 4: Summary
-            // Populate from JSON
-            setHTML('technical-summary-text', data.mainTicker.technicalSummary || 'Technical summary not available.');
+                // Card 4: Summary
+                setHTML('technical-summary-text', data.mainTicker.technicalSummary || "N/A");
+
+            } catch (e) {
+                console.error("Error populating technicals:", e);
+            }
         };
-
 
         /**
          * Creates the Plotly Price/Volume/RSI chart.
@@ -875,13 +1060,17 @@
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const chartData = await response.json();
 
+                if (!chartData.bb_upper) {
+                    console.warn("Bollinger Bands data missing from chart JSON.");
+                }
+
                 const priceTrace = { 
                     x: chartData.dates, 
                     y: chartData.prices, 
                     type: 'scatter', 
                     mode: 'lines', 
                     name: `${TICKER} Price`, 
-                    line: { color: '#2563eb', width: 2 }, 
+                    line: { color: '#2563eb', width: 2 },
                     xaxis: 'x', 
                     yaxis: 'y' 
                 };
@@ -892,7 +1081,7 @@
                     type: 'scatter',
                     mode: 'lines',
                     name: 'Upper Band',
-                    line: { color: 'rgba(156, 163, 175, 0.5)', width: 1, dash: 'dash' }, 
+                    line: { color: 'rgba(156, 163, 175, 0.5)', width: 1, dash: 'dash' },
                     xaxis: 'x',
                     yaxis: 'y'
                 };
@@ -905,7 +1094,7 @@
                     name: 'Lower Band',
                     line: { color: 'rgba(156, 163, 175, 0.5)', width: 1, dash: 'dash' },
                     fill: 'tonexty', 
-                    fillcolor: 'rgba(156, 163, 175, 0.1)', 
+                    fillcolor: 'rgba(156, 163, 175, 0.1)',
                     xaxis: 'x',
                     yaxis: 'y'
                 };
@@ -916,7 +1105,7 @@
                     type: 'scatter',
                     mode: 'lines',
                     name: '20-Day SMA',
-                    line: { color: '#f59e0b', width: 1.5, dash: 'dot' }, 
+                    line: { color: '#f59e0b', width: 1.5, dash: 'dot' },
                     xaxis: 'x',
                     yaxis: 'y'
                 };
@@ -989,8 +1178,8 @@
                 const data = await response.json();
                 
                 // Populate all sections
+                populateOverview(data); // Must run first for <head> tags
                 populateSummary(data);
-                populateOverview(data);
                 populateAnalystConsensus(data);
                 populateQuarterlyTrends(data);
                 populateFundamentals(data);
@@ -1015,9 +1204,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                         </svg>
                         <h3 class="tw-mt-4 tw-text-2xl tw-font-medium tw-text-gray-900">Failed to Load Report</h3>
-                        <p class="tw-mt-2 tw-text-lg tw-text-gray-500">Could not fetch '${FUNDAMENTALS_PATH}'.</p>
-                        <p class="tw-text-sm tw-text-gray-500">Please run the Python script to generate the data file.</p>
-                        <p class="tw-text-xs tw-text-gray-400 tw-mt-4">Error: ${error.message}</p>
+                        <p class="tw-mt-2 tw-text-lg tw-text-gray-500">Could not fetch '${FUNDAMENTALS_PATH}'.</Two-column flexbox layout (sidebar + main content).</p>
+                        <p class="tw-text-sm tw-text-gray-500">Please run the Python script to generate the data file. Error: ${error.message}</p>
                     </div>`;
             }
         }
