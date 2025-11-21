@@ -97,7 +97,7 @@
 
         /* ARTICLE CONTAINER */
         .content-wrapper {
-            padding: 60px 80px; /* Increased padding since banner is gone */
+            padding: 60px 80px;
             max-width: 900px;
             margin: 0 auto; 
         }
@@ -216,6 +216,23 @@
             background-color: #f1f8ff;
             border-radius: 0 8px 8px 0;
         }
+        
+        .impact-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 30px;
+            color: #856404;
+        }
+        
+        .impact-title {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+            display: block;
+        }
 
         /* Responsive adjustments */
         @media (max-width: 992px) {
@@ -257,13 +274,11 @@
                 
                 <section id="math-roots">
                     <h2>1. The Mathematical Roots</h2>
-                    <p>Long before silicon chips, "programming" existed as pure logic. Algorithms, the foundation block of computing, started as a branch of mathematics. In the 18th century, <strong>Leonhard Euler</strong> invented graph theory while attempting to solve the <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg" target="_blank">Seven Bridges of Königsberg</a> problem.</p>
+                    <p>Long before silicon chips, "programming" existed as pure logic. Algorithms, the foundation block of computing, started as a branch of mathematics. In the 18th century, <strong>Leonhard Euler</strong> invented graph theory while attempting to solve the <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg" target="_blank">Seven Bridges of Königsberg</a> problem. He realized that the path could be calculated without physically traversing it—an early form of algorithmic abstraction.</p>
                     
                     
                     
-                    <p>Later, <strong>George Boole</strong> created the basis of Boolean algebra (True/False logic). He had no idea his binary system would one day govern the digital world.</p>
-
-                    <p>However, the bridge between pure math and machinery was built by <strong>Ada Lovelace</strong>. She is widely considered the first programmer for her work on an algorithm to calculate Bernoulli numbers on Babbage's theoretical engine.</p>
+                    <p>Later, <strong>George Boole</strong> created the basis of Boolean algebra (True/False logic). He had no idea his binary system would one day govern the digital world. However, the bridge between pure math and machinery was built by <strong>Ada Lovelace</strong>. She is widely considered the first programmer for her work on an algorithm to calculate Bernoulli numbers on Babbage's theoretical engine.</p>
 
                     
 
@@ -274,6 +289,12 @@
                         "The Analytical Engine weaves algebraic patterns just as the Jacquard loom weaves flowers and leaves."
                         <br><br>— <strong>Ada Lovelace</strong>
                     </blockquote>
+                    
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> This era solved the problem of defining logic rigorously. It established that reasoning could be formalized into rules (algorithms) that were independent of the physical world.</p>
+                        <p><strong>The New Issue Created:</strong> While the math was sound, it was purely theoretical. There was no machine capable of executing these complex calculations at speed. The barrier was no longer logic, but engineering.</p>
+                    </div>
                 </section>
 
                 <section id="hardware-era">
@@ -293,6 +314,12 @@
                     <p>There was no "software" as we know it. Programmers were mathematical experts—often women like <strong>Jean Bartik</strong> and <strong>Kay McNulty</strong>—who learned how to physically translate a mathematical task into a set of wired connections.</p>
 
                     
+                    
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> This era solved the speed of calculation. Tasks that took human computers months could now be done in seconds.</p>
+                        <p><strong>The New Issue Created:</strong> The "Programming Bottleneck." While calculation was fast, setting up the problem took days of physical rewiring. The computer was flexible, but changing its mind was arduous.</p>
+                    </div>
                 </section>
 
                 <section id="von-neumann">
@@ -304,28 +331,44 @@
 [Image of Von Neumann architecture diagram]
 
 
-                    <p>This birthed the era of **Machine Language**. It was efficient for the machine, but grueling for the human.</p>
+                    <p>Von Neumann set the stage for <strong>CODE INSTRUCTIONS</strong>. Instead of rewiring the machine, programmers could simply feed it a new tape of instructions. This birthed the era of Machine Language and Control Flow Logic (loops, branches, jumps).</p>
 
                     <span class="lang-label">Example: x86 Machine Code (calculating 1 + 1)</span>
                     <pre><code>B8 01 00 00 00   ; Load 1 into EAX register
 05 01 00 00 00   ; Add 1 to EAX
 </code></pre>
+
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> It eliminated the physical rewiring bottleneck. Software became fluid, copyable, and distinct from hardware.</p>
+                        <p><strong>The New Issue Created:</strong> Cognitive Load. Machine language (binary/hex) was optimized for the CPU, not the human brain. Programmers had to memorize obscure opcodes, leading to slow development and frequent errors.</p>
+                    </div>
                 </section>
 
                 <section id="language-boom">
                     <h2>4. The Humanization of Code</h2>
-                    <p>As programming became more in demand, we needed to speak to the machine in English. This led to the first high-level languages like <strong>Fortran</strong> (for science) and <strong>COBOL</strong> (for business).</p>
+                    <p>As programming became more in demand, we needed to speak to the machine in English. This led to the first high-level languages like <strong>Fortran</strong> (Formula Translation) for scientists and <strong>COBOL</strong> for business.</p>
 
                     <span class="lang-label">Example: Fortran 77</span>
                     <pre><code>      PROGRAM HELLO
       PRINT *, 'HELLO WORLD'
       STOP
       END</code></pre>
+      
+                    <p>These languages introduced the concept of a <strong>Compiler</strong>—a translator that turns human-readable text into the machine code the processor understands.</p>
+
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> Accessibility. Scientists and business managers could now write programs without understanding the electrical engineering of the computer.</p>
+                        <p><strong>The New Issue Created:</strong> Complexity Management. As it became easier to write code, programs grew massive. Without structure, they became "Spaghetti Code"—a tangled mess of GOTO statements that was impossible to debug or maintain.</p>
+                    </div>
                 </section>
 
                 <section id="structure-oop">
                     <h2>5. Structuring the Chaos</h2>
-                    <p>As tasks became more complex, "spaghetti code" became a problem. This led to **Object-Oriented Programming (OOP)**. Concepts like inheritance allowed programmers to create reusable "black boxes".</p>
+                    <p>As tasks became more complex (operating systems, banking networks), simple lists of instructions failed. We needed better architecture. This led to <strong>Object-Oriented Programming (OOP)</strong>.</p>
+                    
+                    <p>OOP introduced concepts like inheritance and encapsulation. Programmers could create "Black Boxes"—reusable objects (like a "User" or "Window") that hid their internal complexity.</p>
 
                     
 
@@ -340,6 +383,12 @@
       cout << "Beep beep!";
     }
 };</code></pre>
+
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> Scalability. Large teams could work on the same software without breaking each other's code, enabling the creation of massive systems like Windows or the Internet infrastructure.</p>
+                        <p><strong>The New Issue Created:</strong> The "Expert Gap." While scalable, these languages (C++, Java) were verbose and abstract. Programming was still a niche skill reserved for those with formal computer science training.</p>
+                    </div>
                 </section>
 
                 <section id="visual-era">
@@ -352,18 +401,30 @@
                     <pre><code>Private Sub CommandButton1_Click()
     MsgBox "Welcome to the Visual Era!"
 End Sub</code></pre>
+
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> Democratization. It lowered the barrier to entry significantly. "User Friendly" became the standard, and non-programmers could finally build their own tools.</p>
+                        <p><strong>The New Issue Created:</strong> The "Syntax Barrier" remained. Even with visual tools, you still had to write rigid logic. A single missing semicolon or misspelled command would crash the program. The computer still didn't understand <em>what</em> you wanted, only <em>how</em> you typed it.</p>
+                    </div>
                 </section>
 
                 <section id="ai-paradigm">
                     <h2>7. The AI Paradigm Shift</h2>
                     <p>Today, we are witnessing the biggest shift since Von Neumann. **Intent-Based Programming** via Large Language Models (LLMs) means we no longer tell the machine <em>how</em> to do something step-by-step, but <em>what</em> we want the outcome to be.</p>
+                    
+                    <p>Machine Learning algorithms can "learn" from all past programming practices. LLMs are capable of understanding intent, fixing badly formatted requests, and generating complex logic from simple prompts.</p>
 
                     <span class="lang-label">The New "Code": Natural Language Prompt</span>
                     <pre><code>"Analyze the attached CSV file of stock prices. 
 Identify the moving average crossover points, 
 and generate a Python script to plot these using Matplotlib."</code></pre>
 
-                    <p>We are now living in an era where programming is just a matter of expressing an idea—vague, with mistakes or lack of context—and the AI will assist, guide, and generate what's needed.</p>
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> The Translation Gap. For the first time, humans can speak to computers in natural language. The barrier of syntax errors and rote memorization is gone.</p>
+                        <p><strong>The New Issue Created:</strong> Trust and Verification. Because we are no longer writing every line, we must learn how to verify that the AI's output is correct. Programming is shifting from "Writing" to "Reviewing" and "Architecting."</p>
+                    </div>
                 </section>
 
                 <section id="references">
@@ -374,6 +435,7 @@ and generate a Python script to plot these using Matplotlib."</code></pre>
                         <li><a href="https://en.wikipedia.org/wiki/Atanasoff%E2%80%93Berry_computer">Atanasoff–Berry Computer</a> - Wikipedia</li>
                         <li><a href="https://en.wikipedia.org/wiki/ENIAC">ENIAC History</a> - Wikipedia</li>
                         <li><a href="https://en.wikipedia.org/wiki/NP-completeness">NP-completeness</a> - Wikipedia</li>
+                        <li><a href="https://en.wikipedia.org/wiki/John_von_Neumann">John von Neumann</a> - Wikipedia</li>
                     </ul>
                 </section>
 
