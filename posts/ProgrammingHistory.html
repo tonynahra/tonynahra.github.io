@@ -5,8 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>From Logic to Language: The Evolution of Programming</title>
     
+    <link rel="stylesheet" href="../common/style.css">
+    <script src="../common/script.js"></script>
+
     <style>
-        /* COMMON STYLES (Consistent with GeminiWinner.html) */
+        /* FALLBACK STYLES 
+           (These ensure the document looks correct even if the common folder is missing)
+        */
         :root {
             --bg-body: #f8f9fa;
             --bg-main: #ffffff;
@@ -143,7 +148,28 @@
             text-decoration: underline;
         }
 
-        /* Code Snippet Styles */
+        /* IMAGE STYLES */
+        figure {
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        figure img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid #dee2e6;
+        }
+
+        figcaption {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* CODE SNIPPET STYLES */
         pre {
             background-color: var(--code-bg);
             padding: 15px;
@@ -221,14 +247,23 @@
                 <h2>1. The Mathematical Roots</h2>
                 <p>Long before silicon chips, "programming" existed as pure logic. Algorithms, the foundation block of computing, started as a branch of mathematics. In the 18th century, <strong>Leonhard Euler</strong> invented graph theory while attempting to solve the <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg" target="_blank">Seven Bridges of Königsberg</a> problem. He realized that the path could be calculated without physically traversing it—an early form of algorithmic abstraction.</p>
                 
+                <figure>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5d/The_Seven_Bridges_of_K%C3%B6nigsberg%2C_Fig._1.png" alt="Euler's original drawing of the Seven Bridges problem" style="max-width: 600px;">
+                    <figcaption>Euler's original drawing of the Seven Bridges of Königsberg (1736).</figcaption>
+                </figure>
                 
                 <p>Later, <strong>George Boole</strong> created the basis of Boolean algebra (True/False logic). He had no idea his binary system would one day govern the digital world.</p>
 
                 <p>However, the bridge between pure math and machinery was built by <strong>Ada Lovelace</strong>. Working on Charles Babbage's theoretical Analytical Engine, she realized the machine could do more than just calculation—it could manipulate symbols. She is widely considered the first programmer for her work on an algorithm to calculate Bernoulli numbers.</p>
 
+                <figure>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Ada_Lovelace_portrait.jpg" alt="Portrait of Ada Lovelace" style="max-width: 400px;">
+                    <figcaption>Ada Lovelace, the first computer programmer.</figcaption>
+                </figure>
+
                 <blockquote>
                     "The Analytical Engine weaves algebraic patterns just as the Jacquard loom weaves flowers and leaves."
-                    <br><br>— <strong>Ada Lovelace</strong>, the first programmer.
+                    <br><br>— <strong>Ada Lovelace</strong>.
                 </blockquote>
 
                 <p><strong>Impact:</strong> This era established that logic could be decoupled from physical reality. It proved that if a problem could be described mathematically, it could effectively be solved by a machine, setting the stage for general-purpose computing.</p>
@@ -237,20 +272,43 @@
             <section id="hardware-era">
                 <h2>2. The Hardware Era: Programming with Cables</h2>
                 <p>Serious programming began not with keyboards, but with manual labor. During WWII, <strong>Alan Turing</strong> conceptualized the modern computer to break the Enigma encryption. With logic gates and transistors still years away, he resorted to the cumbersome wiring of chains of programmable units.</p>
+
+                <figure>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Alan_Turing_az_1930-as_%C3%A9vekben.jpg/465px-Alan_Turing_az_1930-as_%C3%A9vekben.jpg" alt="Alan Turing in the 1930s" style="max-width: 300px;">
+                    <figcaption>Alan Turing, the father of theoretical computer science.</figcaption>
+                </figure>
                 
-                <p>This was the first attempt at defining what a computer was capable of solving based on their complexity. Turing's work laid the groundwork for "Computational Complexity Theory" and the concept of <a href="https://en.wikipedia.org/wiki/NP-completeness" target="_blank">NP-completeness</a>.</p>
+                <p>This was the first attempt at defining what a computer was capable of solving based on complexity. Turing's work laid the groundwork for "Computational Complexity Theory" and the concept of <a href="https://en.wikipedia.org/wiki/NP-completeness" target="_blank">NP-completeness</a>.</p>
                 
-                <p>The <strong>ENIAC</strong> (Electronic Numerical Integrator and Computer) realized this concept using electric vacuum tubes. It was a massive leap forward from the Turing model, utilizing a combination of plugboard wiring and three portable function tables containing 1,200 ten-way switches each.</p>
-                
+                <p>Before the ENIAC, <strong>The Atanasoff–Berry computer (ABC)</strong> was the first automatic electronic digital computer. The device was limited by the technology of the day, as it was not programmable in the modern sense, but it pioneered the use of vacuum tubes for digital calculation.</p>
+
+                <figure>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Atanasoff-Berry_Computer_at_Durhum_Center.jpg/640px-Atanasoff-Berry_Computer_at_Durhum_Center.jpg" alt="Atanasoff-Berry Computer" style="max-width: 500px;">
+                    <figcaption>A replica of the Atanasoff–Berry Computer (ABC), the first electronic digital computer.</figcaption>
+                </figure>
+
+                <p>The <strong>ENIAC</strong> (Electronic Numerical Integrator and Computer) realized these concepts on a massive scale. It utilized a combination of plugboard wiring and three portable function tables containing 1,200 ten-way switches each.</p>
                 
                 <p>There was no "software" as we know it. Programmers were mathematical experts—often women like <strong>Jean Bartik</strong> and <strong>Kay McNulty</strong>—who learned how to physically translate a mathematical task into a set of wired connections. To calculate a simple trajectory, they didn't type code; they plugged wires into a board, physically mapping the logic flow.</p>
+
+                <figure>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Two_women_operating_ENIAC_%28full_resolution%29.jpg" alt="Programmers operating ENIAC" style="max-width: 700px;">
+                    <figcaption>Jean Bartik and Frances Spence programming the ENIAC by re-routing cables.</figcaption>
+                </figure>
 
                 <p><strong>Impact:</strong> While the ENIAC proved that electronic calculation was lightning fast, it also highlighted a massive bottleneck: the human effort required to re-wire the machine for every new task. This limitation drove the search for a "stored program."</p>
             </section>
 
             <section id="von-neumann">
                 <h2>3. The Von Neumann Breakthrough</h2>
-                <p>The real breakthrough came with <strong>John von Neumann</strong>. A founding figure in computing, he contributed significantly to hardware design, theoretical computer science, and scientific computing. He proposed the architecture that still powers most computers today.</p><p>Von Neumann set the stage for <strong>CODE INSTRUCTIONS</strong> that combined instructions with data in the same memory unit. This "Stored-Program Concept" meant the machine could be repurposed instantly by feeding it a new tape of instructions, rather than spending days re-wiring it. This birthed the era of machine language and Control Flow Logic.</p>
+                <p>The real breakthrough came with <strong>John von Neumann</strong>. A founding figure in computing, he contributed significantly to hardware design, theoretical computer science, and scientific computing. He proposed the architecture that still powers most computers today.</p>
+                
+                <figure>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Von_Neumann_Architecture.svg/800px-Von_Neumann_Architecture.svg.png" alt="Von Neumann Architecture Diagram" style="max-width: 600px; background: #fff; padding: 10px;">
+                    <figcaption>The Von Neumann Architecture: Storing data and instructions in the same memory.</figcaption>
+                </figure>
+
+                <p>Von Neumann set the stage for <strong>CODE INSTRUCTIONS</strong> that combined instructions with data in the same memory unit. This "Stored-Program Concept" meant the machine could be repurposed instantly by feeding it a new tape of instructions, rather than spending days re-wiring it. This birthed the era of machine language and Control Flow Logic.</p>
 
                 <span class="lang-label">Example: x86 Machine Code (calculating 1 + 1)</span>
                 <pre><code>B8 01 00 00 00   ; Load 1 into EAX register
@@ -284,7 +342,9 @@ PROCEDURE DIVISION.
                 <h2>5. Structuring the Chaos</h2>
                 <p>As computers moved into telecommunications, factories, and hospitals, the complexity of tasks exploded. Simple sequential lists of instructions became unmanageable "spaghetti code." </p>
                 
-                <p>This necessitated a new science: <strong>Architecting and Designing a Program</strong>. It started with Subroutines and Functions—interrupting the main sequence to perform a task and return. This evolved into <strong>Object-Oriented Programming (OOP)</strong>. </p><p>OOP introduced hierarchical, inherited, and encapsulated objects. Programmers could treat complex components as "black boxes"—reusing a "Car" object without needing to know how the "Engine" inside it was coded. </p>
+                <p>This necessitated a new science: <strong>Architecting and Designing a Program</strong>. It started with Subroutines and Functions—interrupting the main sequence to perform a task and return. This evolved into <strong>Object-Oriented Programming (OOP)</strong>. </p>
+                
+                <p>OOP introduced hierarchical, inherited, and encapsulated objects. Programmers could treat complex components as "black boxes"—reusing a "Car" object without needing to know how the "Engine" inside it was coded. </p>
 
                 <span class="lang-label">Example: C++ Class Structure</span>
                 <pre><code>class Car {
@@ -303,7 +363,6 @@ PROCEDURE DIVISION.
                 <p>The invention of the microprocessor and the Personal Computer moved programming from the corporate mainframe to the home garage. A new generation of programmers built connectivity tools, spreadsheets, and word processors. With such high demand, interfaces had to become simpler.</p>
                 
                 <p>Data entry evolved from punched cards to visual drag-and-drop controls. <strong>Visual Basic</strong> created a shockwave in the industry. It introduced "Event-Driven" programming, where code only ran when a user clicked a specific button.</p>
-                
 
                 <span class="lang-label">Example: Visual Basic</span>
                 <pre><code>Private Sub CommandButton1_Click()
@@ -335,6 +394,7 @@ and generate a Python script to plot these using Matplotlib."</code></pre>
                 <ul>
                     <li><a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg">Seven Bridges of Königsberg</a> - Wikipedia</li>
                     <li><a href="https://en.wikipedia.org/wiki/NP-completeness">NP-completeness</a> - Wikipedia</li>
+                    <li><a href="https://en.wikipedia.org/wiki/Atanasoff%E2%80%93Berry_computer">Atanasoff–Berry Computer</a> - Wikipedia</li>
                     <li><a href="https://en.wikipedia.org/wiki/ENIAC">ENIAC History</a> - Wikipedia</li>
                     <li><a href="https://en.wikipedia.org/wiki/John_von_Neumann">John von Neumann</a> - Wikipedia</li>
                 </ul>
