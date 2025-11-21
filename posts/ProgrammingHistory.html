@@ -36,7 +36,7 @@
             min-height: 100vh;
         }
 
-        /* --- ASIDE MENU STYLES (Updated to White) --- */
+        /* --- ASIDE MENU STYLES (White Theme) --- */
         aside {
             width: 260px;
             background-color: var(--sidebar-bg);
@@ -46,7 +46,7 @@
             height: 100%;
             overflow-y: auto;
             z-index: 1000;
-            border-right: 1px solid var(--sidebar-border); /* separation border */
+            border-right: 1px solid var(--sidebar-border);
         }
 
         aside .menu-header {
@@ -73,7 +73,7 @@
         aside nav li a {
             display: block;
             padding: 12px 20px;
-            color: var(--text-secondary); /* Dark gray text */
+            color: var(--text-secondary);
             text-decoration: none;
             border-left: 3px solid transparent;
             transition: all 0.2s;
@@ -91,50 +91,13 @@
         main {
             flex-grow: 1;
             margin-left: 260px; /* Match aside width */
-            padding: 0; /* Reset padding to allow full-width header */
+            padding: 0;
             max-width: 100%;
-        }
-
-        /* HEADER HERO IMAGE */
-        .hero-header {
-            width: 100%;
-            height: 300px;
-            background-image: url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-
-        .hero-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
-            display: flex;
-            align-items: flex-end;
-            padding: 40px 60px;
-        }
-
-        .hero-title {
-            color: white;
-            max-width: 900px;
-        }
-
-        .hero-title h1 {
-            font-size: 3em;
-            margin: 0;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .hero-title p {
-            font-size: 1.2em;
-            color: #e9ecef;
-            margin-top: 10px;
-            font-weight: 300;
         }
 
         /* ARTICLE CONTAINER */
         .content-wrapper {
-            padding: 40px 60px;
+            padding: 60px 80px; /* Increased padding since banner is gone */
             max-width: 900px;
             margin: 0 auto; 
         }
@@ -145,6 +108,25 @@
             border: 1px solid var(--border-light);
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        header {
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 2.6em;
+            line-height: 1.2;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: var(--text-muted);
+            font-style: italic;
         }
 
         h2 {
@@ -239,9 +221,8 @@
         @media (max-width: 992px) {
             aside { display: none; }
             main { margin-left: 0; }
-            .hero-header { height: 200px; }
-            .hero-title h1 { font-size: 2em; }
             .content-wrapper { padding: 20px; }
+            h1 { font-size: 2em; }
         }
     </style>
 </head>
@@ -266,36 +247,28 @@
     </aside>
 
     <main>
-        
-        <div class="hero-header">
-            <div class="hero-overlay">
-                <div class="hero-title">
-                    <h1>From Logic to Language</h1>
-                    <p>The Evolution of Programming: From Wiring to Intent</p>
-                </div>
-            </div>
-        </div>
-
         <div class="content-wrapper">
             <article>
+                
+                <header>
+                    <h1>From Logic to Language</h1>
+                    <p class="subtitle">The Evolution of Programming: From Wiring to Intent</p>
+                </header>
                 
                 <section id="math-roots">
                     <h2>1. The Mathematical Roots</h2>
                     <p>Long before silicon chips, "programming" existed as pure logic. Algorithms, the foundation block of computing, started as a branch of mathematics. In the 18th century, <strong>Leonhard Euler</strong> invented graph theory while attempting to solve the <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg" target="_blank">Seven Bridges of Königsberg</a> problem.</p>
                     
-                    <figure>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5d/The_Seven_Bridges_of_K%C3%B6nigsberg%2C_Fig._1.png" alt="Euler's original drawing of the Seven Bridges problem">
-                        <figcaption>Euler's original drawing of the Seven Bridges of Königsberg (1736).</figcaption>
-                    </figure>
+                    
                     
                     <p>Later, <strong>George Boole</strong> created the basis of Boolean algebra (True/False logic). He had no idea his binary system would one day govern the digital world.</p>
 
                     <p>However, the bridge between pure math and machinery was built by <strong>Ada Lovelace</strong>. She is widely considered the first programmer for her work on an algorithm to calculate Bernoulli numbers on Babbage's theoretical engine.</p>
 
-                    <figure>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Ada_Lovelace_portrait.jpg" alt="Portrait of Ada Lovelace" style="max-width: 300px;">
-                        <figcaption>Ada Lovelace, the first computer programmer.</figcaption>
-                    </figure>
+                    
+
+[Image of Ada Lovelace portrait]
+
 
                     <blockquote>
                         "The Analytical Engine weaves algebraic patterns just as the Jacquard loom weaves flowers and leaves."
@@ -307,41 +280,29 @@
                     <h2>2. The Hardware Era: Programming with Cables</h2>
                     <p>Serious programming began not with keyboards, but with manual labor. During WWII, <strong>Alan Turing</strong> conceptualized the modern computer to break the Enigma encryption. With logic gates and transistors still years away, he resorted to the cumbersome wiring of chains of programmable units.</p>
 
-                    <figure>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Alan_Turing_az_1930-as_%C3%A9vekben.jpg/465px-Alan_Turing_az_1930-as_%C3%A9vekben.jpg" alt="Alan Turing in the 1930s" style="max-width: 300px;">
-                        <figcaption>Alan Turing, the father of theoretical computer science.</figcaption>
-                    </figure>
+                    
                     
                     <p>This was the first attempt at defining what a computer was capable of solving based on complexity. Turing's work laid the groundwork for "Computational Complexity Theory" and the concept of <a href="https://en.wikipedia.org/wiki/NP-completeness" target="_blank">NP-completeness</a>.</p>
                     
                     <p><strong>The Atanasoff–Berry computer (ABC)</strong> was the first automatic electronic digital computer. The device was limited by the technology of the day, as it was not programmable in the modern sense, but it pioneered the use of vacuum tubes for digital calculation.</p>
 
-                    <figure>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Atanasoff-Berry_Computer_at_Durhum_Center.jpg/640px-Atanasoff-Berry_Computer_at_Durhum_Center.jpg" alt="Atanasoff-Berry Computer">
-                        <figcaption>A replica of the Atanasoff–Berry Computer (ABC).</figcaption>
-                    </figure>
+                    
 
                     <p>The <strong>ENIAC</strong> (Electronic Numerical Integrator and Computer) realized these concepts on a massive scale. It utilized a combination of plugboard wiring and portable function tables containing 1,200 ten-way switches each.</p>
                     
                     <p>There was no "software" as we know it. Programmers were mathematical experts—often women like <strong>Jean Bartik</strong> and <strong>Kay McNulty</strong>—who learned how to physically translate a mathematical task into a set of wired connections.</p>
 
-                    <figure>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Two_women_operating_ENIAC_%28full_resolution%29.jpg" alt="Programmers operating ENIAC">
-                        <figcaption>Jean Bartik and Frances Spence programming the ENIAC by re-routing cables.</figcaption>
-                    </figure>
+                    
                 </section>
 
                 <section id="von-neumann">
                     <h2>3. The Von Neumann Breakthrough</h2>
-                    <p>The real breakthrough came with <strong>John von Neumann</strong>. He proposed the "Stored-Program Concept" where instructions and data lived in the same memory. This architecture still powers most computers today 
+                    <p>The real breakthrough came with <strong>John von Neumann</strong>. He proposed the "Stored-Program Concept" where instructions and data lived in the same memory. This architecture still powers most computers today.</p>
+                    
+                    
 
 [Image of Von Neumann architecture diagram]
-.</p>
-                    
-                    <figure>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Von_Neumann_Architecture.svg/800px-Von_Neumann_Architecture.svg.png" alt="Von Neumann Architecture Diagram" style="max-width: 600px; background: white;">
-                        <figcaption>The Von Neumann Architecture: Storing data and instructions in the same memory.</figcaption>
-                    </figure>
+
 
                     <p>This birthed the era of **Machine Language**. It was efficient for the machine, but grueling for the human.</p>
 
@@ -364,15 +325,12 @@
 
                 <section id="structure-oop">
                     <h2>5. Structuring the Chaos</h2>
-                    <p>As tasks became more complex, "spaghetti code" became a problem. This led to **Object-Oriented Programming (OOP)**. Concepts like inheritance allowed programmers to create reusable "black boxes" 
+                    <p>As tasks became more complex, "spaghetti code" became a problem. This led to **Object-Oriented Programming (OOP)**. Concepts like inheritance allowed programmers to create reusable "black boxes".</p>
+
+                    
 
 [Image of Object Oriented Programming inheritance diagram]
-.</p>
 
-                    <figure>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Object-Oriented-Programming-Methods-And-Classes-with-Inheritance.png/600px-Object-Oriented-Programming-Methods-And-Classes-with-Inheritance.png" alt="OOP Inheritance Diagram">
-                        <figcaption>Inheritance allows new classes to adopt the properties of existing ones.</figcaption>
-                    </figure>
 
                     <span class="lang-label">Example: C++ Class Structure</span>
                     <pre><code>class Car {
@@ -388,10 +346,7 @@
                     <h2>6. The Visual Revolution</h2>
                     <p>The PC era brought the **Graphical User Interface (GUI)**. Programming moved from the command line to the canvas. <strong>Visual Basic</strong> democratized programming by allowing users to drag-and-drop buttons to create apps.</p>
 
-                    <figure>
-                        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60" alt="Modern IDE representation" style="max-width: 100%;">
-                        <figcaption>The Visual Era shifted focus from syntax to interface design.</figcaption>
-                    </figure>
+                    
 
                     <span class="lang-label">Example: Visual Basic</span>
                     <pre><code>Private Sub CommandButton1_Click()
