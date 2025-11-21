@@ -5,13 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>From Logic to Language: The Evolution of Programming</title>
     
-    <link rel="stylesheet" href="../common/style.css">
-    <script src="../common/script.js"></script>
-
     <style>
-        /* FALLBACK STYLES 
-           (These ensure the document looks correct even if the common folder is missing)
-        */
+        /* CORE VARIABLES */
         :root {
             --bg-body: #f8f9fa;
             --bg-main: #ffffff;
@@ -20,8 +15,13 @@
             --text-muted: #6c757d;
             --accent-blue: #0056b3;
             --border-light: #dee2e6;
-            --sidebar-bg: #1e293b;
-            --sidebar-text: #ffffff;
+            
+            /* SIDEBAR THEME: WHITE */
+            --sidebar-bg: #ffffff; 
+            --sidebar-text: #2c3e50;
+            --sidebar-hover: #f1f5f9;
+            --sidebar-border: #e2e8f0;
+            
             --code-bg: #f1f3f5;
         }
 
@@ -36,7 +36,7 @@
             min-height: 100vh;
         }
 
-        /* ASIDE MENU STYLES */
+        /* --- ASIDE MENU STYLES (Updated to White) --- */
         aside {
             width: 260px;
             background-color: var(--sidebar-bg);
@@ -45,21 +45,23 @@
             position: fixed;
             height: 100%;
             overflow-y: auto;
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
             z-index: 1000;
+            border-right: 1px solid var(--sidebar-border); /* separation border */
         }
 
         aside .menu-header {
             padding: 30px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid var(--sidebar-border);
+            background-color: #fafbfc;
         }
 
         aside h2 {
-            font-size: 1.2em;
+            font-size: 1.1em;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #61dafb;
+            color: var(--accent-blue);
             margin: 0;
+            font-weight: 700;
         }
 
         aside nav ul {
@@ -71,25 +73,70 @@
         aside nav li a {
             display: block;
             padding: 12px 20px;
-            color: #cbd5e1;
+            color: var(--text-secondary); /* Dark gray text */
             text-decoration: none;
             border-left: 3px solid transparent;
             transition: all 0.2s;
             font-size: 0.95em;
+            font-weight: 500;
         }
 
         aside nav li a:hover, aside nav li a.active {
-            background-color: rgba(255,255,255,0.05);
-            color: #fff;
-            border-left-color: #61dafb;
+            background-color: var(--sidebar-hover);
+            color: var(--accent-blue);
+            border-left-color: var(--accent-blue);
         }
 
-        /* MAIN CONTENT STYLES */
+        /* --- MAIN CONTENT STYLES --- */
         main {
             flex-grow: 1;
-            margin-left: 260px;
+            margin-left: 260px; /* Match aside width */
+            padding: 0; /* Reset padding to allow full-width header */
+            max-width: 100%;
+        }
+
+        /* HEADER HERO IMAGE */
+        .hero-header {
+            width: 100%;
+            height: 300px;
+            background-image: url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+            display: flex;
+            align-items: flex-end;
+            padding: 40px 60px;
+        }
+
+        .hero-title {
+            color: white;
+            max-width: 900px;
+        }
+
+        .hero-title h1 {
+            font-size: 3em;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .hero-title p {
+            font-size: 1.2em;
+            color: #e9ecef;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+
+        /* ARTICLE CONTAINER */
+        .content-wrapper {
             padding: 40px 60px;
             max-width: 900px;
+            margin: 0 auto; 
         }
 
         article {
@@ -100,37 +147,12 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        header {
-            border-bottom: 2px solid #e9ecef;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-        }
-
-        h1 {
-            color: var(--text-primary);
-            font-size: 2.4em;
-            line-height: 1.2;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: 1.1em;
-            color: var(--text-muted);
-            font-style: italic;
-        }
-
         h2 {
             font-size: 1.8em;
             color: var(--text-primary);
             margin-top: 50px;
             border-bottom: 1px solid #e9ecef;
             padding-bottom: 10px;
-        }
-
-        h3 {
-            font-size: 1.4em;
-            color: #343a40;
-            margin-top: 30px;
         }
 
         p {
@@ -152,6 +174,10 @@
         figure {
             margin: 30px 0;
             text-align: center;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
         }
         
         figure img {
@@ -159,7 +185,6 @@
             height: auto;
             border-radius: 4px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border: 1px solid #dee2e6;
         }
 
         figcaption {
@@ -172,11 +197,11 @@
         /* CODE SNIPPET STYLES */
         pre {
             background-color: var(--code-bg);
-            padding: 15px;
-            border-radius: 5px;
+            padding: 20px;
+            border-radius: 6px;
             overflow-x: auto;
             border: 1px solid #e9ecef;
-            margin: 20px 0;
+            margin: 25px 0;
         }
 
         code {
@@ -196,23 +221,27 @@
             font-weight: bold;
             display: block;
             margin-bottom: 5px;
+            letter-spacing: 0.5px;
         }
 
         blockquote {
             font-style: italic;
-            font-size: 1.1em;
+            font-size: 1.2em;
             color: var(--text-secondary);
-            margin: 30px 0;
-            padding: 20px 25px;
-            border-left: 5px solid #ced4da;
-            background-color: #f8f9fa;
-            border-radius: 0 5px 5px 0;
+            margin: 40px 0;
+            padding: 20px 30px;
+            border-left: 5px solid var(--accent-blue);
+            background-color: #f1f8ff;
+            border-radius: 0 8px 8px 0;
         }
 
         /* Responsive adjustments */
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
             aside { display: none; }
-            main { margin-left: 0; padding: 20px; }
+            main { margin-left: 0; }
+            .hero-header { height: 200px; }
+            .hero-title h1 { font-size: 2em; }
+            .content-wrapper { padding: 20px; }
         }
     </style>
 </head>
@@ -237,173 +266,167 @@
     </aside>
 
     <main>
-        <article>
-            <header>
-                <h1>From Graph Theory to Generative AI</h1>
-                <p class="subtitle">How we moved from physical wiring to "Intent-Based" programming.</p>
-            </header>
+        
+        <div class="hero-header">
+            <div class="hero-overlay">
+                <div class="hero-title">
+                    <h1>From Logic to Language</h1>
+                    <p>The Evolution of Programming: From Wiring to Intent</p>
+                </div>
+            </div>
+        </div>
 
-            <section id="math-roots">
-                <h2>1. The Mathematical Roots</h2>
-                <p>Long before silicon chips, "programming" existed as pure logic. Algorithms, the foundation block of computing, started as a branch of mathematics. In the 18th century, <strong>Leonhard Euler</strong> invented graph theory while attempting to solve the <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg" target="_blank">Seven Bridges of Königsberg</a> problem. He realized that the path could be calculated without physically traversing it—an early form of algorithmic abstraction.</p>
+        <div class="content-wrapper">
+            <article>
                 
-                <figure>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5d/The_Seven_Bridges_of_K%C3%B6nigsberg%2C_Fig._1.png" alt="Euler's original drawing of the Seven Bridges problem" style="max-width: 600px;">
-                    <figcaption>Euler's original drawing of the Seven Bridges of Königsberg (1736).</figcaption>
-                </figure>
-                
-                <p>Later, <strong>George Boole</strong> created the basis of Boolean algebra (True/False logic). He had no idea his binary system would one day govern the digital world.</p>
+                <section id="math-roots">
+                    <h2>1. The Mathematical Roots</h2>
+                    <p>Long before silicon chips, "programming" existed as pure logic. Algorithms, the foundation block of computing, started as a branch of mathematics. In the 18th century, <strong>Leonhard Euler</strong> invented graph theory while attempting to solve the <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg" target="_blank">Seven Bridges of Königsberg</a> problem.</p>
+                    
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5d/The_Seven_Bridges_of_K%C3%B6nigsberg%2C_Fig._1.png" alt="Euler's original drawing of the Seven Bridges problem">
+                        <figcaption>Euler's original drawing of the Seven Bridges of Königsberg (1736).</figcaption>
+                    </figure>
+                    
+                    <p>Later, <strong>George Boole</strong> created the basis of Boolean algebra (True/False logic). He had no idea his binary system would one day govern the digital world.</p>
 
-                <p>However, the bridge between pure math and machinery was built by <strong>Ada Lovelace</strong>. Working on Charles Babbage's theoretical Analytical Engine, she realized the machine could do more than just calculation—it could manipulate symbols. She is widely considered the first programmer for her work on an algorithm to calculate Bernoulli numbers.</p>
+                    <p>However, the bridge between pure math and machinery was built by <strong>Ada Lovelace</strong>. She is widely considered the first programmer for her work on an algorithm to calculate Bernoulli numbers on Babbage's theoretical engine.</p>
 
-                <figure>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Ada_Lovelace_portrait.jpg" alt="Portrait of Ada Lovelace" style="max-width: 400px;">
-                    <figcaption>Ada Lovelace, the first computer programmer.</figcaption>
-                </figure>
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Ada_Lovelace_portrait.jpg" alt="Portrait of Ada Lovelace" style="max-width: 300px;">
+                        <figcaption>Ada Lovelace, the first computer programmer.</figcaption>
+                    </figure>
 
-                <blockquote>
-                    "The Analytical Engine weaves algebraic patterns just as the Jacquard loom weaves flowers and leaves."
-                    <br><br>— <strong>Ada Lovelace</strong>.
-                </blockquote>
+                    <blockquote>
+                        "The Analytical Engine weaves algebraic patterns just as the Jacquard loom weaves flowers and leaves."
+                        <br><br>— <strong>Ada Lovelace</strong>
+                    </blockquote>
+                </section>
 
-                <p><strong>Impact:</strong> This era established that logic could be decoupled from physical reality. It proved that if a problem could be described mathematically, it could effectively be solved by a machine, setting the stage for general-purpose computing.</p>
-            </section>
+                <section id="hardware-era">
+                    <h2>2. The Hardware Era: Programming with Cables</h2>
+                    <p>Serious programming began not with keyboards, but with manual labor. During WWII, <strong>Alan Turing</strong> conceptualized the modern computer to break the Enigma encryption. With logic gates and transistors still years away, he resorted to the cumbersome wiring of chains of programmable units.</p>
 
-            <section id="hardware-era">
-                <h2>2. The Hardware Era: Programming with Cables</h2>
-                <p>Serious programming began not with keyboards, but with manual labor. During WWII, <strong>Alan Turing</strong> conceptualized the modern computer to break the Enigma encryption. With logic gates and transistors still years away, he resorted to the cumbersome wiring of chains of programmable units.</p>
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Alan_Turing_az_1930-as_%C3%A9vekben.jpg/465px-Alan_Turing_az_1930-as_%C3%A9vekben.jpg" alt="Alan Turing in the 1930s" style="max-width: 300px;">
+                        <figcaption>Alan Turing, the father of theoretical computer science.</figcaption>
+                    </figure>
+                    
+                    <p>This was the first attempt at defining what a computer was capable of solving based on complexity. Turing's work laid the groundwork for "Computational Complexity Theory" and the concept of <a href="https://en.wikipedia.org/wiki/NP-completeness" target="_blank">NP-completeness</a>.</p>
+                    
+                    <p><strong>The Atanasoff–Berry computer (ABC)</strong> was the first automatic electronic digital computer. The device was limited by the technology of the day, as it was not programmable in the modern sense, but it pioneered the use of vacuum tubes for digital calculation.</p>
 
-                <figure>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Alan_Turing_az_1930-as_%C3%A9vekben.jpg/465px-Alan_Turing_az_1930-as_%C3%A9vekben.jpg" alt="Alan Turing in the 1930s" style="max-width: 300px;">
-                    <figcaption>Alan Turing, the father of theoretical computer science.</figcaption>
-                </figure>
-                
-                <p>This was the first attempt at defining what a computer was capable of solving based on complexity. Turing's work laid the groundwork for "Computational Complexity Theory" and the concept of <a href="https://en.wikipedia.org/wiki/NP-completeness" target="_blank">NP-completeness</a>.</p>
-                
-                <p>Before the ENIAC, <strong>The Atanasoff–Berry computer (ABC)</strong> was the first automatic electronic digital computer. The device was limited by the technology of the day, as it was not programmable in the modern sense, but it pioneered the use of vacuum tubes for digital calculation.</p>
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Atanasoff-Berry_Computer_at_Durhum_Center.jpg/640px-Atanasoff-Berry_Computer_at_Durhum_Center.jpg" alt="Atanasoff-Berry Computer">
+                        <figcaption>A replica of the Atanasoff–Berry Computer (ABC).</figcaption>
+                    </figure>
 
-                <figure>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Atanasoff-Berry_Computer_at_Durhum_Center.jpg/640px-Atanasoff-Berry_Computer_at_Durhum_Center.jpg" alt="Atanasoff-Berry Computer" style="max-width: 500px;">
-                    <figcaption>A replica of the Atanasoff–Berry Computer (ABC), the first electronic digital computer.</figcaption>
-                </figure>
+                    <p>The <strong>ENIAC</strong> (Electronic Numerical Integrator and Computer) realized these concepts on a massive scale. It utilized a combination of plugboard wiring and portable function tables containing 1,200 ten-way switches each.</p>
+                    
+                    <p>There was no "software" as we know it. Programmers were mathematical experts—often women like <strong>Jean Bartik</strong> and <strong>Kay McNulty</strong>—who learned how to physically translate a mathematical task into a set of wired connections.</p>
 
-                <p>The <strong>ENIAC</strong> (Electronic Numerical Integrator and Computer) realized these concepts on a massive scale. It utilized a combination of plugboard wiring and three portable function tables containing 1,200 ten-way switches each.</p>
-                
-                <p>There was no "software" as we know it. Programmers were mathematical experts—often women like <strong>Jean Bartik</strong> and <strong>Kay McNulty</strong>—who learned how to physically translate a mathematical task into a set of wired connections. To calculate a simple trajectory, they didn't type code; they plugged wires into a board, physically mapping the logic flow.</p>
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Two_women_operating_ENIAC_%28full_resolution%29.jpg" alt="Programmers operating ENIAC">
+                        <figcaption>Jean Bartik and Frances Spence programming the ENIAC by re-routing cables.</figcaption>
+                    </figure>
+                </section>
 
-                <figure>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Two_women_operating_ENIAC_%28full_resolution%29.jpg" alt="Programmers operating ENIAC" style="max-width: 700px;">
-                    <figcaption>Jean Bartik and Frances Spence programming the ENIAC by re-routing cables.</figcaption>
-                </figure>
+                <section id="von-neumann">
+                    <h2>3. The Von Neumann Breakthrough</h2>
+                    <p>The real breakthrough came with <strong>John von Neumann</strong>. He proposed the "Stored-Program Concept" where instructions and data lived in the same memory. This architecture still powers most computers today 
 
-                <p><strong>Impact:</strong> While the ENIAC proved that electronic calculation was lightning fast, it also highlighted a massive bottleneck: the human effort required to re-wire the machine for every new task. This limitation drove the search for a "stored program."</p>
-            </section>
+[Image of Von Neumann architecture diagram]
+.</p>
+                    
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Von_Neumann_Architecture.svg/800px-Von_Neumann_Architecture.svg.png" alt="Von Neumann Architecture Diagram" style="max-width: 600px; background: white;">
+                        <figcaption>The Von Neumann Architecture: Storing data and instructions in the same memory.</figcaption>
+                    </figure>
 
-            <section id="von-neumann">
-                <h2>3. The Von Neumann Breakthrough</h2>
-                <p>The real breakthrough came with <strong>John von Neumann</strong>. A founding figure in computing, he contributed significantly to hardware design, theoretical computer science, and scientific computing. He proposed the architecture that still powers most computers today.</p>
-                
-                <figure>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Von_Neumann_Architecture.svg/800px-Von_Neumann_Architecture.svg.png" alt="Von Neumann Architecture Diagram" style="max-width: 600px; background: #fff; padding: 10px;">
-                    <figcaption>The Von Neumann Architecture: Storing data and instructions in the same memory.</figcaption>
-                </figure>
+                    <p>This birthed the era of **Machine Language**. It was efficient for the machine, but grueling for the human.</p>
 
-                <p>Von Neumann set the stage for <strong>CODE INSTRUCTIONS</strong> that combined instructions with data in the same memory unit. This "Stored-Program Concept" meant the machine could be repurposed instantly by feeding it a new tape of instructions, rather than spending days re-wiring it. This birthed the era of machine language and Control Flow Logic.</p>
-
-                <span class="lang-label">Example: x86 Machine Code (calculating 1 + 1)</span>
-                <pre><code>B8 01 00 00 00   ; Load 1 into EAX register
+                    <span class="lang-label">Example: x86 Machine Code (calculating 1 + 1)</span>
+                    <pre><code>B8 01 00 00 00   ; Load 1 into EAX register
 05 01 00 00 00   ; Add 1 to EAX
 </code></pre>
-                
-                <p><strong>Impact:</strong> This separated the software from the hardware. It created a new profession—"Coder"—and allowed for the rapid distribution of programs. However, machine language was hostile to humans, requiring memorization of binary opcodes.</p>
-            </section>
+                </section>
 
-            <section id="language-boom">
-                <h2>4. The Humanization of Code</h2>
-                <p>As programming became more in demand, it was only natural to invent human-like programming terminology. This led to the emergence of <strong>Fortran</strong>, <strong>COBOL</strong>, and similar languages. These "High-Level" languages acted as a translator, allowing humans to write in near-English while a compiler translated it down to the machine code the computer understood.</p>
+                <section id="language-boom">
+                    <h2>4. The Humanization of Code</h2>
+                    <p>As programming became more in demand, we needed to speak to the machine in English. This led to the first high-level languages like <strong>Fortran</strong> (for science) and <strong>COBOL</strong> (for business).</p>
 
-                <span class="lang-label">Example: Fortran 77 (Science/Engineering)</span>
-                <pre><code>      PROGRAM HELLO
+                    <span class="lang-label">Example: Fortran 77</span>
+                    <pre><code>      PROGRAM HELLO
       PRINT *, 'HELLO WORLD'
       STOP
       END</code></pre>
+                </section>
 
-                <span class="lang-label">Example: COBOL (Business)</span>
-                <pre><code>IDENTIFICATION DIVISION.
-PROGRAM-ID. HELLO-WORLD.
-PROCEDURE DIVISION.
-    DISPLAY 'Hello, World!'.
-    STOP RUN.</code></pre>
+                <section id="structure-oop">
+                    <h2>5. Structuring the Chaos</h2>
+                    <p>As tasks became more complex, "spaghetti code" became a problem. This led to **Object-Oriented Programming (OOP)**. Concepts like inheritance allowed programmers to create reusable "black boxes" 
 
-                <p><strong>Impact:</strong> This significantly lowered the barrier to entry. Scientists could write Fortran to solve physics problems, and business managers could use COBOL for payroll, without needing to understand the electrical engineering of the machine.</p>
-            </section>
+[Image of Object Oriented Programming inheritance diagram]
+.</p>
 
-            <section id="structure-oop">
-                <h2>5. Structuring the Chaos</h2>
-                <p>As computers moved into telecommunications, factories, and hospitals, the complexity of tasks exploded. Simple sequential lists of instructions became unmanageable "spaghetti code." </p>
-                
-                <p>This necessitated a new science: <strong>Architecting and Designing a Program</strong>. It started with Subroutines and Functions—interrupting the main sequence to perform a task and return. This evolved into <strong>Object-Oriented Programming (OOP)</strong>. </p>
-                
-                <p>OOP introduced hierarchical, inherited, and encapsulated objects. Programmers could treat complex components as "black boxes"—reusing a "Car" object without needing to know how the "Engine" inside it was coded. </p>
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Object-Oriented-Programming-Methods-And-Classes-with-Inheritance.png/600px-Object-Oriented-Programming-Methods-And-Classes-with-Inheritance.png" alt="OOP Inheritance Diagram">
+                        <figcaption>Inheritance allows new classes to adopt the properties of existing ones.</figcaption>
+                    </figure>
 
-                <span class="lang-label">Example: C++ Class Structure</span>
-                <pre><code>class Car {
+                    <span class="lang-label">Example: C++ Class Structure</span>
+                    <pre><code>class Car {
   public:
     string brand;
     void honk() {
       cout << "Beep beep!";
     }
 };</code></pre>
+                </section>
 
-                <p><strong>Impact:</strong> Modularity and reusability allowed for the creation of massive software systems (like Operating Systems) that were previously impossible for a single human mind to hold at once.</p>
-            </section>
+                <section id="visual-era">
+                    <h2>6. The Visual Revolution</h2>
+                    <p>The PC era brought the **Graphical User Interface (GUI)**. Programming moved from the command line to the canvas. <strong>Visual Basic</strong> democratized programming by allowing users to drag-and-drop buttons to create apps.</p>
 
-            <section id="visual-era">
-                <h2>6. The Visual Revolution</h2>
-                <p>The invention of the microprocessor and the Personal Computer moved programming from the corporate mainframe to the home garage. A new generation of programmers built connectivity tools, spreadsheets, and word processors. With such high demand, interfaces had to become simpler.</p>
-                
-                <p>Data entry evolved from punched cards to visual drag-and-drop controls. <strong>Visual Basic</strong> created a shockwave in the industry. It introduced "Event-Driven" programming, where code only ran when a user clicked a specific button.</p>
+                    <figure>
+                        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60" alt="Modern IDE representation" style="max-width: 100%;">
+                        <figcaption>The Visual Era shifted focus from syntax to interface design.</figcaption>
+                    </figure>
 
-                <span class="lang-label">Example: Visual Basic</span>
-                <pre><code>Private Sub CommandButton1_Click()
+                    <span class="lang-label">Example: Visual Basic</span>
+                    <pre><code>Private Sub CommandButton1_Click()
     MsgBox "Welcome to the Visual Era!"
 End Sub</code></pre>
+                </section>
 
-                <p><strong>Impact:</strong> This era prioritized the "User Experience." It became custom to learn programs like Excel that allowed people to be productive without learning code at all. We thought we had reached the peak of simplification.</p>
-            </section>
+                <section id="ai-paradigm">
+                    <h2>7. The AI Paradigm Shift</h2>
+                    <p>Today, we are witnessing the biggest shift since Von Neumann. **Intent-Based Programming** via Large Language Models (LLMs) means we no longer tell the machine <em>how</em> to do something step-by-step, but <em>what</em> we want the outcome to be.</p>
 
-            <section id="ai-paradigm">
-                <h2>7. The AI Paradigm Shift</h2>
-                <p>Just as we thought technology had plateaued, it took us by surprise. <strong>Machine Learning</strong> and <strong>Large Language Models (LLMs)</strong> have initiated a new era.</p>
-
-                <p>Machine Learning algorithms can "learn" from all past programming practices, classifying and cross-referencing logic in ways humans cannot. LLMs, on the other hand, are capable of understanding <em>intent</em>. </p>
-                
-                <p>We are moving from <strong>Imperative Programming</strong> (telling the machine *how* to do it) to <strong>Intent-Based Programming</strong> (telling the machine *what* we want). We are now living in an era where programming is a matter of expressing an idea—vague, with mistakes or lack of context—and the AI will assist, guide, and generate what's needed.</p>
-
-                <span class="lang-label">The New "Code": Natural Language Prompt</span>
-                <pre><code>"Analyze the attached CSV file of stock prices. 
+                    <span class="lang-label">The New "Code": Natural Language Prompt</span>
+                    <pre><code>"Analyze the attached CSV file of stock prices. 
 Identify the moving average crossover points, 
 and generate a Python script to plot these using Matplotlib."</code></pre>
 
-                <p><strong>Impact:</strong> This is the democratization of creation. The barrier of "Syntax Errors" has been removed. The focus has shifted entirely from the <em>implementation</em> details to the <em>architectural</em> ideas.</p>
-            </section>
+                    <p>We are now living in an era where programming is just a matter of expressing an idea—vague, with mistakes or lack of context—and the AI will assist, guide, and generate what's needed.</p>
+                </section>
 
-            <section id="references">
-                <hr>
-                <h3>References</h3>
-                <ul>
-                    <li><a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg">Seven Bridges of Königsberg</a> - Wikipedia</li>
-                    <li><a href="https://en.wikipedia.org/wiki/NP-completeness">NP-completeness</a> - Wikipedia</li>
-                    <li><a href="https://en.wikipedia.org/wiki/Atanasoff%E2%80%93Berry_computer">Atanasoff–Berry Computer</a> - Wikipedia</li>
-                    <li><a href="https://en.wikipedia.org/wiki/ENIAC">ENIAC History</a> - Wikipedia</li>
-                    <li><a href="https://en.wikipedia.org/wiki/John_von_Neumann">John von Neumann</a> - Wikipedia</li>
-                </ul>
-            </section>
+                <section id="references">
+                    <hr>
+                    <h3>References</h3>
+                    <ul>
+                        <li><a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg">Seven Bridges of Königsberg</a> - Wikipedia</li>
+                        <li><a href="https://en.wikipedia.org/wiki/Atanasoff%E2%80%93Berry_computer">Atanasoff–Berry Computer</a> - Wikipedia</li>
+                        <li><a href="https://en.wikipedia.org/wiki/ENIAC">ENIAC History</a> - Wikipedia</li>
+                        <li><a href="https://en.wikipedia.org/wiki/NP-completeness">NP-completeness</a> - Wikipedia</li>
+                    </ul>
+                </section>
 
-        </article>
-        <br>
-        <hr>
-        <a href="/">Back to home page</a>
+            </article>
+            <br>
+            <hr>
+            <a href="/">Back to home page</a>
+        </div>
     </main>
 
 </body>
