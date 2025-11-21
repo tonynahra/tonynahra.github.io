@@ -21,7 +21,7 @@
             --sidebar-text: #2c3e50;
             --sidebar-hover: #f1f5f9;
             --sidebar-border: #e2e8f0;
-            --sidebar-width: 280px; /* Increased width */
+            --sidebar-width: 300px; /* Increased width per request */
             
             --code-bg: #f1f3f5;
         }
@@ -76,7 +76,7 @@
             padding: 12px 20px;
             color: var(--text-secondary);
             text-decoration: none;
-            border-left: 4px solid transparent; /* Thicker border for active state */
+            border-left: 4px solid transparent;
             transition: all 0.2s;
             font-size: 0.95em;
             font-weight: 500;
@@ -87,7 +87,7 @@
             color: var(--accent-blue);
         }
 
-        /* Active State (Toggled by JS) */
+        /* Active state (toggled by JS) */
         aside nav li a.active {
             background-color: var(--sidebar-hover);
             color: var(--accent-blue);
@@ -95,10 +95,10 @@
             font-weight: 700;
         }
 
-        /* Separator for Author Link */
+        /* Author Link Separator */
         .nav-separator {
+            margin: 20px 20px 10px 20px;
             border-top: 1px solid #e9ecef;
-            margin: 10px 20px;
         }
 
         /* --- MAIN CONTENT STYLES --- */
@@ -109,7 +109,6 @@
             max-width: 100%;
         }
 
-        /* ARTICLE CONTAINER */
         .content-wrapper {
             padding: 60px 80px;
             max-width: 900px;
@@ -150,7 +149,7 @@
             border-bottom: 1px solid #e9ecef;
             padding-bottom: 15px;
             margin-bottom: 25px;
-            scroll-margin-top: 20px; /* For smooth scrolling offset */
+            scroll-margin-top: 20px;
         }
 
         p {
@@ -193,7 +192,7 @@
             line-height: 1.4;
         }
 
-        /* --- UPDATED CODE SNIPPET STYLES --- */
+        /* --- CODE SNIPPET STYLES (Title Inside) --- */
         .code-wrapper {
             position: relative;
             margin: 30px 0;
@@ -206,23 +205,24 @@
             position: absolute;
             top: 0;
             left: 0;
-            background: #e9ecef; /* Slightly darker than code bg for contrast */
+            background: #e9ecef;
             padding: 4px 12px;
             font-size: 0.75em;
             color: #495057;
-            border-bottom-right-radius: 6px;
-            border-top-left-radius: 5px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            z-index: 10;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom-right-radius: 6px;
+            border-top-left-radius: 5px;
             border-right: 1px solid #dee2e6;
+            border-bottom: 1px solid #dee2e6;
+            z-index: 2;
         }
 
         pre {
             margin: 0;
-            padding: 40px 20px 20px 20px; /* Top padding clears the label */
+            /* Top padding ensures text doesn't overlap the label */
+            padding: 40px 20px 20px 20px; 
             overflow-x: auto;
             background: transparent;
             border: none;
@@ -238,7 +238,7 @@
             color: #333;
         }
 
-        /* QUOTE STYLES */
+        /* QUOTE & IMPACT BOX STYLES */
         blockquote {
             font-style: italic;
             font-size: 1.2em;
@@ -250,7 +250,6 @@
             border-radius: 0 8px 8px 0;
         }
 
-        /* IMPACT BOX STYLES */
         .impact-box {
             background-color: #fff3cd; 
             border: 1px solid #ffeeba;
@@ -327,14 +326,14 @@
                     <p>Long before silicon chips, "programming" existed as pure logic. Algorithms, the foundation block of computing, started as a branch of mathematics. In the 18th century, <strong>Leonhard Euler</strong> invented graph theory while attempting to solve the <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg" target="_blank">Seven Bridges of Königsberg</a> problem. He realized that the path could be calculated without physically traversing it—an early form of algorithmic abstraction.</p>
                     
                     <figure>
-                        <img src="./From Logic to Language_The Evolution of Programming_files/Bridges_of_Konigsberg.png" alt="Euler's original drawing of the Seven Bridges problem">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5d/The_Seven_Bridges_of_K%C3%B6nigsberg%2C_Fig._1.png" alt="Euler's original drawing of the Seven Bridges problem">
                         <figcaption>Euler's original drawing of the Seven Bridges of Königsberg (1736). It proved that some paths are mathematically impossible.</figcaption>
                     </figure>
                     
                     <p>Later, <strong>George Boole</strong> created the basis of Boolean algebra (True/False logic). He had no idea his binary system would one day govern the digital world. However, the bridge between pure math and machinery was built by <strong>Ada Lovelace</strong>. She is widely considered the first programmer for her work on an algorithm to calculate Bernoulli numbers on Charles Babbage's theoretical Analytical Engine.</p>
 
                     <figure>
-                        <img src="./From Logic to Language_The Evolution of Programming_files/Ada_Lovelace_portrait.jpg" alt="Portrait of Ada Lovelace" style="max-width: 400px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Ada_Lovelace_portrait.jpg" alt="Portrait of Ada Lovelace" style="max-width: 400px;">
                         <figcaption>Ada Lovelace, the visionary who saw computers as more than just calculators.</figcaption>
                     </figure>
 
@@ -359,7 +358,7 @@
                     </blockquote>
 
                     <figure>
-                        <img src="./From Logic to Language_The Evolution of Programming_files/Alan_Turing_az_1930-as_években.jpg" alt="Alan Turing in the 1930s" style="max-width: 300px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Alan_Turing_az_1930-as_%C3%A9vekben.jpg/465px-Alan_Turing_az_1930-as_%C3%A9vekben.jpg" alt="Alan Turing in the 1930s" style="max-width: 300px;">
                         <figcaption>Alan Turing, the father of theoretical computer science.</figcaption>
                     </figure>
                     
@@ -368,7 +367,7 @@
                     <p><strong>The Atanasoff–Berry computer (ABC)</strong> was the first automatic electronic digital computer. The device was limited by the technology of the day, as it was not programmable in the modern sense, but it pioneered the use of vacuum tubes for digital calculation.</p>
 
                     <figure>
-                        <img src="./From Logic to Language_The Evolution of Programming_files/Atanasoff-Berry_Computer_at_Durhum_Center.jpg" alt="Atanasoff-Berry Computer">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Atanasoff-Berry_Computer_at_Durhum_Center.jpg/640px-Atanasoff-Berry_Computer_at_Durhum_Center.jpg" alt="Atanasoff-Berry Computer">
                         <figcaption>A replica of the Atanasoff–Berry Computer (ABC), a precursor to the ENIAC.</figcaption>
                     </figure>
 
@@ -377,8 +376,8 @@
                     <p>There was no "software" as we know it. Programmers were mathematical experts—often women like <strong>Jean Bartik</strong> and <strong>Kay McNulty</strong>—who learned how to physically translate a mathematical task into a set of wired connections. To calculate a simple trajectory, they didn't type code; they plugged wires into a board, physically mapping the logic flow.</p>
 
                     <figure>
-                        <img src="./From Logic to Language_The Evolution of Programming_files/Glen_Beck_and_Betty_Snyder_program_the_ENIAC_in_building_328_at_the_Ballistic_Research_Laboratory.jpg" alt="Programmers operating ENIAC">
-                        <figcaption>Jean Bartik and Frances Spence programming the ENIAC by re-routing cables. They were the first "software engineers" before the term existed.</figcaption>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Two_women_operating_ENIAC_%28full_resolution%29.jpg" alt="Programmers operating ENIAC">
+                        <figcaption>Jean Bartik and Frances Spence programming the ENIAC by re-routing cables.</figcaption>
                     </figure>
                     
                     <div class="impact-box">
@@ -395,13 +394,14 @@
                     <p>Before Von Neumann, hardware and software were physically intertwined. He separated them, allowing the hardware to remain fixed while the "software" (instructions) changed dynamically. This is the moment "Code" was truly born.</p>
 
                     <figure>
-                                                <figcaption>The Von Neumann Architecture: Storing data and instructions in the same memory.</figcaption>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Von_Neumann_Architecture.svg/1200px-Von_Neumann_Architecture.svg.png" alt="Von Neumann Architecture" style="background: white; padding: 10px;">
+                        <figcaption>The Von Neumann Architecture: Storing data and instructions in the same memory.</figcaption>
                     </figure>
 
                     <p>Von Neumann set the stage for <strong>CODE INSTRUCTIONS</strong>. Instead of rewiring the machine, programmers could simply feed it a new tape of instructions. This birthed the era of Machine Language and Control Flow Logic (loops, branches, jumps).</p>
 
                     <div class="code-wrapper">
-                        <span class="lang-label">Example: x86 Machine Code (calculating 1 + 1)</span>
+                        <span class="lang-label">Example: x86 Machine Code</span>
                         <pre><code>B8 01 00 00 00   ; Load 1 into EAX register
 05 01 00 00 00   ; Add 1 to EAX
 </code></pre>
@@ -448,7 +448,7 @@
                     <p>OOP introduced concepts like inheritance and encapsulation. Programmers could create "Black Boxes"—reusable objects (like a "User" or "Window") that hid their internal complexity.</p>
 
                     <figure>
-                        <img src="./From Logic to Language_The Evolution of Programming_files/Method_overriding_in_subclass.svg.png" alt="Object Orient Programming" width="50%">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Method_overriding_in_subclass.svg/1200px-Method_overriding_in_subclass.svg.png" alt="Object Orient Programming" width="50%">
                         <figcaption>Object Oriented Programming: Polymorphism and Inheritance.</figcaption>
                     </figure>
 
@@ -481,7 +481,8 @@
                     <p>This was a shift from <strong>Procedural</strong> to <strong>Event-Driven</strong> programming. The program didn't just run top-to-bottom; it waited for the user to do something (click, type, hover).</p>
 
                     <figure>
-                                                <figcaption>The Visual Basic 6.0 IDE, showing the shift to visual form design.</figcaption>
+                        
+                        <figcaption>The Visual Basic 6.0 IDE, showing the shift to visual form design.</figcaption>
                     </figure>
 
                     <div class="code-wrapper">
@@ -505,7 +506,7 @@ End Sub</code></pre>
                     <p>Machine Learning algorithms can "learn" from all past programming practices. LLMs are capable of understanding intent, fixing badly formatted requests, and generating complex logic from simple prompts. We are moving from <strong>Deterministic</strong> (if X then Y) to <strong>Probabilistic</strong> (based on context, X likely means Y).</p>
 
                     <div class="code-wrapper">
-                        <span class="lang-label">The New "Code": Natural Language Prompt</span>
+                        <span class="lang-label">The New "Code": Prompt Engineering</span>
                         <pre><code>"Analyze the attached CSV file of stock prices. 
 Identify the moving average crossover points, 
 and generate a Python script to plot these using Matplotlib."</code></pre>
@@ -543,15 +544,21 @@ and generate a Python script to plot these using Matplotlib."</code></pre>
                 entries.forEach(entry => {
                     const id = entry.target.getAttribute('id');
                     if (entry.isIntersecting) {
+                        // Remove active class from all links
                         document.querySelectorAll('aside nav li a').forEach(link => {
                             link.classList.remove('active');
-                            if (link.getAttribute('href').includes(id)) {
-                                link.classList.add('active');
-                            }
                         });
+                        // Add active class to the matching link
+                        const activeLink = document.querySelector(`aside nav li a[href="#${id}"]`);
+                        if (activeLink) {
+                            activeLink.classList.add('active');
+                        }
                     }
                 });
-            }, { threshold: 0.5 }); // Trigger when 50% of the section is visible
+            }, { 
+                threshold: 0.2, /* Trigger when 20% of section is visible */
+                rootMargin: "-20% 0px -50% 0px" /* Adjust trigger point to be closer to top of screen */
+            });
 
             // Track all sections
             document.querySelectorAll('section').forEach((section) => {
