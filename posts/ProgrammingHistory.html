@@ -21,7 +21,7 @@
             --sidebar-text: #2c3e50;
             --sidebar-hover: #f1f5f9;
             --sidebar-border: #e2e8f0;
-            --sidebar-width: 300px; /* Increased width per request */
+            --sidebar-width: 300px;
             
             --code-bg: #f1f3f5;
         }
@@ -48,27 +48,13 @@
             overflow-y: auto;
             z-index: 1000;
             border-right: 1px solid var(--sidebar-border);
-        }
-
-        aside .menu-header {
-            padding: 30px 20px;
-            border-bottom: 1px solid var(--sidebar-border);
-            background-color: #fafbfc;
-        }
-
-        aside h2 {
-            font-size: 1.1em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--accent-blue);
-            margin: 0;
-            font-weight: 700;
+            padding-top: 20px; /* Added padding since header title is gone */
         }
 
         aside nav ul {
             list-style: none;
             padding: 0;
-            margin: 20px 0;
+            margin: 0;
         }
 
         aside nav li a {
@@ -87,7 +73,7 @@
             color: var(--accent-blue);
         }
 
-        /* Active state (toggled by JS) */
+        /* Active state */
         aside nav li a.active {
             background-color: var(--sidebar-hover);
             color: var(--accent-blue);
@@ -95,16 +81,17 @@
             font-weight: 700;
         }
 
-        /* Author Link Separator */
-        .nav-separator {
-            margin: 20px 20px 10px 20px;
-            border-top: 1px solid #e9ecef;
+        /* "Document Top" Styling */
+        .nav-top-link {
+            font-weight: 700 !important;
+            color: var(--text-primary) !important;
+            margin-bottom: 10px;
         }
 
         /* --- MAIN CONTENT STYLES --- */
         main {
             flex-grow: 1;
-            margin-left: var(--sidebar-width); /* Matches aside width */
+            margin-left: var(--sidebar-width);
             padding: 0;
             max-width: 100%;
         }
@@ -192,7 +179,7 @@
             line-height: 1.4;
         }
 
-        /* --- CODE SNIPPET STYLES (Title Inside) --- */
+        /* --- CODE SNIPPET STYLES --- */
         .code-wrapper {
             position: relative;
             margin: 30px 0;
@@ -221,7 +208,6 @@
 
         pre {
             margin: 0;
-            /* Top padding ensures text doesn't overlap the label */
             padding: 40px 20px 20px 20px; 
             overflow-x: auto;
             background: transparent;
@@ -289,14 +275,12 @@
         }
     </style>
 </head>
-<body>
+<body id="top">
 
     <aside>
-        <div class="menu-header">
-            <h2>Code History</h2>
-        </div>
         <nav>
             <ul>
+                <li><a href="#top" class="nav-top-link">Document Top</a></li>
                 <li><a href="#math-roots">1. Mathematical Roots</a></li>
                 <li><a href="#hardware-era">2. The Hardware Era</a></li>
                 <li><a href="#von-neumann">3. The Stored Program</a></li>
@@ -305,8 +289,6 @@
                 <li><a href="#visual-era">6. The Visual Revolution</a></li>
                 <li><a href="#ai-paradigm">7. The AI Paradigm</a></li>
                 <li><a href="#references">References</a></li>
-                
-                <div class="nav-separator"></div>
                 <li><a href="https://tonynahra.github.io">About the author</a></li>
             </ul>
         </nav>
@@ -326,7 +308,7 @@
                     <p>Long before silicon chips, "programming" existed as pure logic. Algorithms, the foundation block of computing, started as a branch of mathematics. In the 18th century, <strong>Leonhard Euler</strong> invented graph theory while attempting to solve the <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg" target="_blank">Seven Bridges of Königsberg</a> problem. He realized that the path could be calculated without physically traversing it—an early form of algorithmic abstraction.</p>
                     
                     <figure>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5d/The_Seven_Bridges_of_K%C3%B6nigsberg%2C_Fig._1.png" alt="Euler's original drawing of the Seven Bridges problem">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/The_Seven_Bridges_of_K%C3%B6nigsberg%2C_Fig._1.png/600px-The_Seven_Bridges_of_K%C3%B6nigsberg%2C_Fig._1.png" alt="Euler's original drawing of the Seven Bridges problem">
                         <figcaption>Euler's original drawing of the Seven Bridges of Königsberg (1736). It proved that some paths are mathematically impossible.</figcaption>
                     </figure>
                     
@@ -367,7 +349,7 @@
                     <p><strong>The Atanasoff–Berry computer (ABC)</strong> was the first automatic electronic digital computer. The device was limited by the technology of the day, as it was not programmable in the modern sense, but it pioneered the use of vacuum tubes for digital calculation.</p>
 
                     <figure>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Atanasoff-Berry_Computer_at_Durhum_Center.jpg/640px-Atanasoff-Berry_Computer_at_Durhum_Center.jpg" alt="Atanasoff-Berry Computer">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Atanasoff-Berry_Computer_at_Durhum_Center.jpg/800px-Atanasoff-Berry_Computer_at_Durhum_Center.jpg" alt="Atanasoff-Berry Computer">
                         <figcaption>A replica of the Atanasoff–Berry Computer (ABC), a precursor to the ENIAC.</figcaption>
                     </figure>
 
@@ -448,7 +430,7 @@
                     <p>OOP introduced concepts like inheritance and encapsulation. Programmers could create "Black Boxes"—reusable objects (like a "User" or "Window") that hid their internal complexity.</p>
 
                     <figure>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Method_overriding_in_subclass.svg/1200px-Method_overriding_in_subclass.svg.png" alt="Object Orient Programming" width="50%">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Object-Oriented-Programming-Methods-And-Classes-with-Inheritance.png/800px-Object-Oriented-Programming-Methods-And-Classes-with-Inheritance.png" alt="Object Oriented Programming" width="50%">
                         <figcaption>Object Oriented Programming: Polymorphism and Inheritance.</figcaption>
                     </figure>
 
@@ -549,18 +531,24 @@ and generate a Python script to plot these using Matplotlib."</code></pre>
                             link.classList.remove('active');
                         });
                         // Add active class to the matching link
-                        const activeLink = document.querySelector(`aside nav li a[href="#${id}"]`);
-                        if (activeLink) {
-                            activeLink.classList.add('active');
+                        // Handle Document Top edge case
+                        if(id === 'top') {
+                             document.querySelector('a.nav-top-link').classList.add('active');
+                        } else {
+                             const activeLink = document.querySelector(`aside nav li a[href="#${id}"]`);
+                             if (activeLink) {
+                                 activeLink.classList.add('active');
+                             }
                         }
                     }
                 });
             }, { 
-                threshold: 0.2, /* Trigger when 20% of section is visible */
-                rootMargin: "-20% 0px -50% 0px" /* Adjust trigger point to be closer to top of screen */
+                threshold: 0.15, 
+                rootMargin: "-20% 0px -60% 0px" 
             });
 
-            // Track all sections
+            // Track all sections plus the body/top
+            observer.observe(document.body);
             document.querySelectorAll('section').forEach((section) => {
                 observer.observe(section);
             });
