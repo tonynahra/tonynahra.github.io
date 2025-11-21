@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From Logic to Language: The Evolution of Programming</title>
+    
+    <style>
+        /* COMMON STYLES (To be moved to ../common/style.css) 
+           Based on the aesthetic of GeminiWinner.html 
+        */
+        :root {
+            --bg-body: #f8f9fa;
+            --bg-main: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --accent-blue: #0056b3;
+            --border-light: #dee2e6;
+            --sidebar-bg: #1e293b; /* Dark slate for contrast sidebar */
+            --sidebar-text: #ffffff;
+            --code-bg: #f1f3f5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ASIDE MENU STYLES */
+        aside {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            flex-shrink: 0;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        aside .menu-header {
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        aside h2 {
+            font-size: 1.2em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #61dafb; /* Light blue accent */
+            margin: 0;
+        }
+
+        aside nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        aside nav li a {
+            display: block;
+            padding: 12px 20px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 0.95em;
+        }
+
+        aside nav li a:hover, aside nav li a.active {
+            background-color: rgba(255,255,255,0.05);
+            color: #fff;
+            border-left-color: #61dafb;
+        }
+
+        /* MAIN CONTENT STYLES */
+        main {
+            flex-grow: 1;
+            margin-left: 260px; /* Width of aside */
+            padding: 40px 60px;
+            max-width: 900px;
+        }
+
+        article {
+            background-color: var(--bg-main);
+            padding: 40px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        header {
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 2.4em;
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: var(--text-primary);
+            margin-top: 50px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.4em;
+            color: #343a40;
+            margin-top: 30px;
+        }
+
+        p {
+            margin-bottom: 18px;
+            font-size: 1.05em;
+        }
+
+        a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Code Snippet Styles */
+        pre {
+            background-color: var(--code-bg);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+            margin: 20px 0;
+        }
+
+        code {
+            font-family: "Consolas", "Monaco", "Courier New", monospace;
+            font-size: 0.9em;
+            color: #c7254e;
+        }
+        
+        pre code {
+            color: #333; /* Darker text for blocks */
+        }
+
+        .lang-label {
+            font-size: 0.75em;
+            text-transform: uppercase;
+            color: #6c757d;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        blockquote {
+            font-style: italic;
+            font-size: 1.1em;
+            color: var(--text-secondary);
+            margin: 30px 0;
+            padding: 15px 20px;
+            border-left: 5px solid #ced4da;
+            background-color: #f8f9fa;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            aside { display: none; } /* Hide sidebar on mobile for now */
+            main { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="menu-header">
+            <h2>Code History</h2>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#math-roots">1. Mathematical Roots</a></li>
+                <li><a href="#hardware-era">2. The Hardware Era</a></li>
+                <li><a href="#von-neumann">3. The Stored Program</a></li>
+                <li><a href="#language-boom">4. The Language Boom</a></li>
+                <li><a href="#structure-oop">5. Structuring Chaos</a></li>
+                <li><a href="#visual-era">6. The Visual Revolution</a></li>
+                <li><a href="#ai-paradigm">7. The AI Paradigm</a></li>
+                <li><a href="#references">References</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <article>
+            <header>
+                <h1>From Graph Theory to Generative AI</h1>
+                <p class="subtitle">How we moved from physical wiring to "Intent-Based" programming.</p>
+            </header>
+
+            <section id="math-roots">
+                <h2>1. The Mathematical Roots</h2>
+                <p>Long before silicon chips, "programming" existed as pure logic. Algorithms, the foundation block of computing, started as a branch of mathematics.</p>
+                
+                <p>In the 18th century, <strong>Leonhard Euler</strong> invented graph theory while attempting to solve the <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg" target="_blank">Seven Bridges of Königsberg</a> problem. He realized that the path could be calculated without physically traversing it—an early form of algorithmic abstraction. </p>
+
+                <p>Later, <strong>George Boole</strong> created the basis of Boolean algebra (True/False logic). He had no idea his binary system would one day govern the digital world.</p>
+            </section>
+
+            <section id="hardware-era">
+                <h2>2. The Hardware Era: Programming with Cables</h2>
+                <p>Serious programming began not with keyboards, but with screwdrivers. During WWII, <strong>Alan Turing</strong> conceptualized the modern computer to break the Enigma encryption. Because logic gates and transistors didn't exist, he resorted to the cumbersome wiring of chains of programmable units.</p>
+                
+                <p>The <strong>ENIAC</strong> (Electronic Numerical Integrator and Computer) realized this concept using electric vacuum tubes. However, there was no "software." The programmers—often brilliant women with deep mathematical expertise—had to physically re-route cables to change the program.</p>
+                                
+                <p>To calculate a simple trajectory, they didn't type code; they plugged wires into a board, physically mapping the logic flow.</p>
+            </section>
+
+            <section id="von-neumann">
+                <h2>3. The Von Neumann Breakthrough</h2>
+                <p>The real breakthrough came with <strong>John von Neumann</strong>. He proposed the "Stored-Program Concept," where instructions (code) and data lived in the same memory. This architecture allowed computers to be reprogrammed without a soldering iron. </p>
+                
+                <p>However, the "language" was still raw machine code—streams of binary or hexadecimal numbers that spoke directly to the processor's registers.</p>
+
+                <span class="lang-label">Example: x86 Machine Code (calculating 1 + 1)</span>
+                <pre><code>B8 01 00 00 00   ; Load 1 into EAX register
+05 01 00 00 00   ; Add 1 to EAX
+</code></pre>
+                <p>Programmers had to memorize these opcodes. It was efficient for the machine, but grueling for the human.</p>
+            </section>
+
+            <section id="language-boom">
+                <h2>4. The Humanization of Code</h2>
+                <p>As demand grew, we needed a way to speak to the machine in English. This led to the first high-level languages. <strong>Fortran</strong> (Formula Translation) dominated scientific computing, allowing mathematicians to write formulas almost as they appeared on paper.</p>
+
+                <span class="lang-label">Example: Fortran 77</span>
+                <pre><code>      PROGRAM HELLO
+      PRINT *, 'HELLO WORLD'
+      STOP
+      END</code></pre>
+
+                <p>Meanwhile, <strong>COBOL</strong> (Common Business Oriented Language) was created for business data processing, designed to be readable by managers.</p>
+
+                <span class="lang-label">Example: COBOL</span>
+                <pre><code>IDENTIFICATION DIVISION.
+PROGRAM-ID. HELLO-WORLD.
+PROCEDURE DIVISION.
+    DISPLAY 'Hello, World!'.
+    STOP RUN.</code></pre>
+            </section>
+
+            <section id="structure-oop">
+                <h2>5. Structuring the Chaos</h2>
+                <p>As programs expanded from simple calculations to managing telecom networks and hospital databases, "spaghetti code" (messy, unstructured jumps) became a problem. We needed structure.</p>
+                
+                <p>This led to <strong>Object-Oriented Programming (OOP)</strong>. Concepts like inheritance and encapsulation allowed programmers to create "black boxes"—reusable chunks of code where you didn't need to know the internal workings to use them. </p>
+
+                <span class="lang-label">Example: C++ Class Structure</span>
+                <pre><code>class Car {
+  public:
+    string brand;
+    void honk() {
+      cout << "Beep beep!";
+    }
+};</code></pre>
+            </section>
+
+            <section id="visual-era">
+                <h2>6. The Visual Revolution</h2>
+                <p>With the advent of the Personal Computer and the Graphical User Interface (GUI), programming moved from the command line to the canvas. Data entry cards were replaced by drag-and-drop forms.</p>
+                
+                <p><strong>Visual Basic</strong> shocked the industry. It allowed people to create Windows applications by dragging buttons onto a screen and double-clicking them to add logic. It democratized programming, making it accessible to millions.</p>
+                
+                <span class="lang-label">Example: Visual Basic</span>
+                <pre><code>Private Sub CommandButton1_Click()
+    MsgBox "Welcome to the Visual Era!"
+End Sub</code></pre>
+            </section>
+
+            <section id="ai-paradigm">
+                <h2>7. The AI Paradigm Shift</h2>
+                <p>Just as we thought visual interfaces were the peak of usability, technology took us by surprise. The combination of Machine Learning and Large Language Models (LLMs) has ushered in a new era: <strong>Intent-Based Programming</strong>.</p>
+
+                <p>In the past, if you made a syntax error (a missing semicolon), the program failed. Today, LLMs understand the <em>intent</em> behind the code. They can look at a vague request, understand the context, and generate the complex logic required. We are no longer writing the steps; we are conducting the orchestra.</p>
+
+                <span class="lang-label">The New "Code": Natural Language Prompt</span>
+                <pre><code>"Analyze the attached CSV file of stock prices. 
+Identify the moving average crossover points, 
+and generate a Python script to plot these using Matplotlib."</code></pre>
+
+                <p>The AI interprets this and generates the underlying Python, bridging the gap between human thought and machine execution instantly.</p>
+
+                <blockquote>
+                    "We are now living in an era where programming is just a matter of expressing an idea—vague, with mistakes or lack of context—and the AI will assist, guide, and generate what's needed."
+                </blockquote>
+            </section>
+
+            <section id="references">
+                <hr>
+                <h3>References</h3>
+                <ul>
+                    <li><a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg">Seven Bridges of Königsberg</a> - Wikipedia</li>
+                    <li><a href="https://en.wikipedia.org/wiki/NP-completeness">NP-completeness</a> - Wikipedia</li>
+                    <li><a href="https://en.wikipedia.org/wiki/ENIAC">ENIAC History</a> - Wikipedia</li>
+                    <li><a href="https://en.wikipedia.org/wiki/John_von_Neumann">John von Neumann</a> - Wikipedia</li>
+                </ul>
+            </section>
+
+        </article>
+        <br>
+        <hr>
+        <a href="/">Back to home page</a>
+    </main>
+
+</body>
+</html>
