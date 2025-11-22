@@ -79,7 +79,8 @@
     $(document).ready(function() {
         // Use the global loadPhotoAlbum function from cardLogic.js
         // We pass the album JSON URL and the initial load limit (20 images)
-        // The loadPhotoAlbum function will handle the "Show More" button automatically based on cardLogic.js logic
+        // The loadPhotoAlbum function will detect #about-album-list automatically
         loadPhotoAlbum("data/album.json", 20);
     });
 </script>
+
