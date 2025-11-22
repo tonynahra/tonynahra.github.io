@@ -261,10 +261,7 @@ function buildResearchModal(jsonUrl) {
             if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl, '#research-tab-content-modal'); }
             $tabNav.append($button);
         });
-        
-        $modalContent.find('.modal-close-btn').on('click', function() { 
-             $('.modal-close-btn').first().click(); 
-        });
+        $modalContent.find('.modal-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
     });
 }
 
@@ -272,8 +269,6 @@ function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
     $target.html(''); 
     $target.closest('#modal-content-area').find('.research-modal-header .open-new-window').attr('href', htmlUrl);
-    
-    // Use iframe for research tab content too (fix for CORS/rendering issues)
     $target.html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`);
 }
 
@@ -441,3 +436,124 @@ function filterYouTubeCards() {
         handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
     }
 }
+
+/* === --- EVENT LISTENERS (DELEGATED) --- === */
+$(document).ready(function () {
+    
+    // Inject modal
+    $('body').append(`
+        <div id="content-modal" class="modal-backdrop">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-nav-left">
+                        <button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button>
+                        <button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button>
+                        <button class="modal-info-btn" title="Toggle Info (I)">Info</button>
+                    </div>
+                    <div class="modal-nav-right">
+                        <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                            Open in new window &nearr;
+                        </a>
+                        <button class="modal-close-btn" title="Close (Esc)">&times; Close</button>
+                    </div>
+                </div>
+                <div id="modal-content-area"></div>
+            </div>
+        </div>
+    `);
+
+    // Listeners
+    $('body').on('click', '.toggle-card-button', function() {
+        const $button = $(this);
+        const $list = $button.prev('.card-list');
+        if ($list.length) { showMoreCards($button, $list); }
+    });
+
+    $('body').on('click', '.card-item, .item', function(e) {
+        const $clickedCard = $(this);
+        const $link = $clickedCard.find('a').first();
+        if (!$link.length) { return; } 
+        
+        const $clickedLink = $(e.target).closest('a');
+        if ($clickedLink.length > 0 && !$clickedLink.is($link)) { return; }
+        
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        
+        const $cardList = $clickedCard.closest('.card-list');
+        const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible');
+        
+        currentCardList = [];
+        $allVisibleCards.each(function() {
+            currentCardList.push($(this).find('a').first());
+        });
+        
+        currentCardIndex = $allVisibleCards.index($clickedCard);
+        
+        if (currentCardList.length > 0) {
+            loadModalContent(currentCardIndex);
+            $('body').addClass('modal-open');
+            $('#content-modal').fadeIn(200);
+            $(document).on('keydown.modalNav', handleModalKeys);
+        }
+    });
+
+    // Generalized Close Button Logic
+    $('body').on('click', '.modal-close-btn', function() {
+        const $modal = $('#content-modal');
+        $('body').removeClass('modal-open');
+        $modal.fadeOut(200);
+        $('#modal-content-area').html(''); 
+        currentCardList = [];
+        currentCardIndex = 0;
+        isModalInfoVisible = false; 
+        $(document).off('keydown.modalNav');
+        $modal.find('.modal-header').show();
+    });
+    
+    $('body').on('click', '#content-modal', function(e) {
+        if (e.target.id === 'content-modal') {
+            $(this).find('.modal-close-btn').first().click();
+        }
+    });
+    
+    $('body').on('click', '.modal-prev-btn', function() {
+        if (currentCardIndex > 0) loadModalContent(currentCardIndex - 1);
+    });
+    
+    $('body').on('click', '.modal-next-btn', function() {
+        if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1);
+    });
+
+    $('body').on('click', '.modal-info-btn', function() {
+        isModalInfoVisible = !isModalInfoVisible;
+        $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible', isModalInfoVisible);
+    });
+
+    // Filter listeners
+    $('body').on('input', '#youtube-search-box', filterYouTubeCards);
+    $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
+    $('body').on('input', '#post-search-box', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
+    $('body').on('change', '#post-category-filter', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
+    $('body').on('change', '#post-keyword-filter', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
+    $('body').on('input', '#cert-search-box', () => filterCardsGeneric('#cert-card-list', '#cert-search-box', '#cert-category-filter', '#cert-keyword-filter', '#cert-no-results', 12));
+    $('body').on('change', '#cert-category-filter', () => filterCardsGeneric('#cert-card-list', '#cert-search-box', '#cert-category-filter', '#cert-keyword-filter', '#cert-no-results', 12));
+    $('body').on('change', '#cert-keyword-filter', () => filterCardsGeneric('#cert-card-list', '#cert-search-box', '#cert-category-filter', '#cert-keyword-filter', '#cert-no-results', 12));
+    $('body').on('input', '#album-search-box', () => filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20));
+    $('body').on('change', '#album-category-filter', () => filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20));
+    $('body').on('change', '#album-keyword-filter', () => filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20));
+    $('body').on('input', '#research-search-box', () => filterCardsGeneric('#research-card-list', '#research-search-box', '#research-category-filter', '#research-keyword-filter', '#research-no-results', 10));
+    $('body').on('change', '#research-category-filter', () => filterCardsGeneric('#research-card-list', '#research-search-box', '#research-category-filter', '#research-keyword-filter', '#research-no-results', 10));
+    $('body').on('change', '#research-keyword-filter', () => filterCardsGeneric('#research-card-list', '#research-search-box', '#research-category-filter', '#research-keyword-filter', '#research-no-results', 10));
+    $('body').on('input', '#tutorials-search-box', () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
+    $('body').on('change', '#tutorials-category-filter', () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
+    $('body').on('change', '#tutorials-keyword-filter', () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
+
+    // Research Tab listener
+    $('#content-modal').on('click', '.tab-button', function() {
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+        const htmlUrl = $(this).data('content-url');
+        loadModalTabContent(htmlUrl, '#research-tab-content-modal');
+    });
+});
