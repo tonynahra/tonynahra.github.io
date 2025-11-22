@@ -3,7 +3,19 @@ var currentCardList = []; // Stores the list of cards for modal navigation
 var currentCardIndex = 0; // Stores the current position in the modal
 var isModalInfoVisible = false; // Stores the state of the info toggle
 
-// --- STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are in filterConfig.js ---
+// --- KEYWORD CONFIGURATION ---
+// (If you moved these to filterConfig.js, ensure that file is loaded first in index.html)
+// For safety, I'll check if they exist, otherwise define defaults here.
+if (typeof STOP_WORDS === 'undefined') {
+    var STOP_WORDS = new Set(['a', 'an', 'the', 'and', 'or', 'but']);
+}
+if (typeof REPLACEMENT_MAP === 'undefined') {
+    var REPLACEMENT_MAP = {};
+}
+if (typeof SYNONYM_MAP === 'undefined') {
+    var SYNONYM_MAP = {};
+}
+
 
 /**
  * Helper function to safely decode text.
@@ -21,7 +33,10 @@ function decodeText(text) {
     }
 }
 
-/* === --- HELPER FUNCTIONS (Defined before usage) --- === */
+/* ==========================================================================
+   GLOBAL HELPER FUNCTIONS
+   (Defined outside $(document).ready so they are accessible to mainPage.js)
+   ========================================================================== */
 
 function handleCardView($scope, initialLoadOverride) {
     $scope.find('.card-list').each(function() {
@@ -152,7 +167,7 @@ function populateSmartKeywords(listId, filterId) {
             words.forEach(word => {
                 let cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
                 
-                if (REPLACEMENT_MAP[cleanWord]) {
+                if (typeof REPLACEMENT_MAP !== 'undefined' && REPLACEMENT_MAP[cleanWord]) {
                     cleanWord = REPLACEMENT_MAP[cleanWord];
                 }
                 
@@ -203,7 +218,9 @@ function getCardSearchableText($card) {
 
 function checkKeywordMatch(cardText, selectedKeyword) {
     if (selectedKeyword === "all") return true;
-    const keywordsToMatch = [selectedKeyword, ...(SYNONYM_MAP[selectedKeyword] || [])];
+    const synonyms = (typeof SYNONYM_MAP !== 'undefined') ? (SYNONYM_MAP[selectedKeyword] || []) : [];
+    const keywordsToMatch = [selectedKeyword, ...synonyms];
+    
     return keywordsToMatch.some(key => {
         const regex = new RegExp(`\\b${key}\\b`, 'i'); 
         return regex.test(cardText);
@@ -213,9 +230,7 @@ function checkKeywordMatch(cardText, selectedKeyword) {
 /* === --- LOAD FUNCTIONS --- === */
 
 function loadModalContent(index) {
-    if (index < 0 || index >= currentCardList.length) {
-        return;
-    }
+    if (index < 0 || index >= currentCardList.length) { return; }
 
     const $link = currentCardList[index];
     if (!$link.length) return;
@@ -246,11 +261,10 @@ function loadModalContent(index) {
     if (loadType === 'tutorial' && manifestUrl) {
         $modal.addClass('tutorial-mode'); 
         $modal.removeClass('research-mode');
-        
-        // Hide default header completely
         $modal.find('.modal-header').hide();
         
-        // Pass the manifest URL to the player
+        $modalOpenLink.attr('href', manifestUrl);
+        
         const playerHtml = `
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
                 <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
@@ -259,23 +273,19 @@ function loadModalContent(index) {
         `;
         $modalContent.html(playerHtml);
         
-        // Re-attach close handler
         $modalContent.find('.modal-close-btn').on('click', function() {
-            // Trigger the main close logic
             const $mainCloseBtn = $('#content-modal > .modal-content > .modal-header .modal-close-btn');
-            // We need to manually reset state because the header button is hidden
             $('#content-modal').removeClass('modal-open').fadeOut(200);
             $('#modal-content-area').html('');
             currentCardList = [];
             $(document).off('keydown.modalNav');
-            // Restore header visibility for next time
             $('#content-modal .modal-header').show();
         });
         
         return;
     }
 
-    // 3. Regular Logic (HTML, Image, Iframe)
+    // 3. Regular Logic
     $modal.removeClass('research-mode'); 
     $modal.removeClass('tutorial-mode'); 
     $modal.find('.modal-header').show();
@@ -345,7 +355,7 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'blocked':
-            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here. Please use the "Open in new window" button.</div>');
+            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
             break;
         default: // newtab
             $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
@@ -379,8 +389,6 @@ function buildResearchModal(jsonUrl) {
     $.getJSON(jsonUrl, function (data) {
         $('#research-title-modal').text(decodeText(data.title));
         
-        // Update the "Open in new window" link to the JSON file initially
-        // It will be updated to the tab content when a tab is clicked
         $modalContent.find('.open-new-window').attr('href', jsonUrl);
         
         const $tabNav = $('#research-tab-nav-modal');
@@ -397,11 +405,6 @@ function buildResearchModal(jsonUrl) {
             }
             $tabNav.append($button);
         });
-        
-        // Add close button listener for the research header
-        $modalContent.find('.modal-close-btn').on('click', function() {
-             $('.modal-close-btn').first().click(); 
-        });
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
         $('#research-title-modal').text("Error Loading Research");
@@ -413,7 +416,6 @@ function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
     $target.html(''); 
     
-    // Update the "Open in new window" link to the current tab's URL
     $target.closest('#modal-content-area')
            .find('.research-modal-header .open-new-window')
            .attr('href', htmlUrl);
@@ -527,14 +529,19 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
     });
 }
 
+
+/* === --- FILTERING FUNCTIONS (Defined Globally) --- === */
 function filterYouTubeCards() {
     const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
     const selectedKeyword = $('#youtube-keyword-filter').val();
+    
     const $grid = $('#Grid');
     const $allCards = $grid.children('.card-item');
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $('#youtube-no-results');
+    
     let visibleCount = 0;
+
     if (searchTerm.length > 0 || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
@@ -560,11 +567,14 @@ function filterPostCards() {
     const searchTerm = decodeText($('#post-search-box').val().toLowerCase());
     const selectedCategory = $('#post-category-filter').val();
     const selectedKeyword = $('#post-keyword-filter').val();
+    
     const $grid = $('#posts-card-list');
     const $allCards = $grid.children('.card-item');
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $('#posts-no-results');
+    
     let visibleCount = 0;
+
     if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
@@ -574,6 +584,7 @@ function filterPostCards() {
             const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
+
             if (categoryMatch && searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
@@ -592,11 +603,14 @@ function filterCertCards() {
     const searchTerm = decodeText($('#cert-search-box').val().toLowerCase());
     const selectedCategory = $('#cert-category-filter').val();
     const selectedKeyword = $('#cert-keyword-filter').val();
+    
     const $grid = $('#cert-card-list');
     const $allCards = $grid.children('.card-item');
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $('#cert-no-results');
+    
     let visibleCount = 0;
+
     if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
@@ -624,11 +638,14 @@ function filterAlbumCards() {
     const searchTerm = decodeText($('#album-search-box').val().toLowerCase());
     const selectedCategory = $('#album-category-filter').val();
     const selectedKeyword = $('#album-keyword-filter').val();
+    
     const $grid = $('#photo-album-list');
     const $allCards = $grid.children('.card-item');
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $('#album-no-results');
+    
     let visibleCount = 0;
+
     if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
@@ -656,11 +673,14 @@ function filterResearchCards() {
     const searchTerm = decodeText($('#research-search-box').val().toLowerCase());
     const selectedCategory = $('#research-category-filter').val();
     const selectedKeyword = $('#research-keyword-filter').val();
+    
     const $grid = $('#research-card-list');
     const $allCards = $grid.children('.card-item');
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $('#research-no-results');
+    
     let visibleCount = 0;
+
     if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
@@ -716,7 +736,8 @@ function filterTutorialCards() {
     }
 }
 
-// --- EVENT LISTENERS (DELEGATED) ---
+
+/* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
     
     // --- Inject the modal HTML on page load ---
@@ -841,8 +862,7 @@ $(document).ready(function () {
     $('body').on('input', '#research-search-box', filterResearchCards);
     $('body').on('change', '#research-category-filter', filterResearchCards);
     $('body').on('change', '#research-keyword-filter', filterResearchCards);
-
-    // --- NEW: Tutorial Filters ---
+    
     $('body').on('input', '#tutorials-search-box', filterTutorialCards);
     $('body').on('change', '#tutorials-category-filter', filterTutorialCards);
     $('body').on('change', '#tutorials-keyword-filter', filterTutorialCards);
