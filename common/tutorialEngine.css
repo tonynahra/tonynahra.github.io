@@ -1,109 +1,96 @@
-/* --- Tutorial Engine Styles --- */
+body { margin: 0; padding: 0; overflow: hidden; background-color: #1f2833; }
 
 #tutorialContainer {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    font-family: var(--font-body);
-    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    font-family: 'Inter', sans-serif;
+    color: #c5c8c6;
 }
 
 #tutorialSection {
     display: flex;
     flex-direction: column;
     height: 100%;
-    width: 100%;
 }
 
-/* Slide Image */
+.slide-area {
+    flex-grow: 1; /* Fills all space above nav */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000; 
+    overflow: hidden;
+}
+
 .tutorial-slide {
-    flex-grow: 1; /* Take available space */
-    width: 100%;
-    height: 0; /* Allow flex to control height */
-    object-fit: contain; /* Keep aspect ratio */
-    background-color: #000; /* Black background for slides usually looks best */
-    border-bottom: 1px solid var(--bg-medium);
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    cursor: pointer;
 }
 
-/* Navigation Area */
 .tutorial-nav {
-    flex-shrink: 0; /* Don't shrink */
-    padding: 15px;
-    background-color: var(--bg-medium);
-    border-top: 2px solid var(--bg-dark);
-}
-
-.tutorial-title {
-    font-family: var(--font-heading);
-    font-size: 1.2rem;
-    color: var(--text-primary);
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.tutorial-controls {
+    flex-shrink: 0;
+    height: 60px;
+    background-color: #2c3e50;
+    border-top: 1px solid #1f2833;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
+    padding: 0 20px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
 }
 
-.playback-controls {
+.nav-left, .nav-right {
+    width: 25%; /* Equal width to keep center centered */
     display: flex;
-    align-items: center;
     gap: 10px;
-    margin: 0 auto; /* Center these buttons */
 }
 
-/* Button Styles matching your site */
+.nav-right { justify-content: flex-end; }
+
+.nav-center {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.tutorial-title {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #fff;
+}
+
+/* Buttons */
 .nav-btn {
-    padding: 8px 16px;
+    padding: 6px 12px;
     border: none;
     border-radius: 4px;
-    font-family: var(--font-code);
-    font-size: 0.95rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.nav-btn.primary {
-    background-color: var(--text-accent);
-    color: var(--bg-dark);
-    font-weight: bold;
-}
+.nav-btn.primary { background-color: #66fcf1; color: #1f2833; font-weight: bold; }
+.nav-btn.secondary { background-color: transparent; color: #c5c8c6; border: 1px solid #c5c8c6; }
 
-.nav-btn.secondary {
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    border: 1px solid var(--text-light);
-}
-
-.nav-btn:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
-}
-
-.nav-btn:disabled {
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    opacity: 0.4;
-    cursor: not-allowed;
-}
+.nav-btn:hover:not(:disabled) { opacity: 0.8; }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .page-number {
-    font-family: var(--font-code);
-    font-size: 1.1rem;
-    color: var(--text-primary);
-    min-width: 60px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #fff;
+    min-width: 50px;
     text-align: center;
 }
 
-/* Loading / Error States */
-.content-loader, .error-message {
-    padding: 40px;
-    text-align: center;
-}
+.error-message { padding: 40px; text-align: center; color: #e74c3c; }
