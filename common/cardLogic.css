@@ -87,15 +87,12 @@
     flex-wrap: wrap; 
     gap: 20px; 
     margin-bottom: 25px;
-    
     background-color: var(--bg-medium);
     padding: 20px;
     border-radius: 8px;
-    
     position: sticky;
     top: 0;
     z-index: 50;
-
     align-items: center;
 }
 
@@ -115,87 +112,36 @@
     flex-grow: 1; 
 }
 
-.filter-bar .search-wrapper {
-    flex: 1 1 200px; /* grow, shrink, basis */
-    min-width: 180px; 
-}
-.filter-bar .category-wrapper {
-    flex: 1 1 200px; 
-    min-width: 180px;
-}
-.filter-bar .keyword-wrapper {
-    flex: 1 1 180px; 
-    min-width: 160px;
+.filter-bar .search-wrapper { flex: 1 1 200px; min-width: 180px; }
+.filter-bar .category-wrapper { flex: 1 1 200px; min-width: 180px; }
+.filter-bar .keyword-wrapper { flex: 1 1 180px; min-width: 160px; }
+
+.search-wrapper { margin-bottom: 0; }
+
+#post-category-filter, #cert-category-filter, #post-keyword-filter, #cert-keyword-filter,
+#youtube-category-filter, #youtube-keyword-filter, #album-category-filter, #album-keyword-filter,
+#research-category-filter, #research-keyword-filter, #tutorials-category-filter, #tutorials-keyword-filter { 
+    width: 100%; padding: 12px 15px; background-color: var(--bg-dark); border: 1px solid var(--bg-medium);
+    border-radius: 4px; color: var(--text-primary); font-family: var(--font-code); font-size: 1rem; box-sizing: border-box;
 }
 
-.search-wrapper {
-    margin-bottom: 0;
+#post-category-filter:focus, #cert-category-filter:focus, #post-keyword-filter:focus, #cert-keyword-filter:focus,
+#youtube-category-filter:focus, #youtube-keyword-filter:focus, #album-category-filter:focus, #album-keyword-filter:focus,
+#research-category-filter:focus, #research-keyword-filter:focus, #tutorials-category-filter:focus, #tutorials-keyword-filter:focus { 
+    outline: none; border-color: var(--text-accent);
 }
 
-/* Filter Dropdowns & Inputs */
-#post-category-filter,
-#cert-category-filter,
-#post-keyword-filter,
-#cert-keyword-filter,
-#youtube-category-filter,
-#youtube-keyword-filter,
-#album-category-filter, 
-#album-keyword-filter,
-#research-category-filter,
-#research-keyword-filter { 
-    width: 100%;
-    padding: 12px 15px;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--bg-medium);
-    border-radius: 4px;
-    color: var(--text-primary);
-    font-family: var(--font-code);
-    font-size: 1rem;
-    box-sizing: border-box;
+#youtube-search-box, #post-search-box, #cert-search-box, #album-search-box, #research-search-box, #tutorials-search-box { 
+    width: 100%; padding: 12px 15px; background-color: var(--bg-dark); border: 1px solid var(--bg-medium);
+    border-radius: 4px; color: var(--text-primary); font-family: var(--font-code); font-size: 1rem; box-sizing: border-box;
 }
 
-#post-category-filter:focus,
-#cert-category-filter:focus,
-#post-keyword-filter:focus,
-#cert-keyword-filter:focus,
-#youtube-category-filter:focus,
-#youtube-keyword-filter:focus,
-#album-category-filter:focus, 
-#album-keyword-filter:focus,
-#research-category-filter:focus,
-#research-keyword-filter:focus { 
-    outline: none;
-    border-color: var(--text-accent);
-}
-
-#youtube-search-box,
-#post-search-box,
-#cert-search-box,
-#album-search-box,
-#research-search-box { 
-    width: 100%;
-    padding: 12px 15px;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--bg-medium);
-    border-radius: 4px;
-    color: var(--text-primary);
-    font-family: var(--font-code);
-    font-size: 1rem;
-    box-sizing: border-box;
-}
-
-#youtube-search-box:focus,
-#post-search-box:focus,
-#cert-search-box:focus,
-#album-search-box:focus,
-#research-search-box:focus { 
-    outline: none;
-    border-color: var(--text-accent);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+#youtube-search-box:focus, #post-search-box:focus, #cert-search-box:focus, #album-search-box:focus, #research-search-box:focus, #tutorials-search-box:focus { 
+    outline: none; border-color: var(--text-accent); box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
 
-/* --- Modal Styles --- */
+/* --- Modal Styles (Corrected) --- */
 .modal-backdrop {
     display: none; 
     position: fixed;
@@ -204,7 +150,7 @@
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Prevent body scroll */
+    overflow: hidden; /* Prevent body scroll behind modal */
     background-color: rgba(0, 0, 0, 0.8); 
     backdrop-filter: blur(5px);
 }
@@ -217,26 +163,21 @@
     border-radius: 8px;
     width: 90%; 
     max-width: 1400px;
-    height: calc(100vh - 60px); 
+    height: calc(100vh - 40px); /* Full height minus margins */
     display: flex;
     flex-direction: column;
 }
 
-/* --- THIS IS THE FIX --- */
-/* This is the main content box inside the modal */
+/* Main content area takes remaining space */
 #modal-content-area {
-    flex-grow: 1; /* Make it fill the remaining height */
-    overflow-y: auto; /* This is the *only* scrollbar */
+    flex: 1 1 auto;
+    overflow: hidden; /* Let children handle scrolling if needed */
     position: relative; 
-    -webkit-overflow-scrolling: touch; 
-    
-    /* NEW: Use flex to make direct children fill height */
     display: flex;
     flex-direction: column;
 }
-/* --- END FIX --- */
 
-/* Modal Button Styles */
+/* Modal Header */
 .modal-header {
     margin-bottom: 20px;
     padding-bottom: 15px;
@@ -246,6 +187,7 @@
     align-items: center;
     flex-wrap: wrap; 
     gap: 15px;
+    flex-shrink: 0; 
 }
 
 .modal-backdrop.research-mode .modal-header {
@@ -258,10 +200,7 @@
     align-items: center;
 }
 
-.modal-header .modal-close-btn,
-.modal-header .modal-prev-btn,
-.modal-header .modal-next-btn,
-.modal-header .modal-info-btn { 
+.modal-header .modal-close-btn, .modal-header .modal-prev-btn, .modal-header .modal-next-btn, .modal-header .modal-info-btn, .modal-header .open-new-window { 
     padding: 8px 15px;
     background: var(--bg-medium);
     color: var(--text-accent);
@@ -275,81 +214,57 @@
     font-size: 0.9rem;
 }
 
-.modal-header .modal-close-btn:hover,
-.modal-header .modal-prev-btn:hover,
-.modal-header .modal-next-btn:hover,
-.modal-header .modal-info-btn:hover { 
+.modal-header .modal-close-btn:hover, .modal-header .modal-prev-btn:hover, .modal-header .modal-next-btn:hover, .modal-header .modal-info-btn:hover { 
     background: var(--text-accent);
     color: var(--bg-dark);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
+.modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
+.modal-header .open-new-window:hover { background: var(--text-accent); color: var(--bg-dark); }
 
-.modal-header .modal-prev-btn:disabled,
-.modal-header .modal-next-btn:disabled {
+.modal-header .modal-prev-btn:disabled, .modal-header .modal-next-btn:disabled {
     background: var(--bg-dark);
     color: var(--text-light);
     border-color: var(--bg-medium);
     opacity: 0.5;
     cursor: not-allowed;
-    box-shadow: none;
 }
 
-.modal-header .modal-info-btn {
-    display: none; 
-}
+.modal-header .modal-info-btn { display: none; }
 
-.modal-header .open-new-window {
-    padding: 8px 15px;
-    background: transparent;
-    color: var(--text-accent);
-    border: 1px solid var(--text-accent); 
-    border-radius: 4px;
-    text-decoration: none;
-    font-family: var(--font-code);
-    font-weight: 700;
-    transition: all 0.3s;
-    font-size: 0.9rem;
-}
 
-.modal-header .open-new-window:hover {
-    background: var(--text-accent);
-    color: var(--bg-dark);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
-
-/* --- THIS IS THE FIX (PART 2) --- */
-/* Modal Image/Iframe Styles */
-#modal-content-area .image-wrapper,
+/* --- IFrame / Image Wrappers --- */
+/* This ensures iframes take 100% of the modal content area */
 #modal-content-area .iframe-wrapper {
-    position: relative; 
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Images are centered but don't stretch */
+#modal-content-area .image-wrapper {
+    flex: 1;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    padding: 0; 
-    flex-grow: 1; /* Make wrapper fill the content area */
 }
 
 #modal-content-area .loaded-image {
-    width: auto; 
-    height: auto; 
-    max-width: 100%; 
-    max-height: 100%; 
-    object-fit: contain; 
-    border-radius: 6px; 
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 #modal-content-area .loaded-iframe {
     width: 100%;
-    height: 100%; /* Make iframe fill its wrapper */
+    height: 100%; 
     border: none;
-    border-radius: 6px;
     background: #fff; 
 }
-/* --- END FIX --- */
 
-
-/* Modal Photo Info Overlay */
+/* --- Photo Info Overlay --- */
 .modal-photo-info {
     position: absolute;
     bottom: 0;
@@ -359,96 +274,14 @@
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
     display: none; 
-    transform: translateY(0); 
-    transition: all 0.3s ease;
     pointer-events: none; 
 }
+.modal-photo-info.info-visible { display: block; }
+.modal-photo-info h3 { font-size: 1.2rem; color: #fff; margin-bottom: 5px; }
+.modal-photo-info p { font-size: 1rem; color: #eee; margin: 0; }
 
-.modal-photo-info.info-visible {
-    display: block; 
-}
 
-.modal-photo-info h3 {
-    font-size: 1.2rem;
-    color: #fff;
-    margin-bottom: 5px;
-}
-.modal-photo-info p {
-    font-size: 1rem;
-    color: #eee;
-    margin: 0;
-}
-
-/* --- Page-Specific Card Styles --- */
-#cert-card-list .card-item {
-    padding: 10px;
-    justify-content: flex-start; 
-}
-#cert-card-list .card-item .card-category {
-    margin-bottom: 5px;
-    font-size: 0.75rem; 
-}
-#cert-card-list .card-item a {
-    font-size: 0.8rem; 
-}
-#cert-card-list .card-item img.card-image {
-    height: 300px; 
-}
-
-/* Photo Album Card Styles */
-#photo-album-list .card-item {
-    position: relative;
-    padding: 0;
-    background: transparent;
-    border: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
-    border-radius: 6px;
-    overflow: hidden; 
-}
-#photo-album-list .card-item a {
-    display: block;
-    font-size: 0; 
-}
-#photo-album-list .card-item img.card-image {
-    height: auto; 
-    margin-bottom: 0;
-    border: none;
-    display: block; 
-    transition: transform 0.3s ease;
-}
-#photo-album-list .card-item .photo-details {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 40px 15px 15px; 
-    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-    color: #fff;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
-    pointer-events: none; 
-}
-#photo-album-list .card-item:hover .photo-details {
-    opacity: 1;
-    transform: translateY(0);
-}
-#photo-album-list .card-item:hover img.card-image {
-    transform: scale(1.05);
-}
-#photo-album-list .card-item .photo-details h3 {
-    font-size: 1rem;
-    color: #fff; 
-    margin-bottom: 5px;
-}
-#photo-album-list .card-item .photo-details p {
-    font-size: 0.85rem;
-    color: #eee;
-    margin: 0;
-}
-
-/* --- Research Page / Tab Styles --- */
-/* This is the new header *inside* the modal */
+/* --- Research Tab Styles --- */
 .research-modal-header {
     display: flex;
     justify-content: space-between;
@@ -457,19 +290,10 @@
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
-    /* --- NEW: Don't let it shrink --- */
     flex-shrink: 0;
 }
-.research-modal-header h2 {
-    margin: 0;
-    color: var(--text-accent);
-}
-.research-modal-header .modal-close-btn,
-.research-modal-header .open-new-window {
-    padding: 8px 15px;
-    font-size: 0.9rem;
-}
-
+.research-modal-header h2 { margin: 0; color: var(--text-accent); }
+.research-modal-header .modal-close-btn, .research-modal-header .open-new-window { padding: 8px 15px; font-size: 0.9rem; cursor: pointer;}
 
 .tab-nav {
     display: flex;
@@ -477,7 +301,6 @@
     gap: 10px;
     margin-bottom: 20px;
     border-bottom: 2px solid var(--bg-medium);
-    /* --- NEW: Don't let it shrink --- */
     flex-shrink: 0;
 }
 
@@ -492,31 +315,17 @@
     cursor: pointer;
     transition: all 0.3s;
 }
+.tab-button:hover { color: var(--text-primary); background: var(--bg-medium); }
+.tab-button.active { color: var(--text-accent); border-bottom-color: var(--text-accent); }
 
-.tab-button:hover {
-    color: var(--text-primary);
-    background: var(--bg-medium);
-}
-
-.tab-button.active {
-    color: var(--text-accent);
-    border-bottom-color: var(--text-accent);
-}
-
-/* --- THIS IS THE FIX --- */
-/* This makes the tab content fill the space in the modal */
+/* Ensure tab content fills remaining vertical space */
 .tab-content {
-    flex-grow: 1; /* This makes it fill the remaining space */
-    display: flex; /* Use flex to make its children fill its height */
+    flex: 1;
+    display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevent its own scrollbar */
+    overflow: hidden; 
 }
 .tab-content .iframe-wrapper {
-    flex-grow: 1; /* Ensure the wrapper fills the tab content area */
+    flex: 1;
     height: 100%;
-}
-/* --- END FIX --- */
-
-.tab-content h3 {
-    color: var(--text-accent);
 }
