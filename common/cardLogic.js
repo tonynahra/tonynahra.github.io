@@ -1,22 +1,31 @@
 /* === GLOBAL VARIABLES === */
-var currentCardList = []; 
-var currentCardIndex = 0; 
-var isModalInfoVisible = false; 
+var currentCardList = []; // Stores the list of cards for modal navigation
+var currentCardIndex = 0; // Stores the current position in the modal
+var isModalInfoVisible = false; // Stores the state of the info toggle
 
-// --- NOTE: STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are loaded from filterConfig.js ---
+// NOTE: STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are assumed to be loaded from filterConfig.js
+// Do NOT redeclare them here.
 
+/**
+ * Helper function to safely decode text.
+ */
 function decodeText(text) {
     if (!text) return "";
     try {
         var $textarea = $('<textarea></textarea>');
         $textarea.html(text);
-        return $textarea.val();
+        let decoded = $textarea.val();
+        decoded = decodeURIComponent(decoded);
+        return decoded;
     } catch (e) {
         return text;
     }
 }
 
-// --- HELPER FUNCTIONS (Global Scope) ---
+/* ==========================================================================
+   GLOBAL HELPER FUNCTIONS
+   (Defined outside $(document).ready so they are accessible to mainPage.js)
+   ========================================================================== */
 
 function handleCardView($scope, initialLoadOverride) {
     $scope.find('.card-list').each(function() {
@@ -204,6 +213,8 @@ function checkKeywordMatch(cardText, selectedKeyword) {
     });
 }
 
+/* === --- LOAD FUNCTIONS (Defined Globally) --- === */
+
 function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
     const $albumList = $('#photo-album-list');
     
@@ -300,6 +311,7 @@ function resultsLoop(data, Cat, BKcol) {
                <img class="YTi" src="${thumb}" alt="${title}" >
                <h3>${title}</h3>
                <p>${desc}</p>
+               <span class="card-category" style="display: none;">${Cat}</span>
             </a>
         </div>
         `);
@@ -346,6 +358,7 @@ function buildResearchModal(jsonUrl) {
             $tabNav.append($button);
         });
         
+        // Add close button listener for the research header
         $modalContent.find('.modal-close-btn').on('click', function() {
              $('.modal-close-btn').first().click(); 
         });
@@ -366,8 +379,8 @@ function loadModalTabContent(htmlUrl, targetId) {
            .attr('href', htmlUrl);
 
     const iframeHtml = `
-        <div class="iframe-wrapper">
-            <iframe src="${htmlUrl}" class="loaded-iframe"></iframe>
+        <div class="iframe-wrapper" style="height: 100%;">
+            <iframe src="${htmlUrl}" class="loaded-iframe" style="border:none; width:100%; height:100%;"></iframe>
         </div>
     `;
     $target.html(iframeHtml);
@@ -393,7 +406,7 @@ function loadModalContent(index) {
     const loadUrl = $link.attr('href');
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
-    const manifestUrl = $link.data('manifest-url'); 
+    const manifestUrl = $link.data('manifest-url');
     
     // 1. Research Logic
     if (loadType === 'research' && jsonUrl) {
@@ -507,6 +520,8 @@ function loadModalContent(index) {
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
 
+
+/* === --- FILTERING LOGIC (Defined Globally) --- === */
 function filterYouTubeCards() {
     const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
     const selectedKeyword = $('#youtube-keyword-filter').val();
@@ -684,14 +699,11 @@ function filterTutorialCards() {
     const searchTerm = decodeText($('#tutorials-search-box').val().toLowerCase());
     const selectedCategory = $('#tutorials-category-filter').val();
     const selectedKeyword = $('#tutorials-keyword-filter').val();
-    
     const $grid = $('#tutorials-card-list');
     const $allCards = $grid.children('.card-item');
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $('#tutorials-no-results');
-    
     let visibleCount = 0;
-
     if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
@@ -777,6 +789,7 @@ $(document).ready(function () {
         }
     });
 
+    // Generalized Close Button Logic
     $('body').on('click', '.modal-close-btn', function() {
         const $modal = $('#content-modal');
         $('body').removeClass('modal-open');
@@ -790,7 +803,8 @@ $(document).ready(function () {
     
     $('body').on('click', '#content-modal', function(e) {
         if (e.target.id === 'content-modal') {
-            $(this).find('.modal-close-btn').first().click();
+            // Trigger the visible close button
+            $('.modal-close-btn:visible').first().click();
         }
     });
     
@@ -826,7 +840,6 @@ $(document).ready(function () {
     $('body').on('change', '#tutorials-category-filter', filterTutorialCards);
     $('body').on('change', '#tutorials-keyword-filter', filterTutorialCards);
 
-    // Research Tab listener
     $('#content-modal').on('click', '.tab-button', function() {
         $(this).siblings().removeClass('active');
         $(this).addClass('active');
