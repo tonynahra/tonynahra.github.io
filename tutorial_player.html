@@ -1,31 +1,36 @@
 <!-- 
   Refactored Tutorial Engine
   Loaded into the modal by cardLogic.js
+  It receives the manifest URL as a query parameter: ?manifest=...
 -->
 <div id="tutorialContainer">
     <div id="tutorialSection" style="display: none;">
         
         <!-- The main slide image -->
-        <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide">
-        
+        <div class="slide-wrapper">
+            <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Tutorial Slide">
+        </div>
+
         <!-- Navigation Controls -->
         <div class="tutorial-nav">
             <div id="Title" class="tutorial-title">Loading...</div>
             
             <div class="tutorial-controls">
-                <button onclick="Credits()" class="nav-btn secondary">Credits</button> 
-                <button onclick="Manifest()" class="nav-btn secondary">Manifest</button>
+                <div class="extra-controls">
+                    <button onclick="Credits()" class="nav-btn secondary">Credits</button> 
+                    <button onclick="Manifest()" class="nav-btn secondary">Manifest</button>
+                </div>
                 
                 <div class="playback-controls">
                     <button onclick="movePage(-1)" id="btnPrevious" class="nav-btn primary">Previous</button>  
-                    <span id="pageNo" class="page-number"></span>  
+                    <span id="pageNo" class="page-number">-- / --</span>  
                     <button onclick="movePage(1)" id="btnNext" class="nav-btn primary">Next</button>
                 </div>
             </div>
         </div>
         
         <!-- Audio Player (Hidden but active) -->
-        <audio id="Audio" src="" autoplay style="width: 100%; margin-top: 10px;"></audio>
+        <audio id="Audio" src="" autoplay style="display: none;"></audio>
     </div>
     
     <div id="error-container" class="error-message" style="display: none;"></div>
@@ -33,7 +38,6 @@
 
 <script>
     // --- Configuration ---
-    var ServerPath = ""; // Will be calculated dynamically
     var TutorialPath = ""; 
     var TutorialLanguage = "";
     var TutorialManifest;
@@ -45,94 +49,79 @@
     var PageType = "";
     var doc;
     
+    // We will determine the base path dynamically from the manifest URL
+    var ResourcesBaseUrl = ""; 
+
+    // Use a CORS proxy as a fallback
+    const CORS_PROXY = "https://corsproxy.io/?";
+
     var AudioObj, bntNext, bntPrevious, PageObject;
     var x = new XMLHttpRequest();
 
     // --- Engine Initialization ---
     function startTutorial() {
-        // Get the manifest filename from the URL query string passed by cardLogic.js
+        // Get the manifest URL from the iframe's query string
         const urlParams = new URLSearchParams(window.location.search);
-        const manifestUrl = urlParams.get('manifest'); // e.g., "https://remote-server.com/path/to/mobile/A2.xml"
+        const manifestUrl = urlParams.get('manifest'); 
         
         if (!manifestUrl) {
             showError("No manifest URL specified.");
             return;
         }
 
-        // --- NEW: Calculate ServerPath from the manifest URL ---
-        // We assume the structure is .../modules/[TutorialPath]/mobile/A2.xml
-        // So we need to strip "/mobile/A2.xml" to get the base path.
-        
-        // 1. Find the index of "/mobile/"
-        const mobileIndex = manifestUrl.indexOf("/mobile/");
-        
-        if (mobileIndex !== -1) {
-             // This gives us "https://remote-server.com/path/to/modules/diabetes/db180101"
-             // We actually need the root "modules" path because the XML contains the folder "diabetes/db180101"
-             // So we need to go up two levels from the folder structure.
-             
-             // Let's rely on the XML to give us the specific folder. 
-             // We just need to find the root. 
-             
-             // NOTE: The original engine hardcoded "https://m.x-plain.com/modules/".
-             // If your remote server has a different structure, we need to be careful.
-             
-             // Let's assume the XML is at [ROOT]/[FOLDER]/mobile/A2.xml
-             // And the XML <folder> tag returns [FOLDER] (e.g. "diabetes/db180101")
-             // So we need to extract [ROOT].
-             
-             // We will wait until we parse the XML to set the final ServerPath correctly.
-        }
+        // Calculate the base URL for resources (slides/sound)
+        // Example: https://site.com/data/tutorials/diabetes/mobile/A2.xml
+        // Base:    https://site.com/data/tutorials/diabetes/mobile/
+        const lastSlash = manifestUrl.lastIndexOf("/");
+        ResourcesBaseUrl = manifestUrl.substring(0, lastSlash + 1);
 
-        x.open("GET", manifestUrl, true);
+        // Try fetching directly first
+        fetchManifest(manifestUrl, false);
+    }
+
+    function fetchManifest(url, useProxy) {
+        const fetchUrl = useProxy ? CORS_PROXY + encodeURIComponent(url) : url;
+        
+        x.open("GET", fetchUrl, true);
         x.onreadystatechange = function () {
             if (x.readyState == 4) {
                 if (x.status == 200) {
-                    doc = x.responseXML;
-                    if (!doc || doc.getElementsByTagName("parsererror").length > 0) {
-                        showError("Error parsing XML manifest.");
-                        return;
-                    }
-                    
-                    // --- NEW: Set ServerPath dynamically ---
-                    // Get the folder defined in the XML (e.g. "diabetes/db180101")
-                    const xmlFolder = doc.getElementsByTagName("folder")[0].textContent;
-                    
-                    // Now we look at the manifestURL (e.g. "https://.../modules/diabetes/db180101/mobile/A2.xml")
-                    // We want to find the base that comes BEFORE the xmlFolder string.
-                    
-                    const splitIndex = manifestUrl.indexOf(xmlFolder);
-                    if (splitIndex !== -1) {
-                        ServerPath = manifestUrl.substring(0, splitIndex);
-                    } else {
-                        // Fallback if the folder structure doesn't match
-                        // Assume the manifest is in /mobile/A2.xml and the root is 2 levels up
-                         const mobileIdx = manifestUrl.indexOf("/mobile/");
-                         if (mobileIdx !== -1) {
-                             // This is tricky without knowing the exact folder structure.
-                             // Let's try to infer it. If the XML says folder is "A/B", 
-                             // and URL is ".../A/B/mobile/A2.xml", we want ".../"
-                             
-                             // Safe bet: The ServerPath is the part of the URL *before* the folder path.
-                             // If we can't find the folder path in the URL, we might have a mismatch.
-                             // For now, let's default to the directory of the manifest minus "/mobile/"
-                             
-                             // Let's try to construct the full path to the resources based on the manifest URL location
-                             // manifestURL:  .../some/path/mobile/A2.xml
-                             // resources:    .../some/path/mobile/slides/m_...
-                             
-                             // If we simply use the manifest URL's directory as the base for relative links,
-                             // we don't need ServerPath logic at all!
-                             
-                             // Let's redefine how we build image URLs.
+                    // Success!
+                    try {
+                        // If using proxy, response might be text, so we need to parse it
+                        if (useProxy && typeof x.response === 'string') {
+                             const parser = new DOMParser();
+                             doc = parser.parseFromString(x.responseText, "text/xml");
+                        } else {
+                             doc = x.responseXML;
                         }
-                    }
 
-                    document.getElementById("tutorialSection").style.display = "block";
-                    setTutorialParameters(manifestUrl);
-                    movePage(0);
+                        if (!doc || doc.getElementsByTagName("parsererror").length > 0) {
+                            // If direct parse failed, and we haven't tried proxy, try it
+                            if (!useProxy) {
+                                console.warn("Direct XML parse failed. Retrying with CORS proxy...");
+                                fetchManifest(url, true);
+                                return;
+                            }
+                            showError("Error parsing XML manifest.");
+                            return;
+                        }
+                        
+                        document.getElementById("tutorialSection").style.display = "flex";
+                        setTutorialParameters();
+                        movePage(0);
+
+                    } catch (e) {
+                        showError("Error processing manifest: " + e.message);
+                    }
                 } else {
-                    showError(`Could not load manifest: ${manifestUrl} (Status: ${x.status})`);
+                    // Failed. If we haven't tried the proxy yet, do it now.
+                    if (!useProxy) {
+                        console.warn("Direct fetch failed (likely CORS). Retrying with proxy...");
+                        fetchManifest(url, true);
+                    } else {
+                        showError(`Could not load manifest: ${url} (Status: ${x.status})`);
+                    }
                 }
             }
         };
@@ -143,9 +132,10 @@
         const errDiv = document.getElementById("error-container");
         errDiv.textContent = msg;
         errDiv.style.display = "block";
+        document.getElementById("tutorialSection").style.display = "none";
     }
 
-    function setTutorialParameters(manifestUrl) {
+    function setTutorialParameters() {
         TutorialManifest = doc.getElementsByTagName("s");
         totPages = TutorialManifest.length;
         for (i = 0; i < totPages; i++) if (TutorialManifest[i].getAttribute("p") == "s") totSections++;
@@ -153,18 +143,12 @@
         Title = doc.getElementsByTagName("Title")[0].textContent;
         TutorialLanguage =  doc.getElementsByTagName("Language")[0].textContent;
         
-        // --- NEW PATH LOGIC ---
-        // We derive the base URL for resources (slides/sound) directly from the manifest URL.
-        // If manifest is at: https://example.com/data/tutorials/diabetes/mobile/A2.xml
-        // Images are at:     https://example.com/data/tutorials/diabetes/mobile/slides/
-        // Sounds are at:     https://example.com/data/tutorials/diabetes/mobile/sound/
-        
-        // Remove "A2.xml" from the end
-        const lastSlash = manifestUrl.lastIndexOf("/");
-        const baseUrl = manifestUrl.substring(0, lastSlash + 1); // e.g. .../mobile/
-        
-        // Store this base for use in movePage
-        window.tutorialBaseUrl = baseUrl;
+        // Use try-catch for optional tags
+        try {
+             TutorialPath = doc.getElementsByTagName("folder")[0].textContent;
+        } catch(e) {
+             TutorialPath = "";
+        }
 
         document.getElementById("Title").innerHTML = `<b>${Title}</b> <small>(${TutorialLanguage})</small>`;
         
@@ -182,9 +166,6 @@
         
         QcurrentPagePointer = currentPagePointer;
         
-        // Use the base URL we calculated
-        const baseUrl = window.tutorialBaseUrl;
-        
         if (currentPagePointer < totPages - 1) {
             PageType = TutorialManifest[currentPagePointer].getAttribute("p");
 
@@ -192,9 +173,9 @@
             if (TutorialManifest[currentPagePointer].getAttribute("a") == "1") fileExt = ".gif"
             if (PageType == "s") fileExt = "_S.png"
 
-            // Construct RELATIVE paths using the manifest's location
-            Main = baseUrl + "slides/m_" + TutorialManifest[currentPagePointer].getAttribute("f") + fileExt;
-            AudioObj.src = baseUrl + "sound/m_s" + TutorialManifest[currentPagePointer].getAttribute("f") + ".mp3";
+            // Construct absolute paths using our base URL
+            Main = ResourcesBaseUrl + "slides/m_" + TutorialManifest[currentPagePointer].getAttribute("f") + fileExt;
+            AudioObj.src = ResourcesBaseUrl + "sound/m_s" + TutorialManifest[currentPagePointer].getAttribute("f") + ".mp3";
 
             if (PageType == "q") {
                 bntNext.disabled = true;
@@ -208,16 +189,23 @@
             bntNext.disabled = true;
             if ( TutorialLanguage == "Spanish" ) LanguageExt = "_s"; else LanguageExt = "";
             
-            // Note: "common/end" might need adjustment depending on where 'common' lives relative to the XML
-            // If 'common' is a sibling of the tutorial folder (e.g. .../modules/common), we need to go up 2 levels.
-            // For simplicity, let's assume standard structure: ../../common/
-            
-            Main = baseUrl + "../../common/end" + LanguageExt + ".gif";
-            AudioObj.src = baseUrl + "../../common/end" + LanguageExt + ".mp3";
+            // Note: The "common/end" path is tricky if we don't know the server structure.
+            // We'll try to find it relative to the base, assuming standard structure.
+            // Or we can use a fallback if it fails.
+            Main = ResourcesBaseUrl + "../../common/end" + LanguageExt + ".gif";
+            AudioObj.src = ResourcesBaseUrl + "../../common/end" + LanguageExt + ".mp3";
         }
         
         document.getElementById("Main").src = Main;
-        AudioObj.play().catch(e => console.log("Autoplay prevented."));
+        
+        // Modern browsers block autoplay. We handle the promise to avoid console errors.
+        var playPromise = AudioObj.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("Autoplay prevented. User must interact first.");
+            });
+        }
+        
         document.getElementById("pageNo").textContent = (currentPagePointer + 1) + " / " + totPages;
     }
 
@@ -226,6 +214,7 @@
         var x = e.clientX - rect.left;
         var y = e.clientY - rect.top;
 
+        // Calculate percentage based on the DISPLAYED size of the image
         pcntX = parseInt(100 * x / rect.width);
         pcntY = parseInt(100 * y / rect.height);
 
@@ -237,8 +226,6 @@
             movePage(1);
         } else {
             BTN = 0;
-            const baseUrl = window.tutorialBaseUrl;
-            
             if (PageType == "q") {
                 for (j = 1; j <= FeedbackNumber; j++) {
                     ButtonLimits = TutorialManifest[currentPagePointer].getAttribute("b" + j).split(",");
@@ -251,11 +238,11 @@
             }
             if (BTN > 0) {
                 if (PageType == "q") {
-                    Main = baseUrl + "slides/m_" + TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f") + ".png";
-                    AudioObj.src = baseUrl + "sound/m_s" + TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f") + ".mp3";
+                    Main = ResourcesBaseUrl + "slides/m_" + TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f") + ".png";
+                    AudioObj.src = ResourcesBaseUrl + "sound/m_s" + TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f") + ".mp3";
                 } else {
-                    Main = baseUrl + "slides/m_" + TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w") + ".png";
-                    AudioObj.src = baseUrl + "sound/" + TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w") + "_s_m.mp3";
+                    Main = ResourcesBaseUrl + "slides/m_" + TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w") + ".png";
+                    AudioObj.src = ResourcesBaseUrl + "sound/" + TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w") + "_s_m.mp3";
                 }
 
                 document.getElementById("Main").src = Main;
@@ -265,19 +252,18 @@
                 if (PageType == "o") PageType = "g"; else PageType = "";
                 bntNext.disabled = false;
             }
-
         }
     }
 
     function Credits() {
-        const baseUrl = window.tutorialBaseUrl;
-        Main = baseUrl + "slides/credits.png";
+        Main = ResourcesBaseUrl + "slides/credits.png";
         document.getElementById("Main").src = Main;
         PageType = "c";
     }
 
-    function JumpToSection(absY, currentHeight) {
-        SEC = parseInt((((absY * 480) / currentHeight) - 75) * totSections / 380) + 1;
+    function JumpToSection(absY, imgHeight) {
+        // Adjusted to use the actual image height
+        SEC = parseInt((((absY * 480) / imgHeight) - 75) * totSections / 380) + 1;
         var SecFind = 0;
         for (k = 0; k < totPages; k++) {
             if (TutorialManifest[k].getAttribute("p") == "s") SecFind++;
@@ -290,13 +276,12 @@
     }
 
     function Manifest() {
-        // Open the manifest XML in a new window
         const urlParams = new URLSearchParams(window.location.search);
         const manifestFile = urlParams.get('manifest');
         window.open(manifestFile, "_blank");
     }
 
-    // Initialize
+    // Start!
     startTutorial();
 
 </script>
