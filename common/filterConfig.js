@@ -1,4 +1,6 @@
+/* === --- FILTER & KEYWORD CONFIGURATION --- === */
 
+// A list of common "stop words" to ignore when generating keywords.
 const STOP_WORDS = new Set([
     'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have', 
     'he', 'in', 'is', 'it', 'its', 'of', 'on', 'or', 'that', 'the', 'to', 'was', 
@@ -10,7 +12,7 @@ const STOP_WORDS = new Set([
     'photo', 'usa', 'new', 'york', 'amazing', 'island'
 ]);
 
-
+// Cleans up keywords *before* they are added to the dropdown.
 const REPLACEMENT_MAP = {
     'javascript': 'js',
     'artificial': 'ai',
@@ -25,6 +27,7 @@ const REPLACEMENT_MAP = {
     'analytics': 'data'
 };
 
+// Expands search *when* a filter is selected.
 const SYNONYM_MAP = {
     'js': ['javascript'],
     'ai': ['artificial', 'intelligence'],
