@@ -1,4 +1,5 @@
-var lastContentPage = 'tech-posts.html'; 
+/* === GLOBAL SETUP & DYNAMIC CONTENT LOADING LOGIC === */
+var lastContentPage = 'posts.html'; // Default to posts.html
 
 $(document).ready(function () {
     
@@ -138,6 +139,7 @@ function loadContent(pageUrl, initialLoadOverride) {
             const isCertsPage = pageUrl.includes('certificates.html');
             const isAlbumPage = pageUrl.includes('album.html');
             const isResearchPage = pageUrl.includes('research.html'); 
+            const isTutorialsPage = pageUrl.includes('tutorials.html'); // <-- NEW
 
             if (isYouTubePage) {
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
@@ -150,11 +152,11 @@ function loadContent(pageUrl, initialLoadOverride) {
             } else if (isPostsPage) {
                 handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#posts-card-list', '#post-keyword-filter');
-                populateCategoryFilter('#posts-card-list', '#post-category-filter'); // <-- ADDED
+                populateCategoryFilter('#posts-card-list', '#post-category-filter');
             } else if (isCertsPage) { 
                 handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#cert-card-list', '#cert-keyword-filter');
-                populateCategoryFilter('#cert-card-list', '#cert-category-filter'); // <-- ADDED
+                populateCategoryFilter('#cert-card-list', '#cert-category-filter');
             } else if (isAlbumPage) { 
                 const queryString = pageUrl.split('?')[1];
                 if (queryString) {
@@ -162,7 +164,7 @@ function loadContent(pageUrl, initialLoadOverride) {
                     const jsonUrl = urlParams.get('json');
                     
                     if (jsonUrl) {
-                        loadPhotoAlbum(jsonUrl, initialLoadOverride); // This now calls populateCategoryFilter
+                        loadPhotoAlbum(jsonUrl, initialLoadOverride); 
                     } else {
                         $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
                     }
@@ -172,11 +174,13 @@ function loadContent(pageUrl, initialLoadOverride) {
             } else if (isResearchPage) { 
                 handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#research-card-list', '#research-keyword-filter');
-                populateCategoryFilter('#research-card-list', '#research-category-filter'); // <-- ADDED
+                populateCategoryFilter('#research-card-list', '#research-category-filter');
+            } else if (isTutorialsPage) { // <-- NEW
+                handleCardView($contentArea, initialLoadOverride);
+                populateSmartKeywords('#tutorials-card-list', '#tutorials-keyword-filter');
+                populateCategoryFilter('#tutorials-card-list', '#tutorials-category-filter');
             }
             
-            // This function is from an old script, but we keep the call
-            // in case you are still using it for certificates.
             if (typeof initializeImageModal === 'function') {
                 initializeImageModal(); 
             }
