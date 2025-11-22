@@ -62,7 +62,7 @@
     <div id="tutorialContainer">
         <div id="loadingState" class="content-loader">
             <div class="spinner"></div>
-            <p>Loading Tutorial...</p>
+            <p>Loading...</p>
         </div>
 
         <div id="tutorialSection" style="display: none;">
@@ -70,7 +70,7 @@
             <!-- Slide Image Area -->
             <div class="slide-container">
                 <!-- Using width/height 100% in CSS to force full usage -->
-                <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Tutorial Slide">
+                <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Slide">
             </div>
 
             <!-- Navigation Bar -->
@@ -94,7 +94,7 @@
         
         <div id="summaryOverlay">
             <div class="summary-box">
-                <h2>Tutorial Summary</h2>
+                <h2>Content Summary</h2>
                 <ul id="summaryList" class="summary-list"></ul>
                 <div id="summaryTotal" class="summary-total"></div>
                 <button class="close-summary-btn" onclick="HideSummary()">Close</button>
@@ -106,7 +106,7 @@
 
 <script>
     var ServerPath = ""; 
-    var TutorialManifest;
+    var TutorialManifest = []; // Changed to Array for JSON support
     var FeedbackNumber = 0;
     var totPages = 0;
     var totSections = 0;
@@ -114,14 +114,15 @@
     var QcurrentPagePointer = 0;
     var PageType = "";
     var doc;
-    var TutorialLanguage = "";
+    var TutorialLanguage = "English";
+    var isJsonMode = false; // Flag for JSON album mode
+    
     const CORS_PROXY = "https://corsproxy.io/?";
 
     var AudioObj, bntNext, bntPrevious, PageObject;
     var x = new XMLHttpRequest();
 
     window.onload = function() {
-        // Focus the body to capture keystrokes immediately
         document.body.focus();
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -135,11 +136,21 @@
             return;
         }
 
-        const lastSlashIndex = manifestUrl.lastIndexOf('/');
-        ServerPath = manifestUrl.substring(0, lastSlashIndex + 1); 
+        // Check file extension
+        if (manifestUrl.toLowerCase().endsWith('.json')) {
+            isJsonMode = true;
+            fetchJsonManifest(manifestUrl);
+        } else {
+            // XML Mode (Original Tutorial)
+            const lastSlashIndex = manifestUrl.lastIndexOf('/');
+            ServerPath = manifestUrl.substring(0, lastSlashIndex + 1); 
+            fetchXmlManifest(manifestUrl);
+        }
+    };
 
-        const proxyUrl = CORS_PROXY + encodeURIComponent(manifestUrl);
-        
+    // --- XML HANDLING ---
+    function fetchXmlManifest(url) {
+        const proxyUrl = CORS_PROXY + encodeURIComponent(url);
         x.open("GET", proxyUrl, true);
         x.onreadystatechange = function () {
             if (x.readyState == 4) {
@@ -151,6 +162,9 @@
                              showError("Error parsing XML manifest.");
                              return;
                         }
+                        // Convert XML NodeList to Array for consistent handling
+                        const nodes = doc.getElementsByTagName("s");
+                        TutorialManifest = Array.from(nodes); 
                         initPlayer();
                     } catch (e) {
                         showError("Error processing manifest: " + e.message);
@@ -161,85 +175,146 @@
             }
         };
         x.send(null);
-    };
+    }
+
+    // --- JSON HANDLING (NEW) ---
+    function fetchJsonManifest(url) {
+        // Fetch JSON directly (assuming jquery or fetch is available, or use XHR)
+        // Using standard XHR for consistency
+        const proxyUrl = CORS_PROXY + encodeURIComponent(url);
+        x.open("GET", proxyUrl, true);
+        x.onreadystatechange = function () {
+            if (x.readyState == 4) {
+                if(x.status == 200) {
+                    try {
+                        const data = JSON.parse(x.responseText);
+                        buildManifestFromJson(data);
+                        initPlayer();
+                    } catch (e) {
+                        showError("Error parsing JSON album: " + e.message);
+                    }
+                } else {
+                    showError("Failed to load album: " + x.status);
+                }
+            }
+        };
+        x.send(null);
+    }
+
+    function buildManifestFromJson(data) {
+        // Convert flat photo list into structured manifest with sections
+        const title = data.albumTitle || "Photo Album";
+        TutorialLanguage = "Visual"; // No audio
+        
+        // Update title immediately
+        document.getElementById("Title").innerHTML = `<strong>${title}</strong>`;
+        
+        TutorialManifest = [];
+        let currentCategory = "";
+
+        // 1. Add Intro Slide (Optional, or just start)
+        
+        data.photos.forEach(photo => {
+            // If category changes, add a Section node
+            if (photo.category !== currentCategory) {
+                currentCategory = photo.category;
+                TutorialManifest.push({
+                    type: "s", // Section
+                    title: currentCategory,
+                    isJson: true
+                });
+            }
+
+            // Add Photo node
+            TutorialManifest.push({
+                type: "o", // Object/Slide
+                url: photo.url,
+                thumb: photo.thumbnailUrl,
+                title: photo.title,
+                desc: photo.description,
+                isJson: true
+            });
+        });
+
+        // Add End node
+        TutorialManifest.push({ type: "end", isJson: true });
+    }
+
+    // --- PLAYER LOGIC ---
 
     // --- KEYBOARD NAVIGATION ---
     document.addEventListener('keydown', function(e) {
-        // Don't navigate if error state is showing
         if (document.getElementById("errorState").style.display === "block") return;
 
         switch(e.key) {
-            case "ArrowLeft":
-                movePage(-1);
-                break;
+            case "ArrowLeft": movePage(-1); break;
             case "ArrowRight":
             case " ": // Spacebar
-                e.preventDefault(); // Prevent scrolling the page down
+                e.preventDefault(); 
                 movePage(1);
                 break;
             case "PageDown":
                 e.preventDefault();
-                navToSection(1); // Next Section
+                navToSection(1); 
                 break;
             case "PageUp":
                 e.preventDefault();
-                navToSection(-1); // Prev Section
+                navToSection(-1);
                 break;
         }
     });
 
     function navToSection(direction) {
         let foundIndex = -1;
-        
         if (direction === 1) {
-            // Find NEXT section (s)
             for (let i = currentPagePointer + 1; i < totPages; i++) {
-                if (TutorialManifest[i].getAttribute("p") === "s") {
-                    foundIndex = i;
-                    break;
+                if (isJsonMode) {
+                    if (TutorialManifest[i].type === "s") { foundIndex = i; break; }
+                } else {
+                    if (TutorialManifest[i].getAttribute("p") === "s") { foundIndex = i; break; }
                 }
             }
         } else {
-            // Find PREV section (s)
-            // Look backwards from current position
             for (let i = currentPagePointer - 1; i >= 0; i--) {
-                if (TutorialManifest[i].getAttribute("p") === "s") {
-                    foundIndex = i;
-                    break;
+                if (isJsonMode) {
+                    if (TutorialManifest[i].type === "s") { foundIndex = i; break; }
+                } else {
+                    if (TutorialManifest[i].getAttribute("p") === "s") { foundIndex = i; break; }
                 }
             }
         }
-
         if (foundIndex !== -1) {
             currentPagePointer = foundIndex;
-            movePage(0); // Update view
+            movePage(0); 
         }
-    }
-    // ---------------------------
-
-    function showError(msg) {
-        document.getElementById("loadingState").style.display = "none";
-        const err = document.getElementById("errorState");
-        err.style.display = "block";
-        err.textContent = msg;
     }
 
     function initPlayer() {
         document.getElementById("loadingState").style.display = "none";
         document.getElementById("tutorialSection").style.display = "flex";
+        
         setTutorialParameters();
         movePage(0);
     }
 
     function setTutorialParameters() {
-        TutorialManifest = doc.getElementsByTagName("s");
         totPages = TutorialManifest.length;
-        for (i = 0; i < totPages; i++) if (TutorialManifest[i].getAttribute("p") == "s") totSections++;
         
-        const Title = doc.getElementsByTagName("Title")[0].textContent;
-        TutorialLanguage = doc.getElementsByTagName("Language")[0].textContent;
-        
-        document.getElementById("Title").innerHTML = `<strong>${Title}</strong> <span style="opacity:0.7; font-size:0.8em">(${TutorialLanguage})</span>`;
+        if (isJsonMode) {
+            // JSON Mode Parameters
+            totSections = 0;
+            for (let i = 0; i < totPages; i++) {
+                if (TutorialManifest[i].type === "s") totSections++;
+            }
+            // Title already set in build function
+        } else {
+            // XML Mode Parameters
+            for (i = 0; i < totPages; i++) if (TutorialManifest[i].getAttribute("p") == "s") totSections++;
+            
+            const Title = doc.getElementsByTagName("Title")[0].textContent;
+            TutorialLanguage = doc.getElementsByTagName("Language")[0].textContent;
+            document.getElementById("Title").innerHTML = `<strong>${Title}</strong> <span style="opacity:0.7; font-size:0.8em">(${TutorialLanguage})</span>`;
+        }
         
         AudioObj = document.getElementById("Audio");
         bntNext = document.getElementById("btnNext");
@@ -253,50 +328,105 @@
         if (currentPagePointer > 0) bntPrevious.disabled = false; else bntPrevious.disabled = true;
         QcurrentPagePointer = currentPagePointer;
         
-        if (currentPagePointer < totPages - 1) {
-            PageType = TutorialManifest[currentPagePointer].getAttribute("p");
-
-            let fileExt = ".png";
-            if (TutorialManifest[currentPagePointer].getAttribute("a") == "1") fileExt = ".gif";
-            if (PageType == "s") fileExt = "_S.png";
-
-            const filename = TutorialManifest[currentPagePointer].getAttribute("f");
+        if (currentPagePointer < totPages) {
             
-            document.getElementById("Main").src = ServerPath + "slides/m_" + filename + fileExt;
-            AudioObj.src = ServerPath + "sound/m_s" + filename + ".mp3";
+            if (isJsonMode) {
+                // --- JSON MODE RENDER ---
+                const item = TutorialManifest[currentPagePointer];
+                PageType = item.type;
+                
+                if (PageType === "end") {
+                     bntNext.disabled = true;
+                     document.getElementById("Main").src = "https://placehold.co/800x600/000000/ffffff?text=End+of+Album"; // Fallback
+                     return;
+                }
+                
+                if (PageType === "s") {
+                    // Section Slide - Show Title Overlay? 
+                    // For now, we skip to next or show a placeholder
+                    // Let's show a section title card
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 800; canvas.height = 600;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = "#1f2833"; ctx.fillRect(0,0,800,600);
+                    ctx.fillStyle = "#66fcf1"; ctx.font = "bold 60px Arial"; ctx.textAlign = "center";
+                    ctx.fillText(item.title, 400, 300);
+                    document.getElementById("Main").src = canvas.toDataURL();
+                } else {
+                    // Photo Slide
+                     document.getElementById("Main").src = item.url;
+                }
+                
+                bntNext.disabled = (currentPagePointer >= totPages - 1);
 
-            if (PageType == "q") {
-                bntNext.disabled = true;
-                FeedbackNumber = TutorialManifest[currentPagePointer].getElementsByTagName("f").length;
             } else {
-                glossaryNumber = TutorialManifest[currentPagePointer].getElementsByTagName("g").length;
-                bntNext.disabled = false;
-                FeedbackNumber = 0;
+                // --- XML MODE RENDER (Original) ---
+                // Check bounds
+                if (currentPagePointer >= totPages) { return; } // Safety
+                
+                // Special check for end
+                if (currentPagePointer === totPages - 1 && TutorialManifest[currentPagePointer].tagName !== 's') {
+                     // It's the end
+                } else if (TutorialManifest[currentPagePointer].getAttribute("f").includes("end")) {
+                     // End detected in manifest
+                }
+
+                PageType = TutorialManifest[currentPagePointer].getAttribute("p");
+
+                // Handle End Slide logic which might be inside the loop for XML
+                // The XML structure usually has a specific node for end, or we run off the end.
+                // Let's follow strict index.
+                
+                 let fileExt = ".png";
+                if (TutorialManifest[currentPagePointer].getAttribute("a") == "1") fileExt = ".gif";
+                if (PageType == "s") fileExt = "_S.png";
+
+                const filename = TutorialManifest[currentPagePointer].getAttribute("f");
+                
+                // XML End logic check
+                if (filename.includes("end")) {
+                     // It is an end slide
+                     bntNext.disabled = true;
+                     // Construct relative path for end
+                     // Note: logic from before
+                     const langExt = (TutorialLanguage === "Spanish") ? "_s" : "";
+                     document.getElementById("Main").src = ServerPath + "../../common/end" + langExt + ".gif";
+                     AudioObj.src = ServerPath + "../../common/end" + langExt + ".mp3";
+                } else {
+                    document.getElementById("Main").src = ServerPath + "slides/m_" + filename + fileExt;
+                    AudioObj.src = ServerPath + "sound/m_s" + filename + ".mp3";
+                    
+                    // Play Audio
+                    var playPromise = AudioObj.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => { console.log("Autoplay prevented."); });
+                    }
+                }
+
+                if (PageType == "q") {
+                    bntNext.disabled = true;
+                    FeedbackNumber = TutorialManifest[currentPagePointer].getElementsByTagName("f").length;
+                } else {
+                    glossaryNumber = TutorialManifest[currentPagePointer].getElementsByTagName("g").length;
+                    bntNext.disabled = false;
+                    FeedbackNumber = 0;
+                }
             }
-        } else {
-            bntNext.disabled = true;
-            const langExt = (TutorialLanguage === "Spanish") ? "_s" : "";
-            document.getElementById("Main").src = ServerPath + "../../common/end" + langExt + ".gif";
-            AudioObj.src = ServerPath + "../../common/end" + langExt + ".mp3";
-        }
-        
-        var playPromise = AudioObj.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                // Auto-play prevented logic
-            });
-        }
+        } 
         
         document.getElementById("pageNo").textContent = (currentPagePointer + 1) + " / " + totPages;
     }
 
     function PageClick(e) {
+        if (isJsonMode) {
+            movePage(1); // Just advance
+            return;
+        }
+        
         var rect = e.target.getBoundingClientRect();
         var x = e.clientX - rect.left;
         var y = e.clientY - rect.top;
-
         const pcntX = parseInt(100 * x / rect.width);
-        const pcntY = parseInt(100 * y / rect.height);
 
         if (PageType == "s") {
             if ( 20 < pcntX && pcntX < 80 ) JumpToSection(y, rect.height);
@@ -342,25 +472,6 @@
         }
     }
 
-    function Credits() {
-        document.getElementById("Main").src = ServerPath + "slides/credits.png";
-        PageType = "c";
-    }
-
-    function JumpToSection(absY, imgHeight) {
-        var factor = 480 / imgHeight;
-        SEC = parseInt((((absY * factor)) - 75) * totSections / 380) + 1;
-        var SecFind = 0;
-        for (let k = 0; k < totPages; k++) {
-            if (TutorialManifest[k].getAttribute("p") == "s") SecFind++;
-            if (SecFind == SEC) {
-                currentPagePointer = k;
-                movePage(0);
-                break;
-            }
-        }
-    }
-
     function ShowSummary() {
         const summaryList = document.getElementById('summaryList');
         const summaryTotal = document.getElementById('summaryTotal');
@@ -373,13 +484,25 @@
         let sectionName = "Intro";
 
         for (let i = 0; i < TutorialManifest.length; i++) {
-            const type = TutorialManifest[i].getAttribute("p");
-            if (type === "s") {
-                if (i > 0) addSummaryItem(sectionName, currentSectionPages);
-                sectionName = TutorialManifest[i].getAttribute("s") || `Section ${sectionCount + 1}`;
-                sectionCount++;
-                currentSectionPages = 0;
+            let type;
+            if (isJsonMode) {
+                type = TutorialManifest[i].type;
+                if (type === "s") {
+                    if (i > 0) addSummaryItem(sectionName, currentSectionPages);
+                    sectionName = TutorialManifest[i].title;
+                    sectionCount++;
+                    currentSectionPages = 0;
+                }
+            } else {
+                type = TutorialManifest[i].getAttribute("p");
+                if (type === "s") {
+                    if (i > 0) addSummaryItem(sectionName, currentSectionPages);
+                    sectionName = TutorialManifest[i].getAttribute("s") || `Section ${sectionCount + 1}`;
+                    sectionCount++;
+                    currentSectionPages = 0;
+                }
             }
+            
             if (type === "q") questionCount++;
             currentSectionPages++;
         }
@@ -388,19 +511,33 @@
         summaryTotal.innerHTML = `
             <div>Total Sections: ${sectionCount}</div>
             <div>Total Pages: ${totalPages}</div>
-            <div>Total Questions: ${questionCount}</div>
+            ${isJsonMode ? '' : `<div>Total Questions: ${questionCount}</div>`}
         `;
         document.getElementById('summaryOverlay').style.display = 'flex';
     }
 
     function addSummaryItem(name, pageCount) {
         const li = document.createElement('li');
-        li.innerHTML = `<span>${name}</span> <span>${pageCount} pages</span>`;
+        li.innerHTML = `<span>${name}</span> <span>${pageCount} slides</span>`;
         document.getElementById('summaryList').appendChild(li);
     }
 
     function HideSummary() {
         document.getElementById('summaryOverlay').style.display = 'none';
+    }
+    
+    function Credits() {
+        if (isJsonMode) {
+            alert("Photo Album generated dynamically.");
+        } else {
+            document.getElementById("Main").src = ServerPath + "slides/credits.png";
+            PageType = "c";
+        }
+    }
+    
+    function Manifest() {
+        const urlParams = new URLSearchParams(window.location.search);
+        window.open(urlParams.get('manifest'), "_blank");
     }
 </script>
 </body>
