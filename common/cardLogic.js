@@ -17,14 +17,14 @@ function decodeText(text) {
 
 /* === GLOBAL VIEW FUNCTIONS === */
 
-
 function handleCardView($scope, initialLoadOverride, incrementOverride) {
     $scope.find('.card-list').each(function() {
         const $list = $(this);
         const $items = $list.children('.card-item');
         const totalItems = $items.length;
         const initialLimit = parseInt(initialLoadOverride) || 10;
-        const increment = parseInt(incrementOverride) || 10; // Allow override
+        // Allow custom increment (default to 10 if not provided)
+        const increment = parseInt(incrementOverride) || 10; 
         
         $list.next('.toggle-card-button').remove(); 
         
@@ -33,27 +33,82 @@ function handleCardView($scope, initialLoadOverride, incrementOverride) {
             const remaining = totalItems - initialLimit;
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
             
-            $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
+            $button.data({
+                'visible-count': initialLimit, 
+                'increment': increment, 
+                'total-items': totalItems
+            });
+            // Note: The click listener for this button is delegated in mainPage.js
             $list.after($button);
         }
     });
 }
-
 
 function showMoreCards($button, $list) {
     const $items = $list.children('.card-item');
     const totalItems = parseInt($button.data('total-items') || 0);
     const increment = parseInt($button.data('increment') || 10);
     const visibleCount = parseInt($button.data('visible-count') || 0);
+    
+    // Calculate new visible count
     const newVisibleCount = visibleCount + increment;
     
     $items.slice(visibleCount, newVisibleCount).removeClass('hidden-card-item');
     $button.data('visible-count', newVisibleCount);
     
     const remaining = totalItems - newVisibleCount;
-    if (remaining <= 0) { $button.hide(); } 
-    else { $button.text(`Show More (${remaining} more) \u25BC`); }
+    if (remaining <= 0) { 
+        $button.hide(); 
+    } else { 
+        $button.text(`Show More (${remaining} more) \u25BC`); 
+    }
 }
+
+/* ... (Keep handleModalKeys, populateCategoryFilter, populateSmartKeywords, etc.) ... */
+
+/* ... (Keep loadPhotoAlbum: ensure it supports the updated handleCardView logic) ... */
+
+function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
+    const $albumList = $('#photo-album-list');
+    // If called from about page, check for #about-album-list
+    const $targetList = $albumList.length ? $albumList : $('#about-album-list');
+    
+    $.getJSON(jsonUrl, function (albumData) {
+        if ($('#album-title').length) {
+            $('#album-title').text(decodeText(albumData.albumTitle));
+        }
+        
+        $targetList.empty(); 
+        
+        $.each(albumData.photos, function(index, photo) {
+            const title = decodeText(photo.title);
+            const category = decodeText(photo.category);
+            const description = decodeText(photo.description);
+            const cardHtml = `
+                <div class="card-item" data-category="${category}" data-keywords="${title},${description}">
+                    <a href="${photo.url}" data-load-type="image">
+                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
+                        <div class="photo-details"><h3>${title}</h3><p>${description}</p></div>
+                    </a>
+                </div>`;
+            $targetList.append(cardHtml);
+        });
+        
+        if ($('#album-category-filter').length) {
+            populateCategoryFilter('#photo-album-list', '#album-category-filter');
+            populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
+        }
+        
+        // Pass '20' as the increment for album lists if needed, or default
+        // For the About Page, we want 20.
+        const increment = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
+        handleCardView($targetList.parent(), initialLoadOverride, increment);
+        
+    }).fail(function() { 
+        if ($('#album-title').length) $('#album-title').text("Error Loading Album"); 
+    });
+}
+
 
 function handleModalKeys(e) {
     if (!$('#content-modal').is(':visible')) {
@@ -181,30 +236,6 @@ function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResult
 }
 
 /* === LOAD DATA FUNCTIONS === */
-
-function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
-    const $albumList = $('#photo-album-list');
-    $.getJSON(jsonUrl, function (albumData) {
-        $('#album-title').text(decodeText(albumData.albumTitle));
-        $albumList.empty(); 
-        $.each(albumData.photos, function(index, photo) {
-            const title = decodeText(photo.title);
-            const category = decodeText(photo.category);
-            const description = decodeText(photo.description);
-            const cardHtml = `
-                <div class="card-item" data-category="${category}" data-keywords="${title},${description}">
-                    <a href="${photo.url}" data-load-type="image">
-                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
-                        <div class="photo-details"><h3>${title}</h3><p>${description}</p></div>
-                    </a>
-                </div>`;
-            $albumList.append(cardHtml);
-        });
-        populateCategoryFilter('#photo-album-list', '#album-category-filter');
-        populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
-        handleCardView($('#content-area'), initialLoadOverride);
-    }).fail(function() { $('#album-title').text("Error Loading Album"); });
-}
 
 function loadVids(PL, Category, BKcol, initialLoadOverride) {
     $('#Grid').empty(); 
