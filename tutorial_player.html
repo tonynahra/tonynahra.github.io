@@ -2,12 +2,12 @@
   Refactored Tutorial Engine
   Uses simple flexbox to keep image centered and controls at the bottom.
 -->
-<div id="tutorialContainer">
-    <div id="tutorialSection" style="display: none;">
+<div id="tutorialContainer" style="height: 100vh; width: 100%; display: flex; flex-direction: column; overflow: hidden;">
+    <div id="tutorialSection" style="display: none; height: 100%; flex-direction: column;">
         
         <!-- The Slide Area (Takes all available space) -->
-        <div class="slide-area">
-            <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Slide">
+        <div class="slide-wrapper" style="flex-grow: 1; display: flex; justify-content: center; align-items: center; background-color: #000; overflow: hidden;">
+            <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Tutorial Slide" style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; cursor: pointer;">
         </div>
 
         <!-- Navigation Controls Bar -->
@@ -34,9 +34,9 @@
     <div id="error-container" class="error-message" style="display: none;"></div>
 </div>
 
-
 <script>
     // --- Configuration ---
+    var ServerPath = ""; 
     var TutorialPath = ""; 
     var TutorialLanguage = "";
     var TutorialManifest;
@@ -69,8 +69,6 @@
         }
 
         // Calculate the base URL for resources (slides/sound)
-        // Example: https://site.com/data/tutorials/diabetes/mobile/A2.xml
-        // Base:    https://site.com/data/tutorials/diabetes/mobile/
         const lastSlash = manifestUrl.lastIndexOf("/");
         ResourcesBaseUrl = manifestUrl.substring(0, lastSlash + 1);
 
@@ -96,7 +94,6 @@
                         }
 
                         if (!doc || doc.getElementsByTagName("parsererror").length > 0) {
-                            // If direct parse failed, and we haven't tried proxy, try it
                             if (!useProxy) {
                                 console.warn("Direct XML parse failed. Retrying with CORS proxy...");
                                 fetchManifest(url, true);
@@ -106,6 +103,7 @@
                             return;
                         }
                         
+                        // Ensure display is flex to maintain layout
                         document.getElementById("tutorialSection").style.display = "flex";
                         setTutorialParameters();
                         movePage(0);
@@ -142,7 +140,6 @@
         Title = doc.getElementsByTagName("Title")[0].textContent;
         TutorialLanguage =  doc.getElementsByTagName("Language")[0].textContent;
         
-        // Use try-catch for optional tags
         try {
              TutorialPath = doc.getElementsByTagName("folder")[0].textContent;
         } catch(e) {
@@ -188,16 +185,12 @@
             bntNext.disabled = true;
             if ( TutorialLanguage == "Spanish" ) LanguageExt = "_s"; else LanguageExt = "";
             
-            // Note: The "common/end" path is tricky if we don't know the server structure.
-            // We'll try to find it relative to the base, assuming standard structure.
-            // Or we can use a fallback if it fails.
             Main = ResourcesBaseUrl + "../../common/end" + LanguageExt + ".gif";
             AudioObj.src = ResourcesBaseUrl + "../../common/end" + LanguageExt + ".mp3";
         }
         
         document.getElementById("Main").src = Main;
         
-        // Modern browsers block autoplay. We handle the promise to avoid console errors.
         var playPromise = AudioObj.play();
         if (playPromise !== undefined) {
             playPromise.catch(error => {
@@ -213,7 +206,6 @@
         var x = e.clientX - rect.left;
         var y = e.clientY - rect.top;
 
-        // Calculate percentage based on the DISPLAYED size of the image
         pcntX = parseInt(100 * x / rect.width);
         pcntY = parseInt(100 * y / rect.height);
 
@@ -261,7 +253,6 @@
     }
 
     function JumpToSection(absY, imgHeight) {
-        // Adjusted to use the actual image height
         SEC = parseInt((((absY * 480) / imgHeight) - 75) * totSections / 380) + 1;
         var SecFind = 0;
         for (k = 0; k < totPages; k++) {
