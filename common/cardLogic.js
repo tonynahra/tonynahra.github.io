@@ -1,21 +1,16 @@
 /* === GLOBAL VARIABLES === */
-var currentCardList = []; // Stores the list of cards for modal navigation
-var currentCardIndex = 0; // Stores the current position in the modal
-var isModalInfoVisible = false; // Stores the state of the info toggle
+var currentCardList = []; 
+var currentCardIndex = 0; 
+var isModalInfoVisible = false; 
 
 // --- STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are in filterConfig.js ---
 
-/**
- * Helper function to safely decode text.
- */
 function decodeText(text) {
     if (!text) return "";
     try {
         var $textarea = $('<textarea></textarea>');
         $textarea.html(text);
-        let decoded = $textarea.val();
-        decoded = decodeURIComponent(decoded);
-        return decoded;
+        return $textarea.val();
     } catch (e) {
         return text;
     }
@@ -327,13 +322,7 @@ function buildResearchModal(jsonUrl) {
             if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl, '#research-tab-content-modal'); }
             $tabNav.append($button);
         });
-        
-        // Attach close handler to the button we just created inside the modal content
-        $modalContent.find('.modal-close-btn').on('click', function() { 
-             // Trigger the main close logic by finding the button in the main header (even if hidden) or calling the function directly
-             // But since main header might be hidden, let's just trigger the same logic:
-             $('.modal-close-btn').first().click(); 
-        });
+        $modalContent.find('.modal-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
     });
 }
 
@@ -343,8 +332,6 @@ function loadModalTabContent(htmlUrl, targetId) {
     $target.closest('#modal-content-area').find('.research-modal-header .open-new-window').attr('href', htmlUrl);
     $target.html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`);
 }
-
-/* === LOAD MODAL CONTENT === */
 
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) {
@@ -366,7 +353,7 @@ function loadModalContent(index) {
     const loadUrl = $link.attr('href');
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
-    const manifestUrl = $link.data('manifest-url'); // For Tutorials
+    const manifestUrl = $link.data('manifest-url');
     
     // 1. Research Logic
     if (loadType === 'research' && jsonUrl) {
@@ -382,11 +369,15 @@ function loadModalContent(index) {
         $modal.removeClass('research-mode');
         $modal.find('.modal-header').hide();
         
+        // Pass the manifest URL to the player with a CORS proxy prefix just in case
+        // We'll let the player handle the proxy logic based on the query param if needed
+        // For now, we assume the player handles it.
+        const playerUrl = `tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}`;
         $modalOpenLink.attr('href', manifestUrl);
         
         const playerHtml = `
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
-                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
+                <iframe src="${playerUrl}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
             </div>
             <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px;">&times;</button>
         `;
@@ -408,6 +399,7 @@ function loadModalContent(index) {
     $modalContent.find('.modal-photo-info').remove();
     $modalInfoBtn.hide(); 
     
+    // Auto-guess type
     if (!loadType) {
         if (loadUrl.startsWith('http')) {
             if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
@@ -444,10 +436,7 @@ function loadModalContent(index) {
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
                     $modalContent.html(data); 
-                    if (infoHtml) {
-                        $modalContent.append(infoHtml);
-                        $modalInfoBtn.show();
-                    }
+                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -469,10 +458,10 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'blocked':
-            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
+            $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
             break;
         default: 
-            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
+            $modalContent.html('<div class="error-message">Link cannot be opened here.</div>');
             break;
     }
     
@@ -480,17 +469,16 @@ function loadModalContent(index) {
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
 
+// --- DELEGATED EVENT LISTENERS ---
+// Note: Only for specific filter logic that needs jQuery objects available immediately
 function filterYouTubeCards() {
     const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
     const selectedKeyword = $('#youtube-keyword-filter').val();
-    
     const $grid = $('#Grid');
     const $allCards = $grid.children('.card-item');
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $('#youtube-no-results');
-    
     let visibleCount = 0;
-
     if (searchTerm.length > 0 || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
@@ -503,8 +491,7 @@ function filterYouTubeCards() {
                 visibleCount++;
             } else { $card.hide(); }
         });
-        if (visibleCount === 0) { $noResultsMessage.show(); } 
-        else { $noResultsMessage.hide(); }
+        if (visibleCount === 0) $noResultsMessage.show(); else $noResultsMessage.hide();
     } else {
         $noResultsMessage.hide();
         $allCards.removeAttr('style'); 
