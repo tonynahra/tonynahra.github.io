@@ -1,0 +1,44 @@
+<section class="tutorials-page card-list-page">
+    
+    <div class="filter-bar">
+        <h2>Interactive Tutorials</h2>
+        <div class="filter-controls">
+            <div class="search-wrapper">
+                <input type="search" id="tutorials-search-box" placeholder="Filter by title/desc...">
+            </div>
+            <div class="category-wrapper">
+                <select id="tutorials-category-filter">
+                    <option value="all">All Categories</option>
+                    <!-- Options populated by JS -->
+                </select>
+            </div>
+            <div class="keyword-wrapper">
+                <select id="tutorials-keyword-filter">
+                    <option value="all">Top Keywords</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="tutorials-card-list" class="card-list">
+        
+        <!-- Example Card -->
+        <div class="card-item" data-category="Medical" style="border-left-color: #e74c3c;">
+            <img src="https://placehold.co/400x200/2c3e50/e74c3c?text=Diabetes+DKA" class="card-image" alt="DKA Tutorial">
+            <h3>Diabetic Ketoacidosis (DKA)</h3>
+            <p>An interactive guide on the causes, symptoms, and treatments of DKA.</p>
+            <span class="card-category">Medical</span>
+            <a href="tutorial_player.html" 
+               data-load-type="tutorial" 
+               data-manifest-url="https://m.x-plain.com/modules/diabetes/db180101/mobile/A2.xml">
+               Start Tutorial &rarr;
+            </a>
+        </div>
+
+         <!-- Add more cards here -->
+        
+    </div>
+    
+    <p id="tutorials-no-results" class="error-message" style="display: none;">No tutorials match your filter.</p>
+    
+</section>
