@@ -1,12 +1,12 @@
 <section class="about-me-page">
     
-    <h2 style="margin-bottom: 30px; color: var(--text-accent);">About Me</h2>
+    <h2 style="margin-bottom: 30px; color: var(--text-accent); font-size: 2rem;">About Me</h2>
     
     <!-- 
        PART 1: Text Sections as "Cards" 
-       We reuse the 'card-list' and 'card-item' classes to get the masonry box layout.
+       Using 'card-list' gives us the responsive grid layout.
     -->
-    <div class="card-list">
+    <div class="card-list text-cards">
         
         <!-- Card 1: Intro -->
         <div class="card-item" style="border-left-color: #3498db;">
@@ -30,14 +30,20 @@
         <!-- Card 3: Professional Journey -->
         <div class="card-item" style="border-left-color: #f1c40f;">
             <h3>Professional Journey</h3>
+            
+            <h4 style="color: var(--text-primary); margin-top: 15px; font-size: 1.1rem;">Current: Iowa Health Care</h4>
             <p>
-                Over the years, I've had the privilege of working in diverse sectors, including healthcare and finance. 
-                At the <strong>Patient Education Institute</strong>, I led the development of multimedia tutorial systems that have educated millions of patients worldwide. 
-                My work involved not just coding, but architecting scalable solutions that could handle multilingual content, offline access via tablets, and seamless integration with hospital EMR systems like Cerner.
+                Currently, I serve as an <strong>Application Developer</strong> at <strong>Iowa Health Care</strong>. In this role, I focus on building robust applications that support critical healthcare operations. 
+                My work involves full-stack development, integrating with complex medical data systems, and ensuring high availability and security for patient-centric tools.
+            </p>
+
+            <h4 style="color: var(--text-primary); margin-top: 15px; font-size: 1.1rem;">Previous Experience</h4>
+            <p>
+                For over two decades at the <strong>Patient Education Institute</strong>, I led the development of multimedia tutorial systems deployed worldwide. 
+                I architected solutions for multilingual content, offline tablet access, and seamless integration with EMR systems like Cerner.
             </p>
             <p style="margin-top: 10px;">
-                Prior to that, at the <strong>Abu Dhabi Investment Authority</strong>, I honed my skills in data analysis and financial modeling. 
-                I developed tools to simulate investment strategies, back-test theories, and visualize complex financial data for analysts managing billions in assets.
+                Prior to that, at the <strong>Abu Dhabi Investment Authority</strong>, I developed financial modeling tools to simulate investment strategies and visualize complex data for analysts managing billions in assets.
             </p>
         </div>
 
@@ -57,11 +63,12 @@
 
     <!-- 
        PART 2: Photo Album
-       We use a separate container ID so we can load the album specifically here.
+       This container will be populated by the script below.
+       The mainPage.js logic will handle the "Show More" button automatically 
+       if we initialize it correctly.
     -->
     <h2 style="margin: 40px 0 20px 0; color: var(--text-accent); border-top: 1px solid var(--bg-medium); padding-top: 20px;">My Life & Travels</h2>
     
-    <!-- This container will be populated by the script below -->
     <div id="about-album-list" class="card-list">
         <div class="content-loader">
             <div class="spinner"></div>
@@ -71,9 +78,6 @@
 </section>
 
 <script>
-    // We need to manually trigger the album load for this specific page.
-    // We reuse the logic from cardLogic.js but target our specific div.
-    
     $(document).ready(function() {
         const jsonUrl = "data/album.json";
         const $container = $('#about-album-list');
@@ -81,14 +85,11 @@
         $.getJSON(jsonUrl, function (albumData) {
             $container.empty(); 
             
-            // Loop through photos and create standard card items
             $.each(albumData.photos, function(index, photo) {
                 const title = decodeText(photo.title);
                 const category = decodeText(photo.category);
                 const description = decodeText(photo.description);
                 
-                // This HTML structure matches exactly what loadPhotoAlbum generates,
-                // ensuring the global click listeners in cardLogic.js will work!
                 const cardHtml = `
                     <div class="card-item" 
                          data-category="${category}" 
@@ -108,9 +109,10 @@
                 $container.append(cardHtml);
             });
             
-            // We don't need to add click listeners here because cardLogic.js 
-            // uses delegated listeners $('body').on('click', '.card-item', ...)
-            // which will automatically work for these new elements!
+            // --- IMPORTANT: Initialize "Show More" for this specific list ---
+            // We call the global helper function from cardLogic.js
+            // We pass 20 as the initial load limit.
+            handleCardView($('.about-me-page'), 20);
             
         }).fail(function() {
             $container.html('<div class="error-message">Could not load album.</div>');
