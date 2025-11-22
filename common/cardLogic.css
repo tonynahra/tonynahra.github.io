@@ -272,6 +272,7 @@ select:focus, input[type="search"]:focus {
 .modal-photo-info h3 { font-size: 1.2rem; color: #fff; margin-bottom: 5px; }
 .modal-photo-info p { font-size: 1rem; color: #eee; margin: 0; }
 
+
 /* --- Research Tab Styles --- */
 .research-modal-header {
     display: flex;
@@ -321,40 +322,57 @@ select:focus, input[type="search"]:focus {
     height: 100%;
 }
 
-.card-item p {
-    display: -webkit-box;
-    -webkit-line-clamp: 4; /* Limit to 4 lines */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    
-    /* Fallback properties */
-    line-height: 1.5em;
-    max-height: 6em; /* 4 lines * 1.5 line-height */
-}
-
-/* --- NEW: Financial Tools Styles --- */
-.financial-table {
-    width: 100%; border-collapse: collapse; margin-top: 15px; font-family: var(--font-code);
-}
-.financial-table th, .financial-table td {
-    padding: 10px 15px; text-align: left; border-bottom: 1px solid var(--bg-medium);
-}
+/* Financial Table Styles */
+.financial-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-family: var(--font-code); }
+.financial-table th, .financial-table td { padding: 10px 15px; text-align: left; border-bottom: 1px solid var(--bg-medium); }
 .financial-table th { color: var(--text-accent); font-size: 0.9rem; text-transform: uppercase; }
 .financial-table td { font-size: 1rem; color: var(--text-light); }
 .financial-table .positive { color: #2ecc71; }
 .financial-table .negative { color: #e74c3c; }
-.financial-table.balance-sheet td:first-child { color: var(--text-primary); font-weight: 600; }
 .financial-title { color: var(--text-primary); margin-bottom: 0; margin-top: 20px; }
-
 .financial-table th.align-right, .financial-table td.align-right { text-align: right; }
 .financial-table th.align-center, .financial-table td.align-center { text-align: center; }
 .financial-table th.align-left, .financial-table td.align-left { text-align: left; }
 
-.stock-chart { width: 100%; height: auto; }
-.stock-chart .x-axis path, .stock-chart .y-axis path, .stock-chart .x-axis .tick line, .stock-chart .y-axis .tick line { stroke: var(--bg-medium); }
-.stock-chart text { fill: var(--text-light); font-family: var(--font-code); font-size: 0.8rem; }
-.stock-chart .chart-title { fill: var(--text-primary); font-size: 1rem; font-weight: 600; }
-.stock-chart .rsi-line { stroke: var(--text-light); stroke-width: 0.5; stroke-dasharray: 2 2; }
-.stock-chart .volume-bar { fill: var(--text-light); opacity: 0.6; }
 
+/* --- PURE IMAGE MASONRY STYLES --- */
+/* Apply to both main album and about album */
+#photo-album-list .card-item,
+#about-album-list .card-item {
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    border-radius: 8px; /* Slightly round corners of the image container */
+    overflow: hidden;
+}
+
+#photo-album-list .card-image,
+#about-album-list .card-image {
+    width: 100%;
+    height: auto; /* Let height flow naturally */
+    display: block; /* Removes bottom gap */
+    object-fit: cover;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+    margin: 0;
+    border: none;
+}
+
+#photo-album-list .card-item:hover .card-image,
+#about-album-list .card-item:hover .card-image {
+    transform: scale(1.03); /* Subtle zoom */
+    filter: brightness(1.1);
+}
+
+/* Hide the details box in the grid view */
+#photo-album-list .photo-details,
+#about-album-list .photo-details {
+    display: none !important;
+}
+
+/* Remove any left border used for categories */
+#photo-album-list .card-item,
+#about-album-list .card-item {
+    border-left: none !important;
+}
