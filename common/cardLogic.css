@@ -332,6 +332,18 @@
     height: 100%;
 }
 
+.card-item p {
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* Limit to 4 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+    /* Fallback properties */
+    line-height: 1.5em;
+    max-height: 6em; /* 4 lines * 1.5 line-height */
+}
+
 /* --- NEW: Financial Tools Styles --- */
 .financial-table {
     width: 100%; border-collapse: collapse; margin-top: 15px; font-family: var(--font-code);
@@ -356,3 +368,4 @@
 .stock-chart .chart-title { fill: var(--text-primary); font-size: 1rem; font-weight: 600; }
 .stock-chart .rsi-line { stroke: var(--text-light); stroke-width: 0.5; stroke-dasharray: 2 2; }
 .stock-chart .volume-bar { fill: var(--text-light); opacity: 0.6; }
+
