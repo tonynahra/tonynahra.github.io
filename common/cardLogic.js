@@ -66,8 +66,6 @@ function showMoreCards($button, $list) {
 
 /* ... (Keep handleModalKeys, populateCategoryFilter, populateSmartKeywords, etc.) ... */
 
-/* ... (Keep loadPhotoAlbum: ensure it supports the updated handleCardView logic) ... */
-
 function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
     const $albumList = $('#photo-album-list');
     // If called from about page, check for #about-album-list
