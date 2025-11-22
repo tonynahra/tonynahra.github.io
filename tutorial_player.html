@@ -1,35 +1,29 @@
-<!-- 
-  Refactored Tutorial Engine
-  Loaded into the modal by cardLogic.js
-  It receives the manifest URL as a query parameter: ?manifest=...
--->
 <div id="tutorialContainer">
     <div id="tutorialSection" style="display: none;">
         
-        <!-- The main slide image -->
-        <div class="slide-wrapper">
-            <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Tutorial Slide">
+        <!-- The Slide Area (Takes all available space) -->
+        <div class="slide-area">
+            <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Slide">
         </div>
 
-        <!-- Navigation Controls -->
+        <!-- Navigation Controls Bar -->
         <div class="tutorial-nav">
-            <div id="Title" class="tutorial-title">Loading...</div>
+            <div class="nav-left">
+                 <div id="Title" class="tutorial-title">Loading...</div>
+            </div>
             
-            <div class="tutorial-controls">
-                <div class="extra-controls">
-                    <button onclick="Credits()" class="nav-btn secondary">Credits</button> 
-                    <button onclick="Manifest()" class="nav-btn secondary">Manifest</button>
-                </div>
-                
-                <div class="playback-controls">
-                    <button onclick="movePage(-1)" id="btnPrevious" class="nav-btn primary">Previous</button>  
-                    <span id="pageNo" class="page-number">-- / --</span>  
-                    <button onclick="movePage(1)" id="btnNext" class="nav-btn primary">Next</button>
-                </div>
+            <div class="nav-center">
+                 <button onclick="movePage(-1)" id="btnPrevious" class="nav-btn primary">&larr; Prev</button>  
+                 <span id="pageNo" class="page-number">-- / --</span>  
+                 <button onclick="movePage(1)" id="btnNext" class="nav-btn primary">Next &rarr;</button>
+            </div>
+            
+            <div class="nav-right">
+                 <button onclick="Credits()" class="nav-btn secondary">Credits</button> 
+                 <button onclick="Manifest()" class="nav-btn secondary">Manifest</button>
             </div>
         </div>
         
-        <!-- Audio Player (Hidden but active) -->
         <audio id="Audio" src="" autoplay style="display: none;"></audio>
     </div>
     
