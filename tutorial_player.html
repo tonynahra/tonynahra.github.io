@@ -16,25 +16,22 @@
         </div>
 
         <div id="tutorialSection" style="display: none;">
-            
-            <!-- Slide Area: Takes remaining height -->
-            <div class="slide-wrapper">
+            <div class="slide-container">
                 <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Tutorial Slide">
             </div>
 
-            <!-- Navigation Bar: Fixed height at bottom -->
             <div class="nav-bar">
-                <div id="Title" class="tutorial-title">Loading...</div>
+                <div id="Title" class="tutorial-title"></div>
                 
+                <div class="controls-group">
+                    <button onclick="Credits()" class="engine-btn secondary">Credits</button> 
+                    <button onclick="Manifest()" class="engine-btn secondary">Manifest</button>
+                </div>
+
                 <div class="controls-group playback">
                     <button onclick="movePage(-1)" id="btnPrevious" class="engine-btn primary">&larr; Prev</button>  
                     <span id="pageNo" class="page-counter">-- / --</span>  
                     <button onclick="movePage(1)" id="btnNext" class="engine-btn primary">Next &rarr;</button>
-                </div>
-
-                <div class="controls-group">
-                    <button onclick="Credits()" class="engine-btn secondary">Credits</button> 
-                    <button onclick="Manifest()" class="engine-btn secondary">Manifest</button>
                 </div>
             </div>
             
@@ -45,11 +42,7 @@
     </div>
 
 <script>
-    // ... (Script remains the same as the last working version you provided) ...
-    // --- Engine Configuration ---
-    var ServerPath = ""; 
-    var TutorialPath = "";
-    var TutorialLanguage = "";
+    var ResourcesBaseUrl = ""; 
     var TutorialManifest;
     var FeedbackNumber = 0;
     var totPages = 0;
@@ -62,7 +55,6 @@
     var AudioObj, bntNext, bntPrevious, PageObject;
     var x = new XMLHttpRequest();
 
-    // --- Initialization ---
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         const manifestUrl = urlParams.get('manifest');
@@ -75,9 +67,10 @@
             return;
         }
 
-        const lastSlashIndex = manifestUrl.lastIndexOf('/');
-        const xmlBaseDir = manifestUrl.substring(0, lastSlashIndex + 1); 
-        ServerPath = xmlBaseDir;
+        // Calculate the base directory from the full XML URL
+        // e.g., https://site.com/folder/A2.xml -> https://site.com/folder/
+        const lastSlash = manifestUrl.lastIndexOf('/');
+        ResourcesBaseUrl = manifestUrl.substring(0, lastSlash + 1);
 
         x.open("GET", manifestUrl, true);
         x.onreadystatechange = function () {
@@ -116,10 +109,10 @@
         totPages = TutorialManifest.length;
         for (i = 0; i < totPages; i++) if (TutorialManifest[i].getAttribute("p") == "s") totSections++;
         
-        Title = doc.getElementsByTagName("Title")[0].textContent;
-        TutorialLanguage = doc.getElementsByTagName("Language")[0].textContent;
+        const Title = doc.getElementsByTagName("Title")[0].textContent;
+        const Lang = doc.getElementsByTagName("Language")[0].textContent;
         
-        document.getElementById("Title").innerHTML = `<strong>${Title}</strong> <span style="opacity:0.7; font-size:0.8em">(${TutorialLanguage})</span>`;
+        document.getElementById("Title").innerHTML = `<strong>${Title}</strong> <span style="opacity:0.7; font-size:0.8em">(${Lang})</span>`;
         
         AudioObj = document.getElementById("Audio");
         bntNext = document.getElementById("btnNext");
@@ -135,33 +128,36 @@
         
         if (currentPagePointer < totPages - 1) {
             PageType = TutorialManifest[currentPagePointer].getAttribute("p");
+
             let fileExt = ".png";
             if (TutorialManifest[currentPagePointer].getAttribute("a") == "1") fileExt = ".gif";
             if (PageType == "s") fileExt = "_S.png";
-            var filename = TutorialManifest[currentPagePointer].getAttribute("f");
+
+            const filename = TutorialManifest[currentPagePointer].getAttribute("f");
             
-            document.getElementById("Main").src = ServerPath + "slides/m_" + filename + fileExt;
-            AudioObj.src = ServerPath + "sound/m_s" + filename + ".mp3";
+            // Use the remote base URL for slides and sounds
+            document.getElementById("Main").src = ResourcesBaseUrl + "slides/m_" + filename + fileExt;
+            AudioObj.src = ResourcesBaseUrl + "sound/m_s" + filename + ".mp3";
 
             if (PageType == "q") {
                 bntNext.disabled = true;
                 FeedbackNumber = TutorialManifest[currentPagePointer].getElementsByTagName("f").length;
             } else {
-                glossaryNumber = TutorialManifest[currentPagePointer].getElementsByTagName("g").length;
                 bntNext.disabled = false;
                 FeedbackNumber = 0;
             }
         } else {
             bntNext.disabled = true;
-            // Safe fallback for end slide
-            const langExt = (TutorialLanguage === "Spanish") ? "_s" : "";
-            document.getElementById("Main").src = ServerPath + "../../common/end" + langExt + ".gif";
-            AudioObj.src = ServerPath + "../../common/end" + langExt + ".mp3";
+            // End slide fallback
+            const langExt = (doc.getElementsByTagName("Language")[0].textContent === "Spanish") ? "_s" : "";
+            // Try to find common folder relative to current location
+            document.getElementById("Main").src = ResourcesBaseUrl + "../../common/end" + langExt + ".gif";
+            AudioObj.src = ResourcesBaseUrl + "../../common/end" + langExt + ".mp3";
         }
         
         var playPromise = AudioObj.play();
         if (playPromise !== undefined) {
-            playPromise.catch(error => { console.log("Autoplay prevented."); });
+            playPromise.catch(error => console.log("Autoplay prevented."));
         }
         
         document.getElementById("pageNo").textContent = (currentPagePointer + 1) + " / " + totPages;
@@ -171,17 +167,18 @@
         var rect = e.target.getBoundingClientRect();
         var x = e.clientX - rect.left;
         var y = e.clientY - rect.top;
+
         const pcntX = parseInt(100 * x / rect.width);
         const pcntY = parseInt(100 * y / rect.height);
 
         if (PageType == "s") {
             if ( 20 < pcntX && pcntX < 80 ) JumpToSection(y, rect.height);
-        } else if (PageType == "c") {
-            movePage(0);
-        } else if (PageType == "g" || PageType == "c") {
+        } else if (PageType == "c" || PageType == "g") {
             movePage(1);
         } else {
             let BTN = 0;
+            const glossaryNumber = TutorialManifest[currentPagePointer].getElementsByTagName("g").length;
+
             if (PageType == "q") {
                 for (let j = 1; j <= FeedbackNumber; j++) {
                     const ButtonLimits = TutorialManifest[currentPagePointer].getAttribute("b" + j).split(",");
@@ -192,19 +189,24 @@
                 const ButtonLimits = TutorialManifest[currentPagePointer].getAttribute("b" + j).split(",");
                 if (parseInt(ButtonLimits[0]) < pcntX && pcntX < parseInt(ButtonLimits[2]) && parseInt(ButtonLimits[1]) < pcntY && pcntY < parseInt(ButtonLimits[3])) BTN = j;
             }
+
             if (BTN > 0) {
+                let fName, wName;
                 if (PageType == "q") {
-                    var fName = TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f");
-                    document.getElementById("Main").src = ServerPath + "slides/m_" + fName + ".png";
-                    AudioObj.src = ServerPath + "sound/m_s" + fName + ".mp3";
+                    fName = TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f");
+                    document.getElementById("Main").src = ResourcesBaseUrl + "slides/m_" + fName + ".png";
+                    AudioObj.src = ResourcesBaseUrl + "sound/m_s" + fName + ".mp3";
                 } else {
-                    var wName = TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w");
-                    document.getElementById("Main").src = ServerPath + "slides/m_" + wName + ".png";
-                    AudioObj.src = ServerPath + "sound/" + wName + "_s_m.mp3";
+                    wName = TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w");
+                    document.getElementById("Main").src = ResourcesBaseUrl + "slides/m_" + wName + ".png";
+                    AudioObj.src = ResourcesBaseUrl + "sound/" + wName + "_s_m.mp3";
                 }
                 AudioObj.play();
                 QcurrentPagePointer = currentPagePointer;
-                if (PageType != "q" || BTN != parseInt(TutorialManifest[currentPagePointer].getAttribute("ca"))) currentPagePointer--;
+                
+                const correctAnswer = parseInt(TutorialManifest[currentPagePointer].getAttribute("ca"));
+                if (PageType != "q" || BTN != correctAnswer) currentPagePointer--;
+                
                 if (PageType == "o") PageType = "g"; else PageType = "";
                 bntNext.disabled = false;
             }
@@ -212,14 +214,14 @@
     }
 
     function Credits() {
-        document.getElementById("Main").src = ServerPath + "slides/credits.png";
+        document.getElementById("Main").src = ResourcesBaseUrl + "slides/credits.png";
         PageType = "c";
     }
 
     function JumpToSection(absY, imgHeight) {
-        var factor = 480 / imgHeight;
-        SEC = parseInt((((absY * factor)) - 75) * totSections / 380) + 1;
-        var SecFind = 0;
+        const factor = 480 / imgHeight;
+        const SEC = parseInt((((absY * factor)) - 75) * totSections / 380) + 1;
+        let SecFind = 0;
         for (let k = 0; k < totPages; k++) {
             if (TutorialManifest[k].getAttribute("p") == "s") SecFind++;
             if (SecFind == SEC) {
@@ -232,31 +234,8 @@
 
     function Manifest() {
         const urlParams = new URLSearchParams(window.location.search);
-        const manifestFile = urlParams.get('manifest');
-        window.open(manifestFile, "_blank");
+        window.open(urlParams.get('manifest'), "_blank");
     }
 </script>
 </body>
 </html>
-```
-
-### 3. `common/cardLogic.js` (Check `loadModalContent` logic)
-
-Ensure your `loadModalContent` in `common/cardLogic.js` has no inline styles on the iframe wrapper.
-
-```javascript
-// ... inside loadModalContent
-    
-    // 2. Tutorial Logic
-    if (loadType === 'tutorial' && manifestUrl) {
-        // ...
-        
-        // NO INLINE STYLES HERE that override flex
-        const playerHtml = `
-            <div class="iframe-wrapper">
-                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe"></iframe>
-            </div>
-            <!-- ... close button ... -->
-        `;
-        $modalContent.html(playerHtml);
-        // ...
