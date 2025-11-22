@@ -1,14 +1,90 @@
-<section class="content-page about-me-container">
-    <h2>About Me</h2>
-
-    <div class="about-me-content">
-        <p>Hello, I'm Tony. Welcome to my personal page. I'm a technology professional driven by a lifelong passion for solving complex problems. For me, programming, software, and mathematics were hobbies long before they became a career, which has allowed me to build a broad and deep set of technical skills over the years.</p>
-
-        <p>My professional background spans over 25 years, with a primary focus on the <strong>healthcare and financial sectors</strong>. I specialize in database architecture, statistical analysis, and data warehousing. Throughout my career, I've had the privilege of leading international technical teams in architecting and developing robust, full-stack systems. This work has included building everything from secure financial data-extraction tools to multilingual, SCORM-compliant learning platforms.</p>
-        
-        <p>I hold a <strong>Bachelor of Engineering</strong> degree and have gathered a wide range of certifications and senior-level experience. I am committed to building efficient, scalable systems and am always exploring new horizons in technology, from cloud infrastructure and AI to the fundamentals of signal processing.</p>
-            
-        <p>When I'm not coding or thinking about technology, my interests are quite diverse. I have a deep appreciation for finance, investment strategies, and the logic of chess. I also enjoy classical music, mathematics, and physics. I love spending time in nature and am incredibly proud that my passion for technology has passed on to my three children, all of whom are computer engineers.</p>
-    </div>
+<section class="about-me-container">
     
+    <!-- LEFT COLUMN: Text Content -->
+    <div class="about-text-column">
+        <h2>About Me</h2>
+        
+        <p>
+            Hello! I'm Tony Nahra, a passionate Software Engineer and Data Professional with a deep love for solving complex problems through technology. 
+            My journey in tech started over two decades ago, fueled by a curiosity for how things work—from the logic of code to the physics of the universe.
+        </p>
+
+        <h3>My Philosophy</h3>
+        <p>
+            I believe that technology is most powerful when it bridges the gap between data and human understanding. 
+            Whether I'm designing a database architecture, building an interactive tutorial engine, or analyzing financial trends, 
+            my goal is always clarity, efficiency, and usability. I don't just write code; I build systems that empower users.
+        </p>
+
+        <h3>Professional Journey</h3>
+        <p>
+            Over the years, I've had the privilege of working in diverse sectors, including healthcare and finance. 
+            At the <strong>Patient Education Institute</strong>, I led the development of multimedia tutorial systems that have educated millions of patients worldwide. 
+            My work involved not just coding, but architecting scalable solutions that could handle multilingual content, offline access via tablets, and seamless integration with hospital EMR systems like Cerner.
+        </p>
+        <p>
+            Prior to that, at the <strong>Abu Dhabi Investment Authority</strong>, I honed my skills in data analysis and financial modeling. 
+            I developed tools to simulate investment strategies, back-test theories, and visualize complex financial data for analysts managing billions in assets.
+        </p>
+
+        <h3>Beyond the Screen</h3>
+        <p>
+            When I'm not at my computer, you can find me exploring the world of physics, particularly quantum mechanics and signal processing. 
+            I have a keen interest in <strong>Fourier Transforms</strong> and how they apply to everything from sound engineering to stock market cycles.
+        </p>
+        <p>
+            I am also an avid chess player and volunteer trainer. The strategic depth of chess mirrors the architectural thinking required in software engineering—anticipating moves, managing resources, and adapting to new patterns.
+        </p>
+    </div>
+
+    <!-- RIGHT COLUMN: Media & Album -->
+    <div class="about-media-column">
+        <!-- A featured personal image -->
+        <img src="img/TONY_2025_00.png" alt="Tony Nahra" class="about-side-image">
+        
+        <h3>My Photo Album</h3>
+        <p style="font-size: 0.9rem; opacity: 0.8;">A glimpse into my life and travels.</p>
+        
+        <!-- Container for the dynamic album -->
+        <div id="about-album-list">
+            <div class="content-loader">
+                <div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div>
+            </div>
+        </div>
+    </div>
+
 </section>
+
+<script>
+    // Initialize the mini album when this page loads
+    $(document).ready(function() {
+        // Reuse your existing loadPhotoAlbum function but target the specific div
+        // We pass a special flag or handle it manually since loadPhotoAlbum targets #photo-album-list by default.
+        
+        // Better approach: Let's fetch the JSON manually here to fill this specific div
+        const albumUrl = "data/album.json"; // Ensure this file exists or use your remote URL
+        
+        $.getJSON(albumUrl, function(data) {
+            const $container = $('#about-album-list');
+            $container.empty();
+            
+            // Take only the first 6-9 photos for the side column
+            const previewPhotos = data.photos.slice(0, 9); 
+            
+            $.each(previewPhotos, function(i, photo) {
+                const cardHtml = `
+                    <div class="card-item">
+                        <a href="${photo.url}" data-load-type="image">
+                            <img src="${photo.thumbnailUrl}" class="card-image" alt="${photo.title}" loading="lazy">
+                        </a>
+                    </div>
+                `;
+                $container.append(cardHtml);
+            });
+        }).fail(function() {
+            $('#about-album-list').html('<p class="error-message" style="font-size:0.8rem">Album not loaded.</p>');
+        });
+    });
+</script>
+
+
