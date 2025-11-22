@@ -102,33 +102,35 @@ function loadModalContent(index) {
     } 
     
     // 2. Tutorial Logic
-    if (loadType === 'tutorial' && manifestUrl) {
-        $modal.addClass('tutorial-mode'); 
-        $modal.removeClass('research-mode');
-        $modal.find('.modal-header').hide();
+    const loadUrl = $link.attr('href');
+    let loadType = $link.data('load-type');
+    
+    // NEW: Handle Tutorial Type
+    if (loadType === 'tutorial') {
+        // 1. Get the manifest URL from the data attribute
+        const manifestUrl = $link.data('manifest');
         
-        $modalOpenLink.attr('href', manifestUrl);
-        
-        const playerHtml = `
-            <div class="iframe-wrapper" style="height: 100%; width: 100%;">
-                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
-            </div>
-            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px;">&times;</button>
-        `;
-        $modalContent.html(playerHtml);
-        
-        // Re-attach close handler for the custom button
-        $modalContent.find('.modal-close-btn').on('click', function() {
-            // Manually close modal since header is hidden
-             $('#content-modal').removeClass('modal-open').fadeOut(200);
-             $('#modal-content-area').html('');
-             currentCardList = [];
-             $(document).off('keydown.modalNav');
-             $('#content-modal .modal-header').show(); // Restore for next time
-        });
-        
-        return;
+        if (manifestUrl) {
+            // 2. Construct the player URL
+            // We pass the manifest URL to our player.
+            const playerUrl = `tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}`;
+            
+            // 3. Load it into the modal via an iframe
+            // We set a specific class for full-screen styling if needed
+            $modalContent.html(`<iframe src="${playerUrl}" class="loaded-iframe" style="width:100%; height:100%; border:none;"></iframe>`);
+            
+            // 4. Special Modal Styling for Tutorials (Full Screen)
+            // You might want to add a class to the modal content to remove padding
+            $('.modal-content').css('padding', '0').css('height', '90vh'); // Maximize space
+            
+        } else {
+            $modalContent.html('<div class="error-message">Error: No manifest URL provided.</div>');
+        }
+        return; // Exit function, we are done
     }
+    
+    // Reset modal padding for normal content
+    $('.modal-content').css('padding', '20px').css('height', ''); 
     
     // 3. Regular Logic
     $modal.removeClass('research-mode'); 
