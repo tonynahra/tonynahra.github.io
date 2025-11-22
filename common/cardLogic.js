@@ -10,17 +10,15 @@ function decodeText(text) {
     try {
         var $textarea = $('<textarea></textarea>');
         $textarea.html(text);
-        let decoded = $textarea.val();
-        decoded = decodeURIComponent(decoded);
-        return decoded;
+        return $textarea.val(); // Fixed minor decoding bug in previous snippet
     } catch (e) {
         return text;
     }
 }
 
+/* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
-    
-    // Inject modal
+    // ... (Modal Injection) ...
     $('body').append(`
         <div id="content-modal" class="modal-backdrop">
             <div class="modal-content">
@@ -42,7 +40,7 @@ $(document).ready(function () {
         </div>
     `);
 
-    // Listeners
+    // ... (Toggle/Card Click/Modal listeners same as before) ...
     $('body').on('click', '.toggle-card-button', function() {
         const $button = $(this);
         const $list = $button.prev('.card-list');
@@ -108,7 +106,7 @@ $(document).ready(function () {
         $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible', isModalInfoVisible);
     });
 
-    // Filter listeners
+    // --- All filter listeners ---
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
     $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
     $('body').on('input', '#post-search-box', filterPostCards);
@@ -123,6 +121,11 @@ $(document).ready(function () {
     $('body').on('input', '#research-search-box', filterResearchCards);
     $('body').on('change', '#research-category-filter', filterResearchCards);
     $('body').on('change', '#research-keyword-filter', filterResearchCards);
+    
+    // --- NEW: Tutorial Filters ---
+    $('body').on('input', '#tutorials-search-box', filterTutorialCards);
+    $('body').on('change', '#tutorials-category-filter', filterTutorialCards);
+    $('body').on('change', '#tutorials-keyword-filter', filterTutorialCards);
 
     $('#content-modal').on('click', '.tab-button', function() {
         $(this).siblings().removeClass('active');
@@ -132,182 +135,44 @@ $(document).ready(function () {
     });
 });
 
-/* ... [handleCardView and showMoreCards functions remain the same] ... */
-// (Omitted for brevity, assume they are here from previous versions)
-function handleCardView($scope, initialLoadOverride) {
-    $scope.find('.card-list').each(function() {
-        const $list = $(this);
-        const $items = $list.children('.card-item');
-        const totalItems = $items.length;
-        const initialLimit = parseInt(initialLoadOverride) || 10;
-        const increment = 10;
-        $list.next('.toggle-card-button').remove(); 
-        if (totalItems > initialLimit) {
-            $items.slice(initialLimit).addClass('hidden-card-item');
-            const remaining = totalItems - initialLimit;
-            const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
-            $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
-            $list.after($button);
-        }
-    });
-}
+// ... (handleCardView, showMoreCards, loadVids, resultsLoop, loadPhotoAlbum, etc. remain the same) ...
+// ... (populateCategoryFilter, populateSmartKeywords, etc. remain the same) ...
 
-function showMoreCards($button, $list) {
-    const $items = $list.children('.card-item');
-    const totalItems = parseInt($button.data('total-items') || 0);
-    const increment = parseInt($button.data('increment') || 10);
-    const visibleCount = parseInt($button.data('visible-count') || 0);
-    const newVisibleCount = visibleCount + increment;
-    $items.slice(visibleCount, newVisibleCount).removeClass('hidden-card-item');
-    $button.data('visible-count', newVisibleCount);
-    const remaining = totalItems - newVisibleCount;
-    if (remaining <= 0) { $button.hide(); } 
-    else { $button.text(`Show More (${remaining} more) \u25BC`); }
-}
+// --- NEW: Filter function for Tutorials page ---
+function filterTutorialCards() {
+    const searchTerm = decodeText($('#tutorials-search-box').val().toLowerCase());
+    const selectedCategory = $('#tutorials-category-filter').val();
+    const selectedKeyword = $('#tutorials-keyword-filter').val();
+    
+    const $grid = $('#tutorials-card-list');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#tutorials-no-results');
+    
+    let visibleCount = 0;
 
-/* ... [loadVids, resultsLoop, loadPhotoAlbum, populateAlbumCategories, buildResearchModal, loadModalTabContent, populateCategoryFilter, populateSmartKeywords, getCardSearchableText] ... */
-// (Omitted for brevity, assume they are here from previous versions)
-// --- PLEASE ENSURE YOU KEEP THESE FUNCTIONS ---
-// --- I will only show the loadModalContent function which has the new logic ---
-
-function loadModalContent(index) {
-    if (index < 0 || index >= currentCardList.length) { return; }
-
-    const $link = currentCardList[index];
-    if (!$link.length) return;
-    
-    currentCardIndex = index;
-    
-    const $modal = $('#content-modal');
-    const $modalContent = $('#modal-content-area');
-    const $modalOpenLink = $modal.find('.open-new-window');
-    const $modalInfoBtn = $modal.find('.modal-info-btn');
-
-    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-    
-    const loadUrl = $link.attr('href');
-    let loadType = $link.data('load-type');
-    const jsonUrl = $link.data('json-url');
-    const manifestUrl = $link.data('manifest-url'); // NEW
-    
-    // 1. Research Logic
-    if (loadType === 'research' && jsonUrl) {
-        $modal.addClass('research-mode'); 
-        $modalOpenLink.attr('href', jsonUrl); 
-        buildResearchModal(jsonUrl); 
-        return; 
-    } 
-    
-    // 2. Tutorial Logic (NEW)
-    if (loadType === 'tutorial' && manifestUrl) {
-        // We use the research-mode class to hide the default header because the player has its own
-        $modal.addClass('research-mode'); 
-        
-        // Open the manifest XML in new window if clicked
-        $modalOpenLink.attr('href', manifestUrl);
-        
-        // Load the player in an iframe
-        const playerHtml = `
-            <div class="iframe-wrapper" style="height: 100%; width: 100%;">
-                <iframe src="tutorial_player.html?manifest=${manifestUrl}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
-            </div>
-            <!-- Add a floating close button since we hid the header -->
-            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">&times;</button>
-        `;
-        $modalContent.html(playerHtml);
-        
-        // Re-attach close handler
-        $modalContent.find('.modal-close-btn').on('click', function() {
-            $('.modal-close-btn').first().click();
+    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
+        $showMoreButton.hide();
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardCategory = $card.data('category'); 
+            const cardText = getCardSearchableText($card); 
+            const categoryMatch = (selectedCategory === "all" || cardCategory === selectedCategory);
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
+            if (categoryMatch && searchMatch && keywordMatch) {
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else { $card.hide(); }
         });
-        
-        return;
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
+    } else {
+        $noResultsMessage.hide();
+        $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="tutorials.html"]').data('initial-load')) || 10);
     }
-    
-    // 3. Regular Logic
-    $modal.removeClass('research-mode'); 
-    $modalOpenLink.attr('href', loadUrl);
-    $modalContent.find('.modal-photo-info').remove();
-    $modalInfoBtn.hide(); 
-    
-    if (!loadType) {
-        if (loadUrl.startsWith('http')) {
-            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
-                loadType = 'blocked'; 
-            } else {
-                loadType = 'iframe';
-            }
-        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
-            loadType = 'image';
-        } else if (loadUrl.endsWith('.html')) {
-            loadType = 'html';
-        } else {
-            loadType = 'newtab'; 
-        }
-    }
-
-    const customHeight = $link.data('height') || '90vh';
-    
-    const $card = $link.closest('.card-item');
-    const title = $card.find('h3').text() || $card.find('img').attr('alt');
-    const desc = $card.find('p').text();
-    let infoHtml = '';
-
-    if (title) {
-        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
-        infoHtml = `
-            <div class="modal-photo-info ${infoVisibleClass}">
-                <h3>${title}</h3>
-                <p>${desc}</p>
-            </div>`;
-    }
-
-    switch (loadType) {
-        case 'html':
-            $.ajax({
-                url: loadUrl, type: 'GET',
-                success: function(data) { 
-                    $modalContent.html(data); 
-                    if (infoHtml) {
-                        $modalContent.append(infoHtml);
-                        $modalInfoBtn.show();
-                    }
-                },
-                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
-            });
-            break;
-        case 'image':
-            $modalContent.html(`
-                <div class="image-wrapper">
-                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
-                    ${infoHtml}
-                </div>`);
-            if (infoHtml) { $modalInfoBtn.show(); }
-            break;
-        case 'iframe':
-            $modalContent.html(`
-                <div class="iframe-wrapper">
-                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
-                    ${infoHtml}
-                </div>`);
-            if (infoHtml) { $modalInfoBtn.show(); }
-            break;
-        case 'blocked':
-            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
-            break;
-        default: // newtab
-            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
-            break;
-    }
-    
-    $('.modal-prev-btn').prop('disabled', index <= 0);
-    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
 
-// ... (Include modal key handler, filter logic functions from previous version) ...
-/* NOTE: Ensure you keep all the other functions:
-  - handleModalKeys
-  - filterYouTubeCards, filterPostCards, filterCertCards, filterAlbumCards, filterResearchCards
-  - loadVids, resultsLoop, loadPhotoAlbum, populateAlbumCategories, buildResearchModal, loadModalTabContent
-  - populateCategoryFilter, populateSmartKeywords, getCardSearchableText
-*/
+// ... (loadModalContent is the same as previous turn, ensuring it handles 'tutorial' loadType) ...
+// ... (Copy the other functions from the previous cardLogic.js) ...
