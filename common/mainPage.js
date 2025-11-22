@@ -49,7 +49,6 @@ $(document).ready(function () {
         // Ignore clicks on links inside the card
         if ($(e.target).is('a') || $(e.target).closest('a').length) {
              if (!$(e.target).is($link) && !$(e.target).closest('a').is($link)) return;
-             // If it IS the main link, prevent default to open modal
         }
         
         e.preventDefault(); 
@@ -117,13 +116,8 @@ $(document).ready(function () {
     });
     $('body').on('click', '.scroll-to-top', function() { window.scrollTo({ top: 0, behavior: 'auto' }); });
 
-    // 7. Filters (Generic Handler)
-    // Note: We reuse one generic filter function for all pages
-    const filterHandler = (listId, noResId, initLoad) => {
-        filterCardsGeneric(listId, '#'+event.target.id.split('-')[0]+'-search-box', '#'+event.target.id.split('-')[0]+'-category-filter', '#'+event.target.id.split('-')[0]+'-keyword-filter', noResId, initLoad);
-    };
-    
-    // Wire up specific pages (simpler than repeating code)
+    // 7. Filters
+    // Use the generic filter for card lists
     $('body').on('input change', '#post-search-box, #post-category-filter, #post-keyword-filter', 
         () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
         
@@ -139,22 +133,20 @@ $(document).ready(function () {
     $('body').on('input change', '#tutorials-search-box, #tutorials-category-filter, #tutorials-keyword-filter', 
         () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
         
-    // Youtube is unique due to loading logic, kept separate in cardLogic.js if needed, or refactored here.
-    // For now, let's leave Youtube filter in cardLogic or move here if you prefer. 
-    // (Assuming filterYouTubeCards is global)
-    $('body').on('input change', '#youtube-search-box, #youtube-keyword-filter', filterYouTubeCards);
+    // YouTube has a slightly different structure for now, so keeping separate
+    $('body').on('input change', '#youtube-search-box, #youtube-keyword-filter', function() {
+        // Assuming filterYouTubeCards is global in cardLogic.js or we can genericize it later
+        // For now, let's just call the function if it exists
+        if (typeof filterYouTubeCards === 'function') {
+            filterYouTubeCards();
+        }
+    });
 
     // --- Initial Load ---
     const initialPage = $('.nav-link.active-nav');
     if (initialPage.length) {
         loadContent(initialPage.data('page'), initialPage.data('initial-load'));
     }
-    
-    // Collapsible Menu
-    $('.expand-button').click(function() {
-       // ... logic moved to cardLogic or kept here ...
-       // Since it's simple UI, let's keep toggle logic here or global
-    });
 });
 
 /* --- LOAD CONTENT --- */
