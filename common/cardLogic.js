@@ -174,5 +174,152 @@ function filterTutorialCards() {
     }
 }
 
-// ... (loadModalContent is the same as previous turn, ensuring it handles 'tutorial' loadType) ...
-// ... (Copy the other functions from the previous cardLogic.js) ...
+
+function loadModalContent(index) {
+    if (index < 0 || index >= currentCardList.length) {
+        return;
+    }
+
+    const $link = currentCardList[index];
+    if (!$link.length) return;
+    
+    currentCardIndex = index;
+    
+    const $modal = $('#content-modal');
+    const $modalContent = $('#modal-content-area');
+    const $modalOpenLink = $modal.find('.open-new-window');
+    const $modalInfoBtn = $modal.find('.modal-info-btn');
+
+    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
+    
+    const loadUrl = $link.attr('href');
+    let loadType = $link.data('load-type');
+    const jsonUrl = $link.data('json-url');
+    const manifestUrl = $link.data('manifest-url'); // NEW: Get manifest URL
+    
+    // 1. Research Logic
+    if (loadType === 'research' && jsonUrl) {
+        $modal.addClass('research-mode'); 
+        $modalOpenLink.attr('href', jsonUrl); 
+        buildResearchModal(jsonUrl); 
+        return; 
+    } 
+    
+    // 2. NEW: Tutorial Logic
+    if (loadType === 'tutorial' && manifestUrl) {
+        $modal.addClass('tutorial-mode'); // Uses the full-screen styles (ensure you define this in css if needed, or just reuse research-mode for full screen)
+        // Actually, let's reuse research-mode to hide the header, OR hide it manually
+        $modal.addClass('research-mode'); // Hides default header
+        
+        // Open the manifest XML in new window if clicked
+        $modalOpenLink.attr('href', manifestUrl);
+        
+        // Load the player in an iframe
+        const playerHtml = `
+            <div class="iframe-wrapper" style="height: 100%; width: 100%;">
+                <iframe src="tutorial_player.html?manifest=${manifestUrl}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
+            </div>
+            <!-- Add a floating close button since we hid the header -->
+            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">&times;</button>
+        `;
+        $modalContent.html(playerHtml);
+        
+        // Re-attach close handler because we added a new button dynamically
+        $modalContent.find('.modal-close-btn').on('click', function() {
+            // Use the main close function logic
+            $('.modal-close-btn').first().click(); 
+        });
+        
+        return;
+    }
+
+    // 3. Regular Logic (HTML, Image, Iframe)
+    $modal.removeClass('research-mode'); 
+    $modal.removeClass('tutorial-mode'); 
+    $modalOpenLink.attr('href', loadUrl);
+    $modalContent.find('.modal-photo-info').remove();
+    $modalInfoBtn.hide(); 
+    
+    if (!loadType) {
+        // ... (Auto-guess logic remains the same) ...
+        if (loadUrl.startsWith('http')) {
+            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
+                loadType = 'blocked'; 
+            } else {
+                loadType = 'iframe';
+            }
+        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+            loadType = 'image';
+        } else if (loadUrl.endsWith('.html')) {
+            loadType = 'html';
+        } else {
+            loadType = 'newtab'; 
+        }
+    }
+
+    // ... (Rest of the function remains the same) ...
+    // (Copy the rest from your existing cardLogic.js, or I can provide full file if needed)
+    
+    // --- THIS IS THE FIX ---
+    // We no longer set inline height, the CSS will handle it
+    // const customHeight = $link.data('height') || '90vh'; 
+    // --- END FIX ---
+    
+    const $card = $link.closest('.card-item');
+    const title = $card.find('h3').text() || $card.find('img').attr('alt');
+    const desc = $card.find('p').text();
+    let infoHtml = '';
+
+    if (title) {
+        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
+        infoHtml = `
+            <div class="modal-photo-info ${infoVisibleClass}">
+                <h3>${title}</h3>
+                <p>${desc}</p>
+            </div>`;
+    }
+
+    switch (loadType) {
+        case 'html':
+            $.ajax({
+                url: loadUrl, type: 'GET',
+                success: function(data) { 
+                    $modalContent.html(data); 
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
+                },
+                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
+            });
+            break;
+        case 'image':
+            $modalContent.html(`
+                <div class="image-wrapper">
+                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'iframe':
+            // --- THIS IS THE FIX ---
+            // Removed the inline style="height: ${customHeight}"
+            $modalContent.html(`
+                <div class="iframe-wrapper">
+                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+            // --- END FIX ---
+        case 'blocked':
+            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
+            break;
+        default: // newtab
+            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
+            break;
+    }
+    
+    $('.modal-prev-btn').prop('disabled', index <= 0);
+    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
+}
