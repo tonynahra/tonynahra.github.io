@@ -1,42 +1,22 @@
 /* === GLOBAL VARIABLES === */
-var currentCardList = []; // Stores the list of cards for modal navigation
-var currentCardIndex = 0; // Stores the current position in the modal
-var isModalInfoVisible = false; // Stores the state of the info toggle
+var currentCardList = []; 
+var currentCardIndex = 0; 
+var isModalInfoVisible = false; 
 
-// --- KEYWORD CONFIGURATION ---
-// (If you moved these to filterConfig.js, ensure that file is loaded first in index.html)
-// For safety, I'll check if they exist, otherwise define defaults here.
-if (typeof STOP_WORDS === 'undefined') {
-    var STOP_WORDS = new Set(['a', 'an', 'the', 'and', 'or', 'but']);
-}
-if (typeof REPLACEMENT_MAP === 'undefined') {
-    var REPLACEMENT_MAP = {};
-}
-if (typeof SYNONYM_MAP === 'undefined') {
-    var SYNONYM_MAP = {};
-}
+// --- NOTE: STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are loaded from filterConfig.js ---
 
-
-/**
- * Helper function to safely decode text.
- */
 function decodeText(text) {
     if (!text) return "";
     try {
         var $textarea = $('<textarea></textarea>');
         $textarea.html(text);
-        let decoded = $textarea.val();
-        decoded = decodeURIComponent(decoded);
-        return decoded;
+        return $textarea.val();
     } catch (e) {
         return text;
     }
 }
 
-/* ==========================================================================
-   GLOBAL HELPER FUNCTIONS
-   (Defined outside $(document).ready so they are accessible to mainPage.js)
-   ========================================================================== */
+// --- HELPER FUNCTIONS (Global Scope) ---
 
 function handleCardView($scope, initialLoadOverride) {
     $scope.find('.card-list').each(function() {
@@ -171,7 +151,7 @@ function populateSmartKeywords(listId, filterId) {
                     cleanWord = REPLACEMENT_MAP[cleanWord];
                 }
                 
-                if (cleanWord.length > 2 && cleanWord.length <= 15 && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
+                if (cleanWord.length > 2 && cleanWord.length <= 15 && typeof STOP_WORDS !== 'undefined' && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
                     localCardKeywords.add(cleanWord);
                 }
             });
@@ -210,10 +190,7 @@ function getCardSearchableText($card) {
         $card.data('category'),
         $card.data('keywords')
     ];
-    return decodeText(textSources
-        .map(text => String(text || '')) 
-        .join(' ')
-        .toLowerCase());
+    return decodeText(textSources.map(text => String(text || '')).join(' ').toLowerCase());
 }
 
 function checkKeywordMatch(cardText, selectedKeyword) {
@@ -227,219 +204,51 @@ function checkKeywordMatch(cardText, selectedKeyword) {
     });
 }
 
-/* === --- LOAD FUNCTIONS --- === */
-// ... (previous code remains the same) ...
-function loadModalContent(index) {
-    if (index < 0 || index >= currentCardList.length) {
-        return;
-    }
-
-    const $link = currentCardList[index];
-    if (!$link.length) return;
+function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
+    const $albumList = $('#photo-album-list');
     
-    currentCardIndex = index;
-    
-    const $modal = $('#content-modal');
-    const $modalContent = $('#modal-content-area');
-    const $modalOpenLink = $modal.find('.open-new-window');
-    const $modalInfoBtn = $modal.find('.modal-info-btn');
-
-    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-    
-    const loadUrl = $link.attr('href');
-    let loadType = $link.data('load-type');
-    const jsonUrl = $link.data('json-url');
-    const manifestUrl = $link.data('manifest-url'); // NEW: Get manifest URL
-    
-    // 1. Research Logic
-    if (loadType === 'research' && jsonUrl) {
-        $modal.addClass('research-mode'); 
-        $modalOpenLink.attr('href', jsonUrl); 
-        buildResearchModal(jsonUrl); 
-        return; 
-    } 
-    
-    // 2. NEW: Tutorial Logic
-    if (loadType === 'tutorial' && manifestUrl) {
-        // We use the research-mode class to hide the default header because the player has its own
-        $modal.addClass('research-mode'); 
+    $.getJSON(jsonUrl, function (albumData) {
+        $('#album-title').text(decodeText(albumData.albumTitle));
+        $albumList.empty(); 
         
-        // Open the manifest XML in new window if clicked
-        $modalOpenLink.attr('href', manifestUrl);
-        
-        // Load the player in an iframe
-        const playerHtml = `
-            <div class="iframe-wrapper" style="height: 100%; width: 100%;">
-                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
-            </div>
-            <!-- Add a floating close button since we hid the header -->
-            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">&times;</button>
-        `;
-        $modalContent.html(playerHtml);
-        
-        // Re-attach close handler
-        $modalContent.find('.modal-close-btn').on('click', function() {
-            $('.modal-close-btn').first().click();
-        });
-        
-        return;
-    }
-
-    // 3. Regular Logic (HTML, Image, Iframe)
-    $modal.removeClass('research-mode'); 
-    $modalOpenLink.attr('href', loadUrl);
-    $modalContent.find('.modal-photo-info').remove();
-    $modalInfoBtn.hide(); 
-    
-    if (!loadType) {
-        // ... (Auto-guess logic remains the same) ...
-        if (loadUrl.startsWith('http')) {
-            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
-                loadType = 'blocked'; 
-            } else {
-                loadType = 'iframe';
-            }
-        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
-            loadType = 'image';
-        } else if (loadUrl.endsWith('.html')) {
-            loadType = 'html';
-        } else {
-            loadType = 'newtab'; 
-        }
-    }
-
-    // ... (Rest of the function remains the same) ...
-    // (Copy the rest from your existing cardLogic.js, or I can provide full file if needed)
-    
-    // --- THIS IS THE FIX ---
-    // We no longer set inline height, the CSS will handle it
-    // const customHeight = $link.data('height') || '90vh'; 
-    // --- END FIX ---
-    
-    const $card = $link.closest('.card-item');
-    const title = $card.find('h3').text() || $card.find('img').attr('alt');
-    const desc = $card.find('p').text();
-    let infoHtml = '';
-
-    if (title) {
-        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
-        infoHtml = `
-            <div class="modal-photo-info ${infoVisibleClass}">
-                <h3>${title}</h3>
-                <p>${desc}</p>
-            </div>`;
-    }
-
-    switch (loadType) {
-        case 'html':
-            $.ajax({
-                url: loadUrl, type: 'GET',
-                success: function(data) { 
-                    $modalContent.html(data); 
-                    if (infoHtml) {
-                        $modalContent.append(infoHtml);
-                        $modalInfoBtn.show();
-                    }
-                },
-                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
-            });
-            break;
-        case 'image':
-            $modalContent.html(`
-                <div class="image-wrapper">
-                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
-                    ${infoHtml}
-                </div>`);
-            if (infoHtml) { $modalInfoBtn.show(); }
-            break;
-        case 'iframe':
-            // --- THIS IS THE FIX ---
-            // Removed the inline style="height: ${customHeight}"
-            $modalContent.html(`
-                <div class="iframe-wrapper">
-                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
-                    ${infoHtml}
-                </div>`);
-            if (infoHtml) { $modalInfoBtn.show(); }
-            break;
-            // --- END FIX ---
-        case 'blocked':
-            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
-            break;
-        default: // newtab
-            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
-            break;
-    }
-    
-    $('.modal-prev-btn').prop('disabled', index <= 0);
-    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
-}
-
-
-function buildResearchModal(jsonUrl) {
-    const $modalContent = $('#modal-content-area');
-    
-    const researchHtml = `
-        <div class="research-modal-header">
-            <h2 id="research-title-modal">Loading Research...</h2>
-            <div class="modal-nav-right">
-                <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
-                    Open in new window &nearr;
-                </a>
-                <button class="modal-close-btn" title="Close (Esc)">&times; Close</button>
-            </div>
-        </div>
-        <div class="tab-nav" id="research-tab-nav-modal"></div>
-        <div class="tab-content" id="research-tab-content-modal">
-            <div class="content-loader"><div class="spinner"></div></div>
-        </div>
-    `;
-    $modalContent.html(researchHtml);
-
-    $.getJSON(jsonUrl, function (data) {
-        $('#research-title-modal').text(decodeText(data.title));
-        
-        $modalContent.find('.open-new-window').attr('href', jsonUrl);
-        
-        const $tabNav = $('#research-tab-nav-modal');
-        $tabNav.empty(); 
-
-        $.each(data.tickers, function(index, ticker) {
-            const $button = $(`<button class="tab-button"></button>`);
-            $button.text(ticker.name);
-            $button.attr('data-content-url', ticker.contentUrl);
+        $.each(albumData.photos, function(index, photo) {
+            const title = decodeText(photo.title);
+            const category = decodeText(photo.category);
+            const description = decodeText(photo.description);
             
-            if (index === 0) {
-                $button.addClass('active');
-                loadModalTabContent(ticker.contentUrl, '#research-tab-content-modal');
-            }
-            $tabNav.append($button);
+            const cardHtml = `
+                <div class="card-item" 
+                     data-category="${category}" 
+                     data-keywords="${title},${description}">
+                    
+                    <a href="${photo.url}" data-load-type="image">
+                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
+                        
+                        <div class="photo-details">
+                            <h3>${title}</h3>
+                            <p>${description}</p>
+                        </div>
+                    </a>
+                </div>
+            `;
+            $albumList.append(cardHtml);
         });
+        
+        populateCategoryFilter('#photo-album-list', '#album-category-filter');
+        populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
+        handleCardView($('#content-area'), initialLoadOverride);
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
-        $('#research-title-modal').text("Error Loading Research");
-        $('#research-tab-content-modal').html(`<p class="error-message">Could not load research data from ${jsonUrl}. Error: ${textStatus}</p>`);
+        $('#album-title').text("Error Loading Album");
+        $albumList.html(`<p class="error-message">Could not load album data from ${jsonUrl}. Error: ${textStatus}</p>`);
+        console.error("Photo Album AJAX failed:", textStatus, errorThrown);
     });
-}
-
-function loadModalTabContent(htmlUrl, targetId) {
-    const $target = $(targetId);
-    $target.html(''); 
-    
-    $target.closest('#modal-content-area')
-           .find('.research-modal-header .open-new-window')
-           .attr('href', htmlUrl);
-
-    const iframeHtml = `
-        <div class="iframe-wrapper" style="height: 100%;">
-            <iframe src="${htmlUrl}" class="loaded-iframe"></iframe>
-        </div>
-    `;
-    $target.html(iframeHtml);
 }
 
 function loadVids(PL, Category, BKcol, initialLoadOverride) {
     $('#Grid').empty(); 
+    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; // Your API Key
+    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
     var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
 
     $.getJSON(URL, options, function (data) {
@@ -491,56 +300,213 @@ function resultsLoop(data, Cat, BKcol) {
                <img class="YTi" src="${thumb}" alt="${title}" >
                <h3>${title}</h3>
                <p>${desc}</p>
-               <span class="card-category" style="display: none;">${Cat}</span>
             </a>
         </div>
         `);
     });
 }
 
-function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
-    const $albumList = $('#photo-album-list');
+function buildResearchModal(jsonUrl) {
+    const $modalContent = $('#modal-content-area');
     
-    $.getJSON(jsonUrl, function (albumData) {
-        $('#album-title').text(decodeText(albumData.albumTitle));
-        $albumList.empty(); 
+    const researchHtml = `
+        <div class="research-modal-header">
+            <h2 id="research-title-modal">Loading Research...</h2>
+            <div class="modal-nav-right">
+                <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                    Open in new window &nearr;
+                </a>
+                <button class="modal-close-btn" title="Close (Esc)">&times; Close</button>
+            </div>
+        </div>
+        <div class="tab-nav" id="research-tab-nav-modal"></div>
+        <div class="tab-content" id="research-tab-content-modal">
+            <div class="content-loader"><div class="spinner"></div></div>
+        </div>
+    `;
+    $modalContent.html(researchHtml);
+
+    $.getJSON(jsonUrl, function (data) {
+        $('#research-title-modal').text(decodeText(data.title));
         
-        $.each(albumData.photos, function(index, photo) {
-            const title = decodeText(photo.title);
-            const category = decodeText(photo.category);
-            const description = decodeText(photo.description);
+        $modalContent.find('.open-new-window').attr('href', jsonUrl);
+        
+        const $tabNav = $('#research-tab-nav-modal');
+        $tabNav.empty(); 
+
+        $.each(data.tickers, function(index, ticker) {
+            const $button = $(`<button class="tab-button"></button>`);
+            $button.text(ticker.name);
+            $button.attr('data-content-url', ticker.contentUrl);
             
-            const cardHtml = `
-                <div class="card-item" 
-                     data-category="${category}" 
-                     data-keywords="${title},${description}">
-                    
-                    <a href="${photo.url}" data-load-type="image">
-                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
-                        
-                        <div class="photo-details">
-                            <h3>${title}</h3>
-                            <p>${description}</p>
-                        </div>
-                    </a>
-                </div>
-            `;
-            $albumList.append(cardHtml);
+            if (index === 0) {
+                $button.addClass('active');
+                loadModalTabContent(ticker.contentUrl, '#research-tab-content-modal');
+            }
+            $tabNav.append($button);
         });
         
-        populateCategoryFilter('#photo-album-list', '#album-category-filter');
-        populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
-        handleCardView($('#content-area'), initialLoadOverride);
+        $modalContent.find('.modal-close-btn').on('click', function() {
+             $('.modal-close-btn').first().click(); 
+        });
 
     }).fail(function(jqXHR, textStatus, errorThrown) {
-        $('#album-title').text("Error Loading Album");
-        $albumList.html(`<p class="error-message">Could not load album data from ${jsonUrl}. Error: ${textStatus}</p>`);
-        console.error("Photo Album AJAX failed:", textStatus, errorThrown);
+        $('#research-title-modal').text("Error Loading Research");
+        $('#research-tab-content-modal').html(`<p class="error-message">Could not load research data from ${jsonUrl}. Error: ${textStatus}</p>`);
     });
 }
 
+function loadModalTabContent(htmlUrl, targetId) {
+    const $target = $(targetId);
+    $target.html(''); 
+    
+    // Update the "Open in new window" link to the current tab's URL
+    $target.closest('#modal-content-area')
+           .find('.research-modal-header .open-new-window')
+           .attr('href', htmlUrl);
 
-/* === --- FILTERING FUNCTIONS (Defined Globally) --- === */
+    const iframeHtml = `
+        <div class="iframe-wrapper">
+            <iframe src="${htmlUrl}" class="loaded-iframe"></iframe>
+        </div>
+    `;
+    $target.html(iframeHtml);
+}
+
+function loadModalContent(index) {
+    if (index < 0 || index >= currentCardList.length) {
+        return;
+    }
+
+    const $link = currentCardList[index];
+    if (!$link.length) return;
+    
+    currentCardIndex = index;
+    
+    const $modal = $('#content-modal');
+    const $modalContent = $('#modal-content-area');
+    const $modalOpenLink = $modal.find('.open-new-window');
+    const $modalInfoBtn = $modal.find('.modal-info-btn');
+
+    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
+    
+    const loadUrl = $link.attr('href');
+    let loadType = $link.data('load-type');
+    const jsonUrl = $link.data('json-url');
+    const manifestUrl = $link.data('manifest-url'); 
+    
+    // 1. Research Logic
+    if (loadType === 'research' && jsonUrl) {
+        $modal.addClass('research-mode'); 
+        $modalOpenLink.attr('href', jsonUrl); 
+        buildResearchModal(jsonUrl); 
+        return; 
+    } 
+    
+    // 2. Tutorial Logic
+    if (loadType === 'tutorial' && manifestUrl) {
+        $modal.addClass('tutorial-mode'); 
+        $modal.removeClass('research-mode');
+        $modal.find('.modal-header').hide();
+        
+        $modalOpenLink.attr('href', manifestUrl);
+        
+        const playerHtml = `
+            <div class="iframe-wrapper" style="height: 100%; width: 100%;">
+                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
+            </div>
+            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px;">&times;</button>
+        `;
+        $modalContent.html(playerHtml);
+        
+        $modalContent.find('.modal-close-btn').on('click', function() {
+            $('.modal-close-btn').first().click();
+        });
+        
+        return;
+    }
+    
+    // 3. Regular Logic
+    $modal.removeClass('research-mode'); 
+    $modal.removeClass('tutorial-mode');
+    $modal.find('.modal-header').show();
+    
+    $modalOpenLink.attr('href', loadUrl);
+    $modalContent.find('.modal-photo-info').remove();
+    $modalInfoBtn.hide(); 
+    
+    if (!loadType) {
+        if (loadUrl.startsWith('http')) {
+            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
+                loadType = 'blocked'; 
+            } else {
+                loadType = 'iframe';
+            }
+        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+            loadType = 'image';
+        } else if (loadUrl.endsWith('.html')) {
+            loadType = 'html';
+        } else {
+            loadType = 'newtab'; 
+        }
+    }
+    
+    const $card = $link.closest('.card-item');
+    const title = $card.find('h3').text() || $card.find('img').attr('alt');
+    const desc = $card.find('p').text();
+    let infoHtml = '';
+
+    if (title) {
+        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
+        infoHtml = `
+            <div class="modal-photo-info ${infoVisibleClass}">
+                <h3>${title}</h3>
+                <p>${desc}</p>
+            </div>`;
+    }
+
+    switch (loadType) {
+        case 'html':
+            $.ajax({
+                url: loadUrl, type: 'GET',
+                success: function(data) { 
+                    $modalContent.html(data); 
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
+                },
+                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
+            });
+            break;
+        case 'image':
+            $modalContent.html(`
+                <div class="image-wrapper">
+                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'iframe':
+            $modalContent.html(`
+                <div class="iframe-wrapper">
+                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'blocked':
+            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
+            break;
+        default: // newtab
+            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
+            break;
+    }
+    
+    $('.modal-prev-btn').prop('disabled', index <= 0);
+    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
+}
+
 function filterYouTubeCards() {
     const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
     const selectedKeyword = $('#youtube-keyword-filter').val();
@@ -718,11 +684,14 @@ function filterTutorialCards() {
     const searchTerm = decodeText($('#tutorials-search-box').val().toLowerCase());
     const selectedCategory = $('#tutorials-category-filter').val();
     const selectedKeyword = $('#tutorials-keyword-filter').val();
+    
     const $grid = $('#tutorials-card-list');
     const $allCards = $grid.children('.card-item');
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $('#tutorials-no-results');
+    
     let visibleCount = 0;
+
     if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
@@ -747,10 +716,10 @@ function filterTutorialCards() {
 }
 
 
-/* === --- EVENT LISTENERS (DELEGATED) --- === */
+// --- EVENT LISTENERS (DELEGATED) ---
 $(document).ready(function () {
     
-    // --- Inject the modal HTML on page load ---
+    // Inject modal
     $('body').append(`
         <div id="content-modal" class="modal-backdrop">
             <div class="modal-content">
@@ -772,25 +741,20 @@ $(document).ready(function () {
         </div>
     `);
 
-    // Listener for "Show More" (Cards)
+    // Listeners
     $('body').on('click', '.toggle-card-button', function() {
         const $button = $(this);
         const $list = $button.prev('.card-list');
-        if ($list.length) {
-            showMoreCards($button, $list);
-        }
+        if ($list.length) { showMoreCards($button, $list); }
     });
 
-    // Listener for ALL CARDS (opens modal)
     $('body').on('click', '.card-item, .item', function(e) {
         const $clickedCard = $(this);
         const $link = $clickedCard.find('a').first();
         if (!$link.length) { return; } 
         
         const $clickedLink = $(e.target).closest('a');
-        if ($clickedLink.length > 0 && !$clickedLink.is($link)) {
-            return;
-        }
+        if ($clickedLink.length > 0 && !$clickedLink.is($link)) { return; }
         
         e.preventDefault(); 
         e.stopPropagation(); 
@@ -807,56 +771,43 @@ $(document).ready(function () {
         
         if (currentCardList.length > 0) {
             loadModalContent(currentCardIndex);
-            
             $('body').addClass('modal-open');
             $('#content-modal').fadeIn(200);
-            
             $(document).on('keydown.modalNav', handleModalKeys);
         }
     });
 
-    // Listener for Modal "Close" button
     $('body').on('click', '.modal-close-btn', function() {
         const $modal = $('#content-modal');
-        const $modalContent = $('#modal-content-area');
-        
         $('body').removeClass('modal-open');
         $modal.fadeOut(200);
-        
-        $modalContent.html(''); 
-        
+        $('#modal-content-area').html(''); 
         currentCardList = [];
         currentCardIndex = 0;
         isModalInfoVisible = false; 
         $(document).off('keydown.modalNav');
     });
     
-    // Listener for Modal backdrop click
     $('body').on('click', '#content-modal', function(e) {
         if (e.target.id === 'content-modal') {
             $(this).find('.modal-close-btn').first().click();
         }
     });
     
-    // Listeners for Modal Prev/Next/Info buttons
     $('body').on('click', '.modal-prev-btn', function() {
-        if (currentCardIndex > 0) {
-            loadModalContent(currentCardIndex - 1);
-        }
+        if (currentCardIndex > 0) loadModalContent(currentCardIndex - 1);
     });
     
     $('body').on('click', '.modal-next-btn', function() {
-        if (currentCardIndex < currentCardList.length - 1) {
-            loadModalContent(currentCardIndex + 1);
-        }
+        if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1);
     });
 
     $('body').on('click', '.modal-info-btn', function() {
-        isModalInfoVisible = !isModalInfoVisible; // Toggle state
+        isModalInfoVisible = !isModalInfoVisible;
         $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible', isModalInfoVisible);
     });
 
-    // --- All filter listeners ---
+    // Filter listeners
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
     $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
     $('body').on('input', '#post-search-box', filterPostCards);
@@ -868,22 +819,18 @@ $(document).ready(function () {
     $('body').on('input', '#album-search-box', filterAlbumCards);
     $('body').on('change', '#album-category-filter', filterAlbumCards);
     $('body').on('change', '#album-keyword-filter', filterAlbumCards);
-    
     $('body').on('input', '#research-search-box', filterResearchCards);
     $('body').on('change', '#research-category-filter', filterResearchCards);
     $('body').on('change', '#research-keyword-filter', filterResearchCards);
-    
     $('body').on('input', '#tutorials-search-box', filterTutorialCards);
     $('body').on('change', '#tutorials-category-filter', filterTutorialCards);
     $('body').on('change', '#tutorials-keyword-filter', filterTutorialCards);
 
-    // --- Research Tab listener ---
+    // Research Tab listener
     $('#content-modal').on('click', '.tab-button', function() {
         $(this).siblings().removeClass('active');
         $(this).addClass('active');
-        
         const htmlUrl = $(this).data('content-url');
         loadModalTabContent(htmlUrl, '#research-tab-content-modal');
     });
-
 });
