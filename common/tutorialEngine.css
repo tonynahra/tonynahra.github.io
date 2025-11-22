@@ -1,4 +1,12 @@
-body { margin: 0; padding: 0; overflow: hidden; background-color: #1f2833; }
+/* --- Tutorial Engine Styles --- */
+
+/* Ensure the iframe body has no margin/padding */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* No scrollbars on the iframe body */
+    background-color: var(--bg-dark); /* Inherit theme background */
+}
 
 #tutorialContainer {
     display: flex;
@@ -6,22 +14,26 @@ body { margin: 0; padding: 0; overflow: hidden; background-color: #1f2833; }
     height: 100vh;
     width: 100vw;
     font-family: 'Inter', sans-serif;
-    color: #c5c8c6;
+    color: var(--text-light);
+    background-color: var(--bg-dark);
 }
 
 #tutorialSection {
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 100%;
 }
 
-.slide-area {
-    flex-grow: 1; /* Fills all space above nav */
+/* Slide Area */
+.slide-wrapper {
+    flex-grow: 1; /* Fill remaining space */
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #000; 
+    background-color: #000; /* Black background for slides */
     overflow: hidden;
+    position: relative;
 }
 
 .tutorial-slide {
@@ -33,64 +45,87 @@ body { margin: 0; padding: 0; overflow: hidden; background-color: #1f2833; }
     cursor: pointer;
 }
 
+/* Navigation Controls */
 .tutorial-nav {
-    flex-shrink: 0;
-    height: 60px;
-    background-color: #2c3e50;
-    border-top: 1px solid #1f2833;
+    flex-shrink: 0; /* Fixed height based on content */
+    padding: 10px 20px;
+    background-color: var(--bg-medium);
+    border-top: 1px solid var(--text-accent);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
-}
-
-.nav-left, .nav-right {
-    width: 25%; /* Equal width to keep center centered */
-    display: flex;
+    flex-direction: column;
     gap: 10px;
 }
 
-.nav-right { justify-content: flex-end; }
+.tutorial-title {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    text-align: center;
+}
 
-.nav-center {
-    flex-grow: 1;
+.tutorial-controls {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.playback-controls {
+    display: flex;
     align-items: center;
     gap: 15px;
 }
 
-.tutorial-title {
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: #fff;
+.extra-controls {
+    display: flex;
+    gap: 10px;
 }
 
 /* Buttons */
 .nav-btn {
-    padding: 6px 12px;
+    padding: 8px 16px;
     border: none;
     border-radius: 4px;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.nav-btn.primary { background-color: #66fcf1; color: #1f2833; font-weight: bold; }
-.nav-btn.secondary { background-color: transparent; color: #c5c8c6; border: 1px solid #c5c8c6; }
+.nav-btn.primary {
+    background-color: var(--text-accent);
+    color: var(--bg-dark);
+    font-weight: bold;
+}
 
-.nav-btn:hover:not(:disabled) { opacity: 0.8; }
-.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-btn.secondary {
+    background-color: transparent;
+    color: var(--text-light);
+    border: 1px solid var(--text-light);
+}
+
+.nav-btn:hover:not(:disabled) {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+.nav-btn:disabled {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    border-color: var(--bg-medium);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 .page-number {
     font-family: 'IBM Plex Mono', monospace;
-    color: #fff;
-    min-width: 50px;
+    font-size: 1rem;
+    color: var(--text-primary);
+    min-width: 60px;
     text-align: center;
 }
 
-.error-message { padding: 40px; text-align: center; color: #e74c3c; }
+.error-message {
+    padding: 20px;
+    text-align: center;
+    color: #e74c3c;
+    font-family: 'IBM Plex Mono', monospace;
+}
