@@ -3,7 +3,7 @@ var currentCardList = [];
 var currentCardIndex = 0; 
 var isModalInfoVisible = false; 
 
-/* === HELPER FUNCTIONS (Global Scope) === */
+/* === HELPER FUNCTIONS === */
 
 function decodeText(text) {
     if (!text) return "";
@@ -16,7 +16,7 @@ function decodeText(text) {
     }
 }
 
-/* === VIEW HELPERS === */
+/* === GLOBAL VIEW FUNCTIONS (Defined at Top Level) === */
 
 function handleCardView($scope, initialLoadOverride) {
     $scope.find('.card-list').each(function() {
@@ -54,174 +54,21 @@ function showMoreCards($button, $list) {
     else { $button.text(`Show More (${remaining} more) \u25BC`); }
 }
 
-/* === MODAL LOGIC === */
-
 function handleModalKeys(e) {
     if (!$('#content-modal').is(':visible')) {
         $(document).off('keydown.modalNav');
         return;
     }
-    
-    if ($(e.target).is('input, textarea, select')) {
-        return;
-    }
+    if ($(e.target).is('input, textarea, select')) return;
 
     switch (e.key) {
-        case "Escape":
-            $('.modal-close-btn').first().click();
-            break;
-        case "ArrowLeft":
-            $('.modal-prev-btn').first().click();
-            break;
-        case "ArrowRight":
-            $('.modal-next-btn').first().click();
-            break;
-        case " ": // Spacebar
-            e.preventDefault(); 
-            $('.modal-next-btn').first().click();
-            break;
-        case "i":
-            e.preventDefault(); 
-            $('.modal-info-btn').first().click();
-            break;
+        case "Escape": $('.modal-close-btn').first().click(); break;
+        case "ArrowLeft": $('.modal-prev-btn').first().click(); break;
+        case "ArrowRight": $('.modal-next-btn').first().click(); break;
+        case " ": e.preventDefault(); $('.modal-next-btn').first().click(); break;
+        case "i": e.preventDefault(); $('.modal-info-btn').first().click(); break;
     }
 }
-
-function loadModalContent(index) {
-    if (index < 0 || index >= currentCardList.length) return;
-
-    const $link = currentCardList[index];
-    if (!$link.length) return;
-    
-    currentCardIndex = index;
-    
-    const $modal = $('#content-modal');
-    const $modalContent = $('#modal-content-area');
-    const $modalOpenLink = $modal.find('.open-new-window');
-    const $modalInfoBtn = $modal.find('.modal-info-btn');
-
-    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-    
-    const loadUrl = $link.attr('href');
-    let loadType = $link.data('load-type');
-    const jsonUrl = $link.data('json-url');
-    const manifestUrl = $link.data('manifest-url');
-    
-    // 1. Research Logic
-    if (loadType === 'research' && jsonUrl) {
-        $modal.addClass('research-mode'); 
-        $modalOpenLink.attr('href', jsonUrl); 
-        buildResearchModal(jsonUrl); 
-        return; 
-    } 
-    
-    // 2. Tutorial Logic
-    if (loadType === 'tutorial' && manifestUrl) {
-        $modal.addClass('tutorial-mode'); 
-        $modal.removeClass('research-mode');
-        $modal.find('.modal-header').hide(); // Hide default header
-        
-        $modalOpenLink.attr('href', manifestUrl);
-        
-        const playerHtml = `
-            <div class="iframe-wrapper" style="height: 100%; width: 100%;">
-                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
-            </div>
-            <!-- Custom close button for full-screen player -->
-            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px;">&times;</button>
-        `;
-        $modalContent.html(playerHtml);
-        
-        $modalContent.find('.modal-close-btn').on('click', function() {
-            // Reset state manually
-             $modal.removeClass('modal-open tutorial-mode').fadeOut(200);
-             $modalContent.html('');
-             currentCardList = [];
-             $(document).off('keydown.modalNav');
-             $modal.find('.modal-header').show(); // Restore header
-        });
-        
-        return;
-    }
-    
-    // 3. Regular Logic
-    $modal.removeClass('research-mode tutorial-mode'); 
-    $modal.find('.modal-header').show();
-    
-    $modalOpenLink.attr('href', loadUrl);
-    $modalContent.find('.modal-photo-info').remove();
-    $modalInfoBtn.hide(); 
-    
-    if (!loadType) {
-        if (loadUrl.startsWith('http')) {
-            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
-                loadType = 'blocked'; 
-            } else {
-                loadType = 'iframe';
-            }
-        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
-            loadType = 'image';
-        } else if (loadUrl.endsWith('.html')) {
-            loadType = 'html';
-        } else {
-            loadType = 'newtab'; 
-        }
-    }
-    
-    const $card = $link.closest('.card-item');
-    const title = $card.find('h3').text() || $card.find('img').attr('alt');
-    const desc = $card.find('p').text();
-    let infoHtml = '';
-
-    if (title) {
-        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
-        infoHtml = `
-            <div class="modal-photo-info ${infoVisibleClass}">
-                <h3>${title}</h3>
-                <p>${desc}</p>
-            </div>`;
-    }
-
-    switch (loadType) {
-        case 'html':
-            $.ajax({
-                url: loadUrl, type: 'GET',
-                success: function(data) { 
-                    $modalContent.html(data); 
-                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
-                },
-                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
-            });
-            break;
-        case 'image':
-            $modalContent.html(`
-                <div class="image-wrapper">
-                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
-                    ${infoHtml}
-                </div>`);
-            if (infoHtml) { $modalInfoBtn.show(); }
-            break;
-        case 'iframe':
-            $modalContent.html(`
-                <div class="iframe-wrapper">
-                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
-                    ${infoHtml}
-                </div>`);
-            if (infoHtml) { $modalInfoBtn.show(); }
-            break;
-        case 'blocked':
-            $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
-            break;
-        default: 
-            $modalContent.html('<div class="error-message">Link cannot be opened here.</div>');
-            break;
-    }
-    
-    $('.modal-prev-btn').prop('disabled', index <= 0);
-    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
-}
-
-/* === FILTER LOGIC === */
 
 function populateCategoryFilter(listId, filterId) {
     const $filter = $(filterId);
@@ -249,6 +96,7 @@ function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return; 
     
+    // Use defaults if filterConfig isn't loaded yet to prevent crash
     const stop = (typeof STOP_WORDS !== 'undefined') ? STOP_WORDS : new Set(['a', 'the']);
     const replace = (typeof REPLACEMENT_MAP !== 'undefined') ? REPLACEMENT_MAP : {};
 
@@ -413,7 +261,10 @@ function buildResearchModal(jsonUrl) {
             if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl, '#research-tab-content-modal'); }
             $tabNav.append($button);
         });
-        $modalContent.find('.modal-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
+        
+        $modalContent.find('.modal-close-btn').on('click', function() { 
+             $('.modal-close-btn').first().click(); 
+        });
     });
 }
 
@@ -421,140 +272,172 @@ function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
     $target.html(''); 
     $target.closest('#modal-content-area').find('.research-modal-header .open-new-window').attr('href', htmlUrl);
+    
+    // Use iframe for research tab content too (fix for CORS/rendering issues)
     $target.html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`);
 }
 
+/* === LOAD MODAL CONTENT === */
 
-/* === EVENT LISTENERS (DELEGATED) === */
-$(document).ready(function () {
+function loadModalContent(index) {
+    if (index < 0 || index >= currentCardList.length) return;
+
+    const $link = currentCardList[index];
+    if (!$link.length) return;
     
-    // Inject modal
-    $('body').append(`
-        <div id="content-modal" class="modal-backdrop">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-nav-left">
-                        <button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button>
-                        <button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button>
-                        <button class="modal-info-btn" title="Toggle Info (I)">Info</button>
-                    </div>
-                    <div class="modal-nav-right">
-                        <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
-                            Open in new window &nearr;
-                        </a>
-                        <button class="modal-close-btn" title="Close (Esc)">&times; Close</button>
-                    </div>
-                </div>
-                <div id="modal-content-area"></div>
+    currentCardIndex = index;
+    
+    const $modal = $('#content-modal');
+    const $modalContent = $('#modal-content-area');
+    const $modalOpenLink = $modal.find('.open-new-window');
+    const $modalInfoBtn = $modal.find('.modal-info-btn');
+
+    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
+    
+    const loadUrl = $link.attr('href');
+    let loadType = $link.data('load-type');
+    const jsonUrl = $link.data('json-url');
+    const manifestUrl = $link.data('manifest-url');
+    
+    // 1. Research Logic
+    if (loadType === 'research' && jsonUrl) {
+        $modal.addClass('research-mode'); 
+        $modalOpenLink.attr('href', jsonUrl); 
+        buildResearchModal(jsonUrl); 
+        return; 
+    } 
+    
+    // 2. Tutorial Logic
+    if (loadType === 'tutorial' && manifestUrl) {
+        $modal.addClass('tutorial-mode'); 
+        $modal.removeClass('research-mode');
+        $modal.find('.modal-header').hide();
+        
+        $modalOpenLink.attr('href', manifestUrl);
+        
+        const playerHtml = `
+            <div class="iframe-wrapper" style="height: 100%; width: 100%;">
+                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
             </div>
-        </div>
-    `);
-
-    // Listeners
-    $('body').on('click', '.toggle-card-button', function() {
-        const $button = $(this);
-        const $list = $button.prev('.card-list');
-        if ($list.length) { showMoreCards($button, $list); }
-    });
-
-    $('body').on('click', '.card-item, .item', function(e) {
-        const $clickedCard = $(this);
-        const $link = $clickedCard.find('a').first();
-        if (!$link.length) { return; } 
+            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px;">&times;</button>
+        `;
+        $modalContent.html(playerHtml);
         
-        const $clickedLink = $(e.target).closest('a');
-        if ($clickedLink.length > 0 && !$clickedLink.is($link)) { return; }
-        
-        e.preventDefault(); 
-        e.stopPropagation(); 
-        
-        const $cardList = $clickedCard.closest('.card-list');
-        const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible');
-        
-        currentCardList = [];
-        $allVisibleCards.each(function() {
-            currentCardList.push($(this).find('a').first());
+        $modalContent.find('.modal-close-btn').on('click', function() {
+            $('#content-modal').removeClass('modal-open tutorial-mode').fadeOut(200);
+            $('#modal-content-area').html('');
+            currentCardList = [];
+            $(document).off('keydown.modalNav');
+            $('#content-modal .modal-header').show();
         });
         
-        currentCardIndex = $allVisibleCards.index($clickedCard);
-        
-        if (currentCardList.length > 0) {
-            loadModalContent(currentCardIndex);
-            $('body').addClass('modal-open');
-            $('#content-modal').fadeIn(200);
-            $(document).on('keydown.modalNav', handleModalKeys);
-        }
-    });
-
-    // Generalized Close Button Logic
-    $('body').on('click', '.modal-close-btn', function() {
-        const $modal = $('#content-modal');
-        $('body').removeClass('modal-open');
-        $modal.fadeOut(200);
-        $('#modal-content-area').html(''); 
-        currentCardList = [];
-        currentCardIndex = 0;
-        isModalInfoVisible = false; 
-        $(document).off('keydown.modalNav');
-        $modal.find('.modal-header').show();
-    });
+        return;
+    }
     
-    $('body').on('click', '#content-modal', function(e) {
-        if (e.target.id === 'content-modal') {
-            $(this).find('.modal-close-btn').first().click();
-        }
-    });
+    // 3. Regular Logic
+    $modal.removeClass('research-mode tutorial-mode'); 
+    $modal.find('.modal-header').show();
     
-    $('body').on('click', '.modal-prev-btn', function() {
-        if (currentCardIndex > 0) loadModalContent(currentCardIndex - 1);
-    });
+    $modalOpenLink.attr('href', loadUrl);
+    $modalContent.find('.modal-photo-info').remove();
+    $modalInfoBtn.hide(); 
     
-    $('body').on('click', '.modal-next-btn', function() {
-        if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1);
-    });
-
-    $('body').on('click', '.modal-info-btn', function() {
-        isModalInfoVisible = !isModalInfoVisible;
-        $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible', isModalInfoVisible);
-    });
-    
-    // Research Tab listener (Moved inside ready)
-    $('#content-modal').on('click', '.tab-button', function() {
-        $(this).siblings().removeClass('active');
-        $(this).addClass('active');
-        const htmlUrl = $(this).data('content-url');
-        loadModalTabContent(htmlUrl, '#research-tab-content-modal');
-    });
-    
-    // YouTube Filter (Specifically handled here as it has specific vars)
-    function filterYouTubeCards() {
-        const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
-        const selectedKeyword = $('#youtube-keyword-filter').val();
-        const $grid = $('#Grid');
-        const $allCards = $grid.children('.card-item');
-        const $showMoreButton = $grid.next('.toggle-card-button');
-        const $noResultsMessage = $('#youtube-no-results');
-        let visibleCount = 0;
-        if (searchTerm.length > 0 || selectedKeyword !== "all") {
-            $showMoreButton.hide();
-            $allCards.each(function() {
-                const $card = $(this);
-                const cardText = getCardSearchableText($card); 
-                const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
-                const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
-                if (searchMatch && keywordMatch) {
-                    $card.removeClass('hidden-card-item').show();
-                    visibleCount++;
-                } else { $card.hide(); }
-            });
-            if (visibleCount === 0) $noResultsMessage.show(); else $noResultsMessage.hide();
+    // Auto-guess type
+    if (!loadType) {
+        if (loadUrl.startsWith('http')) {
+            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
+                loadType = 'blocked'; 
+            } else {
+                loadType = 'iframe';
+            }
+        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+            loadType = 'image';
+        } else if (loadUrl.endsWith('.html')) {
+            loadType = 'html';
         } else {
-            $noResultsMessage.hide();
-            $allCards.removeAttr('style'); 
-            handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
+            loadType = 'newtab'; 
         }
     }
+    
+    const $card = $link.closest('.card-item');
+    const title = $card.find('h3').text() || $card.find('img').attr('alt');
+    const desc = $card.find('p').text();
+    let infoHtml = '';
 
-    $('body').on('input', '#youtube-search-box', filterYouTubeCards);
-    $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
-});
+    if (title) {
+        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
+        infoHtml = `
+            <div class="modal-photo-info ${infoVisibleClass}">
+                <h3>${title}</h3>
+                <p>${desc}</p>
+            </div>`;
+    }
+
+    switch (loadType) {
+        case 'html':
+            $.ajax({
+                url: loadUrl, type: 'GET',
+                success: function(data) { 
+                    $modalContent.html(data); 
+                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
+                },
+                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
+            });
+            break;
+        case 'image':
+            $modalContent.html(`
+                <div class="image-wrapper">
+                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'iframe':
+            $modalContent.html(`
+                <div class="iframe-wrapper">
+                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'blocked':
+            $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
+            break;
+        default: 
+            $modalContent.html('<div class="error-message">Link cannot be opened here.</div>');
+            break;
+    }
+    
+    $('.modal-prev-btn').prop('disabled', index <= 0);
+    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
+}
+
+// --- EXPOSE YOUTUBE FILTER FOR MAIN PAGE ---
+function filterYouTubeCards() {
+    const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
+    const selectedKeyword = $('#youtube-keyword-filter').val();
+    const $grid = $('#Grid');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#youtube-no-results');
+    let visibleCount = 0;
+    
+    if (searchTerm.length > 0 || selectedKeyword !== "all") {
+        $showMoreButton.hide();
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardText = getCardSearchableText($card); 
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
+            if (searchMatch && keywordMatch) {
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else { $card.hide(); }
+        });
+        if (visibleCount === 0) $noResultsMessage.show(); else $noResultsMessage.hide();
+    } else {
+        $noResultsMessage.hide();
+        $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
+    }
+}
