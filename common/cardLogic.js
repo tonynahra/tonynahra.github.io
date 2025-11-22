@@ -273,6 +273,7 @@ function loadModalTabContent(htmlUrl, targetId) {
 }
 
 /* === LOAD MODAL CONTENT === */
+// ... (keep existing global variables and helper functions) ...
 
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) return;
@@ -337,7 +338,6 @@ function loadModalContent(index) {
     $modalContent.find('.modal-photo-info').remove();
     $modalInfoBtn.hide(); 
     
-    // Auto-guess type
     if (!loadType) {
         if (loadUrl.startsWith('http')) {
             if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
@@ -374,7 +374,10 @@ function loadModalContent(index) {
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
                     $modalContent.html(data); 
-                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -388,6 +391,7 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'iframe':
+            // --- FIX: REMOVED INLINE HEIGHT, letting CSS handle it ---
             $modalContent.html(`
                 <div class="iframe-wrapper">
                     <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
@@ -396,16 +400,18 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'blocked':
-            $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
+            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
             break;
-        default: 
-            $modalContent.html('<div class="error-message">Link cannot be opened here.</div>');
+        default: // newtab
+            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
             break;
     }
     
     $('.modal-prev-btn').prop('disabled', index <= 0);
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
+
+// ... (rest of the file) ...
 
 // --- EXPOSE YOUTUBE FILTER FOR MAIN PAGE ---
 function filterYouTubeCards() {
