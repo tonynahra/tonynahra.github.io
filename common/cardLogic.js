@@ -1,22 +1,30 @@
 /* === GLOBAL VARIABLES === */
-var currentCardList = []; 
-var currentCardIndex = 0; 
-var isModalInfoVisible = false; 
+var currentCardList = []; // Stores the list of cards for modal navigation
+var currentCardIndex = 0; // Stores the current position in the modal
+var isModalInfoVisible = false; // Stores the state of the info toggle
 
-/* === HELPER FUNCTIONS === */
+// --- STOP_WORDS, REPLACEMENT_MAP, SYNONYM_MAP are in filterConfig.js ---
 
+/**
+ * Helper function to safely decode text.
+ */
 function decodeText(text) {
     if (!text) return "";
     try {
         var $textarea = $('<textarea></textarea>');
         $textarea.html(text);
-        return $textarea.val();
+        let decoded = $textarea.val();
+        decoded = decodeURIComponent(decoded);
+        return decoded;
     } catch (e) {
         return text;
     }
 }
 
-/* === CARD VIEW LOGIC === */
+/* ==========================================================================
+   GLOBAL HELPER FUNCTIONS
+   (Defined outside $(document).ready so they are accessible to mainPage.js)
+   ========================================================================== */
 
 function handleCardView($scope, initialLoadOverride) {
     $scope.find('.card-list').each(function() {
@@ -34,7 +42,6 @@ function handleCardView($scope, initialLoadOverride) {
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
             
             $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
-            // We rely on mainPage.js to attach the click listener
             $list.after($button);
         }
     });
@@ -55,228 +62,141 @@ function showMoreCards($button, $list) {
     else { $button.text(`Show More (${remaining} more) \u25BC`); }
 }
 
-/* === MODAL LOGIC === */
-
 function handleModalKeys(e) {
     if (!$('#content-modal').is(':visible')) {
         $(document).off('keydown.modalNav');
         return;
     }
-    if ($(e.target).is('input, textarea, select')) return;
+    
+    if ($(e.target).is('input, textarea, select')) {
+        return;
+    }
 
     switch (e.key) {
-        case "Escape": $('.modal-close-btn').first().click(); break;
-        case "ArrowLeft": $('.modal-prev-btn').first().click(); break;
-        case "ArrowRight": $('.modal-next-btn').first().click(); break;
-        case " ": e.preventDefault(); $('.modal-next-btn').first().click(); break;
-        case "i": e.preventDefault(); $('.modal-info-btn').first().click(); break;
+        case "Escape":
+            $('.modal-close-btn').first().click();
+            break;
+        case "ArrowLeft":
+            $('.modal-prev-btn').first().click();
+            break;
+        case "ArrowRight":
+            $('.modal-next-btn').first().click();
+            break;
+        case " ": // Spacebar
+            e.preventDefault(); 
+            $('.modal-next-btn').first().click();
+            break;
+        case "i":
+            e.preventDefault(); 
+            $('.modal-info-btn').first().click();
+            break;
     }
 }
-
-function loadModalContent(index) {
-    if (index < 0 || index >= currentCardList.length) return;
-
-    const $link = currentCardList[index];
-    if (!$link.length) return;
-    
-    currentCardIndex = index;
-    
-    const $modal = $('#content-modal');
-    const $modalContent = $('#modal-content-area');
-    const $modalOpenLink = $modal.find('.open-new-window');
-    const $modalInfoBtn = $modal.find('.modal-info-btn');
-
-    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-    
-    const loadUrl = $link.attr('href');
-    let loadType = $link.data('load-type');
-    const jsonUrl = $link.data('json-url');
-    const manifestUrl = $link.data('manifest-url');
-    
-    // 1. Research Logic
-    if (loadType === 'research' && jsonUrl) {
-        $modal.addClass('research-mode'); 
-        $modalOpenLink.attr('href', jsonUrl); 
-        buildResearchModal(jsonUrl); 
-        return; 
-    } 
-    
-    // 2. Tutorial Logic
-    const loadUrl = $link.attr('href');
-    let loadType = $link.data('load-type');
-    
-    // NEW: Handle Tutorial Type
-    if (loadType === 'tutorial') {
-        // 1. Get the manifest URL from the data attribute
-        const manifestUrl = $link.data('manifest');
-        
-        if (manifestUrl) {
-            // 2. Construct the player URL
-            // We pass the manifest URL to our player.
-            const playerUrl = `tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}`;
-            
-            // 3. Load it into the modal via an iframe
-            // We set a specific class for full-screen styling if needed
-            $modalContent.html(`<iframe src="${playerUrl}" class="loaded-iframe" style="width:100%; height:100%; border:none;"></iframe>`);
-            
-            // 4. Special Modal Styling for Tutorials (Full Screen)
-            // You might want to add a class to the modal content to remove padding
-            $('.modal-content').css('padding', '0').css('height', '90vh'); // Maximize space
-            
-        } else {
-            $modalContent.html('<div class="error-message">Error: No manifest URL provided.</div>');
-        }
-        return; // Exit function, we are done
-    }
-    
-    // Reset modal padding for normal content
-    $('.modal-content').css('padding', '20px').css('height', ''); 
-    
-    // 3. Regular Logic
-    $modal.removeClass('research-mode'); 
-    $modal.removeClass('tutorial-mode'); 
-    $modal.find('.modal-header').show();
-    
-    $modalOpenLink.attr('href', loadUrl);
-    $modalContent.find('.modal-photo-info').remove();
-    $modalInfoBtn.hide(); 
-    
-    // Auto-guess type
-    if (!loadType) {
-        if (loadUrl.startsWith('http')) {
-            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
-                loadType = 'blocked'; 
-            } else {
-                loadType = 'iframe';
-            }
-        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
-            loadType = 'image';
-        } else if (loadUrl.endsWith('.html')) {
-            loadType = 'html';
-        } else {
-            loadType = 'newtab'; 
-        }
-    }
-    
-    const $card = $link.closest('.card-item');
-    const title = $card.find('h3').text() || $card.find('img').attr('alt');
-    const desc = $card.find('p').text();
-    let infoHtml = '';
-
-    if (title) {
-        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
-        infoHtml = `
-            <div class="modal-photo-info ${infoVisibleClass}">
-                <h3>${title}</h3>
-                <p>${desc}</p>
-            </div>`;
-    }
-
-    switch (loadType) {
-        case 'html':
-            $.ajax({
-                url: loadUrl, type: 'GET',
-                success: function(data) { 
-                    $modalContent.html(data); 
-                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
-                },
-                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
-            });
-            break;
-        case 'image':
-            $modalContent.html(`
-                <div class="image-wrapper">
-                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
-                    ${infoHtml}
-                </div>`);
-            if (infoHtml) { $modalInfoBtn.show(); }
-            break;
-        case 'iframe':
-            $modalContent.html(`
-                <div class="iframe-wrapper">
-                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
-                    ${infoHtml}
-                </div>`);
-            if (infoHtml) { $modalInfoBtn.show(); }
-            break;
-        case 'blocked':
-            $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
-            break;
-        default: 
-            $modalContent.html('<div class="error-message">Link cannot be opened here.</div>');
-            break;
-    }
-    
-    $('.modal-prev-btn').prop('disabled', index <= 0);
-    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
-}
-
-/* === FILTER LOGIC === */
 
 function populateCategoryFilter(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return;
 
     const categoryCounts = {};
-    $(`${listId} .card-item`).each(function() {
-        const categories = $(this).data('category');
-        if (categories) {
-            String(categories).split(',').forEach(cat => {
-                const cleanCat = cat.trim();
-                if (cleanCat) categoryCounts[cleanCat] = (categoryCounts[cleanCat] || 0) + 1;
-            });
-        }
-    });
 
-    const sortedCategories = Object.entries(categoryCounts).sort(([,a], [,b]) => b - a);
-    $filter.children('option:not(:first)').remove(); 
-    sortedCategories.forEach(([key, count]) => {
-        $filter.append($('<option>', { value: key, text: `${key} (${count})` }));
-    });
+    try {
+        $(`${listId} .card-item`).each(function() {
+            const categories = $(this).data('category');
+            if (categories) {
+                String(categories).split(',').forEach(cat => {
+                    const cleanCat = cat.trim();
+                    if (cleanCat) {
+                        categoryCounts[cleanCat] = (categoryCounts[cleanCat] || 0) + 1;
+                    }
+                });
+            }
+        });
+
+        const sortedCategories = Object.entries(categoryCounts)
+            .sort(([,a], [,b]) => b - a); 
+
+        $filter.children('option:not(:first)').remove(); 
+
+        sortedCategories.forEach(([key, count]) => {
+            $filter.append($('<option>', {
+                value: key,
+                text: `${key} (${count})`
+            }));
+        });
+
+    } catch (error) {
+        console.error("Error populating category filter:", error);
+    }
 }
 
 function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return; 
+
     const wordCounts = {}; 
     
-    $(`${listId} .card-item`).each(function() {
-        const localCardKeywords = new Set(); 
-        const $card = $(this);
-        const textSources = [
-            $card.find('h3').text(),
-            $card.find('p').text(),
-            $card.find('.card-category').text(),
-            $card.find('img').attr('alt'),
-            $card.data('category'), 
-            $card.data('keywords') 
-        ];
-        const combinedText = decodeText(textSources.join(' '));
-        const words = combinedText.split(/[^a-zA-Z0-9'-]+/); 
-        
-        words.forEach(word => {
-            let cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
-            if (typeof REPLACEMENT_MAP !== 'undefined' && REPLACEMENT_MAP[cleanWord]) cleanWord = REPLACEMENT_MAP[cleanWord];
-            if (cleanWord.length > 2 && cleanWord.length <= 15 && typeof STOP_WORDS !== 'undefined' && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
-                localCardKeywords.add(cleanWord);
-            }
-        });
-        localCardKeywords.forEach(key => wordCounts[key] = (wordCounts[key] || 0) + 1);
-    });
+    try {
+        $(`${listId} .card-item`).each(function() {
+            const $card = $(this);
+            const localCardKeywords = new Set(); 
+            
+            const textSources = [
+                $card.find('h3').text(),
+                $card.find('p').text(),
+                $card.find('.card-category').text(),
+                $card.find('img').attr('alt'),
+                $card.data('category'), 
+                $card.data('keywords') 
+            ];
+            
+            const combinedText = decodeText(textSources.join(' '));
+            const words = combinedText.split(/[^a-zA-Z0-9'-]+/); 
+            
+            words.forEach(word => {
+                let cleanWord = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, ''); 
+                
+                if (typeof REPLACEMENT_MAP !== 'undefined' && REPLACEMENT_MAP[cleanWord]) {
+                    cleanWord = REPLACEMENT_MAP[cleanWord];
+                }
+                
+                if (cleanWord.length > 2 && cleanWord.length <= 15 && typeof STOP_WORDS !== 'undefined' && !STOP_WORDS.has(cleanWord) && isNaN(cleanWord)) {
+                    localCardKeywords.add(cleanWord);
+                }
+            });
 
-    const sortedKeywords = Object.entries(wordCounts).sort(([,a], [,b]) => b - a).slice(0, 30); 
-    $filter.children('option:not(:first)').remove();
-    sortedKeywords.forEach(([key, count]) => {
-        const displayText = key.length > 15 ? key.substring(0, 15) + '...' : key;
-        $filter.append($('<option>', { value: key, text: `${displayText} (${count})` }));
-    });
+            localCardKeywords.forEach(key => {
+                wordCounts[key] = (wordCounts[key] || 0) + 1;
+            });
+        });
+
+        const sortedKeywords = Object.entries(wordCounts)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 30); 
+
+        $filter.children('option:not(:first)').remove();
+        
+        sortedKeywords.forEach(([key, count]) => {
+            const displayText = key.length > 15 ? key.substring(0, 15) + '...' : key;
+            
+            $filter.append($('<option>', {
+                value: key,
+                text: `${displayText} (${count})` 
+            }));
+        });
+    
+    } catch (error) {
+        console.error("Error populating smart keywords:", error);
+    }
 }
 
 function getCardSearchableText($card) {
     const textSources = [
-        $card.find('h3').text(), $card.find('p').text(),
-        $card.find('.card-category').text(), $card.find('img').attr('alt'),
-        $card.data('category'), $card.data('keywords')
+        $card.find('h3').text(),
+        $card.find('p').text(),
+        $card.find('.card-category').text(),
+        $card.find('img').attr('alt'),
+        $card.data('category'),
+        $card.data('keywords')
     ];
     return decodeText(textSources.map(text => String(text || '')).join(' ').toLowerCase());
 }
@@ -285,7 +205,11 @@ function checkKeywordMatch(cardText, selectedKeyword) {
     if (selectedKeyword === "all") return true;
     const synonyms = (typeof SYNONYM_MAP !== 'undefined') ? (SYNONYM_MAP[selectedKeyword] || []) : [];
     const keywordsToMatch = [selectedKeyword, ...synonyms];
-    return keywordsToMatch.some(key => new RegExp(`\\b${key}\\b`, 'i').test(cardText));
+    
+    return keywordsToMatch.some(key => {
+        const regex = new RegExp(`\\b${key}\\b`, 'i'); 
+        return regex.test(cardText);
+    });
 }
 
 function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResultsId, initialLoad) {
@@ -305,7 +229,6 @@ function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResult
             const cardCategory = $card.data('category'); 
             const cardText = getCardSearchableText($card); 
             
-            // Flexible category match (contains)
             const categoryMatch = (selectedCategory === "all" || String(cardCategory).includes(selectedCategory));
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
@@ -404,7 +327,13 @@ function buildResearchModal(jsonUrl) {
             if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl, '#research-tab-content-modal'); }
             $tabNav.append($button);
         });
-        $modalContent.find('.modal-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
+        
+        // Attach close handler to the button we just created inside the modal content
+        $modalContent.find('.modal-close-btn').on('click', function() { 
+             // Trigger the main close logic by finding the button in the main header (even if hidden) or calling the function directly
+             // But since main header might be hidden, let's just trigger the same logic:
+             $('.modal-close-btn').first().click(); 
+        });
     });
 }
 
@@ -413,4 +342,172 @@ function loadModalTabContent(htmlUrl, targetId) {
     $target.html(''); 
     $target.closest('#modal-content-area').find('.research-modal-header .open-new-window').attr('href', htmlUrl);
     $target.html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`);
+}
+
+/* === LOAD MODAL CONTENT === */
+
+function loadModalContent(index) {
+    if (index < 0 || index >= currentCardList.length) {
+        return;
+    }
+
+    const $link = currentCardList[index];
+    if (!$link.length) return;
+    
+    currentCardIndex = index;
+    
+    const $modal = $('#content-modal');
+    const $modalContent = $('#modal-content-area');
+    const $modalOpenLink = $modal.find('.open-new-window');
+    const $modalInfoBtn = $modal.find('.modal-info-btn');
+
+    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
+    
+    const loadUrl = $link.attr('href');
+    let loadType = $link.data('load-type');
+    const jsonUrl = $link.data('json-url');
+    const manifestUrl = $link.data('manifest-url'); // For Tutorials
+    
+    // 1. Research Logic
+    if (loadType === 'research' && jsonUrl) {
+        $modal.addClass('research-mode'); 
+        $modalOpenLink.attr('href', jsonUrl); 
+        buildResearchModal(jsonUrl); 
+        return; 
+    } 
+    
+    // 2. Tutorial Logic
+    if (loadType === 'tutorial' && manifestUrl) {
+        $modal.addClass('tutorial-mode'); 
+        $modal.removeClass('research-mode');
+        $modal.find('.modal-header').hide();
+        
+        $modalOpenLink.attr('href', manifestUrl);
+        
+        const playerHtml = `
+            <div class="iframe-wrapper" style="height: 100%; width: 100%;">
+                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
+            </div>
+            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px;">&times;</button>
+        `;
+        $modalContent.html(playerHtml);
+        
+        $modalContent.find('.modal-close-btn').on('click', function() {
+            $('.modal-close-btn').first().click();
+        });
+        
+        return;
+    }
+
+    // 3. Regular Logic
+    $modal.removeClass('research-mode'); 
+    $modal.removeClass('tutorial-mode'); 
+    $modal.find('.modal-header').show();
+    
+    $modalOpenLink.attr('href', loadUrl);
+    $modalContent.find('.modal-photo-info').remove();
+    $modalInfoBtn.hide(); 
+    
+    if (!loadType) {
+        if (loadUrl.startsWith('http')) {
+            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
+                loadType = 'blocked'; 
+            } else {
+                loadType = 'iframe';
+            }
+        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+            loadType = 'image';
+        } else if (loadUrl.endsWith('.html')) {
+            loadType = 'html';
+        } else {
+            loadType = 'newtab'; 
+        }
+    }
+    
+    const $card = $link.closest('.card-item');
+    const title = $card.find('h3').text() || $card.find('img').attr('alt');
+    const desc = $card.find('p').text();
+    let infoHtml = '';
+
+    if (title) {
+        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
+        infoHtml = `
+            <div class="modal-photo-info ${infoVisibleClass}">
+                <h3>${title}</h3>
+                <p>${desc}</p>
+            </div>`;
+    }
+
+    switch (loadType) {
+        case 'html':
+            $.ajax({
+                url: loadUrl, type: 'GET',
+                success: function(data) { 
+                    $modalContent.html(data); 
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
+                },
+                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
+            });
+            break;
+        case 'image':
+            $modalContent.html(`
+                <div class="image-wrapper">
+                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'iframe':
+            $modalContent.html(`
+                <div class="iframe-wrapper">
+                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'blocked':
+            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
+            break;
+        default: 
+            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
+            break;
+    }
+    
+    $('.modal-prev-btn').prop('disabled', index <= 0);
+    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
+}
+
+function filterYouTubeCards() {
+    const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
+    const selectedKeyword = $('#youtube-keyword-filter').val();
+    
+    const $grid = $('#Grid');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#youtube-no-results');
+    
+    let visibleCount = 0;
+
+    if (searchTerm.length > 0 || selectedKeyword !== "all") {
+        $showMoreButton.hide();
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardText = getCardSearchableText($card); 
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
+            if (searchMatch && keywordMatch) {
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else { $card.hide(); }
+        });
+        if (visibleCount === 0) { $noResultsMessage.show(); } 
+        else { $noResultsMessage.hide(); }
+    } else {
+        $noResultsMessage.hide();
+        $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
+    }
 }
