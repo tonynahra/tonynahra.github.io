@@ -4,37 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tutorial Player</title>
-    <!-- Load your main styles so variables work -->
+    <!-- Load main styles so variables work -->
     <link rel="stylesheet" href="common/mainPage.css">
-    <!-- Load the specific engine styles -->
+    <!-- Load engine styles -->
     <link rel="stylesheet" href="common/tutorialEngine.css">
 </head>
 <body class="tutorial-body">
 
     <div id="tutorialContainer">
-        <!-- Loading State -->
         <div id="loadingState" class="content-loader">
             <div class="spinner"></div>
             <p>Loading Tutorial...</p>
         </div>
 
-        <!-- The Actual Player -->
         <div id="tutorialSection" style="display: none;">
-            
-            <!-- Slide Display Area -->
             <div class="slide-container">
-                <img id="Main" src="" onclick="PageClick(event)" class="slide-image" alt="Tutorial Slide">
+                <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Tutorial Slide">
             </div>
 
-            <!-- Controls Bar -->
             <div class="nav-bar">
                 <div id="Title" class="tutorial-title"></div>
-                
                 <div class="controls-group">
                     <button onclick="Credits()" class="engine-btn secondary">Credits</button> 
                     <button onclick="Manifest()" class="engine-btn secondary">Manifest</button>
                 </div>
-
                 <div class="controls-group playback">
                     <button onclick="movePage(-1)" id="btnPrevious" class="engine-btn primary">&larr; Prev</button>  
                     <span id="pageNo" class="page-counter">0 / 0</span>  
@@ -45,13 +38,10 @@
             <audio id="Audio" src="" autoplay style="display: none;"></audio>
         </div>
         
-        <!-- Error State -->
         <div id="errorState" class="error-message" style="display: none;"></div>
     </div>
 
 <script>
-    // --- Engine Configuration ---
-    // We will determine ServerPath dynamically from the manifest URL passed in.
     var ServerPath = ""; 
     var TutorialPath = "";
     var TutorialLanguage = "";
@@ -66,14 +56,13 @@
     
     var AudioObj, bntNext, bntPrevious, PageObject;
     var x = new XMLHttpRequest();
+    
+    // --- PROXY ---
+    const CORS_PROXY = "https://corsproxy.io/?";
 
-    // --- Initialization ---
     window.onload = function() {
-        // 1. Get Manifest URL from Query String
         const urlParams = new URLSearchParams(window.location.search);
         const manifestUrl = urlParams.get('manifest');
-
-        // 2. Apply Theme if passed (optional polish)
         const theme = urlParams.get('theme');
         if(theme) document.body.classList.add(theme);
 
@@ -82,52 +71,57 @@
             return;
         }
 
-        // 3. Determine Base Path (Assumes resources are relative to the manifest location)
-        // E.g. if manifest is at https://site.com/data/A2.xml, images are at https://site.com/data/mobile/slides/...
-        // Based on your provided code, the engine usually expects a specific folder structure.
-        // We will adapt to assume standard X-Plain structure relative to the XML's folder.
-        
-        // Extract the directory of the XML file
+        // Calculate base path
         const lastSlashIndex = manifestUrl.lastIndexOf('/');
-        const xmlBaseDir = manifestUrl.substring(0, lastSlashIndex + 1); 
+        ServerPath = manifestUrl.substring(0, lastSlashIndex + 1);
+
+        // Attempt to fetch manifest
+        fetchManifest(manifestUrl, false);
+    };
+
+    function fetchManifest(url, useProxy) {
+        const fetchUrl = useProxy ? CORS_PROXY + encodeURIComponent(url) : url;
         
-        // Based on your A2.xml structure, images seem to be in "mobile/slides/" relative to the "folder" defined in XML.
-        // Let's try to handle this dynamically.
-        
-        x.open("GET", manifestUrl, true);
+        x.open("GET", fetchUrl, true);
         x.onreadystatechange = function () {
             if (x.readyState == 4) {
                 if(x.status == 200) {
-                    doc = x.responseXML;
-                    // Basic XML validation
-                    if(!doc || doc.getElementsByTagName("parsererror").length > 0) {
-                         showError("Error parsing XML manifest.");
-                         return;
+                    try {
+                        // If proxy returns text, parse it manually
+                        if (useProxy && typeof x.response === 'string') {
+                             const parser = new DOMParser();
+                             doc = parser.parseFromString(x.responseText, "text/xml");
+                        } else {
+                             doc = x.responseXML;
+                        }
+                        
+                        if(!doc || doc.getElementsByTagName("parsererror").length > 0) {
+                            // If direct failed, try proxy
+                             if (!useProxy) {
+                                console.warn("Direct fetch failed/parser error. Retrying with proxy...");
+                                fetchManifest(url, true);
+                                return;
+                            }
+                             showError("Error parsing XML manifest.");
+                             return;
+                        }
+                        initPlayer();
+                    } catch(e) {
+                        showError("Error processing manifest: " + e.message);
                     }
-                    
-                    // Setup paths
-                    // We need to construct the "ServerPath" variable that the original engine used.
-                    // The XML contains <folder>diabetes/db180101</folder>
-                    // The images are at [ServerPath] + [folder] + /mobile/slides/m_...
-                    
-                    // To make this work with any URL, we need to be clever.
-                    // We will use the XML's location as the anchor.
-                    
-                    // Assumption: The folder structure on the server matches standard X-Plain layout.
-                    // If A2.xml is at: .../diabetes/db180101/mobile/A2.xml
-                    // Then images are at: .../diabetes/db180101/mobile/slides/
-                    
-                    // So the "Base Resource URL" is simply the directory of the XML file.
-                    ServerPath = xmlBaseDir; // This handles the "mobile/" part if the XML is inside mobile/
-                    
-                    initPlayer();
                 } else {
-                    showError("Failed to load manifest: " + x.status);
+                    // Failed (likely CORS). Retry with proxy if we haven't yet.
+                    if (!useProxy) {
+                        console.warn("Direct fetch failed. Retrying with proxy...");
+                        fetchManifest(url, true);
+                    } else {
+                        showError("Failed to load manifest: " + x.status);
+                    }
                 }
             }
         };
         x.send(null);
-    };
+    }
 
     function showError(msg) {
         document.getElementById("loadingState").style.display = "none";
@@ -139,7 +133,6 @@
     function initPlayer() {
         document.getElementById("loadingState").style.display = "none";
         document.getElementById("tutorialSection").style.display = "flex";
-        
         setTutorialParameters();
         movePage(0);
     }
@@ -152,7 +145,6 @@
         Title = doc.getElementsByTagName("Title")[0].textContent;
         TutorialLanguage = doc.getElementsByTagName("Language")[0].textContent;
         
-        // Update Title UI
         document.getElementById("Title").innerHTML = `<strong>${Title}</strong> <span style="opacity:0.7; font-size:0.8em">(${TutorialLanguage})</span>`;
         
         AudioObj = document.getElementById("Audio");
@@ -174,14 +166,7 @@
             if (TutorialManifest[currentPagePointer].getAttribute("a") == "1") fileExt = ".gif"
             if (PageType == "s") fileExt = "_S.png"
 
-            // PATH LOGIC: 
-            // We use ServerPath (directory of XML) + "slides/" or "sound/"
-            // Note: Your engine.html used /mobile/slides/, but if A2.xml is ALREADY in /mobile/, 
-            // we just need "slides/".
-            // Adjusting pathing based on standard structure where A2.xml sits in /mobile/
-            
             var filename = TutorialManifest[currentPagePointer].getAttribute("f");
-            
             Main = ServerPath + "slides/m_" + filename + fileExt;
             AudioObj.src = ServerPath + "sound/m_s" + filename + ".mp3";
 
@@ -196,19 +181,15 @@
         } else {
             bntNext.disabled = true;
             if ( TutorialLanguage == "Spanish" ) LanguageExt = "_s"; else LanguageExt = "";
-            
-            // End slide logic - assuming "common" folder is 2 levels up from mobile
             Main = ServerPath + "../../common/end" + LanguageExt + ".gif";
             AudioObj.src = ServerPath + "../../common/end" + LanguageExt + ".mp3";
         }
         
         document.getElementById("Main").src = Main;
         
-        // Handle Audio Promise for modern browsers
         var playPromise = AudioObj.play();
         if (playPromise !== undefined) {
             playPromise.catch(error => {
-                // Auto-play was prevented
                 console.log("Autoplay prevented by browser.");
             });
         }
@@ -221,7 +202,6 @@
         var x = e.clientX - rect.left;
         var y = e.clientY - rect.top;
 
-        // Calculate % based on the displayed image size (responsive)
         pcntX = parseInt(100 * x / rect.width);
         pcntY = parseInt(100 * y / rect.height);
 
@@ -244,7 +224,6 @@
                 if (parseInt(ButtonLimits[0]) < pcntX && pcntX < parseInt(ButtonLimits[2]) && parseInt(ButtonLimits[1]) < pcntY && pcntY < parseInt(ButtonLimits[3])) BTN = j;
             }
             if (BTN > 0) {
-                // Construct paths logic repeated here
                 if (PageType == "q") {
                     var fName = TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f");
                     Main = ServerPath + "slides/m_" + fName + ".png";
@@ -254,7 +233,6 @@
                     Main = ServerPath + "slides/m_" + wName + ".png";
                     AudioObj.src = ServerPath + "sound/" + wName + "_s_m.mp3";
                 }
-
                 document.getElementById("Main").src = Main;
                 AudioObj.play();
                 QcurrentPagePointer = currentPagePointer;
@@ -272,11 +250,8 @@
     }
 
     function JumpToSection(absY, imgHeight) {
-        // Scaling logic adapted for responsive height
-        // Original engine assumed fixed height. We ratio it against 480 (original height)
         var factor = 480 / imgHeight;
         SEC = parseInt((((absY * factor)) - 75) * totSections / 380) + 1;
-        
         var SecFind = 0;
         for (k = 0; k < totPages; k++) {
             if (TutorialManifest[k].getAttribute("p") == "s") SecFind++;
@@ -289,9 +264,10 @@
     }
 
     function Manifest() {
-        window.open(ServerPath + "A2.xml", "_blank");
+        const urlParams = new URLSearchParams(window.location.search);
+        const manifestFile = urlParams.get('manifest');
+        window.open(manifestFile, "_blank");
     }
-
 </script>
 </body>
 </html>
