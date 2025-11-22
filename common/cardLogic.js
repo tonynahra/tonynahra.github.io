@@ -17,13 +17,14 @@ function decodeText(text) {
 
 /* === GLOBAL VIEW FUNCTIONS === */
 
-function handleCardView($scope, initialLoadOverride) {
+
+function handleCardView($scope, initialLoadOverride, incrementOverride) {
     $scope.find('.card-list').each(function() {
         const $list = $(this);
         const $items = $list.children('.card-item');
         const totalItems = $items.length;
         const initialLimit = parseInt(initialLoadOverride) || 10;
-        const increment = 10;
+        const increment = parseInt(incrementOverride) || 10; // Allow override
         
         $list.next('.toggle-card-button').remove(); 
         
@@ -37,6 +38,7 @@ function handleCardView($scope, initialLoadOverride) {
         }
     });
 }
+
 
 function showMoreCards($button, $list) {
     const $items = $list.children('.card-item');
