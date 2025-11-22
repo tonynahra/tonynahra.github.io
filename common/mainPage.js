@@ -139,7 +139,7 @@ function loadContent(pageUrl, initialLoadOverride) {
             const isCertsPage = pageUrl.includes('certificates.html');
             const isAlbumPage = pageUrl.includes('album.html');
             const isResearchPage = pageUrl.includes('research.html'); 
-            const isTutorialsPage = pageUrl.includes('tutorials.html'); // <-- NEW
+            const isTutorialsPage = pageUrl.includes('tutorials.html');
 
             if (isYouTubePage) {
                 const paramString = pageUrl.substring(pageUrl.indexOf('?') + 1);
@@ -164,7 +164,7 @@ function loadContent(pageUrl, initialLoadOverride) {
                     const jsonUrl = urlParams.get('json');
                     
                     if (jsonUrl) {
-                        loadPhotoAlbum(jsonUrl, initialLoadOverride); 
+                        loadPhotoAlbum(jsonUrl, initialLoadOverride);
                     } else {
                         $contentArea.html('<div class="error-message">No JSON URL specified for album.</div>');
                     }
@@ -175,7 +175,7 @@ function loadContent(pageUrl, initialLoadOverride) {
                 handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#research-card-list', '#research-keyword-filter');
                 populateCategoryFilter('#research-card-list', '#research-category-filter');
-            } else if (isTutorialsPage) { // <-- NEW
+            } else if (isTutorialsPage) {
                 handleCardView($contentArea, initialLoadOverride);
                 populateSmartKeywords('#tutorials-card-list', '#tutorials-keyword-filter');
                 populateCategoryFilter('#tutorials-card-list', '#tutorials-category-filter');
