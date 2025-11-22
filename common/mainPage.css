@@ -1,4 +1,4 @@
-/* --- CSS Variables for Easy Theme Changes --- */
+/* --- CSS Variables --- */
 :root {
     --bg-dark: #1f2833; 
     --bg-medium: #2c3e50; 
@@ -10,77 +10,40 @@
     --font-code: 'IBM Plex Mono', monospace;
 }
 
-body.theme-light {
-    --bg-dark: #ffffff;
-    --bg-medium: #f4f4f4;
-    --text-light: #555555;
-    --text-accent: #007acc;
-    --text-primary: #000000;
-}
-
-body.theme-pastel {
-    --bg-dark: #f5f0e1; 
-    --bg-medium: #ffffff; 
-    --text-light: #5d5d5d; 
-    --text-accent: #e67e22; 
-    --text-primary: #2c3e50; 
-}
-
-body.theme-cool {
-    --bg-dark: #2f3640; 
-    --bg-medium: #485460; 
-    --text-light: #dcdde1; 
-    --text-accent: #66cc99; 
-    --text-primary: #ffffff;
-}
+body.theme-light { --bg-dark: #ffffff; --bg-medium: #f4f4f4; --text-light: #555555; --text-accent: #007acc; --text-primary: #000000; }
+body.theme-pastel { --bg-dark: #f5f0e1; --bg-medium: #ffffff; --text-light: #5d5d5d; --text-accent: #e67e22; --text-primary: #2c3e50; }
+body.theme-cool { --bg-dark: #2f3640; --bg-medium: #485460; --text-light: #dcdde1; --text-accent: #66cc99; --text-primary: #ffffff; }
 
 /* --- Global Reset and Body Styling --- */
-body {
+html, body {
     margin: 0;
     padding: 0;
+    height: 100%; /* Allow body to fill screen */
+    width: 100%;
+}
+
+body {
     background-color: var(--bg-dark);
     color: var(--text-light);
     font-family: var(--font-body);
     line-height: 1.6;
-    min-height: 100vh;
-    transition: background-color 0.3s, color 0.3s;
-    overflow-x: hidden; /* Prevent horizontal scroll */
-    overflow-y: auto;   /* Ensure vertical scroll works */
+    overflow-x: hidden;
+    overflow-y: auto; /* Ensure vertical scroll is enabled */
 }
 
 body.modal-open {
-    overflow: hidden;
+    overflow: hidden; /* Only lock scroll when modal is open */
 }
 
-body::before {
-    content: none !important;
-}
-
-/* --- Layout Container (Full Width) --- */
+/* --- Layout Container --- */
 .container {
     margin: 0 auto;
     padding: 20px 30px; 
-    max-width: 1600px; /* Optional: limit max width on huge screens */
+    max-width: 1600px;
+    min-height: 100vh; /* Ensure container fills height */
 }
 
-h1, h2, h3 {
-    font-family: var(--font-heading);
-    color: var(--text-primary);
-    font-weight: 700;
-}
-
-a, a:visited {
-    color: var(--text-accent);
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-a:hover {
-    color: var(--text-primary);
-    text-decoration: none; 
-}
-
-/* --- Main Content Grid (Responsive Layout) --- */
+/* --- Main Content Grid --- */
 .main-content-grid {
     display: grid;
     gap: 40px;
@@ -90,11 +53,11 @@ a:hover {
 @media (min-width: 900px) {
     .main-content-grid {
         grid-template-columns: 350px 1fr; 
-        align-items: start; /* Ensure sidebar doesn't stretch */
+        align-items: start; /* Critical: prevents sidebar from stretching page height */
     }
 }
 
-/* --- Profile/Links Section Styling (Left Column) --- */
+/* --- Profile/Links Section (Sticky Sidebar) --- */
 .profile-summary {
     background: var(--bg-medium);
     padding: 25px;
@@ -102,250 +65,106 @@ a:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     transition: background-color 0.3s;
     
-    /* Sticky Sidebar */
+    /* Sticky Sidebar Logic */
     position: sticky;
     top: 20px;
-    max-height: calc(100vh - 40px);
-    overflow-y: auto; /* Scroll inside sidebar if needed */
+    max-height: calc(100vh - 40px); /* Viewport height minus padding */
+    overflow-y: auto; /* Internal scroll for sidebar */
+    
     scrollbar-width: thin; 
     scrollbar-color: var(--text-accent) var(--bg-dark);
 }
 
-.profile-summary::-webkit-scrollbar { width: 6px; }
-.profile-summary::-webkit-scrollbar-track { background: var(--bg-dark); }
-.profile-summary::-webkit-scrollbar-thumb { background-color: var(--text-accent); border-radius: 3px; }
-
-
-.profile-summary h1 {
-    text-align: center;
-    font-size: 2.2rem;
-    color: var(--text-accent);
-    margin-top: 0;
-    margin-bottom: 20px;
-}
-
-.profile-photo {
-    width: 100%;
-    max-width: 250px;
-    height: auto;
-    display: block;
-    margin: 0 auto 20px;
-    border-radius: 50%;
-    border: 3px solid var(--text-accent);
-    box-shadow: 0 0 15px rgba(102, 252, 241, 0.5);
-}
-
-.contact-links {
-    padding-top: 20px;
-    border-top: 1px solid var(--bg-dark);
-    transition: border-color 0.3s;
-}
-
-.link-item {
-    display: block;
-    font-size: 1.05rem;
-    padding: 8px 0;
-    border-bottom: 1px dashed var(--bg-dark);
-    transition: border-color 0.3s;
-}
-
-.link-item[href^="http"]:not([data-page])::after, 
-.kid-links a[href^="http"]::after {
-    content: "\2197"; 
-    font-size: 0.8em;
-    padding-left: 5px;
-    opacity: 0.6;
-    vertical-align: top;
-    transition: opacity 0.3s;
-}
-
-.link-item[href^="http"]:hover::after,
-.kid-links a[href^="http"]:hover::after {
-    opacity: 1;
-}
-
-.link-item[data-page]::after {
-    content: none !important;
-}
-
-.kid-links {
-    list-style: none;
-    padding: 0;
-    margin-top: 10px;
-    font-family: var(--font-code);
-}
-.kid-links li {
-    display: inline-block;
-    margin-right: 15px;
-}
-.family-heading {
-    margin-top: 20px;
-    font-size: 1.2rem;
-    color: var(--text-light);
-}
-
-/* --- Collapsible Menu (YouTube) --- */
-.posts-intro {
-    font-family: var(--font-code);
-    font-style: italic;
-    color: var(--text-light);
-    margin-top: -15px;
-}
-
-.collapsible-content {
-    transition: max-height 0.5s ease-in-out;
-}
-
-.expand-button {
-    display: block;
-    margin: 10px auto 20px auto;
-    padding: 10px 20px;
-    background-color: var(--bg-medium);
-    color: var(--text-accent);
-    border: 1px solid var(--text-accent);
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: var(--font-code);
-    font-size: 1rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.expand-button:hover {
-    background-color: var(--text-accent);
-    color: var(--bg-dark);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
-
-.hidden-item {
-    display: none;
-}
-
 /* --- Dynamic Content Area (Right Column) --- */
 .dynamic-content-area {
-    min-height: 80vh; 
-    /* Ensure this area can grow and doesn't hide overflow */
+    /* Allow this area to grow as much as needed */
+    height: auto;
     overflow: visible; 
+    padding-bottom: 50px;
 }
 
-.nav-link.active-nav {
+/* --- Typography & Links --- */
+h1, h2, h3 {
+    font-family: var(--font-heading);
     color: var(--text-primary);
-    background-color: var(--bg-dark); 
-    border-radius: 4px;
-    padding-left: 10px;
-    padding-right: 10px;
-    border-left: 3px solid var(--text-accent);
+    font-weight: 700;
 }
-.nav-link.active-nav:hover { text-decoration: none; }
+
+a, a:visited { color: var(--text-accent); text-decoration: none; transition: color 0.3s; }
+a:hover { color: var(--text-primary); text-decoration: none; }
+
+/* --- Profile Elements --- */
+.profile-summary h1 { text-align: center; font-size: 2.2rem; color: var(--text-accent); margin-top: 0; margin-bottom: 20px; }
+.profile-photo { width: 100%; max-width: 250px; height: auto; display: block; margin: 0 auto 20px; border-radius: 50%; border: 3px solid var(--text-accent); box-shadow: 0 0 15px rgba(102, 252, 241, 0.5); }
+.contact-links { padding-top: 20px; border-top: 1px solid var(--bg-dark); }
+.link-item { display: block; font-size: 1.05rem; padding: 8px 0; border-bottom: 1px dashed var(--bg-dark); }
+.link-item[href^="http"]:not([data-page])::after, .kid-links a[href^="http"]::after { content: "\2197"; font-size: 0.8em; padding-left: 5px; opacity: 0.6; }
+.kid-links { list-style: none; padding: 0; margin-top: 10px; font-family: var(--font-code); }
+.kid-links li { display: inline-block; margin-right: 15px; }
+.family-heading { margin-top: 20px; font-size: 1.2rem; color: var(--text-light); }
+.nav-link.active-nav { color: var(--text-primary); background-color: var(--bg-dark); border-radius: 4px; padding: 0 10px; border-left: 3px solid var(--text-accent); }
+
+/* --- Components --- */
+.posts-intro { font-family: var(--font-code); font-style: italic; color: var(--text-light); margin-top: -15px; }
+.collapsible-content { transition: max-height 0.5s ease-in-out; }
+.expand-button { display: block; margin: 10px auto 20px auto; padding: 10px 20px; background-color: var(--bg-medium); color: var(--text-accent); border: 1px solid var(--text-accent); border-radius: 4px; cursor: pointer; font-family: var(--font-code); }
+.expand-button:hover { background-color: var(--text-accent); color: var(--bg-dark); }
+.hidden-item { display: none; }
 
 .content-loader { text-align: center; padding: 100px 0; color: var(--text-light); }
 .spinner { border: 5px solid var(--bg-medium); border-top: 5px solid var(--text-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
 .error-message { color: var(--text-accent); font-family: var(--font-code); text-align: center; padding: 20px; }
-
-/* --- About Me / Guide Page Styles --- */
-.about-me-container h2,
-.cv-container h2 {
-    color: var(--text-accent);
-    border-bottom: 1px solid var(--bg-medium);
-    padding-bottom: 10px;
-    margin-bottom: 25px;
-}
-
-.about-me-content p,
-.about-content p {
-    font-size: 1.1rem; 
-    line-height: 1.7;
-    margin-bottom: 20px; 
-}
-
-.about-me-content p strong,
-.about-content p strong {
-    color: var(--text-primary);
-    font-weight: 700;
-}
-
-.about-me-content ul,
-.about-content ul {
-    list-style-type: disc;
-    padding-left: 30px;
-    margin-top: 10px;
-}
-.about-me-content li,
-.about-content li {
-    font-size: 1.1rem;
-    line-height: 1.7;
-}
-
-.cv-header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    font-family: var(--font-code);
-    font-size: 0.95rem;
-    padding: 10px;
-    background: var(--bg-medium);
-    border-radius: 4px;
-    margin-bottom: 20px;
-}
-
-.about-heading {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    padding-bottom: 10px;
-    margin-top: 25px;
-    border-bottom: 1px solid var(--bg-medium);
-}
-
-.about-content { padding: 15px 5px 0 5px; }
-.about-content li { font-size: 1rem; line-height: 1.6; }
-.about-content p { font-size: 1rem; line-height: 1.6; }
-
-pre { background: var(--bg-dark); border: 1px solid var(--bg-medium); padding: 15px; border-radius: 4px; overflow-x: auto; font-family: var(--font-code); }
-code { font-family: var(--font-code); background: var(--bg-dark); padding: 2px 5px; border-radius: 3px; }
 
 .site-footer { text-align: center; padding: 20px 0; margin-top: 40px; border-top: 1px solid var(--bg-medium); font-size: 0.9rem; color: var(--text-light); opacity: 0.6; font-family: var(--font-code); }
 
-/* --- Theme Switcher Styles --- */
-.theme-switcher { display: flex; flex-direction: row; justify-content: center; gap: 15px; margin-bottom: 20px; }
-.theme-dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid var(--text-primary); cursor: pointer; transition: all 0.2s; opacity: 0.7; }
-.theme-dot:hover { transform: scale(1.1); border-color: var(--text-accent); opacity: 1; }
+/* Theme Switcher */
+.theme-switcher { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+.theme-dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid var(--text-primary); cursor: pointer; opacity: 0.7; }
 .theme-dot.active { border-color: var(--text-accent); box-shadow: 0 0 10px var(--text-accent); transform: scale(1.2); opacity: 1; }
 .theme-dot[data-theme="theme-dark"] { background-color: #1f2833; }
 .theme-dot[data-theme="theme-light"] { background-color: #007acc; }
 .theme-dot[data-theme="theme-pastel"] { background-color: #e67e22; }
 .theme-dot[data-theme="theme-cool"] { background-color: #66cc99; }
 
-/* --- Scroll to Top Button --- */
-.scroll-to-top { display: none; position: fixed; bottom: 20px; right: 30px; z-index: 100; background-color: var(--bg-medium); color: var(--text-accent); border: 1px solid var(--text-accent); border-radius: 50%; width: 40px; height: 40px; font-size: 1.5rem; font-weight: bold; line-height: 38px; text-align: center; cursor: pointer; opacity: 0.7; transition: all 0.3s; }
-.scroll-to-top:hover { opacity: 1; background-color: var(--text-accent); color: var(--bg-dark); box-shadow: 0 0 10px var(--text-accent); }
+/* Scroll to Top */
+.scroll-to-top { display: none; position: fixed; bottom: 20px; right: 30px; z-index: 100; background-color: var(--bg-medium); color: var(--text-accent); border: 1px solid var(--text-accent); border-radius: 50%; width: 40px; height: 40px; font-size: 1.5rem; font-weight: bold; line-height: 38px; text-align: center; cursor: pointer; }
+.scroll-to-top:hover { opacity: 1; }
 .scroll-to-top.show { display: block; }
 
 /* --- SPECIFIC ABOUT ME STYLES --- */
 .about-me-page .text-cards {
     display: flex;
     flex-wrap: wrap;
-    gap: 25px;
+    gap: 30px; /* Increased gap */
 }
 
 .about-me-page .text-cards .card-item {
     /* Bigger text */
-    font-size: 1.2rem; 
+    font-size: 1.25rem; 
     line-height: 1.8;
+    
     /* Bigger boxes */
-    padding: 30px;
-    min-width: 45%; /* Make them take up roughly half width on large screens */
+    padding: 35px;
+    min-width: 45%; /* Force 2 per row on large screens, wrapping on smaller */
     flex-grow: 1;
-    border-left-width: 6px;
+    border-left-width: 6px; /* Thicker accent border */
 }
 
+/* Specific header styles for About page text */
 .about-me-page h3 {
-    font-size: 1.6rem;
-    margin-bottom: 15px;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
 }
 
-/* Album in About Page */
+.about-me-page h4 {
+    font-size: 1.4rem;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+/* Album Grid Adjustment for About Page */
 #about-album-list .card-item {
     padding: 0;
     background: transparent;
@@ -355,15 +174,20 @@ code { font-family: var(--font-code); background: var(--bg-dark); padding: 2px 5
 
 #about-album-list .card-image {
     width: 100%;
-    height: 250px; 
+    height: 280px; /* Taller images */
     object-fit: cover;
     border-radius: 8px;
+    transition: transform 0.3s;
 }
 
-/* Show More button spacing */
+#about-album-list .card-item:hover .card-image {
+    transform: scale(1.02);
+}
+
+/* "Show More" button spacing specifically for About page */
 .about-me-page .toggle-card-button {
-    margin-top: 40px;
-    margin-bottom: 60px;
-    padding: 15px 30px; /* Bigger button */
-    font-size: 1.1rem;
+    margin-top: 50px;
+    margin-bottom: 80px;
+    padding: 15px 40px;
+    font-size: 1.2rem;
 }
