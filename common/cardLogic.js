@@ -253,24 +253,42 @@ function loadVids(PL, Category, BKcol, initialLoadOverride) {
     $.getJSON(URL, options, function (data) {
         $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
         if (data.items) {
-            $.each(data.items, function (i, item) {
-                let thumb = item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '';
-                const title = decodeText(item.snippet.title);
-                const desc = decodeText(item.snippet.description);
-                const vid = item.snippet.resourceId.videoId;
-                $('#Grid').append(`
-                <div data-category="${Category}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
-                    <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
-                       <img class="YTi" src="${thumb}" alt="${title}" ><h3>${title}</h3><p>${desc}</p>
-                    </a>
-                </div>`);
-            });
+            // Fix: Pass Category as the second argument
+            resultsLoop(data, Category, BKcol);
+            
             handleCardView($('#content-area'), initialLoadOverride);
             populateSmartKeywords('#Grid', '#youtube-keyword-filter');
             populateCategoryFilter('#Grid', '#youtube-category-filter');
         }
     });
 }
+    
+function resultsLoop(data, Cat, BKcol) {
+    $.each(data.items, function (i, item) {
+        if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) {
+            console.warn("Skipping playlist item, missing resourceId:", item);
+            return; // skip this item
+        }
+        
+        let thumb = item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '';
+        
+        const title = decodeText(item.snippet.title);
+        const desc = decodeText(item.snippet.description);
+        const vid = item.snippet.resourceId.videoId;
+
+        $('#Grid').append(`
+        <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
+            <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
+               <img class="YTi" src="${thumb}" alt="${title}" >
+               <h3>${title}</h3>
+               <p>${desc}</p>
+               <span class="card-category" style="display: none;">${Cat}</span>
+            </a>
+        </div>
+        `);
+    });
+}
+
 
 function buildResearchModal(jsonUrl) {
     const $modalContent = $('#modal-content-area');
