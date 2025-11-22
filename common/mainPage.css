@@ -522,3 +522,72 @@ code {
 #about-album-list .photo-details {
     display: none;
 }
+
+
+/* ... (Keep all existing styles) ... */
+
+/* --- NEW: About Me Page Layout --- */
+.about-me-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+@media (min-width: 900px) {
+    .about-me-container {
+        flex-direction: row; /* Side by side on desktop */
+        align-items: flex-start;
+    }
+}
+
+.about-text-column {
+    flex: 2; /* Takes up 2/3 of the space */
+    max-width: 800px; /* Limit width for readability */
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-light);
+}
+
+.about-media-column {
+    flex: 1; /* Takes up 1/3 of the space */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 100%;
+}
+
+/* Images in the side column */
+.about-side-image {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border: 1px solid var(--bg-medium);
+}
+
+/* Mini Photo Album Grid */
+#about-album-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#about-album-list .card-item {
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+#about-album-list img.card-image {
+    height: 100px; /* Smaller thumbnails */
+    width: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+    margin: 0;
+}
+
+/* Hide details for mini album to keep it clean */
+#about-album-list .photo-details {
+    display: none;
+}
