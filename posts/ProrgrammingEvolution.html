@@ -1,36 +1,568 @@
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                const id = entry.target.getAttribute('id');
-                if (entry.isIntersecting) {
-                    // Remove active class from all links
-                    document.querySelectorAll('aside nav li a').forEach(link => {
-                        link.classList.remove('active');
-                    });
-                    // Add active class to the matching link
-                    // Handle Document Top edge case
-                    if(id === 'top') {
-                         document.querySelector('a.nav-top-link').classList.add('active');
-                    } else {
-                         const activeLink = document.querySelector(`aside nav li a[href="#${id}"]`);
-                         if (activeLink) {
-                             activeLink.classList.add('active');
-                         }
-                    }
-                }
-            });
-        }, { 
-            threshold: 0.15, 
-            rootMargin: "-20% 0px -60% 0px" 
-        });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From Logic to Language: The Evolution of Programming</title>
+    
+    <style>
+        /* CORE VARIABLES */
+        :root {
+            --bg-body: #f8f9fa;
+            --bg-main: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --accent-blue: #0056b3;
+            --border-light: #dee2e6;
+            
+            /* SIDEBAR THEME: WHITE */
+            --sidebar-bg: #ffffff; 
+            --sidebar-text: #2c3e50;
+            --sidebar-hover: #f1f5f9;
+            --sidebar-border: #e2e8f0;
+            
+            --code-bg: #f1f3f5;
+        }
 
-        // Track all sections plus the body/top
-        observer.observe(document.body);
-        document.querySelectorAll('section').forEach((section) => {
-            observer.observe(section);
+        html {
+             /* Adds smooth scrolling when clicking anchor links */
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- ASIDE MENU STYLES (White Theme) --- */
+        aside {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            flex-shrink: 0;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            z-index: 1000;
+            border-right: 1px solid var(--sidebar-border);
+        }
+
+        aside .menu-header {
+            padding: 30px 20px;
+            border-bottom: 1px solid var(--sidebar-border);
+            background-color: #fafbfc;
+        }
+
+        aside h2 {
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-blue);
+            margin: 0;
+            font-weight: 700;
+        }
+
+        aside nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        aside nav li a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        aside nav li a:hover, aside nav li a.active {
+            background-color: var(--sidebar-hover);
+            color: var(--accent-blue);
+            border-left-color: var(--accent-blue);
+        }
+
+        /* --- MAIN CONTENT STYLES --- */
+        main {
+            flex-grow: 1;
+            margin-left: 260px; /* Match aside width */
+            padding: 0;
+            max-width: 100%;
+        }
+
+        /* ARTICLE CONTAINER */
+        .content-wrapper {
+            padding: 60px 80px;
+            max-width: 900px;
+            margin: 0 auto; 
+        }
+
+        article {
+            background-color: var(--bg-main);
+            padding: 50px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        header {
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 2.6em;
+            line-height: 1.2;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* --- SECTION STYLING --- */
+        section {
+            scroll-margin-top: 60px;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: var(--text-primary);
+            margin-top: 60px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 1.05em;
+        }
+
+        a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* IMAGE STYLES */
+        figure {
+            margin: 40px 0;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        figure img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        figcaption {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 15px;
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        /* CODE SNIPPET STYLES */
+        pre {
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+            margin: 25px 0;
+        }
+
+        code {
+            font-family: "Consolas", "Monaco", "Courier New", monospace;
+            font-size: 0.9em;
+            color: #c7254e;
+        }
+        
+        pre code {
+            color: #333;
+        }
+
+        .lang-label {
+            font-size: 0.75em;
+            text-transform: uppercase;
+            color: #6c757d;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        /* QUOTE STYLES */
+        blockquote {
+            font-style: italic;
+            font-size: 1.2em;
+            color: var(--text-secondary);
+            margin: 40px 0;
+            padding: 20px 30px;
+            border-left: 5px solid var(--accent-blue);
+            background-color: #f1f8ff;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* IMPACT BOX STYLES */
+        .impact-box {
+            background-color: #fff3cd; /* Light yellow warning/info color */
+            border: 1px solid #ffeeba;
+            padding: 25px;
+            border-radius: 6px;
+            margin-top: 30px;
+            color: #856404;
+        }
+        
+        .impact-title {
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+            display: block;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding-bottom: 10px;
+        }
+
+        .impact-box p {
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+        
+        .impact-box strong {
+            color: #533f03;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            aside { display: none; }
+            main { margin-left: 0; }
+            .content-wrapper { padding: 20px; }
+            h1 { font-size: 2em; }
+            article { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="menu-header">
+            <h2>Code History</h2>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#math-roots">1. Mathematical Roots</a></li>
+                <li><a href="#hardware-era">2. The Hardware Era</a></li>
+                <li><a href="#von-neumann">3. The Stored Program</a></li>
+                <li><a href="#language-boom">4. The Language Boom</a></li>
+                <li><a href="#structure-oop">5. Structuring Chaos</a></li>
+                <li><a href="#visual-era">6. The Visual Revolution</a></li>
+                <li><a href="#ai-paradigm">7. The AI Paradigm</a></li>
+                <li><a href="#references">References</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <div class="content-wrapper">
+            <article>
+                
+                <header>
+                    <h1>From Logic to Language</h1>
+                    <p class="subtitle">The Evolution of Programming: From Wiring to Intent</p>
+                </header>
+                
+                <section id="math-roots">
+                    <h2>1. The Mathematical Roots</h2>
+                    <p>Long before silicon chips, "programming" existed as pure logic. Algorithms, the foundation block of computing, started as a branch of mathematics. In the 18th century, <strong>Leonhard Euler</strong> invented graph theory while attempting to solve the <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg" target="_blank">Seven Bridges of Königsberg</a> problem. He realized that the path could be calculated without physically traversing it—an early form of algorithmic abstraction.</p>
+                    
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5d/The_Seven_Bridges_of_K%C3%B6nigsberg%2C_Fig._1.png" alt="Euler's original drawing of the Seven Bridges problem">
+                        <figcaption>Euler's original drawing of the Seven Bridges of Königsberg (1736). It proved that some paths are mathematically impossible.</figcaption>
+                    </figure>
+                    
+                    <p>Later, <strong>George Boole</strong> created the basis of Boolean algebra (True/False logic). He had no idea his binary system would one day govern the digital world. However, the bridge between pure math and machinery was built by <strong>Ada Lovelace</strong>. She is widely considered the first programmer for her work on an algorithm to calculate Bernoulli numbers on Charles Babbage's theoretical Analytical Engine.</p>
+
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Ada_Lovelace_portrait.jpg" alt="Portrait of Ada Lovelace" style="max-width: 400px;">
+                        <figcaption>Ada Lovelace, the visionary who saw computers as more than just calculators.</figcaption>
+                    </figure>
+
+                    <blockquote>
+                        "The Analytical Engine weaves algebraic patterns just as the Jacquard loom weaves flowers and leaves."
+                        <br><br>— <strong>Ada Lovelace</strong>
+                    </blockquote>
+                    
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> This era solved the problem of defining logic rigorously. It established that reasoning could be formalized into rules (algorithms) that were independent of the physical world.</p>
+                        <p><strong>The New Issue Created:</strong> While the math was sound, it was purely theoretical. There was no machine capable of executing these complex calculations at speed. The barrier was no longer logic, but engineering.</p>
+                    </div>
+                </section>
+
+                <section id="hardware-era">
+                    <h2>2. The Hardware Era: Programming with Cables</h2>
+                    <p>Serious programming began not with keyboards, but with manual labor. During WWII, <strong>Alan Turing</strong> conceptualized the modern computer to break the Enigma encryption. With logic gates and transistors still years away, he resorted to the cumbersome wiring of chains of programmable units.</p>
+
+                    <blockquote>
+                        "Machines take me by surprise with great frequency." — <strong>Alan Turing</strong>
+                    </blockquote>
+
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Alan_Turing_az_1930-as_%C3%A9vekben.jpg/465px-Alan_Turing_az_1930-as_%C3%A9vekben.jpg" alt="Alan Turing in the 1930s" style="max-width: 300px;">
+                        <figcaption>Alan Turing, the father of theoretical computer science.</figcaption>
+                    </figure>
+                    
+                    <p>This was the first attempt at defining what a computer was capable of solving based on complexity. Turing's work laid the groundwork for "Computational Complexity Theory" and the concept of <a href="https://en.wikipedia.org/wiki/NP-completeness" target="_blank">NP-completeness</a>.</p>
+                    
+                    <p><strong>The Atanasoff–Berry computer (ABC)</strong> was the first automatic electronic digital computer. The device was limited by the technology of the day, as it was not programmable in the modern sense, but it pioneered the use of vacuum tubes for digital calculation.</p>
+
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Atanasoff-Berry_Computer_at_Durhum_Center.jpg/250px-Atanasoff-Berry_Computer_at_Durhum_Center.jpg" alt="Atanasoff-Berry Computer">
+                        <figcaption>A replica of the Atanasoff–Berry Computer (ABC), a precursor to the ENIAC.</figcaption>
+                    </figure>
+
+                    <p>The <strong>ENIAC</strong> (Electronic Numerical Integrator and Computer) realized these concepts on a massive scale. It utilized a combination of plugboard wiring and portable function tables containing 1,200 ten-way switches each.</p>
+                    
+                    <p>There was no "software" as we know it. Programmers were mathematical experts—often women like <strong>Jean Bartik</strong> and <strong>Kay McNulty</strong>—who learned how to physically translate a mathematical task into a set of wired connections. To calculate a simple trajectory, they didn't type code; they plugged wires into a board, physically mapping the logic flow.</p>
+
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Two_women_operating_ENIAC_%28full_resolution%29.jpg" alt="Programmers operating ENIAC">
+                        <figcaption>Jean Bartik and Frances Spence programming the ENIAC by re-routing cables. They were the first "software engineers" before the term existed.</figcaption>
+                    </figure>
+                    
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> This era solved the speed of calculation. Tasks that took human computers months could now be done in seconds.</p>
+                        <p><strong>The New Issue Created:</strong> The "Programming Bottleneck." While calculation was fast, setting up the problem took days of physical rewiring. The computer was flexible, but changing its mind was arduous.</p>
+                    </div>
+                </section>
+
+                <section id="von-neumann">
+                    <h2>3. The Von Neumann Breakthrough</h2>
+                    <p>The real breakthrough came with <strong>John von Neumann</strong>. He proposed the "Stored-Program Concept" where instructions and data lived in the same memory. This architecture still powers most computers today.</p>
+                    
+                    <p>Before Von Neumann, hardware and software were physically intertwined. He separated them, allowing the hardware to remain fixed while the "software" (instructions) changed dynamically. This is the moment "Code" was truly born.</p>
+                    
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Von_Neumann_Architecture.svg/1200px-Von_Neumann_Architecture.svg.png" alt="Von Neumann Architecture" style="background: white; padding: 10px;">
+                        <figcaption>The Von Neumann Architecture: Storing data and instructions in the same memory.</figcaption>
+                    </figure>
+             
+                    <p>Von Neumann set the stage for <strong>CODE INSTRUCTIONS</strong>. Instead of rewiring the machine, programmers could simply feed it a new tape of instructions. This birthed the era of Machine Language and Control Flow Logic (loops, branches, jumps).</p>
+
+                    <span class="lang-label">Example: x86 Machine Code (calculating 1 + 1)</span>
+                    <pre><code>B8 01 00 00 00   ; Load 1 into EAX register
+05 01 00 00 00   ; Add 1 to EAX
+</code></pre>
+
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> It eliminated the physical rewiring bottleneck. Software became fluid, copyable, and distinct from hardware.</p>
+                        <p><strong>The New Issue Created:</strong> Cognitive Load. Machine language (binary/hex) was optimized for the CPU, not the human brain. Programmers had to memorize obscure opcodes, leading to slow development and frequent errors.</p>
+                    </div>
+                </section>
+
+                <section id="language-boom">
+                    <h2>4. The Humanization of Code</h2>
+                    <p>As programming became more in demand, we needed to speak to the machine in English. This led to the first high-level languages like <strong>Fortran</strong> (Formula Translation) for scientists and <strong>COBOL</strong> for business.</p>
+
+                    <p>A key figure in this era was <strong>Grace Hopper</strong>, who popularized the idea of machine-independent programming languages. She famously carried a piece of wire to explain what a nanosecond looked like, emphasizing the need for efficiency.</p>
+
+                    <blockquote>
+                        "The most dangerous phrase in the language is, 'We've always done it this way.'" — <strong>Grace Hopper</strong>
+                    </blockquote>
+
+                    <span class="lang-label">Example: Fortran 77</span>
+                    <pre><code>      PROGRAM HELLO
+      PRINT *, 'HELLO WORLD'
+      STOP
+      END</code></pre>
+      
+                    <p>These languages introduced the concept of a <strong>Compiler</strong>—a translator that turns human-readable text into the machine code the processor understands.</p>
+
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> Accessibility. Scientists and business managers could now write programs without understanding the electrical engineering of the computer.</p>
+                        <p><strong>The New Issue Created:</strong> Complexity Management. As it became easier to write code, programs grew massive. Without structure, they became "Spaghetti Code"—a tangled mess of GOTO statements that was impossible to debug or maintain.</p>
+                    </div>
+                </section>
+
+                <section id="structure-oop">
+                    <h2>5. Structuring the Chaos</h2>
+                    <p>As tasks became more complex (operating systems, banking networks), simple lists of instructions failed. We needed better architecture. This led to <strong>Object-Oriented Programming (OOP)</strong>. Computer scientist <strong>Alan Kay</strong>, who coined the term, envisioned software as biological cells—independent units communicating with each other.</p>
+                    
+                    <p>OOP introduced concepts like inheritance and encapsulation. Programmers could create "Black Boxes"—reusable objects (like a "User" or "Window") that hid their internal complexity.</p>
+
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Method_overriding_in_subclass.svg/960px-Method_overriding_in_subclass.svg.png" alt="Object Oriented Programming" width="50%">
+                        <figcaption>Object Oriented Programming: Polymorphism and Inheritance.</figcaption>
+                    </figure>
+
+                    <blockquote>
+                        "I thought of objects being like biological cells and/or individual computers on a network, only able to communicate with messages." — <strong>Alan Kay</strong>
+                    </blockquote>
+
+                    <span class="lang-label">Example: C++ Class Structure</span>
+                    <pre><code>class Car {
+  public:
+    string brand;
+    void honk() {
+      cout &lt;&lt; "Beep beep!";
+    }
+};</code></pre>
+
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> Scalability. Large teams could work on the same software without breaking each other's code, enabling the creation of massive systems like Windows or the Internet infrastructure.</p>
+                        <p><strong>The New Issue Created:</strong> The "Expert Gap." While scalable, these languages (C++, Java) were verbose and abstract. Programming was still a niche skill reserved for those with formal computer science training.</p>
+                    </div>
+                </section>
+
+                <section id="visual-era">
+                    <h2>6. The Visual Revolution</h2>
+                    <p>The PC era brought the <strong>Graphical User Interface (GUI)</strong>. Programming moved from the command line to the canvas. <strong>Visual Basic</strong> democratized programming by allowing users to drag-and-drop buttons to create apps.</p>
+
+                    <p>This was a shift from <strong>Procedural</strong> to <strong>Event-Driven</strong> programming. The program didn't just run top-to-bottom; it waited for the user to do something (click, type, hover).</p>
+
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/en/c/c4/Visual_Basic_6.0.png" alt="Visual Basic 6.0 IDE">
+                        <figcaption>The Visual Basic 6.0 IDE, showing the shift to visual form design.</figcaption>
+                    </figure>
+
+                    <span class="lang-label">Example: Visual Basic</span>
+                    <pre><code>Private Sub CommandButton1_Click()
+    MsgBox "Welcome to the Visual Era!"
+End Sub</code></pre>
+
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> Democratization. It lowered the barrier to entry significantly. "User Friendly" became the standard, and non-programmers could finally build their own tools.</p>
+                        <p><strong>The New Issue Created:</strong> The "Syntax Barrier" remained. Even with visual tools, you still had to write rigid logic. A single missing semicolon or misspelled command would crash the program. The computer still didn't understand <em>what</em> you wanted, only <em>how</em> you typed it.</p>
+                    </div>
+                </section>
+
+                <section id="ai-paradigm">
+                    <h2>7. The AI Paradigm Shift</h2>
+                    <p>Today, we are witnessing the biggest shift since Von Neumann. <strong>Intent-Based Programming</strong> via Large Language Models (LLMs) means we no longer tell the machine <em>how</em> to do something step-by-step, but <em>what</em> we want the outcome to be.</p>
+                    
+                    <p>Machine Learning algorithms can "learn" from all past programming practices. LLMs are capable of understanding intent, fixing badly formatted requests, and generating complex logic from simple prompts. We are moving from <strong>Deterministic</strong> (if X then Y) to <strong>Probabilistic</strong> (based on context, X likely means Y).</p>
+
+                    <span class="lang-label">The New "Code": Natural Language Prompt</span>
+                    <pre><code>"Analyze the attached CSV file of stock prices. 
+Identify the moving average crossover points, 
+and generate a Python script to plot these using Matplotlib."</code></pre>
+
+                    <div class="impact-box">
+                        <span class="impact-title">Impact on the Field</span>
+                        <p><strong>The Issue Solved:</strong> The Translation Gap. For the first time, humans can speak to computers in natural language. The barrier of syntax errors and rote memorization is gone.</p>
+                        <p><strong>The New Issue Created:</strong> Trust and Verification. Because we are no longer writing every line, we must learn how to verify that the AI's output is correct. Programming is shifting from "Writing" to "Reviewing" and "Architecting."</p>
+                    </div>
+                </section>
+
+                <section id="references">
+                    <hr>
+                    <h3>References</h3>
+                    <ul>
+                        <li><a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg">Seven Bridges of Königsberg</a> - Wikipedia</li>
+                        <li><a href="https://en.wikipedia.org/wiki/Atanasoff%E2%80%93Berry_computer">Atanasoff–Berry Computer</a> - Wikipedia</li>
+                        <li><a href="https://en.wikipedia.org/wiki/ENIAC">ENIAC History</a> - Wikipedia</li>
+                        <li><a href="https://en.wikipedia.org/wiki/NP-completeness">NP-completeness</a> - Wikipedia</li>
+                        <li><a href="https://en.wikipedia.org/wiki/John_von_Neumann">John von Neumann</a> - Wikipedia</li>
+                    </ul>
+                </section>
+
+            </article>
+            <br>
+            <hr>
+            <a href="https://tonynahra.github.io/">Back to home page</a>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const navLinks = document.querySelectorAll('aside nav li a');
+            const sections = document.querySelectorAll('section');
+
+            // Lock variable to prevent the observer from interfering during a click-scroll
+            let isClicked = false;
+            let clickTimeout;
+
+            // --- CLICK HANDLER FOR INSTANT UPDATE ---
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    // 1. Engage lock
+                    isClicked = true;
+                    clearTimeout(clickTimeout);
+
+                    // 2. Update active class immediately
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // 3. Release lock after scroll animation is likely finished (e.g., 1 second)
+                    clickTimeout = setTimeout(() => {
+                        isClicked = false;
+                    }, 1000);
+                });
+            });
+
+            // --- INTERSECTION OBSERVER FOR MANUAL SCROLLING ---
+            const observer = new IntersectionObserver(entries => {
+                // If we are currently scrolling because of a click, ignore observer updates
+                if (isClicked) return;
+
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        
+                        navLinks.forEach(link => link.classList.remove('active'));
+
+                        const activeLink = document.querySelector(`aside nav li a[href="#${id}"]`);
+                        if (activeLink) {
+                            activeLink.classList.add('active');
+                        }
+                    }
+                });
+            }, { 
+                // Threshold: Trigger when even a small part of the section is visible
+                threshold: 0.1,
+                // RootMargin: Detects sections near the top of the screen.
+                rootMargin: "-5% 0px -60% 0px" 
+            });
+
+            // Track all sections
+            sections.forEach((section) => {
+                observer.observe(section);
+            });
         });
-    });
-</script>
+    </script>
+
 </body>
 </html>
