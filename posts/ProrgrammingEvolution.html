@@ -1,0 +1,36 @@
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                const id = entry.target.getAttribute('id');
+                if (entry.isIntersecting) {
+                    // Remove active class from all links
+                    document.querySelectorAll('aside nav li a').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    // Add active class to the matching link
+                    // Handle Document Top edge case
+                    if(id === 'top') {
+                         document.querySelector('a.nav-top-link').classList.add('active');
+                    } else {
+                         const activeLink = document.querySelector(`aside nav li a[href="#${id}"]`);
+                         if (activeLink) {
+                             activeLink.classList.add('active');
+                         }
+                    }
+                }
+            });
+        }, { 
+            threshold: 0.15, 
+            rootMargin: "-20% 0px -60% 0px" 
+        });
+
+        // Track all sections plus the body/top
+        observer.observe(document.body);
+        document.querySelectorAll('section').forEach((section) => {
+            observer.observe(section);
+        });
+    });
+</script>
+</body>
+</html>
