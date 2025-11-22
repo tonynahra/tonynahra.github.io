@@ -74,6 +74,7 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
     const $targetList = $albumList.length ? $albumList : $('#about-album-list');
     
     $.getJSON(jsonUrl, function (albumData) {
+        // Only set title if it exists (main album page)
         if ($('#album-title').length) {
             $('#album-title').text(decodeText(albumData.albumTitle));
         }
@@ -84,23 +85,31 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
             const title = decodeText(photo.title);
             const category = decodeText(photo.category);
             const description = decodeText(photo.description);
+            
+            // --- UPDATED HTML: Clean image only ---
+            // We store the title/desc in data attributes for the modal to pick up later
             const cardHtml = `
-                <div class="card-item" data-category="${category}" data-keywords="${title},${description}">
+                <div class="card-item" 
+                     data-category="${category}" 
+                     data-keywords="${title},${description}"
+                     data-title="${title}" 
+                     data-desc="${description}"> <!-- Store metadata here -->
+                    
                     <a href="${photo.url}" data-load-type="image">
                         <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
-                        <div class="photo-details"><h3>${title}</h3><p>${description}</p></div>
+                        <!-- No photo-details div here anymore -->
                     </a>
                 </div>`;
             $targetList.append(cardHtml);
         });
         
+        // Populate filters only if they exist (main album page)
         if ($('#album-category-filter').length) {
             populateCategoryFilter('#photo-album-list', '#album-category-filter');
             populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
         }
         
-        // Pass '20' as the increment for album lists if needed, or default
-        // For the About Page, we want 20.
+        // Handle "Show More" for whichever list we populated
         const increment = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
         handleCardView($targetList.parent(), initialLoadOverride, increment);
         
