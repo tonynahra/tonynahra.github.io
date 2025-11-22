@@ -8,6 +8,55 @@
     <link rel="stylesheet" href="common/mainPage.css">
     <!-- Load engine specific styles -->
     <link rel="stylesheet" href="common/tutorialEngine.css">
+    <style>
+        /* Extra styles for the summary overlay */
+        #summaryOverlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .summary-box {
+            background: #2c3e50;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #66fcf1;
+            max-width: 90%;
+            width: 400px;
+            text-align: left;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        .summary-box h2 { margin-top: 0; color: #66fcf1; text-align: center; }
+        .summary-list { list-style: none; padding: 0; }
+        .summary-list li { 
+            padding: 8px 0; 
+            border-bottom: 1px solid #444; 
+            display: flex; 
+            justify-content: space-between;
+        }
+        .summary-total { 
+            font-weight: bold; 
+            margin-top: 15px; 
+            padding-top: 10px; 
+            border-top: 2px solid #66fcf1; 
+        }
+        .close-summary-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background: #66fcf1;
+            color: #1f2833;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body class="tutorial-body">
 
@@ -21,8 +70,9 @@
         <!-- The Player Interface -->
         <div id="tutorialSection" style="display: none;">
             
-            <!-- Slide Image -->
+            <!-- Slide Image Area -->
             <div class="slide-container">
+                <!-- object-fit: contain ensures it fills width/height without cropping -->
                 <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Tutorial Slide">
             </div>
 
@@ -32,7 +82,8 @@
                 
                 <div class="controls-group">
                     <button onclick="Credits()" class="engine-btn secondary">Credits</button> 
-                    <button onclick="Manifest()" class="engine-btn secondary">Manifest</button>
+                    <!-- UPDATED: Changed Manifest to Summary -->
+                    <button onclick="ShowSummary()" class="engine-btn secondary">Summary</button>
                 </div>
 
                 <div class="controls-group playback">
@@ -46,6 +97,16 @@
             <audio id="Audio" src="" autoplay style="display: none;"></audio>
         </div>
         
+        <!-- Summary Overlay -->
+        <div id="summaryOverlay">
+            <div class="summary-box">
+                <h2>Tutorial Summary</h2>
+                <ul id="summaryList" class="summary-list"></ul>
+                <div id="summaryTotal" class="summary-total"></div>
+                <button class="close-summary-btn" onclick="HideSummary()">Close</button>
+            </div>
+        </div>
+
         <!-- Error State -->
         <div id="errorState" class="error-message" style="display: none;"></div>
     </div>
@@ -53,8 +114,6 @@
 <script>
     // --- Engine Configuration ---
     var ServerPath = ""; 
-    var TutorialPath = "";
-    var TutorialLanguage = "";
     var TutorialManifest;
     var FeedbackNumber = 0;
     var totPages = 0;
@@ -63,6 +122,7 @@
     var QcurrentPagePointer = 0;
     var PageType = "";
     var doc;
+    var TutorialLanguage = "";
     
     // CORS Proxy for fetching XML
     const CORS_PROXY = "https://corsproxy.io/?";
@@ -72,7 +132,6 @@
 
     // --- Initialization ---
     window.onload = function() {
-        // 1. Get Manifest URL from Query String
         const urlParams = new URLSearchParams(window.location.search);
         const manifestUrl = urlParams.get('manifest');
         const theme = urlParams.get('theme');
@@ -84,28 +143,29 @@
             return;
         }
 
-        // 2. Determine Base Path for Resources (Images/Audio)
-        // We use the original URL for this, NOT the proxy URL
+        // Determine Base Path for Resources (Images/Audio)
         const lastSlashIndex = manifestUrl.lastIndexOf('/');
         ServerPath = manifestUrl.substring(0, lastSlashIndex + 1); 
 
-        // 3. Fetch Manifest using Proxy to bypass CORS
+        // Fetch Manifest using Proxy to bypass CORS
         const proxyUrl = CORS_PROXY + encodeURIComponent(manifestUrl);
         
         x.open("GET", proxyUrl, true);
         x.onreadystatechange = function () {
             if (x.readyState == 4) {
                 if(x.status == 200) {
-                    // Parse text response into XML DOM
-                    const parser = new DOMParser();
-                    doc = parser.parseFromString(x.responseText, "text/xml");
-                    
-                    if(!doc || doc.getElementsByTagName("parsererror").length > 0) {
-                         showError("Error parsing XML manifest.");
-                         return;
+                    try {
+                        const parser = new DOMParser();
+                        doc = parser.parseFromString(x.responseText, "text/xml");
+                        
+                        if(!doc || doc.getElementsByTagName("parsererror").length > 0) {
+                             showError("Error parsing XML manifest.");
+                             return;
+                        }
+                        initPlayer();
+                    } catch (e) {
+                        showError("Error processing manifest: " + e.message);
                     }
-                    
-                    initPlayer();
                 } else {
                     showError("Failed to load manifest: " + x.status);
                 }
@@ -124,7 +184,6 @@
     function initPlayer() {
         document.getElementById("loadingState").style.display = "none";
         document.getElementById("tutorialSection").style.display = "flex";
-        
         setTutorialParameters();
         movePage(0);
     }
@@ -134,10 +193,9 @@
         totPages = TutorialManifest.length;
         for (i = 0; i < totPages; i++) if (TutorialManifest[i].getAttribute("p") == "s") totSections++;
         
-        Title = doc.getElementsByTagName("Title")[0].textContent;
+        const Title = doc.getElementsByTagName("Title")[0].textContent;
         TutorialLanguage = doc.getElementsByTagName("Language")[0].textContent;
         
-        // Update Title UI
         document.getElementById("Title").innerHTML = `<strong>${Title}</strong> <span style="opacity:0.7; font-size:0.8em">(${TutorialLanguage})</span>`;
         
         AudioObj = document.getElementById("Audio");
@@ -155,20 +213,13 @@
         if (currentPagePointer < totPages - 1) {
             PageType = TutorialManifest[currentPagePointer].getAttribute("p");
 
-            fileExt = ".png"
-            if (TutorialManifest[currentPagePointer].getAttribute("a") == "1") fileExt = ".gif"
-            if (PageType == "s") fileExt = "_S.png"
+            let fileExt = ".png";
+            if (TutorialManifest[currentPagePointer].getAttribute("a") == "1") fileExt = ".gif";
+            if (PageType == "s") fileExt = "_S.png";
 
-            // PATH LOGIC: 
-            // We use ServerPath (directory of XML) + "slides/" or "sound/"
-            // Note: Your engine.html used /mobile/slides/, but if A2.xml is ALREADY in /mobile/, 
-            // we just need "slides/".
-            // Adjusting pathing based on standard structure where A2.xml sits in /mobile/
+            const filename = TutorialManifest[currentPagePointer].getAttribute("f");
             
-            var filename = TutorialManifest[currentPagePointer].getAttribute("f");
-            
-            // Use absolute paths for resources (no proxy needed for images/audio)
-            Main = ServerPath + "slides/m_" + filename + fileExt;
+            document.getElementById("Main").src = ServerPath + "slides/m_" + filename + fileExt;
             AudioObj.src = ServerPath + "sound/m_s" + filename + ".mp3";
 
             if (PageType == "q") {
@@ -181,22 +232,14 @@
             }
         } else {
             bntNext.disabled = true;
-            if ( TutorialLanguage == "Spanish" ) LanguageExt = "_s"; else LanguageExt = "";
-            
-            // End slide logic - assuming "common" folder is 2 levels up from mobile folder
-            // or just relative. Let's try a relative path first.
-            // If A2.xml is in /mobile/, and common is in root, it's ../common/
-            Main = ServerPath + "../../common/end" + LanguageExt + ".gif";
-            AudioObj.src = ServerPath + "../../common/end" + LanguageExt + ".mp3";
+            const langExt = (TutorialLanguage === "Spanish") ? "_s" : "";
+            document.getElementById("Main").src = ServerPath + "../../common/end" + langExt + ".gif";
+            AudioObj.src = ServerPath + "../../common/end" + langExt + ".mp3";
         }
         
-        document.getElementById("Main").src = Main;
-        
-        // Handle Audio Promise for modern browsers
         var playPromise = AudioObj.play();
         if (playPromise !== undefined) {
             playPromise.catch(error => {
-                // Auto-play was prevented
                 console.log("Autoplay prevented by browser.");
             });
         }
@@ -209,9 +252,8 @@
         var x = e.clientX - rect.left;
         var y = e.clientY - rect.top;
 
-        // Calculate % based on the displayed image size (responsive)
-        pcntX = parseInt(100 * x / rect.width);
-        pcntY = parseInt(100 * y / rect.height);
+        const pcntX = parseInt(100 * x / rect.width);
+        const pcntY = parseInt(100 * y / rect.height);
 
         if (PageType == "s") {
             if ( 20 < pcntX && pcntX < 80 ) JumpToSection(y, rect.height);
@@ -220,32 +262,37 @@
         } else if (PageType == "g" || PageType == "c") {
             movePage(1);
         } else {
-            BTN = 0;
+            let BTN = 0;
+            const glossaryNumber = TutorialManifest[currentPagePointer].getElementsByTagName("g").length;
+
             if (PageType == "q") {
-                for (j = 1; j <= FeedbackNumber; j++) {
-                    ButtonLimits = TutorialManifest[currentPagePointer].getAttribute("b" + j).split(",");
+                for (let j = 1; j <= FeedbackNumber; j++) {
+                    const ButtonLimits = TutorialManifest[currentPagePointer].getAttribute("b" + j).split(",");
                     if (parseInt(ButtonLimits[0]) < pcntX && pcntX < parseInt(ButtonLimits[2]) && parseInt(ButtonLimits[1]) < pcntY && pcntY < parseInt(ButtonLimits[3])) BTN = j;
                 }
             }
-            for (j = 1; j <= glossaryNumber; j++) {
-                ButtonLimits = TutorialManifest[currentPagePointer].getAttribute("b" + j).split(",");
+            for (let j = 1; j <= glossaryNumber; j++) {
+                const ButtonLimits = TutorialManifest[currentPagePointer].getAttribute("b" + j).split(",");
                 if (parseInt(ButtonLimits[0]) < pcntX && pcntX < parseInt(ButtonLimits[2]) && parseInt(ButtonLimits[1]) < pcntY && pcntY < parseInt(ButtonLimits[3])) BTN = j;
             }
+
             if (BTN > 0) {
+                let fName, wName;
                 if (PageType == "q") {
-                    var fName = TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f");
-                    Main = ServerPath + "slides/m_" + fName + ".png";
+                    fName = TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f");
+                    document.getElementById("Main").src = ServerPath + "slides/m_" + fName + ".png";
                     AudioObj.src = ServerPath + "sound/m_s" + fName + ".mp3";
                 } else {
-                    var wName = TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w");
-                    Main = ServerPath + "slides/m_" + wName + ".png";
+                    wName = TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w");
+                    document.getElementById("Main").src = ServerPath + "slides/m_" + wName + ".png";
                     AudioObj.src = ServerPath + "sound/" + wName + "_s_m.mp3";
                 }
-
-                document.getElementById("Main").src = Main;
                 AudioObj.play();
                 QcurrentPagePointer = currentPagePointer;
-                if (PageType != "q" || BTN != parseInt(TutorialManifest[currentPagePointer].getAttribute("ca"))) currentPagePointer--;
+                
+                const correctAnswer = parseInt(TutorialManifest[currentPagePointer].getAttribute("ca"));
+                if (PageType != "q" || BTN != correctAnswer) currentPagePointer--;
+                
                 if (PageType == "o") PageType = "g"; else PageType = "";
                 bntNext.disabled = false;
             }
@@ -253,19 +300,16 @@
     }
 
     function Credits() {
-        Main = ServerPath + "slides/credits.png";
-        document.getElementById("Main").src = Main;
+        document.getElementById("Main").src = ServerPath + "slides/credits.png";
         PageType = "c";
     }
 
     function JumpToSection(absY, imgHeight) {
-        // Scaling logic adapted for responsive height
-        // Original engine assumed fixed 480 height. We scale absY to that ratio.
         var factor = 480 / imgHeight;
         SEC = parseInt((((absY * factor)) - 75) * totSections / 380) + 1;
         
         var SecFind = 0;
-        for (k = 0; k < totPages; k++) {
+        for (let k = 0; k < totPages; k++) {
             if (TutorialManifest[k].getAttribute("p") == "s") SecFind++;
             if (SecFind == SEC) {
                 currentPagePointer = k;
@@ -275,11 +319,57 @@
         }
     }
 
-    function Manifest() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const manifestFile = urlParams.get('manifest');
-        window.open(manifestFile, "_blank");
+    /* --- NEW: Summary Logic --- */
+    function ShowSummary() {
+        const summaryList = document.getElementById('summaryList');
+        const summaryTotal = document.getElementById('summaryTotal');
+        summaryList.innerHTML = '';
+        
+        let sectionCount = 0;
+        let questionCount = 0;
+        let totalPages = TutorialManifest.length;
+        let currentSectionPages = 0;
+        let sectionName = "Intro";
+
+        for (let i = 0; i < TutorialManifest.length; i++) {
+            const type = TutorialManifest[i].getAttribute("p");
+            
+            if (type === "s") {
+                // If we were tracking a previous section, display its count? 
+                // Actually, 's' marks the *start* of a section.
+                if (i > 0) {
+                    addSummaryItem(sectionName, currentSectionPages);
+                }
+                sectionName = TutorialManifest[i].getAttribute("s") || `Section ${sectionCount + 1}`;
+                sectionCount++;
+                currentSectionPages = 0; // Reset for new section
+            }
+            
+            if (type === "q") questionCount++;
+            currentSectionPages++;
+        }
+        // Add last section
+        addSummaryItem(sectionName, currentSectionPages);
+
+        summaryTotal.innerHTML = `
+            <div>Total Sections: ${sectionCount}</div>
+            <div>Total Pages: ${totalPages}</div>
+            <div>Total Questions: ${questionCount}</div>
+        `;
+
+        document.getElementById('summaryOverlay').style.display = 'flex';
     }
+
+    function addSummaryItem(name, pageCount) {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${name}</span> <span>${pageCount} pages</span>`;
+        document.getElementById('summaryList').appendChild(li);
+    }
+
+    function HideSummary() {
+        document.getElementById('summaryOverlay').style.display = 'none';
+    }
+
 </script>
 </body>
 </html>
