@@ -1,131 +1,141 @@
 /* --- Tutorial Engine Styles --- */
 
-/* Ensure the iframe body has no margin/padding */
-body {
+/* Force iframe body to fill space */
+html, body.tutorial-body {
     margin: 0;
     padding: 0;
-    overflow: hidden; /* No scrollbars on the iframe body */
-    background-color: var(--bg-dark); /* Inherit theme background */
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--bg-dark, #1f2833); /* Default to dark if var missing */
+    color: var(--text-primary, #ffffff);
+    font-family: 'Inter', sans-serif;
 }
 
 #tutorialContainer {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 100vw;
-    font-family: 'Inter', sans-serif;
-    color: var(--text-light);
-    background-color: var(--bg-dark);
-}
-
-#tutorialSection {
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 100%;
 }
 
-/* Slide Area */
-.slide-wrapper {
-    flex-grow: 1; /* Fill remaining space */
+#tutorialSection {
+    flex: 1;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #000; /* Black background for slides */
+    flex-direction: column;
     overflow: hidden;
-    position: relative;
 }
 
-.tutorial-slide {
+/* Center the slide */
+.slide-container {
+    flex: 1; /* Take all available space */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    overflow: hidden;
+}
+
+.slide-image {
     max-width: 100%;
     max-height: 100%;
-    width: auto;
-    height: auto;
     object-fit: contain;
     cursor: pointer;
 }
 
-/* Navigation Controls */
-.tutorial-nav {
-    flex-shrink: 0; /* Fixed height based on content */
+/* Navigation Bar */
+.nav-bar {
+    height: auto;
+    min-height: 60px;
+    background-color: var(--bg-medium, #2c3e50);
+    border-top: 2px solid var(--bg-dark, #1f2833);
     padding: 10px 20px;
-    background-color: var(--bg-medium);
-    border-top: 1px solid var(--text-accent);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 10px;
 }
 
 .tutorial-title {
     font-size: 1.1rem;
-    color: var(--text-primary);
+    flex: 1 1 100%; /* Full width on small screens */
     text-align: center;
+    margin-bottom: 5px;
 }
 
-.tutorial-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+@media (min-width: 600px) {
+    .tutorial-title {
+        flex: 0 1 auto;
+        text-align: left;
+        margin-bottom: 0;
+    }
 }
 
-.playback-controls {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.extra-controls {
+.controls-group {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 /* Buttons */
-.nav-btn {
+.engine-btn {
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: transform 0.1s, opacity 0.2s;
 }
 
-.nav-btn.primary {
-    background-color: var(--text-accent);
-    color: var(--bg-dark);
+.engine-btn.primary {
+    background-color: var(--text-accent, #66fcf1);
+    color: var(--bg-dark, #1f2833);
     font-weight: bold;
 }
 
-.nav-btn.secondary {
+.engine-btn.secondary {
     background-color: transparent;
-    color: var(--text-light);
-    border: 1px solid var(--text-light);
+    border: 1px solid var(--text-light, #c5c8c6);
+    color: var(--text-light, #c5c8c6);
 }
 
-.nav-btn:hover:not(:disabled) {
-    opacity: 0.8;
-    transform: translateY(-1px);
-}
-
-.nav-btn:disabled {
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    border-color: var(--bg-medium);
+.engine-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    filter: grayscale(1);
 }
 
-.page-number {
+.engine-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.page-counter {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 1rem;
-    color: var(--text-primary);
     min-width: 60px;
     text-align: center;
+    color: var(--text-light, #c5c8c6);
 }
 
-.error-message {
-    padding: 20px;
-    text-align: center;
-    color: #e74c3c;
-    font-family: 'IBM Plex Mono', monospace;
+/* Loader */
+.content-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
 }
+
+.spinner {
+    border: 5px solid var(--bg-medium, #2c3e50); 
+    border-top: 5px solid var(--text-accent, #66fcf1); 
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
