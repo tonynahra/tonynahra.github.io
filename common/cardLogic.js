@@ -1,10 +1,9 @@
 /* === GLOBAL VARIABLES === */
-var currentCardList = []; 
-var currentCardIndex = 0; 
-var isModalInfoVisible = false; 
+var currentCardList = []; // Stores the list of cards for modal navigation
+var currentCardIndex = 0; // Stores the current position in the modal
+var isModalInfoVisible = false; // Stores the state of the info toggle
 
-/* === HELPER FUNCTIONS === */
-
+// --- HELPER FUNCTIONS ---
 function decodeText(text) {
     if (!text) return "";
     try {
@@ -16,7 +15,7 @@ function decodeText(text) {
     }
 }
 
-/* === GLOBAL VIEW FUNCTIONS (Defined at Top Level) === */
+/* === GLOBAL VIEW FUNCTIONS === */
 
 function handleCardView($scope, initialLoadOverride) {
     $scope.find('.card-list').each(function() {
@@ -96,7 +95,6 @@ function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return; 
     
-    // Use defaults if filterConfig isn't loaded yet to prevent crash
     const stop = (typeof STOP_WORDS !== 'undefined') ? STOP_WORDS : new Set(['a', 'the']);
     const replace = (typeof REPLACEMENT_MAP !== 'undefined') ? REPLACEMENT_MAP : {};
 
@@ -261,19 +259,32 @@ function buildResearchModal(jsonUrl) {
             if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl, '#research-tab-content-modal'); }
             $tabNav.append($button);
         });
-        $modalContent.find('.modal-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
+        
+        $modalContent.find('.modal-close-btn').on('click', function() { 
+            $('.modal-close-btn').first().click(); 
+        });
     });
 }
 
 function loadModalTabContent(htmlUrl, targetId) {
     const $target = $(targetId);
     $target.html(''); 
-    $target.closest('#modal-content-area').find('.research-modal-header .open-new-window').attr('href', htmlUrl);
-    $target.html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`);
+    
+    // Update the "Open in new window" link to the current tab's URL
+    $target.closest('#modal-content-area')
+           .find('.research-modal-header .open-new-window')
+           .attr('href', htmlUrl);
+
+    // Use iframe to ensure it fills space and loads properly
+    const iframeHtml = `
+        <div class="iframe-wrapper">
+            <iframe src="${htmlUrl}" class="loaded-iframe"></iframe>
+        </div>
+    `;
+    $target.html(iframeHtml);
 }
 
 /* === LOAD MODAL CONTENT === */
-// ... (keep existing global variables and helper functions) ...
 
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) return;
@@ -320,13 +331,8 @@ function loadModalContent(index) {
         $modalContent.html(playerHtml);
         
         $modalContent.find('.modal-close-btn').on('click', function() {
-            $('#content-modal').removeClass('modal-open tutorial-mode').fadeOut(200);
-            $('#modal-content-area').html('');
-            currentCardList = [];
-            $(document).off('keydown.modalNav');
-            $('#content-modal .modal-header').show();
+            $('.modal-close-btn').first().click();
         });
-        
         return;
     }
     
@@ -374,10 +380,7 @@ function loadModalContent(index) {
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
                     $modalContent.html(data); 
-                    if (infoHtml) {
-                        $modalContent.append(infoHtml);
-                        $modalInfoBtn.show();
-                    }
+                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -391,7 +394,7 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'iframe':
-            // --- FIX: REMOVED INLINE HEIGHT, letting CSS handle it ---
+            // IMPORTANT: CSS handles 100% height via .iframe-wrapper style
             $modalContent.html(`
                 <div class="iframe-wrapper">
                     <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
@@ -400,10 +403,10 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'blocked':
-            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here.Please use the "Open in new window" button.</div>');
+            $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
             break;
-        default: // newtab
-            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
+        default: 
+            $modalContent.html('<div class="error-message">Link cannot be opened here.</div>');
             break;
     }
     
@@ -411,9 +414,7 @@ function loadModalContent(index) {
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
 
-// ... (rest of the file) ...
-
-// --- EXPOSE YOUTUBE FILTER FOR MAIN PAGE ---
+/* === FILTER LOGIC (Global) === */
 function filterYouTubeCards() {
     const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
     const selectedKeyword = $('#youtube-keyword-filter').val();
@@ -422,7 +423,7 @@ function filterYouTubeCards() {
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $('#youtube-no-results');
     let visibleCount = 0;
-    
+
     if (searchTerm.length > 0 || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
@@ -442,6 +443,7 @@ function filterYouTubeCards() {
         handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
     }
 }
+
 
 /* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
