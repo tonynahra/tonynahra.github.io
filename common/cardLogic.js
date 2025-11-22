@@ -264,46 +264,142 @@ function resultsLoop(data, Cat, BKcol) {
     });
 }
 
-/* === PHOTO ALBUM LOGIC === */
-function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
-    const $albumList = $('#photo-album-list');
+function loadModalContent(index) {
+    if (index < 0 || index >= currentCardList.length) {
+        return;
+    }
+
+    const $link = currentCardList[index];
+    if (!$link.length) return;
     
-    $.getJSON(jsonUrl, function (albumData) {
-        $('#album-title').text(decodeText(albumData.albumTitle));
-        $albumList.empty(); 
+    currentCardIndex = index;
+    
+    const $modal = $('#content-modal');
+    const $modalContent = $('#modal-content-area');
+    const $modalOpenLink = $modal.find('.open-new-window');
+    const $modalInfoBtn = $modal.find('.modal-info-btn');
+
+    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
+    
+    const loadUrl = $link.attr('href');
+    let loadType = $link.data('load-type');
+    const jsonUrl = $link.data('json-url');
+    const manifestUrl = $link.data('manifest-url'); // NEW: Get manifest URL
+    
+    // 1. Research Logic
+    if (loadType === 'research' && jsonUrl) {
+        $modal.addClass('research-mode'); 
+        $modalOpenLink.attr('href', jsonUrl); 
+        buildResearchModal(jsonUrl); 
+        return; 
+    } 
+    
+    // 2. NEW: Tutorial Logic
+    if (loadType === 'tutorial' && manifestUrl) {
+        $modal.addClass('tutorial-mode'); // Uses the full-screen styles
+        $modal.removeClass('research-mode');
         
-        $.each(albumData.photos, function(index, photo) {
-            const title = decodeText(photo.title);
-            const category = decodeText(photo.category);
-            const description = decodeText(photo.description);
-            
-            const cardHtml = `
-                <div class="card-item" 
-                     data-category="${category}" 
-                     data-keywords="${title},${description}">
-                    
-                    <a href="${photo.url}" data-load-type="image">
-                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
-                        
-                        <div class="photo-details">
-                            <h3>${title}</h3>
-                            <p>${description}</p>
-                        </div>
-                    </a>
-                </div>
-            `;
-            $albumList.append(cardHtml);
+        // Hide default buttons as the player has its own
+        $modal.find('.modal-header').hide();
+        
+        // Load the player via iframe, passing the manifest
+        const playerHtml = `
+            <div class="iframe-wrapper" style="height: 100%; width: 100%;">
+                <iframe src="tutorial_player.html?manifest=${manifestUrl}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
+            </div>
+            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000;">&times;</button>
+        `;
+        $modalContent.html(playerHtml);
+        
+        // Re-attach close button logic for the custom button inside the iframe area
+        $modalContent.find('.modal-close-btn').on('click', function() {
+            $('.modal-close-btn').click(); // Trigger main close logic
         });
         
-        populateCategoryFilter('#photo-album-list', '#album-category-filter');
-        populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
-        handleCardView($('#content-area'), initialLoadOverride);
+        return;
+    }
 
-    }).fail(function(jqXHR, textStatus, errorThrown) {
-        $('#album-title').text("Error Loading Album");
-        $albumList.html(`<p class="error-message">Could not load album data from ${jsonUrl}. Error: ${textStatus}</p>`);
-        console.error("Photo Album AJAX failed:", textStatus, errorThrown);
-    });
+    // 3. Regular Logic (HTML, Image, Iframe)
+    $modal.removeClass('research-mode'); 
+    $modal.removeClass('tutorial-mode'); // Ensure we reset this
+    $modal.find('.modal-header').show(); // Ensure header is shown
+    
+    $modalOpenLink.attr('href', loadUrl);
+    $modalContent.find('.modal-photo-info').remove();
+    $modalInfoBtn.hide(); 
+    
+    if (!loadType) {
+        // ... (Auto-guess logic remains the same) ...
+        if (loadUrl.startsWith('http')) {
+            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
+                loadType = 'blocked'; 
+            } else {
+                loadType = 'iframe';
+            }
+        } else if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
+            loadType = 'image';
+        } else if (loadUrl.endsWith('.html')) {
+            loadType = 'html';
+        } else {
+            loadType = 'newtab'; 
+        }
+    }
+
+    // ... (Rest of the function remains the same: title extraction, switch case, etc.) ...
+    const $card = $link.closest('.card-item');
+    const title = $card.find('h3').text() || $card.find('img').attr('alt');
+    const desc = $card.find('p').text();
+    let infoHtml = '';
+
+    if (title) {
+        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
+        infoHtml = `
+            <div class="modal-photo-info ${infoVisibleClass}">
+                <h3>${title}</h3>
+                <p>${desc}</p>
+            </div>`;
+    }
+
+    switch (loadType) {
+        case 'html':
+            $.ajax({
+                url: loadUrl, type: 'GET',
+                success: function(data) { 
+                    $modalContent.html(data); 
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
+                },
+                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
+            });
+            break;
+        case 'image':
+            $modalContent.html(`
+                <div class="image-wrapper">
+                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'iframe':
+            $modalContent.html(`
+                <div class="iframe-wrapper">
+                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'blocked':
+            $modalContent.html('<div class="error-message">This site (e.g., GitHub) blocks being loaded here. Please use the "Open in new window" button.</div>');
+            break;
+        default: // newtab
+            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
+            break;
+    }
+    
+    $('.modal-prev-btn').prop('disabled', index <= 0);
+    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
 
 
