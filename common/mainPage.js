@@ -1,5 +1,5 @@
 /* === GLOBAL SETUP & DYNAMIC CONTENT LOADING LOGIC === */
-var lastContentPage = 'posts.html'; // Default to posts.html
+var lastContentPage = 'tech-posts.html'; // Default to posts.html
 
 $(document).ready(function () {
     
