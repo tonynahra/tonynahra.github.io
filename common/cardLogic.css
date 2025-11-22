@@ -36,6 +36,12 @@
 
 .card-item p {
     font-size: 0.95rem;
+    /* Limit text to 4 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .card-category {
@@ -46,7 +52,6 @@
     margin-bottom: 10px;
 }
 
-/* Card images (YouTube and Raindrop) - DEFAULT */
 .card-item img.card-image,
 .card-item img.YTi {
     width: 100%;
@@ -118,28 +123,24 @@
 
 .search-wrapper { margin-bottom: 0; }
 
-#post-category-filter, #cert-category-filter, #post-keyword-filter, #cert-keyword-filter,
-#youtube-category-filter, #youtube-keyword-filter, #album-category-filter, #album-keyword-filter,
-#research-category-filter, #research-keyword-filter, #tutorials-category-filter, #tutorials-keyword-filter { 
-    width: 100%; padding: 12px 15px; background-color: var(--bg-dark); border: 1px solid var(--bg-medium);
-    border-radius: 4px; color: var(--text-primary); font-family: var(--font-code); font-size: 1rem; box-sizing: border-box;
+/* Dropdowns & Inputs */
+select, input[type="search"] {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--bg-medium);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-family: var(--font-code);
+    font-size: 1rem;
+    box-sizing: border-box;
 }
 
-#post-category-filter:focus, #cert-category-filter:focus, #post-keyword-filter:focus, #cert-keyword-filter:focus,
-#youtube-category-filter:focus, #youtube-keyword-filter:focus, #album-category-filter:focus, #album-keyword-filter:focus,
-#research-category-filter:focus, #research-keyword-filter:focus, #tutorials-category-filter:focus, #tutorials-keyword-filter:focus { 
-    outline: none; border-color: var(--text-accent);
+select:focus, input[type="search"]:focus {
+    outline: none;
+    border-color: var(--text-accent);
+    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
-
-#youtube-search-box, #post-search-box, #cert-search-box, #album-search-box, #research-search-box, #tutorials-search-box { 
-    width: 100%; padding: 12px 15px; background-color: var(--bg-dark); border: 1px solid var(--bg-medium);
-    border-radius: 4px; color: var(--text-primary); font-family: var(--font-code); font-size: 1rem; box-sizing: border-box;
-}
-
-#youtube-search-box:focus, #post-search-box:focus, #cert-search-box:focus, #album-search-box:focus, #research-search-box:focus, #tutorials-search-box:focus { 
-    outline: none; border-color: var(--text-accent); box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
-
 
 /* --- Modal Styles --- */
 .modal-backdrop {
@@ -163,17 +164,17 @@
     border-radius: 8px;
     width: 90%; 
     max-width: 1400px;
-    height: calc(100vh - 40px); /* Full height minus margins */
+    height: calc(100vh - 40px); 
     display: flex;
     flex-direction: column;
 }
 
-/* Main content box inside the modal */
+/* Main Content Area */
 #modal-content-area {
-    flex-grow: 1; 
+    flex: 1; /* Grow to fill remaining height */
     overflow-y: auto; 
     position: relative; 
-    display: flex; /* Using flex to fill height */
+    display: flex; /* Use flex for children alignment */
     flex-direction: column;
 }
 
@@ -200,7 +201,7 @@
     align-items: center;
 }
 
-.modal-header .modal-close-btn, .modal-header .modal-prev-btn, .modal-header .modal-next-btn, .modal-header .modal-info-btn, .modal-header .open-new-window { 
+.modal-header button, .modal-header a { 
     padding: 8px 15px;
     background: var(--bg-medium);
     color: var(--text-accent);
@@ -214,14 +215,12 @@
     font-size: 0.9rem;
 }
 
-.modal-header .modal-close-btn:hover, .modal-header .modal-prev-btn:hover, .modal-header .modal-next-btn:hover, .modal-header .modal-info-btn:hover { 
+.modal-header button:hover, .modal-header a:hover { 
     background: var(--text-accent);
     color: var(--bg-dark);
 }
-.modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
-.modal-header .open-new-window:hover { background: var(--text-accent); color: var(--bg-dark); }
 
-.modal-header .modal-prev-btn:disabled, .modal-header .modal-next-btn:disabled {
+.modal-header button:disabled {
     background: var(--bg-dark);
     color: var(--text-light);
     border-color: var(--bg-medium);
@@ -230,25 +229,18 @@
 }
 
 .modal-header .modal-info-btn { display: none; }
+.modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
 
-
-/* --- IFrame / Image Wrappers --- */
-/* This ensures iframes take 100% of the modal content area */
+/* --- Wrappers --- */
+#modal-content-area .image-wrapper,
 #modal-content-area .iframe-wrapper {
-    flex: 1;
-    width: 100%;
-    height: 100%; /* Fill available height */
-    display: block;
-}
-
-/* Images are centered */
-#modal-content-area .image-wrapper {
-    flex: 1;
+    flex: 1; /* Grow to fill parent */
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 0; 
 }
 
 #modal-content-area .loaded-image {
@@ -280,7 +272,6 @@
 .modal-photo-info h3 { font-size: 1.2rem; color: #fff; margin-bottom: 5px; }
 .modal-photo-info p { font-size: 1rem; color: #eee; margin: 0; }
 
-
 /* --- Research Tab Styles --- */
 .research-modal-header {
     display: flex;
@@ -293,7 +284,7 @@
     flex-shrink: 0;
 }
 .research-modal-header h2 { margin: 0; color: var(--text-accent); }
-.research-modal-header .modal-close-btn, .research-modal-header .open-new-window { padding: 8px 15px; font-size: 0.9rem; cursor: pointer;}
+.research-modal-header button, .research-modal-header a { padding: 8px 15px; font-size: 0.9rem; cursor: pointer;}
 
 .tab-nav {
     display: flex;
@@ -318,17 +309,15 @@
 .tab-button:hover { color: var(--text-primary); background: var(--bg-medium); }
 .tab-button.active { color: var(--text-accent); border-bottom-color: var(--text-accent); }
 
-/* --- TAB CONTENT FIX --- */
-/* Fill the remaining vertical space */
+/* Tab Content Area */
 .tab-content {
-    flex: 1; /* Grow to fill space */
+    flex: 1; /* Grow to fill remaining height */
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevent double scrollbar */
-    position: relative; /* Anchor iframe */
+    overflow: hidden; 
 }
 .tab-content .iframe-wrapper {
-    flex: 1;
+    flex: 1; /* Fill tab content */
     height: 100%;
 }
 
