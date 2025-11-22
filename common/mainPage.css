@@ -591,3 +591,43 @@ code {
 #about-album-list .photo-details {
     display: none;
 }
+/* ... (Keep all existing styles) ... */
+
+/* --- About Me Page Styles --- */
+.about-me-page .text-cards .card-item {
+    /* Make text bigger */
+    font-size: 1.15rem; 
+    line-height: 1.8;
+    /* Make boxes bigger/more spacious */
+    padding: 25px;
+    min-width: 300px; /* Prevent them from getting too narrow */
+    flex-grow: 1; /* Allow them to expand to fill rows */
+}
+
+.about-me-page .text-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+}
+
+/* Ensure images in the album section look good */
+#about-album-list .card-item {
+    /* Reset padding/bg for album items so they look like photos */
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+}
+
+#about-album-list .card-image {
+    width: 100%;
+    height: 250px; /* Fixed height for uniformity */
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Ensure the 'Show More' button on this page has space */
+.about-me-page .toggle-card-button {
+    margin-top: 30px;
+    margin-bottom: 50px;
+}
