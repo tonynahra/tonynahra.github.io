@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tutorial Player</title>
-    <!-- Load site styles so variables work -->
     <link rel="stylesheet" href="common/mainPage.css">
-    <!-- Load engine specific styles -->
     <link rel="stylesheet" href="common/tutorialEngine.css">
     <style>
         /* Extra styles for the summary overlay */
@@ -58,21 +56,20 @@
         }
     </style>
 </head>
-<body class="tutorial-body">
+<!-- Add tabindex to body to ensure it can catch keys immediately -->
+<body class="tutorial-body" tabindex="0">
 
     <div id="tutorialContainer">
-        <!-- Loading State -->
         <div id="loadingState" class="content-loader">
             <div class="spinner"></div>
             <p>Loading Tutorial...</p>
         </div>
 
-        <!-- The Player Interface -->
         <div id="tutorialSection" style="display: none;">
             
             <!-- Slide Image Area -->
             <div class="slide-container">
-                <!-- object-fit: contain ensures it fills width/height without cropping -->
+                <!-- Using width/height 100% in CSS to force full usage -->
                 <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Tutorial Slide">
             </div>
 
@@ -82,22 +79,19 @@
                 
                 <div class="controls-group">
                     <button onclick="Credits()" class="engine-btn secondary">Credits</button> 
-                    <!-- UPDATED: Changed Manifest to Summary -->
                     <button onclick="ShowSummary()" class="engine-btn secondary">Summary</button>
                 </div>
 
                 <div class="controls-group playback">
-                    <button onclick="movePage(-1)" id="btnPrevious" class="engine-btn primary">&larr; Prev</button>  
+                    <button onclick="movePage(-1)" id="btnPrevious" class="engine-btn primary" title="Left Arrow">&larr; Prev</button>  
                     <span id="pageNo" class="page-counter">0 / 0</span>  
-                    <button onclick="movePage(1)" id="btnNext" class="engine-btn primary">Next &rarr;</button>
+                    <button onclick="movePage(1)" id="btnNext" class="engine-btn primary" title="Right Arrow / Space">Next &rarr;</button>
                 </div>
             </div>
             
-            <!-- Audio (Hidden) -->
             <audio id="Audio" src="" autoplay style="display: none;"></audio>
         </div>
         
-        <!-- Summary Overlay -->
         <div id="summaryOverlay">
             <div class="summary-box">
                 <h2>Tutorial Summary</h2>
@@ -107,12 +101,10 @@
             </div>
         </div>
 
-        <!-- Error State -->
         <div id="errorState" class="error-message" style="display: none;"></div>
     </div>
 
 <script>
-    // --- Engine Configuration ---
     var ServerPath = ""; 
     var TutorialManifest;
     var FeedbackNumber = 0;
@@ -123,15 +115,15 @@
     var PageType = "";
     var doc;
     var TutorialLanguage = "";
-    
-    // CORS Proxy for fetching XML
     const CORS_PROXY = "https://corsproxy.io/?";
 
     var AudioObj, bntNext, bntPrevious, PageObject;
     var x = new XMLHttpRequest();
 
-    // --- Initialization ---
     window.onload = function() {
+        // Focus the body to capture keystrokes immediately
+        document.body.focus();
+
         const urlParams = new URLSearchParams(window.location.search);
         const manifestUrl = urlParams.get('manifest');
         const theme = urlParams.get('theme');
@@ -143,11 +135,9 @@
             return;
         }
 
-        // Determine Base Path for Resources (Images/Audio)
         const lastSlashIndex = manifestUrl.lastIndexOf('/');
         ServerPath = manifestUrl.substring(0, lastSlashIndex + 1); 
 
-        // Fetch Manifest using Proxy to bypass CORS
         const proxyUrl = CORS_PROXY + encodeURIComponent(manifestUrl);
         
         x.open("GET", proxyUrl, true);
@@ -157,7 +147,6 @@
                     try {
                         const parser = new DOMParser();
                         doc = parser.parseFromString(x.responseText, "text/xml");
-                        
                         if(!doc || doc.getElementsByTagName("parsererror").length > 0) {
                              showError("Error parsing XML manifest.");
                              return;
@@ -173,6 +162,60 @@
         };
         x.send(null);
     };
+
+    // --- KEYBOARD NAVIGATION ---
+    document.addEventListener('keydown', function(e) {
+        // Don't navigate if error state is showing
+        if (document.getElementById("errorState").style.display === "block") return;
+
+        switch(e.key) {
+            case "ArrowLeft":
+                movePage(-1);
+                break;
+            case "ArrowRight":
+            case " ": // Spacebar
+                e.preventDefault(); // Prevent scrolling the page down
+                movePage(1);
+                break;
+            case "PageDown":
+                e.preventDefault();
+                navToSection(1); // Next Section
+                break;
+            case "PageUp":
+                e.preventDefault();
+                navToSection(-1); // Prev Section
+                break;
+        }
+    });
+
+    function navToSection(direction) {
+        let foundIndex = -1;
+        
+        if (direction === 1) {
+            // Find NEXT section (s)
+            for (let i = currentPagePointer + 1; i < totPages; i++) {
+                if (TutorialManifest[i].getAttribute("p") === "s") {
+                    foundIndex = i;
+                    break;
+                }
+            }
+        } else {
+            // Find PREV section (s)
+            // Look backwards from current position
+            for (let i = currentPagePointer - 1; i >= 0; i--) {
+                if (TutorialManifest[i].getAttribute("p") === "s") {
+                    foundIndex = i;
+                    break;
+                }
+            }
+        }
+
+        if (foundIndex !== -1) {
+            currentPagePointer = foundIndex;
+            movePage(0); // Update view
+        }
+    }
+    // ---------------------------
 
     function showError(msg) {
         document.getElementById("loadingState").style.display = "none";
@@ -240,7 +283,7 @@
         var playPromise = AudioObj.play();
         if (playPromise !== undefined) {
             playPromise.catch(error => {
-                console.log("Autoplay prevented by browser.");
+                // Auto-play prevented logic
             });
         }
         
@@ -307,7 +350,6 @@
     function JumpToSection(absY, imgHeight) {
         var factor = 480 / imgHeight;
         SEC = parseInt((((absY * factor)) - 75) * totSections / 380) + 1;
-        
         var SecFind = 0;
         for (let k = 0; k < totPages; k++) {
             if (TutorialManifest[k].getAttribute("p") == "s") SecFind++;
@@ -319,7 +361,6 @@
         }
     }
 
-    /* --- NEW: Summary Logic --- */
     function ShowSummary() {
         const summaryList = document.getElementById('summaryList');
         const summaryTotal = document.getElementById('summaryTotal');
@@ -333,22 +374,15 @@
 
         for (let i = 0; i < TutorialManifest.length; i++) {
             const type = TutorialManifest[i].getAttribute("p");
-            
             if (type === "s") {
-                // If we were tracking a previous section, display its count? 
-                // Actually, 's' marks the *start* of a section.
-                if (i > 0) {
-                    addSummaryItem(sectionName, currentSectionPages);
-                }
+                if (i > 0) addSummaryItem(sectionName, currentSectionPages);
                 sectionName = TutorialManifest[i].getAttribute("s") || `Section ${sectionCount + 1}`;
                 sectionCount++;
-                currentSectionPages = 0; // Reset for new section
+                currentSectionPages = 0;
             }
-            
             if (type === "q") questionCount++;
             currentSectionPages++;
         }
-        // Add last section
         addSummaryItem(sectionName, currentSectionPages);
 
         summaryTotal.innerHTML = `
@@ -356,7 +390,6 @@
             <div>Total Pages: ${totalPages}</div>
             <div>Total Questions: ${questionCount}</div>
         `;
-
         document.getElementById('summaryOverlay').style.display = 'flex';
     }
 
@@ -369,7 +402,6 @@
     function HideSummary() {
         document.getElementById('summaryOverlay').style.display = 'none';
     }
-
 </script>
 </body>
 </html>
