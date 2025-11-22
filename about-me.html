@@ -1,90 +1,119 @@
-<section class="about-me-container">
+<section class="about-me-page">
     
-    <!-- LEFT COLUMN: Text Content -->
-    <div class="about-text-column">
-        <h2>About Me</h2>
+    <h2 style="margin-bottom: 30px; color: var(--text-accent);">About Me</h2>
+    
+    <!-- 
+       PART 1: Text Sections as "Cards" 
+       We reuse the 'card-list' and 'card-item' classes to get the masonry box layout.
+    -->
+    <div class="card-list">
         
-        <p>
-            Hello! I'm Tony Nahra, a passionate Software Engineer and Data Professional with a deep love for solving complex problems through technology. 
-            My journey in tech started over two decades ago, fueled by a curiosity for how things work—from the logic of code to the physics of the universe.
-        </p>
+        <!-- Card 1: Intro -->
+        <div class="card-item" style="border-left-color: #3498db;">
+            <h3>Hello!</h3>
+            <p>
+                I'm Tony Nahra, a passionate Software Engineer and Data Professional with a deep love for solving complex problems through technology. 
+                My journey in tech started over two decades ago, fueled by a curiosity for how things work—from the logic of code to the physics of the universe.
+            </p>
+        </div>
 
-        <h3>My Philosophy</h3>
-        <p>
-            I believe that technology is most powerful when it bridges the gap between data and human understanding. 
-            Whether I'm designing a database architecture, building an interactive tutorial engine, or analyzing financial trends, 
-            my goal is always clarity, efficiency, and usability. I don't just write code; I build systems that empower users.
-        </p>
+        <!-- Card 2: Philosophy -->
+        <div class="card-item" style="border-left-color: #e74c3c;">
+            <h3>My Philosophy</h3>
+            <p>
+                I believe that technology is most powerful when it bridges the gap between data and human understanding. 
+                Whether I'm designing a database architecture, building an interactive tutorial engine, or analyzing financial trends, 
+                my goal is always clarity, efficiency, and usability. I don't just write code; I build systems that empower users.
+            </p>
+        </div>
 
-        <h3>Professional Journey</h3>
-        <p>
-            Over the years, I've had the privilege of working in diverse sectors, including healthcare and finance. 
-            At the <strong>Patient Education Institute</strong>, I led the development of multimedia tutorial systems that have educated millions of patients worldwide. 
-            My work involved not just coding, but architecting scalable solutions that could handle multilingual content, offline access via tablets, and seamless integration with hospital EMR systems like Cerner.
-        </p>
-        <p>
-            Prior to that, at the <strong>Abu Dhabi Investment Authority</strong>, I honed my skills in data analysis and financial modeling. 
-            I developed tools to simulate investment strategies, back-test theories, and visualize complex financial data for analysts managing billions in assets.
-        </p>
+        <!-- Card 3: Professional Journey -->
+        <div class="card-item" style="border-left-color: #f1c40f;">
+            <h3>Professional Journey</h3>
+            <p>
+                Over the years, I've had the privilege of working in diverse sectors, including healthcare and finance. 
+                At the <strong>Patient Education Institute</strong>, I led the development of multimedia tutorial systems that have educated millions of patients worldwide. 
+                My work involved not just coding, but architecting scalable solutions that could handle multilingual content, offline access via tablets, and seamless integration with hospital EMR systems like Cerner.
+            </p>
+            <p style="margin-top: 10px;">
+                Prior to that, at the <strong>Abu Dhabi Investment Authority</strong>, I honed my skills in data analysis and financial modeling. 
+                I developed tools to simulate investment strategies, back-test theories, and visualize complex financial data for analysts managing billions in assets.
+            </p>
+        </div>
 
-        <h3>Beyond the Screen</h3>
-        <p>
-            When I'm not at my computer, you can find me exploring the world of physics, particularly quantum mechanics and signal processing. 
-            I have a keen interest in <strong>Fourier Transforms</strong> and how they apply to everything from sound engineering to stock market cycles.
-        </p>
-        <p>
-            I am also an avid chess player and volunteer trainer. The strategic depth of chess mirrors the architectural thinking required in software engineering—anticipating moves, managing resources, and adapting to new patterns.
-        </p>
+        <!-- Card 4: Beyond the Screen -->
+        <div class="card-item" style="border-left-color: #2ecc71;">
+            <h3>Beyond the Screen</h3>
+            <p>
+                When I'm not at my computer, you can find me exploring the world of physics, particularly quantum mechanics and signal processing. 
+                I have a keen interest in <strong>Fourier Transforms</strong> and how they apply to everything from sound engineering to stock market cycles.
+            </p>
+            <p style="margin-top: 10px;">
+                I am also an avid chess player and volunteer trainer. The strategic depth of chess mirrors the architectural thinking required in software engineering—anticipating moves, managing resources, and adapting to new patterns.
+            </p>
+        </div>
+        
     </div>
 
-    <!-- RIGHT COLUMN: Media & Album -->
-    <div class="about-media-column">
-        <!-- A featured personal image -->
-        <img src="img/TONY_2025_00.png" alt="Tony Nahra" classSKIP="about-side-image" width="80px" >
-        
-        <h3>My Photo Album</h3>
-        <p style="font-size: 0.9rem; opacity: 0.8;">A glimpse into my life and travels.</p>
-        
-        <!-- Container for the dynamic album -->
-        <div id="about-album-list">
-            <div class="content-loader">
-                <div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div>
-            </div>
+    <!-- 
+       PART 2: Photo Album
+       We use a separate container ID so we can load the album specifically here.
+    -->
+    <h2 style="margin: 40px 0 20px 0; color: var(--text-accent); border-top: 1px solid var(--bg-medium); padding-top: 20px;">My Life & Travels</h2>
+    
+    <!-- This container will be populated by the script below -->
+    <div id="about-album-list" class="card-list">
+        <div class="content-loader">
+            <div class="spinner"></div>
         </div>
     </div>
 
 </section>
 
 <script>
-    // Initialize the mini album when this page loads
+    // We need to manually trigger the album load for this specific page.
+    // We reuse the logic from cardLogic.js but target our specific div.
+    
     $(document).ready(function() {
-        // Reuse your existing loadPhotoAlbum function but target the specific div
-        // We pass a special flag or handle it manually since loadPhotoAlbum targets #photo-album-list by default.
+        const jsonUrl = "data/album.json";
+        const $container = $('#about-album-list');
         
-        // Better approach: Let's fetch the JSON manually here to fill this specific div
-        const albumUrl = "data/album.json"; // Ensure this file exists or use your remote URL
-        
-        $.getJSON(albumUrl, function(data) {
-            const $container = $('#about-album-list');
-            $container.empty();
+        $.getJSON(jsonUrl, function (albumData) {
+            $container.empty(); 
             
-            // Take only the first 6-9 photos for the side column
-            const previewPhotos = data.photos.slice(0, 9); 
-            
-            $.each(previewPhotos, function(i, photo) {
+            // Loop through photos and create standard card items
+            $.each(albumData.photos, function(index, photo) {
+                const title = decodeText(photo.title);
+                const category = decodeText(photo.category);
+                const description = decodeText(photo.description);
+                
+                // This HTML structure matches exactly what loadPhotoAlbum generates,
+                // ensuring the global click listeners in cardLogic.js will work!
                 const cardHtml = `
-                    <div class="card-item">
+                    <div class="card-item" 
+                         data-category="${category}" 
+                         data-keywords="${title},${description}"
+                         style="border-left: none;"> 
+                        
                         <a href="${photo.url}" data-load-type="image">
-                            <img src="${photo.thumbnailUrl}" class="card-image" alt="${photo.title}" loading="lazy">
+                            <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
+                            
+                            <div class="photo-details">
+                                <h3>${title}</h3>
+                                <p>${description}</p>
+                            </div>
                         </a>
                     </div>
                 `;
                 $container.append(cardHtml);
             });
+            
+            // We don't need to add click listeners here because cardLogic.js 
+            // uses delegated listeners $('body').on('click', '.card-item', ...)
+            // which will automatically work for these new elements!
+            
         }).fail(function() {
-            $('#about-album-list').html('<p class="error-message" style="font-size:0.8rem">Album not loaded.</p>');
+            $container.html('<div class="error-message">Could not load album.</div>');
         });
     });
 </script>
-
-
