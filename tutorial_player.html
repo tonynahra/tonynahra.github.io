@@ -3,52 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Link to the main page CSS so we inherit variables -->
-    <link rel="stylesheet" href="common/mainPage.css">
-    <!-- Link to the specific engine CSS -->
-    <link rel="stylesheet" href="common/tutorialEngine.css">
     <title>Tutorial Player</title>
+    <!-- Load your main styles so variables work -->
+    <link rel="stylesheet" href="common/mainPage.css">
+    <!-- Load the specific engine styles -->
+    <link rel="stylesheet" href="common/tutorialEngine.css">
 </head>
-<body>
+<body class="tutorial-body">
 
-<div id="tutorialContainer">
-    <div id="tutorialSection" style="display: none;">
-        
-        <!-- The main slide image wrapper -->
-        <div class="slide-wrapper">
-            <img id="Main" src="" onclick="PageClick(event)" class="tutorial-slide" alt="Tutorial Slide">
+    <div id="tutorialContainer">
+        <!-- Loading State -->
+        <div id="loadingState" class="content-loader">
+            <div class="spinner"></div>
+            <p>Loading Tutorial...</p>
         </div>
 
-        <!-- Navigation Controls -->
-        <div class="tutorial-nav">
-            <div id="Title" class="tutorial-title">Loading...</div>
+        <!-- The Actual Player -->
+        <div id="tutorialSection" style="display: none;">
             
-            <div class="tutorial-controls">
-                <div class="extra-controls">
-                    <button onclick="Credits()" class="nav-btn secondary">Credits</button> 
-                    <button onclick="Manifest()" class="nav-btn secondary">Manifest</button>
-                </div>
+            <!-- Slide Display Area -->
+            <div class="slide-container">
+                <img id="Main" src="" onclick="PageClick(event)" class="slide-image" alt="Tutorial Slide">
+            </div>
+
+            <!-- Controls Bar -->
+            <div class="nav-bar">
+                <div id="Title" class="tutorial-title"></div>
                 
-                <div class="playback-controls">
-                    <button onclick="movePage(-1)" id="btnPrevious" class="nav-btn primary">Previous</button>  
-                    <span id="pageNo" class="page-number">-- / --</span>  
-                    <button onclick="movePage(1)" id="btnNext" class="nav-btn primary">Next</button>
+                <div class="controls-group">
+                    <button onclick="Credits()" class="engine-btn secondary">Credits</button> 
+                    <button onclick="Manifest()" class="engine-btn secondary">Manifest</button>
+                </div>
+
+                <div class="controls-group playback">
+                    <button onclick="movePage(-1)" id="btnPrevious" class="engine-btn primary">&larr; Prev</button>  
+                    <span id="pageNo" class="page-counter">0 / 0</span>  
+                    <button onclick="movePage(1)" id="btnNext" class="engine-btn primary">Next &rarr;</button>
                 </div>
             </div>
+            
+            <audio id="Audio" src="" autoplay style="display: none;"></audio>
         </div>
         
-        <!-- Audio Player (Hidden but active) -->
-        <audio id="Audio" src="" autoplay style="display: none;"></audio>
+        <!-- Error State -->
+        <div id="errorState" class="error-message" style="display: none;"></div>
     </div>
-    
-    <div id="error-container" class="error-message" style="display: none;"></div>
-</div>
 
 <script>
-    // --- Configuration ---
-    var ServerPath = ""; // Will be determined from the manifest URL
-    
-    var TutorialPath = ""; 
+    // --- Engine Configuration ---
+    // We will determine ServerPath dynamically from the manifest URL passed in.
+    var ServerPath = ""; 
+    var TutorialPath = "";
     var TutorialLanguage = "";
     var TutorialManifest;
     var FeedbackNumber = 0;
@@ -62,50 +67,81 @@
     var AudioObj, bntNext, bntPrevious, PageObject;
     var x = new XMLHttpRequest();
 
-    // --- Engine Initialization ---
-    function startTutorial() {
-        // Get the manifest URL from the query string
+    // --- Initialization ---
+    window.onload = function() {
+        // 1. Get Manifest URL from Query String
         const urlParams = new URLSearchParams(window.location.search);
-        const manifestUrl = urlParams.get('manifest'); 
-        
-        if (!manifestUrl) {
+        const manifestUrl = urlParams.get('manifest');
+
+        // 2. Apply Theme if passed (optional polish)
+        const theme = urlParams.get('theme');
+        if(theme) document.body.classList.add(theme);
+
+        if(!manifestUrl) {
             showError("No manifest URL specified.");
             return;
         }
 
-        // Determine base path for resources (slides/sound) from the manifest URL
-        // Example: https://example.com/data/A2.xml -> base: https://example.com/data/
-        const lastSlash = manifestUrl.lastIndexOf("/");
-        const baseUrl = manifestUrl.substring(0, lastSlash + 1);
+        // 3. Determine Base Path (Assumes resources are relative to the manifest location)
+        // E.g. if manifest is at https://site.com/data/A2.xml, images are at https://site.com/data/mobile/slides/...
+        // Based on your provided code, the engine usually expects a specific folder structure.
+        // We will adapt to assume standard X-Plain structure relative to the XML's folder.
+        
+        // Extract the directory of the XML file
+        const lastSlashIndex = manifestUrl.lastIndexOf('/');
+        const xmlBaseDir = manifestUrl.substring(0, lastSlashIndex + 1); 
+        
+        // Based on your A2.xml structure, images seem to be in "mobile/slides/" relative to the "folder" defined in XML.
+        // Let's try to handle this dynamically.
         
         x.open("GET", manifestUrl, true);
         x.onreadystatechange = function () {
             if (x.readyState == 4) {
-                if (x.status == 200) {
+                if(x.status == 200) {
                     doc = x.responseXML;
-                    if (!doc || doc.getElementsByTagName("parsererror").length > 0) {
-                        showError("Error parsing XML manifest.");
-                        return;
+                    // Basic XML validation
+                    if(!doc || doc.getElementsByTagName("parsererror").length > 0) {
+                         showError("Error parsing XML manifest.");
+                         return;
                     }
                     
-                    // We store the base URL for resource loading
-                    window.resourceBase = baseUrl; 
-
-                    document.getElementById("tutorialSection").style.display = "flex";
-                    setTutorialParameters();
-                    movePage(0);
+                    // Setup paths
+                    // We need to construct the "ServerPath" variable that the original engine used.
+                    // The XML contains <folder>diabetes/db180101</folder>
+                    // The images are at [ServerPath] + [folder] + /mobile/slides/m_...
+                    
+                    // To make this work with any URL, we need to be clever.
+                    // We will use the XML's location as the anchor.
+                    
+                    // Assumption: The folder structure on the server matches standard X-Plain layout.
+                    // If A2.xml is at: .../diabetes/db180101/mobile/A2.xml
+                    // Then images are at: .../diabetes/db180101/mobile/slides/
+                    
+                    // So the "Base Resource URL" is simply the directory of the XML file.
+                    ServerPath = xmlBaseDir; // This handles the "mobile/" part if the XML is inside mobile/
+                    
+                    initPlayer();
                 } else {
-                    showError(`Could not load manifest: ${manifestUrl} (Status: ${x.status})`);
+                    showError("Failed to load manifest: " + x.status);
                 }
             }
         };
         x.send(null);
-    }
+    };
 
     function showError(msg) {
-        const errDiv = document.getElementById("error-container");
-        errDiv.textContent = msg;
-        errDiv.style.display = "block";
+        document.getElementById("loadingState").style.display = "none";
+        const err = document.getElementById("errorState");
+        err.style.display = "block";
+        err.textContent = msg;
+    }
+
+    function initPlayer() {
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("tutorialSection").style.display = "flex";
+        
+        setTutorialParameters();
+        movePage(0);
     }
 
     function setTutorialParameters() {
@@ -114,9 +150,10 @@
         for (i = 0; i < totPages; i++) if (TutorialManifest[i].getAttribute("p") == "s") totSections++;
         
         Title = doc.getElementsByTagName("Title")[0].textContent;
-        TutorialLanguage =  doc.getElementsByTagName("Language")[0].textContent;
+        TutorialLanguage = doc.getElementsByTagName("Language")[0].textContent;
         
-        document.getElementById("Title").innerHTML = `<b>${Title}</b> <small>(${TutorialLanguage})</small>`;
+        // Update Title UI
+        document.getElementById("Title").innerHTML = `<strong>${Title}</strong> <span style="opacity:0.7; font-size:0.8em">(${TutorialLanguage})</span>`;
         
         AudioObj = document.getElementById("Audio");
         bntNext = document.getElementById("btnNext");
@@ -127,9 +164,7 @@
 
     function movePage(Step) {
         if (PageType != "" || Step == 1) currentPagePointer = currentPagePointer + Step; else currentPagePointer = QcurrentPagePointer;
-        
         if (currentPagePointer > 0) bntPrevious.disabled = false; else bntPrevious.disabled = true;
-        
         QcurrentPagePointer = currentPagePointer;
         
         if (currentPagePointer < totPages - 1) {
@@ -139,10 +174,16 @@
             if (TutorialManifest[currentPagePointer].getAttribute("a") == "1") fileExt = ".gif"
             if (PageType == "s") fileExt = "_S.png"
 
-            // Construct paths to remote resources
-            // Use window.resourceBase as the base for relative paths
-            Main = window.resourceBase + "slides/m_" + TutorialManifest[currentPagePointer].getAttribute("f") + fileExt;
-            AudioObj.src = window.resourceBase + "sound/m_s" + TutorialManifest[currentPagePointer].getAttribute("f") + ".mp3";
+            // PATH LOGIC: 
+            // We use ServerPath (directory of XML) + "slides/" or "sound/"
+            // Note: Your engine.html used /mobile/slides/, but if A2.xml is ALREADY in /mobile/, 
+            // we just need "slides/".
+            // Adjusting pathing based on standard structure where A2.xml sits in /mobile/
+            
+            var filename = TutorialManifest[currentPagePointer].getAttribute("f");
+            
+            Main = ServerPath + "slides/m_" + filename + fileExt;
+            AudioObj.src = ServerPath + "sound/m_s" + filename + ".mp3";
 
             if (PageType == "q") {
                 bntNext.disabled = true;
@@ -156,19 +197,19 @@
             bntNext.disabled = true;
             if ( TutorialLanguage == "Spanish" ) LanguageExt = "_s"; else LanguageExt = "";
             
-            // Try to find "common/end" relative to the base
-            // Assuming standard structure: ../../common/ relative to mobile/ folder
-            Main = window.resourceBase + "../../common/end" + LanguageExt + ".gif";
-            AudioObj.src = window.resourceBase + "../../common/end" + LanguageExt + ".mp3";
+            // End slide logic - assuming "common" folder is 2 levels up from mobile
+            Main = ServerPath + "../../common/end" + LanguageExt + ".gif";
+            AudioObj.src = ServerPath + "../../common/end" + LanguageExt + ".mp3";
         }
         
         document.getElementById("Main").src = Main;
         
-        // Modern browsers block autoplay. We handle the promise to avoid console errors.
+        // Handle Audio Promise for modern browsers
         var playPromise = AudioObj.play();
         if (playPromise !== undefined) {
             playPromise.catch(error => {
-                console.log("Autoplay prevented. User interaction required.");
+                // Auto-play was prevented
+                console.log("Autoplay prevented by browser.");
             });
         }
         
@@ -177,10 +218,10 @@
 
     function PageClick(e) {
         var rect = e.target.getBoundingClientRect();
-        // Calculate relative to the image's displayed size
         var x = e.clientX - rect.left;
         var y = e.clientY - rect.top;
 
+        // Calculate % based on the displayed image size (responsive)
         pcntX = parseInt(100 * x / rect.width);
         pcntY = parseInt(100 * y / rect.height);
 
@@ -203,12 +244,15 @@
                 if (parseInt(ButtonLimits[0]) < pcntX && pcntX < parseInt(ButtonLimits[2]) && parseInt(ButtonLimits[1]) < pcntY && pcntY < parseInt(ButtonLimits[3])) BTN = j;
             }
             if (BTN > 0) {
+                // Construct paths logic repeated here
                 if (PageType == "q") {
-                    Main = window.resourceBase + "slides/m_" + TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f") + ".png";
-                    AudioObj.src = window.resourceBase + "sound/m_s" + TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f") + ".mp3";
+                    var fName = TutorialManifest[currentPagePointer].getElementsByTagName("f")[BTN - 1].getAttribute("f");
+                    Main = ServerPath + "slides/m_" + fName + ".png";
+                    AudioObj.src = ServerPath + "sound/m_s" + fName + ".mp3";
                 } else {
-                    Main = window.resourceBase + "slides/m_" + TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w") + ".png";
-                    AudioObj.src = window.resourceBase + "sound/" + TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w") + "_s_m.mp3";
+                    var wName = TutorialManifest[currentPagePointer].getElementsByTagName("g")[BTN - 1].getAttribute("w");
+                    Main = ServerPath + "slides/m_" + wName + ".png";
+                    AudioObj.src = ServerPath + "sound/" + wName + "_s_m.mp3";
                 }
 
                 document.getElementById("Main").src = Main;
@@ -222,14 +266,17 @@
     }
 
     function Credits() {
-        Main = window.resourceBase + "slides/credits.png";
+        Main = ServerPath + "slides/credits.png";
         document.getElementById("Main").src = Main;
         PageType = "c";
     }
 
     function JumpToSection(absY, imgHeight) {
-        // Adjusted to use the actual image height
-        SEC = parseInt((((absY * 480) / imgHeight) - 75) * totSections / 380) + 1;
+        // Scaling logic adapted for responsive height
+        // Original engine assumed fixed height. We ratio it against 480 (original height)
+        var factor = 480 / imgHeight;
+        SEC = parseInt((((absY * factor)) - 75) * totSections / 380) + 1;
+        
         var SecFind = 0;
         for (k = 0; k < totPages; k++) {
             if (TutorialManifest[k].getAttribute("p") == "s") SecFind++;
@@ -242,13 +289,8 @@
     }
 
     function Manifest() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const manifestFile = urlParams.get('manifest');
-        window.open(manifestFile, "_blank");
+        window.open(ServerPath + "A2.xml", "_blank");
     }
-
-    // Start!
-    startTutorial();
 
 </script>
 </body>
