@@ -390,16 +390,19 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Chess Viewer Styles --- */
-/* --- Chess Viewer Styles (Watchdog Edition) --- */
+/* --- Chess Viewer Styles (White Layer Fix) --- */
+
+/* 1. The Container (Dark background for the outer rim) */
 .chess-container {
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 100%;
-    background: var(--bg-dark);
+    background: var(--bg-dark); /* The outer modal remains dark */
     overflow: hidden;
 }
 
+/* 2. The Toolbar */
 .chess-toolbar {
     flex: 0 0 50px;
     display: flex;
@@ -410,99 +413,88 @@ select:focus, input[type="search"]:focus {
     border-bottom: 1px solid #444;
     z-index: 10;
 }
-
 .chess-toolbar select {
     width: 600px;
-    max-width: 60%; 
+    max-width: 60%;
+    padding: 8px;
+    font-size: 1rem;
     background: var(--bg-dark);
     color: var(--text-primary);
     border: 1px solid var(--text-light);
-    padding: 8px;
-    font-size: 1rem;
 }
 
-/* Main Area */
+/* 3. The Main Area (Center the White Box) */
 .chess-main-area {
     flex: 1;
     display: flex;
-    flex-direction: row; 
-    overflow: hidden;
-    background: var(--bg-dark);
-    width: 100%;
-    justify-content: center; 
-    align-items: flex-start; 
+    justify-content: center;
+    align-items: flex-start;
     padding: 20px;
-    padding-right: 40px !important; 
-    box-sizing: border-box;
+    padding-right: 40px !important; /* Gap from right edge */
+    background: var(--bg-dark); /* Background behind the white box */
+    overflow: hidden;
 }
 
-/* --- LIBRARY OVERRIDES --- */
-/* We use #content-modal to overpower any theme classes */
+/* --- 4. THE WHITE BOX LAYER --- */
+/* This is the shield that enforces white color */
+.chess-white-box {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    padding: 20px;
+    border-radius: 8px;
+    /* Ensure it wraps tight around the content */
+    display: flex;
+    justify-content: center;
+    /* Optional: Add shadow to make it pop against the dark modal */
+    box-shadow: 0 0 15px rgba(0,0,0,0.5); 
+}
 
-#content-modal .pgnvjs-wrapper {
+/* --- LIBRARY OVERRIDES INSIDE THE WHITE BOX --- */
+
+/* Force library wrapper to respect our layout */
+.chess-white-box .pgnvjs-wrapper {
     display: flex !important;
     flex-direction: row !important;
-    width: 100% !important;
-    height: 100% !important;
-    justify-content: center !important;
     gap: 20px;
+    background-color: #ffffff !important; /* Double enforce */
 }
 
-#content-modal .pgnvjs-board {
+/* Board */
+.chess-white-box .pgnvjs-board {
     flex-shrink: 1;
 }
 
-/* MOVES PANEL: Force White & Big Text */
-#content-modal .pgnvjs-moves {
-    /* LOCK WIDTH */
+/* Moves Panel */
+.chess-white-box .pgnvjs-moves {
     flex: 0 0 240px !important;
     width: 240px !important;
     min-width: 240px !important;
-    max-width: 240px !important;
-    
     height: 100% !important;
     overflow-y: auto !important;
     
-    /* FORCE WHITE BACKGROUND */
-    background: #ffffff !important; 
+    /* STYLE ENFORCEMENT */
     background-color: #ffffff !important;
     color: #000000 !important;
-    
-    padding: 15px !important;
-    box-sizing: border-box;
-    
-    /* BIGGER FONT */
-    font-size: 1.6rem !important; 
+    font-size: 1.6rem !important; /* BIG FONT */
     line-height: 1.6 !important;
     font-weight: 500 !important;
     
     border-left: 4px solid #d2b48c !important;
-    border-radius: 4px;
-    
-    /* RESET VARS LOCALLY */
-    --bg-dark: #ffffff !important;
-    --text-primary: #000000 !important;
+    padding-left: 15px !important;
 }
 
 /* Force all text inside to be black */
-#content-modal .pgnvjs-moves * {
+.chess-white-box .pgnvjs-moves * {
     color: #000000 !important;
 }
 
-#content-modal .pgnvjs-move {
-    cursor: pointer;
-    padding: 2px 5px;
-    border-radius: 3px;
+/* Active Move Highlight */
+.chess-white-box .pgnvjs-move.active {
+    background: #FFD700 !important;
     color: #000 !important;
-    margin-right: 5px;
-    display: inline-block;
-}
-#content-modal .pgnvjs-move:hover { background: #e0e0e0 !important; }
-#content-modal .pgnvjs-move.active { 
-    background: #FFD700 !important; 
-    color: #000 !important; 
 }
 
+/* Hide Comments in list */
 .pgnvjs-comment { display: none; }
 
 /* Navigation Buttons */
@@ -511,8 +503,13 @@ select:focus, input[type="search"]:focus {
     justify-content: center !important;
     margin-top: 10px !important;
 }
+.pgnvjs-ctrl button {
+    background: #444 !important;
+    color: white !important;
+    margin: 0 2px;
+}
 
-/* Overlay Close Button */
+/* --- Overlays (Unchanged) --- */
 .overlay-close-btn {
     float: right;
     padding: 5px 15px;
@@ -525,9 +522,6 @@ select:focus, input[type="search"]:focus {
     font-size: 0.9rem;
     margin-top: 10px;
 }
-.overlay-close-btn:hover { background: #c0392b; }
-
-/* Overlays (Unchanged) */
 .chess-comment-overlay {
     position: absolute;
     bottom: 30px; 
@@ -536,7 +530,7 @@ select:focus, input[type="search"]:focus {
     color: #fff;
     padding: 15px 25px;
     border-radius: 8px;
-    font-size: 1.4rem; /* Bigger text here too */
+    font-size: 1.4rem; 
     z-index: 100;
     max-width: 500px;
     text-align: center;
@@ -544,7 +538,6 @@ select:focus, input[type="search"]:focus {
     pointer-events: none; 
     border: 1px solid var(--text-accent);
 }
-
 .chess-metadata-overlay {
     position: absolute;
     top: 70px;
