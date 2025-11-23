@@ -306,27 +306,44 @@ case 'chess':
                             
                             if (movesPanel) {
                                 const forceStyle = () => {
+                                    // 1. Force Container Styles
                                     movesPanel.style.setProperty('background-color', '#ffffff', 'important');
                                     movesPanel.style.setProperty('color', '#000000', 'important');
-                                    // UPDATED: Enforce the container font size as a backup
-                                    movesPanel.style.setProperty('font-size', '1.9rem', 'important');
+                                    movesPanel.style.setProperty('font-size', '26px', 'important'); // Backup
+                                    
+                                    // 2. Force INDIVIDUAL MOVE Styles (The Fix)
+                                    const allMoves = movesPanel.querySelectorAll('.pgnvjs-move, .pgnvjs-move a');
+                                    allMoves.forEach(move => {
+                                        move.style.setProperty('font-size', '26px', 'important');
+                                        move.style.setProperty('line-height', '34px', 'important');
+                                        move.style.setProperty('color', '#000000', 'important');
+                                    });
                                 };
+                                
+                                // Run immediately
                                 forceStyle();
                                 
-                                // ... (rest of observer logic remains the same)
+                                // Run again after a short delay (in case library renders moves slowly)
+                                setTimeout(forceStyle, 100);
+                                setTimeout(forceStyle, 500);
 
+                                // Watch for changes
                                 styleWatchdog = new MutationObserver((mutations) => {
-                                    mutations.forEach((mutation) => {
-                                        if (mutation.attributeName === 'style' || mutation.attributeName === 'class') {
-                                            if (movesPanel.style.backgroundColor !== 'rgb(255, 255, 255)' && movesPanel.style.backgroundColor !== '#ffffff') {
-                                                forceStyle();
-                                            }
-                                        }
-                                    });
+                                    // If styles change, re-apply forceStyle
+                                    forceStyle();
                                 });
-                                styleWatchdog.observe(movesPanel, { attributes: true, attributeFilter: ['style', 'class'] });
+                                styleWatchdog.observe(movesPanel, { 
+                                    attributes: true, 
+                                    childList: true, // Also watch if new moves are added
+                                    subtree: true,   // Watch deep inside the tree
+                                    attributeFilter: ['style', 'class'] 
+                                });
                             }
 
+
+
+
+                            
                             // -- Comment Overlay Logic --
                             const overlay = document.getElementById('chess-comment-overlay');
                             if (movesPanel) {
