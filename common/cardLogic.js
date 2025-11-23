@@ -209,7 +209,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -227,18 +226,7 @@ case 'chess':
                     // 2. BUILD UI
                     const boardId = 'chess-board-' + Date.now();
                     
-                    // ID-Specific Style Override (Backup for Watchdog)
-                    const styleOverride = `
-                        <style>
-                            #${boardId} .pgnvjs-moves {
-                                background-color: #ffffff !important;
-                                color: #000000 !important;
-                                font-size: 1.6rem !important;
-                            }
-                        </style>
-                    `;
-
-                    $modalContent.html(styleOverride + `
+                    $modalContent.html(`
                         <div class="chess-container">
                             <div class="chess-toolbar">
                                 <select id="chess-game-select"></select>
@@ -246,7 +234,10 @@ case 'chess':
                                 <button id="chess-comment-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px;">Comments: Off</button>
                             </div>
                             <div class="chess-main-area">
-                                <div id="${boardId}"></div>
+                                <div class="chess-white-box">
+                                    <div id="${boardId}"></div>
+                                </div>
+                                
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
@@ -293,9 +284,10 @@ case 'chess':
                         const availableHeight = $('.chess-main-area').height() || 600;
                         const availableWidth = $('.chess-main-area').width() || 800;
                         const movesPanelSpace = 300; 
-
-                        let calculatedBaseSize = Math.min(availableHeight, availableWidth - movesPanelSpace);
-                        const boardSize = calculatedBaseSize * 0.95; // 5% reduction
+                        
+                        // We subtract extra padding (60px) because of the new White Box padding
+                        let calculatedBaseSize = Math.min(availableHeight - 60, availableWidth - movesPanelSpace - 40);
+                        const boardSize = calculatedBaseSize * 0.95; 
 
                         $(`#${boardId}`).empty();
 
@@ -309,23 +301,21 @@ case 'chess':
                                 headers: false,
                             });
                             
-                            // --- THE WATCHDOG: Aggressively enforce White BG ---
+                            // --- WATCHDOG: Enforce White Box properties ---
                             const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
                             
                             if (movesPanel) {
-                                // 1. Set immediately
                                 const forceStyle = () => {
+                                    // We force styles on the panel, but the parent .chess-white-box does most of the work now
                                     movesPanel.style.setProperty('background-color', '#ffffff', 'important');
                                     movesPanel.style.setProperty('color', '#000000', 'important');
                                     movesPanel.style.setProperty('font-size', '1.6rem', 'important');
                                 };
                                 forceStyle();
 
-                                // 2. Watch for changes (e.g. from Theme Switcher)
                                 styleWatchdog = new MutationObserver((mutations) => {
                                     mutations.forEach((mutation) => {
                                         if (mutation.attributeName === 'style' || mutation.attributeName === 'class') {
-                                            // If background is NOT white, force it
                                             if (movesPanel.style.backgroundColor !== 'rgb(255, 255, 255)' && movesPanel.style.backgroundColor !== '#ffffff') {
                                                 forceStyle();
                                             }
@@ -385,8 +375,6 @@ case 'chess':
                 }
             });
             break;
-
-
             
 
 
