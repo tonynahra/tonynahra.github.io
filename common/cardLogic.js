@@ -270,7 +270,12 @@ case 'chess':
                                 infoHtml += `<tr><td>${key}</td><td>${val}</td></tr>`;
                             }
                         }
-                        infoHtml += '</table><br><button class="modal-close-btn" style="float:right; padding:5px 10px; cursor:pointer;" onclick="$(this).parent().fadeOut()">Close</button>';
+
+
+                        // CHANGED: Class is now 'overlay-close-btn' to avoid closing the main modal
+                        infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()">Close</button>';
+
+                        
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
                                                     
                         // -- Calculate Size --
