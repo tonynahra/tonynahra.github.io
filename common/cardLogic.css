@@ -36,6 +36,7 @@
 
 .card-item p {
     font-size: 0.95rem;
+    /* Limit text to 4 lines */
     display: -webkit-box;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
@@ -122,28 +123,24 @@
 
 .search-wrapper { margin-bottom: 0; }
 
-#post-category-filter, #cert-category-filter, #post-keyword-filter, #cert-keyword-filter,
-#youtube-category-filter, #youtube-keyword-filter, #album-category-filter, #album-keyword-filter,
-#research-category-filter, #research-keyword-filter, #tutorials-category-filter, #tutorials-keyword-filter { 
-    width: 100%; padding: 12px 15px; background-color: var(--bg-dark); border: 1px solid var(--bg-medium);
-    border-radius: 4px; color: var(--text-primary); font-family: var(--font-code); font-size: 1rem; box-sizing: border-box;
+/* Dropdowns & Inputs */
+select, input[type="search"] {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--bg-medium);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-family: var(--font-code);
+    font-size: 1rem;
+    box-sizing: border-box;
 }
 
-#post-category-filter:focus, #cert-category-filter:focus, #post-keyword-filter:focus, #cert-keyword-filter:focus,
-#youtube-category-filter:focus, #youtube-keyword-filter:focus, #album-category-filter:focus, #album-keyword-filter:focus,
-#research-category-filter:focus, #research-keyword-filter:focus, #tutorials-category-filter:focus, #tutorials-keyword-filter:focus { 
-    outline: none; border-color: var(--text-accent);
+select:focus, input[type="search"]:focus {
+    outline: none;
+    border-color: var(--text-accent);
+    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
-
-#youtube-search-box, #post-search-box, #cert-search-box, #album-search-box, #research-search-box, #tutorials-search-box { 
-    width: 100%; padding: 12px 15px; background-color: var(--bg-dark); border: 1px solid var(--bg-medium);
-    border-radius: 4px; color: var(--text-primary); font-family: var(--font-code); font-size: 1rem; box-sizing: border-box;
-}
-
-#youtube-search-box:focus, #post-search-box:focus, #cert-search-box:focus, #album-search-box:focus, #research-search-box:focus, #tutorials-search-box:focus { 
-    outline: none; border-color: var(--text-accent); box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
-}
-
 
 /* --- Modal Styles --- */
 .modal-backdrop {
@@ -177,19 +174,19 @@
     flex: 1; /* Grow to fill remaining height */
     overflow-y: auto; 
     position: relative; 
-    display: flex; 
+    display: flex; /* Use flex for children alignment */
     flex-direction: column;
 }
 
-/* Modal Header */
+/* Modal Header - FIXED */
 .modal-header {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
     display: flex;
-    justify-content: space-between; 
+    justify-content: space-between; /* Pushes left and right nav apart */
     align-items: center;
-    flex-wrap: nowrap; /* Keep on one line */
+    flex-wrap: nowrap; /* Prevent wrapping */
     gap: 15px;
     flex-shrink: 0; 
 }
@@ -202,11 +199,12 @@
     display: flex;
     gap: 10px;
     align-items: center;
+    white-space: nowrap; /* Prevent buttons from wrapping */
 }
 
-/* Force right nav to the right */
+/* Force right nav to stay on the right */
 .modal-nav-right {
-    margin-left: auto; 
+    margin-left: auto;
 }
 
 .modal-header button, .modal-header a { 
@@ -221,6 +219,7 @@
     transition: all 0.3s;
     cursor: pointer;
     font-size: 0.9rem;
+    display: inline-block; /* Ensure they behave like buttons */
 }
 
 .modal-header button:hover, .modal-header a:hover { 
@@ -242,7 +241,7 @@
 /* --- Wrappers --- */
 #modal-content-area .image-wrapper,
 #modal-content-area .iframe-wrapper {
-    flex: 1; 
+    flex: 1; /* Grow to fill parent */
     width: 100%;
     height: 100%;
     display: flex;
@@ -291,7 +290,7 @@
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
     flex-shrink: 0;
-    flex-wrap: nowrap;
+    flex-wrap: nowrap; /* Prevent wrapping */
 }
 .research-modal-header h2 { margin: 0; color: var(--text-accent); }
 .research-modal-header button, .research-modal-header a { padding: 8px 15px; font-size: 0.9rem; cursor: pointer;}
@@ -328,13 +327,13 @@
 
 /* Tab Content Area */
 .tab-content {
-    flex: 1; 
+    flex: 1; /* Grow to fill remaining height */
     display: flex;
     flex-direction: column;
     overflow: hidden; 
 }
 .tab-content .iframe-wrapper {
-    flex: 1; 
+    flex: 1; /* Fill tab content */
     height: 100%;
 }
 
@@ -352,6 +351,7 @@
 
 
 /* --- PURE IMAGE MASONRY STYLES --- */
+/* Apply to both main album and about album */
 #photo-album-list .card-item,
 #about-album-list .card-item {
     padding: 0;
@@ -365,8 +365,8 @@
 #photo-album-list .card-image,
 #about-album-list .card-image {
     width: 100%;
-    height: auto; 
-    display: block; 
+    height: auto; /* Let height flow naturally */
+    display: block; /* Removes bottom gap */
     object-fit: cover;
     border-radius: 8px;
     transition: transform 0.3s ease;
@@ -376,15 +376,17 @@
 
 #photo-album-list .card-item:hover .card-image,
 #about-album-list .card-item:hover .card-image {
-    transform: scale(1.03); 
+    transform: scale(1.03); /* Subtle zoom */
     filter: brightness(1.1);
 }
 
+/* Hide the details box in the grid view */
 #photo-album-list .photo-details,
 #about-album-list .photo-details {
     display: none !important;
 }
 
+/* Remove any left border used for categories */
 #photo-album-list .card-item,
 #about-album-list .card-item {
     border-left: none !important;
