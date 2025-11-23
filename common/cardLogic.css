@@ -390,7 +390,7 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Chess Viewer Styles --- */
-/* --- Chess Viewer Styles (Fixed Layout) --- */
+/* --- Chess Viewer Styles (Final Polish) --- */
 .chess-container {
     display: flex;
     flex-direction: column;
@@ -421,7 +421,7 @@ select:focus, input[type="search"]:focus {
     font-size: 1rem;
 }
 
-/* Main Area: Side-by-Side */
+/* Main Area */
 .chess-main-area {
     flex: 1;
     display: flex;
@@ -429,10 +429,10 @@ select:focus, input[type="search"]:focus {
     overflow: hidden;
     background: var(--bg-dark);
     width: 100%;
-    justify-content: center;
-    align-items: flex-start; /* Top align */
+    justify-content: center; /* Center the whole block */
+    align-items: flex-start; 
     padding: 20px;
-    gap: 0; /* Remove gap, handle it in board sizing */
+    gap: 0; 
 }
 
 /* --- LIBRARY OVERRIDES --- */
@@ -446,30 +446,42 @@ select:focus, input[type="search"]:focus {
 }
 
 .pgnvjs-board {
-    /* Board size is handled by JS, but we ensure it doesn't overflow */
     flex-shrink: 1;
+    /* Board controls usually sit inside here or right below. 
+       We rely on JS sizing to fit them. */
 }
 
-/* MOVES PANEL: Fixed Width, Beige, Big Text */
+/* MOVES PANEL: Narrower, White, Spaced from Right */
 .pgnvjs-moves {
-    /* FIXED WIDTH */
-    width: 280px !important;
-    min-width: 280px !important;
-    max-width: 280px !important;
-    flex: 0 0 280px !important;
+    /* FIXED WIDTH: Reduced to 240px */
+    width: 240px !important;
+    min-width: 240px !important;
+    max-width: 240px !important;
+    flex: 0 0 240px !important;
     
     height: 100% !important;
     overflow-y: auto !important;
     
-    /* STYLING */
-    background-color: #f5f5dc !important; /* Beige */
-    color: #000000 !important; /* Black Text */
+    /* STYLING: Force White */
+    background-color: #ffffff !important; 
+    color: #000000 !important;
     
     padding: 15px !important;
     box-sizing: border-box;
-    font-size: 1.4rem !important; /* Larger Font */
+    font-size: 1.4rem !important; 
     line-height: 1.5 !important;
-    border-left: 4px solid #d2b48c !important; 
+    border-left: 4px solid #d2b48c !important;
+    
+    /* SPACING: Add space from right edge */
+    margin-left: 10px !important; 
+    margin-right: 20px !important; /* Prevents touching the window edge */
+    border-radius: 4px;
+}
+
+/* Force inner text elements to be black/white just in case */
+.pgnvjs-moves * {
+    color: #000000 !important;
+    background-color: transparent !important;
 }
 
 .pgnvjs-move {
@@ -481,11 +493,11 @@ select:focus, input[type="search"]:focus {
     display: inline-block;
 }
 .pgnvjs-move:hover { background: #e0e0e0 !important; }
-.pgnvjs-move.active { background: #FFD700 !important; color: #000 !important; }
+.pgnvjs-move.active { background: #FFD700 !important; }
 
 .pgnvjs-comment { display: none; }
 
-/* Overlays (Keep existing styles) */
+/* Overlays (Unchanged) */
 .chess-comment-overlay {
     position: absolute;
     bottom: 30px; 
@@ -521,3 +533,4 @@ select:focus, input[type="search"]:focus {
 }
 .chess-metadata-overlay table { width: 100%; border-collapse: collapse; }
 .chess-metadata-overlay td { padding: 8px; border-bottom: 1px solid #444; }
+
