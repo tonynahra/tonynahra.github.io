@@ -277,10 +277,15 @@ case 'chess':
                             // We check both Height AND Width to ensure the board fits.
                             const availableHeight = $('.chess-main-area').height() || 600;
                             const availableWidth = $('.chess-main-area').width() || 800;
-                            const movesPanelWidth = 300; // 280px width + 20px padding/gap buffer
                             
-                            // Board size is the smaller of: (Height - padding) OR (Width - MovesPanel)
-                            const boardSize = Math.min(availableHeight - 40, availableWidth - movesPanelWidth);
+                            // Width of panel (240px) + margins/padding (approx 40px)
+                            const movesPanelWidth = 280; 
+                            
+                            // Calculate base size fitting the screen
+                            let calculatedSize = Math.min(availableHeight - 40, availableWidth - movesPanelWidth);
+                            
+                            // SHRINK BY 5% to leave room for controls
+                            const boardSize = calculatedSize * 0.95;
                             
                             $(`#${boardId}`).empty();
                             
