@@ -174,21 +174,23 @@ select:focus, input[type="search"]:focus {
     flex: 1; /* Grow to fill remaining height */
     overflow-y: auto; 
     position: relative; 
-    display: flex; 
+    display: flex; /* Use flex for children alignment */
     flex-direction: column;
+    height: 100%; /* Ensure it knows its height basis */
 }
 
 /* Modal Header - FIXED ALIGNMENT */
 .modal-header {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--bg-medium);
     display: flex;
-    justify-content: space-between; /* Pushes items to edges */
+    justify-content: space-between; /* Push left/right groups apart */
     align-items: center;
-    flex-wrap: nowrap; /* Prevent wrapping */
-    gap: 15px;
+    flex-wrap: nowrap; /* DO NOT WRAP */
+    gap: 10px;
     flex-shrink: 0; 
+    min-height: 40px; /* Ensure consistent height */
 }
 
 .modal-backdrop.research-mode .modal-header {
@@ -202,7 +204,7 @@ select:focus, input[type="search"]:focus {
     white-space: nowrap; /* Keep buttons on one line */
 }
 
-/* This forces the right nav to stay on the right */
+/* Force right nav to stay on the right */
 .modal-nav-right {
     margin-left: auto;
 }
@@ -220,6 +222,7 @@ select:focus, input[type="search"]:focus {
     cursor: pointer;
     font-size: 0.9rem;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .modal-header button:hover, .modal-header a:hover { 
@@ -239,7 +242,6 @@ select:focus, input[type="search"]:focus {
 .modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
 
 /* --- Wrappers --- */
-/* FIX: Make iframe wrapper fill 100% of modal content area */
 #modal-content-area .image-wrapper,
 #modal-content-area .iframe-wrapper {
     flex: 1; /* Grow to fill parent */
@@ -249,6 +251,8 @@ select:focus, input[type="search"]:focus {
     justify-content: center;
     align-items: center;
     padding: 0; 
+    /* Ensure no overflow hides content unless intended */
+    overflow: hidden; 
 }
 
 #modal-content-area .loaded-image {
