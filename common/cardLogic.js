@@ -220,23 +220,21 @@ case 'chess':
                     if (rawGames.length === 0) rawGames = [pgnFileContent]; 
 
                     const boardId = 'chess-board-' + Date.now();
-                    const dynamicStyleId = 'chess-dynamic-style-' + Date.now();
                     
                     // State Variables
                     let currentFontSize = 26; 
                     let commentsEnabled = false;
 
                     // 1. INJECT HTML
-                    // Note: We assign IDs to the buttons so we can find them instantly in JS
+                    // We use inline styles on the container as a baseline
                     $modalContent.html(`
-                        <style id="${dynamicStyleId}"></style>
                         <div class="chess-container">
                             <div class="chess-toolbar">
                                 <select id="chess-game-select"></select>
                                 <button id="chess-info-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; margin-right: 10px;">Info</button>
                                 
-                                <button id="chess-font-minus" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; min-width: 30px; cursor: pointer;">-</button>
-                                <button id="chess-font-plus" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; min-width: 30px; margin-right: 10px; cursor: pointer;">+</button>
+                                <button id="chess-font-minus" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; min-width: 30px; cursor: pointer; font-weight: bold;">-</button>
+                                <button id="chess-font-plus" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; min-width: 30px; margin-right: 10px; cursor: pointer; font-weight: bold;">+</button>
                                 
                                 <button id="chess-comment-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; cursor: pointer;">Comments: Off</button>
                             </div>
@@ -250,69 +248,67 @@ case 'chess':
                         </div>
                     `);
 
-                    // --- FUNCTION TO UPDATE CSS ---
-                    // This updates the <style> tag directly
-                    const updateDynamicCss = () => {
-                        console.log("Applying Font Size:", currentFontSize); // DEBUG LOG
-                        
-                        const styleContent = `
-                            /* Force Container styles */
-                            #${boardId} .pgnvjs-moves {
-                                background-color: #ffffff !important;
-                                color: #000000 !important;
-                                padding-left: 15px !important;
-                                border-left: 4px solid #d2b48c !important;
-                            }
-                            
-                            /* TARGET EVERYTHING inside the moves panel */
-                            #${boardId} .pgnvjs-moves,
-                            #${boardId} .pgnvjs-moves * {
-                                font-size: ${currentFontSize}px !important;
-                                line-height: ${currentFontSize + 12}px !important;
-                                color: #000000 !important;
-                                font-family: sans-serif !important;
-                                font-weight: 600 !important;
-                            }
+                    // --- THE STUBBORN FONT FIX ---
+                    // This function finds every element and forces the style directly on the tag
+                    const applyDirectStyles = () => {
+                        const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
+                        if (!movesPanel) return;
 
-                            /* Specific Link Targeting */
-                            #${boardId} .pgnvjs-moves a {
-                                text-decoration: none !important;
-                                display: inline-block !important;
-                                padding: 2px 4px !important;
+                        // 1. Force the Container
+                        movesPanel.style.setProperty('background-color', '#ffffff', 'important');
+                        movesPanel.style.setProperty('color', '#000000', 'important');
+                        movesPanel.style.setProperty('padding-left', '15px', 'important');
+                        movesPanel.style.setProperty('border-left', '4px solid #d2b48c', 'important');
+                        
+                        // 2. Force Every Child Element (The Nuclear Option)
+                        // We select generic * to catch spans, divs, and 'a' tags specifically
+                        const allChildren = movesPanel.querySelectorAll('*');
+                        
+                        allChildren.forEach(el => {
+                            el.style.setProperty('font-size', `${currentFontSize}px`, 'important');
+                            el.style.setProperty('line-height', `${currentFontSize + 12}px`, 'important');
+                            el.style.setProperty('color', '#000000', 'important');
+                            el.style.setProperty('font-family', 'sans-serif', 'important');
+                            el.style.setProperty('font-weight', '600', 'important');
+                            
+                            // Ensure links behave like text
+                            if(el.tagName === 'A') {
+                                el.style.setProperty('text-decoration', 'none', 'important');
+                                el.style.setProperty('display', 'inline-block', 'important');
+                                el.style.setProperty('padding', '2px 5px', 'important');
                             }
                             
-                            /* Active Move */
-                            #${boardId} .pgnvjs-move.active,
-                            #${boardId} .pgnvjs-move.active a {
-                                background-color: #FFD700 !important;
-                                color: #000000 !important;
+                            // Active move highlight
+                            if(el.classList.contains('active')) {
+                                el.style.setProperty('background-color', '#FFD700', 'important');
                             }
-                        `;
-                        
-                        $(`#${dynamicStyleId}`).text(styleContent);
+                        });
                     };
 
-                    // --- BIND EVENTS DIRECTLY (The Fix) ---
-                    // We attach these NOW, while we know the elements exist
+                    // --- BIND BUTTONS ---
                     document.getElementById('chess-font-minus').onclick = function(e) {
                         e.preventDefault(); 
+                        e.stopPropagation(); // Stop tracker interference if any
                         if (currentFontSize > 14) {
                             currentFontSize -= 2;
-                            updateDynamicCss();
+                            console.log("Decreasing font to:", currentFontSize);
+                            applyDirectStyles();
                         }
                     };
 
                     document.getElementById('chess-font-plus').onclick = function(e) {
                         e.preventDefault();
-                        console.log("Plus Button Clicked!"); // DEBUG LOG
+                        e.stopPropagation();
                         currentFontSize += 2;
-                        updateDynamicCss();
+                        console.log("Increasing font to:", currentFontSize);
+                        applyDirectStyles();
                     };
 
                     document.getElementById('chess-comment-btn').onclick = function(e) {
                         e.preventDefault();
+                        e.stopPropagation();
                         commentsEnabled = !commentsEnabled;
-                        const $btn = $(this); // jQuery wrapper for button
+                        const $btn = $(this);
                         const $overlay = $('#chess-comment-overlay');
                         
                         if (commentsEnabled) {
@@ -326,7 +322,7 @@ case 'chess':
                         }
                     };
 
-                    // --- RENDER GAME LOGIC ---
+                    // --- RENDER LOGIC ---
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -337,9 +333,11 @@ case 'chess':
                     if (rawGames.length <= 1) $select.hide(); 
 
                     let gameObserver = null;
+                    let styleEnforcer = null;
 
                     function renderGame(index) {
                         if (gameObserver) gameObserver.disconnect();
+                        if (styleEnforcer) clearInterval(styleEnforcer);
 
                         const selectedPgn = rawGames[index];
                         
@@ -377,7 +375,10 @@ case 'chess':
                             });
                             
                             // Apply styles immediately
-                            updateDynamicCss();
+                            applyDirectStyles();
+                            
+                            // Apply styles repeatedly (Enforcer) to fight re-renders
+                            styleEnforcer = setInterval(applyDirectStyles, 500);
 
                             // --- OBSERVER (Comments) ---
                             const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
@@ -385,6 +386,9 @@ case 'chess':
                             
                             if (movesPanel) {
                                 gameObserver = new MutationObserver(() => {
+                                    // When moves change, re-apply fonts immediately
+                                    applyDirectStyles();
+
                                     const activeMove = movesPanel.querySelector('.pgnvjs-move.active'); 
                                     if (activeMove) {
                                         let commentText = "";
@@ -416,10 +420,8 @@ case 'chess':
                         }
                     }
 
-                    // Initial Render
+                    // Listeners
                     renderGame(0);
-                    
-                    // Dropdown and Info Listeners
                     $select.off('change').on('change', function() { renderGame($(this).val()); });
                     $('#chess-info-btn').off('click').on('click', function() { 
                         $(`#chess-metadata-${boardId}`).fadeToggle(); 
@@ -430,9 +432,7 @@ case 'chess':
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
-            break;
-
-            
+            break;            
 
             
         case 'html':
