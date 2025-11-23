@@ -80,8 +80,12 @@ function handleModalKeys(e) {
     }
 }
 
+// ... (Keep global variables and helper functions like decodeText) ...
+
 function loadModalContent(index) {
-    if (index < 0 || index >= currentCardList.length) return;
+    if (index < 0 || index >= currentCardList.length) {
+        return;
+    }
 
     const $link = currentCardList[index];
     if (!$link.length) return;
@@ -92,64 +96,57 @@ function loadModalContent(index) {
     const $modalContent = $('#modal-content-area');
     const $modalOpenLink = $modal.find('.open-new-window');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
-    const $modalHeader = $modal.find('.modal-header');
-    
-    // --- RESET HEADER STATE (Critical Step) ---
-    // 1. Ensure the single main header is visible
-    $modalHeader.show();
-    
-    // 2. Reset buttons visibility (Show standard nav by default)
-    $modal.find('.modal-nav-left').show();
-    $modal.find('.modal-prev-btn, .modal-next-btn').show();
-    $modal.find('.modal-info-btn').show(); 
-    
-    // 3. Clear previous content and classes
+
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-    $modal.removeClass('research-mode tutorial-mode');
     
     const loadUrl = $link.attr('href');
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
-    const manifestUrl = $link.data('manifest-url');
+    const manifestUrl = $link.data('manifest-url'); // NEW: Get manifest URL
     
-    // --- 1. Research Logic ---
+    // 1. Research Logic
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', jsonUrl); 
-        
-        // Hide standard nav buttons for research (tabs handle nav)
-        $modal.find('.modal-prev-btn, .modal-next-btn, .modal-info-btn').hide();
-        
         buildResearchModal(jsonUrl); 
         return; 
     } 
     
-    // --- 2. Tutorial Logic ---
+    // 2. NEW: Tutorial Logic
     if (loadType === 'tutorial' && manifestUrl) {
-        $modal.addClass('tutorial-mode'); 
+        // We use the research-mode class to hide the default header because the player has its own
+        $modal.addClass('research-mode'); 
+        
+        // Open the manifest XML in new window if clicked
         $modalOpenLink.attr('href', manifestUrl);
         
-        // Hide standard nav buttons for tutorial (player handles nav)
-        // But KEEP the header visible for "Open in new window" and "Close"
-        $modal.find('.modal-nav-left').hide(); 
-        
+        // Load the player in an iframe
         const playerHtml = `
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
                 <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
             </div>
+            <!-- Add a floating close button since we hid the header -->
+            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2rem;">&times;</button>
         `;
         $modalContent.html(playerHtml);
+        
+        // Re-attach close handler because we added a new button dynamically
+        $modalContent.find('.modal-close-btn').on('click', function() {
+             // Trigger the main close logic
+             $('.modal-close-btn').first().click(); 
+        });
+        
         return;
     }
-    
-    // --- 3. Standard Logic (HTML, Image, Iframe) ---
+
+    // 3. Regular Logic (HTML, Image, Iframe)
+    $modal.removeClass('research-mode'); 
     $modalOpenLink.attr('href', loadUrl);
     $modalContent.find('.modal-photo-info').remove();
-    
-    // Hide info button by default, show only for images if needed
     $modalInfoBtn.hide(); 
     
     if (!loadType) {
+        // ... (Auto-guess logic remains the same) ...
         if (loadUrl.startsWith('http')) {
             if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
                 loadType = 'blocked'; 
@@ -164,23 +161,21 @@ function loadModalContent(index) {
             loadType = 'newtab'; 
         }
     }
+
+    const customHeight = $link.data('height') || '90vh';
     
+    // ... (Info extraction logic remains the same) ...
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
     const desc = $card.find('p').text();
     let infoHtml = '';
 
-    const dataTitle = $card.data('title');
-    const dataDesc = $card.data('desc');
-    const finalTitle = title || dataTitle;
-    const finalDesc = desc || dataDesc;
-
-    if (finalTitle) {
+    if (title) {
         const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
         infoHtml = `
             <div class="modal-photo-info ${infoVisibleClass}">
-                <h3>${finalTitle}</h3>
-                <p>${finalDesc}</p>
+                <h3>${title}</h3>
+                <p>${desc}</p>
             </div>`;
     }
 
@@ -190,7 +185,10 @@ function loadModalContent(index) {
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
                     $modalContent.html(data); 
-                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -204,9 +202,10 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'iframe':
+            // Use default iframe height for consistent modal size
             $modalContent.html(`
                 <div class="iframe-wrapper">
-                    <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
+                    <iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>
                     ${infoHtml}
                 </div>`);
             if (infoHtml) { $modalInfoBtn.show(); }
@@ -214,15 +213,16 @@ function loadModalContent(index) {
         case 'blocked':
             $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
             break;
-        default: 
-            $modalContent.html('<div class="error-message">Link cannot be opened here.</div>');
+        default: // newtab
+            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
             break;
     }
     
-    // Update buttons based on index
     $('.modal-prev-btn').prop('disabled', index <= 0);
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
+
+// ... (Rest of file remains the same) ...
 
 /* === RESEARCH BUILDER (Uses Main Header) === */
 
