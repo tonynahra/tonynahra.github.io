@@ -390,8 +390,7 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Chess Viewer Styles --- */
-
-/* --- Chess Viewer Styles (Side-by-Side Fixed) --- */
+/* --- Chess Viewer Styles (Fixed Layout) --- */
 .chess-container {
     display: flex;
     flex-direction: column;
@@ -412,10 +411,9 @@ select:focus, input[type="search"]:focus {
     z-index: 10;
 }
 
-/* FIXED: Double the dropdown width */
 .chess-toolbar select {
-    width: 600px; /* Increased from 300px */
-    max-width: 80%; /* Responsive safety */
+    width: 600px;
+    max-width: 60%; 
     background: var(--bg-dark);
     color: var(--text-primary);
     border: 1px solid var(--text-light);
@@ -423,53 +421,55 @@ select:focus, input[type="search"]:focus {
     font-size: 1rem;
 }
 
-/* Main Area: Side-by-Side Layout */
+/* Main Area: Side-by-Side */
 .chess-main-area {
     flex: 1;
     display: flex;
-    flex-direction: row; /* Board Left, Moves Right */
-    overflow: hidden; /* Container doesn't scroll, inner elements do */
+    flex-direction: row; 
+    overflow: hidden;
     background: var(--bg-dark);
     width: 100%;
     justify-content: center;
+    align-items: flex-start; /* Top align */
     padding: 20px;
-    gap: 20px;
+    gap: 0; /* Remove gap, handle it in board sizing */
 }
 
 /* --- LIBRARY OVERRIDES --- */
 
 .pgnvjs-wrapper {
     display: flex !important;
-    flex-direction: row !important; /* Force Side-by-Side */
+    flex-direction: row !important;
     width: 100% !important;
     height: 100% !important;
-    align-items: flex-start !important; /* Align to top */
     justify-content: center !important;
 }
 
 .pgnvjs-board {
-    /* Ensure board fits vertically */
-    height: 100% !important;
-    width: auto !important; 
-    aspect-ratio: 1 / 1; /* Keep square */
-    max-height: 80vh; /* Prevent overflow */
+    /* Board size is handled by JS, but we ensure it doesn't overflow */
+    flex-shrink: 1;
 }
 
-/* MOVES PANEL: White BG, Big Text, Right Side */
+/* MOVES PANEL: Fixed Width, Beige, Big Text */
 .pgnvjs-moves {
-    flex: 1;
+    /* FIXED WIDTH */
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
+    flex: 0 0 280px !important;
+    
     height: 100% !important;
     overflow-y: auto !important;
     
-    background-color: #ffffff !important; /* White Background */
+    /* STYLING */
+    background-color: #f5f5dc !important; /* Beige */
     color: #000000 !important; /* Black Text */
     
-    padding: 20px !important;
+    padding: 15px !important;
     box-sizing: border-box;
-    font-size: 1.3rem !important; /* Big Font */
-    line-height: 1.6 !important;
-    border-left: 4px solid #d2b48c !important; /* Separator border */
-    min-width: 300px; /* Prevent it from being too narrow */
+    font-size: 1.4rem !important; /* Larger Font */
+    line-height: 1.5 !important;
+    border-left: 4px solid #d2b48c !important; 
 }
 
 .pgnvjs-move {
@@ -483,20 +483,19 @@ select:focus, input[type="search"]:focus {
 .pgnvjs-move:hover { background: #e0e0e0 !important; }
 .pgnvjs-move.active { background: #FFD700 !important; color: #000 !important; }
 
-/* Keep comments hidden in the list if using the overlay feature */
 .pgnvjs-comment { display: none; }
 
-/* Styles for the overlays remain the same */
+/* Overlays (Keep existing styles) */
 .chess-comment-overlay {
     position: absolute;
     bottom: 30px; 
-    left: 50%; /* This might need adjustment relative to board if side-by-side */
+    left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.9);
     color: #fff;
     padding: 15px 25px;
     border-radius: 8px;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     z-index: 100;
     max-width: 600px;
     text-align: center;
