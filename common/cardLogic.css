@@ -52,6 +52,7 @@
     margin-bottom: 10px;
 }
 
+/* Card images (YouTube and Raindrop) - DEFAULT */
 .card-item img.card-image,
 .card-item img.YTi {
     width: 100%;
@@ -174,7 +175,7 @@ select:focus, input[type="search"]:focus {
     flex: 1; /* Grow to fill remaining height */
     overflow-y: auto; 
     position: relative; 
-    display: flex; /* Use flex for children alignment */
+    display: flex; 
     flex-direction: column;
 }
 
