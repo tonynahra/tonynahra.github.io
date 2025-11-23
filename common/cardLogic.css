@@ -142,7 +142,7 @@ select:focus, input[type="search"]:focus {
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-/* --- Modal Styles --- */
+/* --- Modal Styles (FIXED) --- */
 .modal-backdrop {
     display: none; 
     position: fixed;
@@ -159,7 +159,7 @@ select:focus, input[type="search"]:focus {
 .modal-content {
     background-color: var(--bg-dark);
     margin: 20px auto; 
-    padding: 20px;
+    padding: 0; /* Remove padding here to let header touch edges */
     border: 1px solid var(--bg-medium);
     border-radius: 8px;
     width: 90%; 
@@ -167,30 +167,20 @@ select:focus, input[type="search"]:focus {
     height: calc(100vh - 40px); 
     display: flex;
     flex-direction: column;
-}
-
-/* Main Content Area */
-#modal-content-area {
-    flex: 1; /* Grow to fill remaining height */
-    overflow-y: auto; 
-    position: relative; 
-    display: flex; /* Use flex for children alignment */
-    flex-direction: column;
-    height: 100%; /* Ensure it knows its height basis */
+    position: relative;
 }
 
 /* Modal Header - FIXED ALIGNMENT */
 .modal-header {
-    margin-bottom: 15px;
-    padding-bottom: 10px;
+    padding: 15px 20px; /* Add padding back here */
     border-bottom: 1px solid var(--bg-medium);
     display: flex;
     justify-content: space-between; /* Push left/right groups apart */
     align-items: center;
     flex-wrap: nowrap; /* DO NOT WRAP */
-    gap: 10px;
+    gap: 15px;
     flex-shrink: 0; 
-    min-height: 40px; /* Ensure consistent height */
+    min-height: 50px;
 }
 
 .modal-backdrop.research-mode .modal-header {
@@ -241,18 +231,37 @@ select:focus, input[type="search"]:focus {
 .modal-header .modal-info-btn { display: none; }
 .modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
 
+
+/* Main Content Area - FIXED SCROLLING/TRIMMING */
+#modal-content-area {
+    flex: 1; /* Grow to fill remaining height */
+    display: flex; /* Use flex for children */
+    flex-direction: column;
+    overflow: hidden; /* Hide overflow on container, let children scroll if needed */
+    position: relative;
+    padding: 0; /* No padding here */
+}
+
 /* --- Wrappers --- */
-#modal-content-area .image-wrapper,
+/* Ensure iframe wrapper fills space perfectly */
 #modal-content-area .iframe-wrapper {
-    flex: 1; /* Grow to fill parent */
+    flex: 1; 
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: hidden;
+}
+
+/* Images are centered */
+#modal-content-area .image-wrapper {
+    flex: 1;
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0; 
-    /* Ensure no overflow hides content unless intended */
-    overflow: hidden; 
+    overflow: auto; /* Allow scrolling for large images */
+    padding: 20px; /* Add padding for images only */
 }
 
 #modal-content-area .loaded-image {
@@ -265,7 +274,8 @@ select:focus, input[type="search"]:focus {
     width: 100%;
     height: 100%; 
     border: none;
-    background: #fff; 
+    background: #fff;
+    display: block; /* Removes phantom spacing */
 }
 
 /* --- Photo Info Overlay --- */
@@ -287,15 +297,14 @@ select:focus, input[type="search"]:focus {
 
 /* --- Research Tab Styles --- */
 .research-modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--bg-medium);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--bg-medium);
-    flex-shrink: 0;
     flex-wrap: nowrap;
+    flex-shrink: 0;
+    gap: 15px;
 }
 .research-modal-header h2 { margin: 0; color: var(--text-accent); }
 .research-modal-header button, .research-modal-header a { padding: 8px 15px; font-size: 0.9rem; cursor: pointer;}
@@ -311,7 +320,7 @@ select:focus, input[type="search"]:focus {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 20px;
+    padding: 10px 20px; /* Add padding here since we removed it from modal-content */
     border-bottom: 2px solid var(--bg-medium);
     flex-shrink: 0;
 }
@@ -336,10 +345,12 @@ select:focus, input[type="search"]:focus {
     display: flex;
     flex-direction: column;
     overflow: hidden; 
+    position: relative;
 }
 .tab-content .iframe-wrapper {
     flex: 1; /* Fill tab content */
     height: 100%;
+    width: 100%;
 }
 
 /* Financial Table Styles */
@@ -365,13 +376,14 @@ select:focus, input[type="search"]:focus {
     border: none;
     border-radius: 8px; 
     overflow: hidden;
+    margin-bottom: 15px;
 }
 
 #photo-album-list .card-image,
 #about-album-list .card-image {
     width: 100%;
-    height: auto; /* Let height flow naturally */
-    display: block; /* Removes bottom gap */
+    height: auto; 
+    display: block; 
     object-fit: cover;
     border-radius: 8px;
     transition: transform 0.3s ease;
@@ -381,17 +393,15 @@ select:focus, input[type="search"]:focus {
 
 #photo-album-list .card-item:hover .card-image,
 #about-album-list .card-item:hover .card-image {
-    transform: scale(1.03); /* Subtle zoom */
+    transform: scale(1.03); 
     filter: brightness(1.1);
 }
 
-/* Hide the details box in the grid view */
 #photo-album-list .photo-details,
 #about-album-list .photo-details {
     display: none !important;
 }
 
-/* Remove any left border used for categories */
 #photo-album-list .card-item,
 #about-album-list .card-item {
     border-left: none !important;
