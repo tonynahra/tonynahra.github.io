@@ -206,6 +206,7 @@ function loadModalContent(index) {
             break;
 
 
+
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -222,11 +223,11 @@ case 'chess':
                     const boardId = 'chess-board-' + Date.now();
                     
                     // State Variables
-                    let currentFontSize = 26; 
+                    let currentZoom = 1.0; // Start at 100% scale
                     let commentsEnabled = false;
 
                     // 1. INJECT HTML
-                    // We use inline styles on the container as a baseline
+                    // Note: We use 'transform-origin: top left' to ensure zoom grows naturally
                     $modalContent.html(`
                         <div class="chess-container">
                             <div class="chess-toolbar">
@@ -239,7 +240,7 @@ case 'chess':
                                 <button id="chess-comment-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; cursor: pointer;">Comments: Off</button>
                             </div>
                             <div class="chess-main-area">
-                                <div class="chess-white-box">
+                                <div class="chess-white-box" style="overflow: hidden; position: relative;">
                                     <div id="${boardId}"></div>
                                 </div>
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
@@ -248,60 +249,48 @@ case 'chess':
                         </div>
                     `);
 
-                    // --- THE STUBBORN FONT FIX ---
-                    // This function finds every element and forces the style directly on the tag
-                    const applyDirectStyles = () => {
+                    // --- THE ZOOM FIX ---
+                    const applyZoom = () => {
                         const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
-                        if (!movesPanel) return;
+                        if (!movesPanel) {
+                            console.log("Moves panel not found yet...");
+                            return;
+                        }
 
-                        // 1. Force the Container
+                        // 1. Apply ZOOM (The Magnifying Glass)
+                        // 'zoom' works in most browsers; for safety we could add transform, but try zoom first.
+                        movesPanel.style.zoom = currentZoom;
+                        
+                        // 2. Force Basic Colors (Just in case)
                         movesPanel.style.setProperty('background-color', '#ffffff', 'important');
                         movesPanel.style.setProperty('color', '#000000', 'important');
-                        movesPanel.style.setProperty('padding-left', '15px', 'important');
-                        movesPanel.style.setProperty('border-left', '4px solid #d2b48c', 'important');
                         
-                        // 2. Force Every Child Element (The Nuclear Option)
-                        // We select generic * to catch spans, divs, and 'a' tags specifically
-                        const allChildren = movesPanel.querySelectorAll('*');
-                        
-                        allChildren.forEach(el => {
-                            el.style.setProperty('font-size', `${currentFontSize}px`, 'important');
-                            el.style.setProperty('line-height', `${currentFontSize + 12}px`, 'important');
+                        // 3. Force Font Family (to ensure readability when zoomed)
+                        const allText = movesPanel.querySelectorAll('*');
+                        allText.forEach(el => {
                             el.style.setProperty('color', '#000000', 'important');
                             el.style.setProperty('font-family', 'sans-serif', 'important');
-                            el.style.setProperty('font-weight', '600', 'important');
-                            
-                            // Ensure links behave like text
-                            if(el.tagName === 'A') {
-                                el.style.setProperty('text-decoration', 'none', 'important');
-                                el.style.setProperty('display', 'inline-block', 'important');
-                                el.style.setProperty('padding', '2px 5px', 'important');
-                            }
-                            
-                            // Active move highlight
-                            if(el.classList.contains('active')) {
-                                el.style.setProperty('background-color', '#FFD700', 'important');
-                            }
+                            // We explicitly DO NOT set font-size here, allowing Zoom to do the work
                         });
+                        
+                        console.log("Applied Zoom Level:", currentZoom);
                     };
 
                     // --- BIND BUTTONS ---
                     document.getElementById('chess-font-minus').onclick = function(e) {
                         e.preventDefault(); 
-                        e.stopPropagation(); // Stop tracker interference if any
-                        if (currentFontSize > 14) {
-                            currentFontSize -= 2;
-                            console.log("Decreasing font to:", currentFontSize);
-                            applyDirectStyles();
+                        e.stopPropagation();
+                        if (currentZoom > 0.6) {
+                            currentZoom -= 0.1; // Decrease by 10%
+                            applyZoom();
                         }
                     };
 
                     document.getElementById('chess-font-plus').onclick = function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        currentFontSize += 2;
-                        console.log("Increasing font to:", currentFontSize);
-                        applyDirectStyles();
+                        currentZoom += 0.1; // Increase by 10%
+                        applyZoom();
                     };
 
                     document.getElementById('chess-comment-btn').onclick = function(e) {
@@ -333,11 +322,11 @@ case 'chess':
                     if (rawGames.length <= 1) $select.hide(); 
 
                     let gameObserver = null;
-                    let styleEnforcer = null;
+                    let zoomEnforcer = null;
 
                     function renderGame(index) {
                         if (gameObserver) gameObserver.disconnect();
-                        if (styleEnforcer) clearInterval(styleEnforcer);
+                        if (zoomEnforcer) clearInterval(zoomEnforcer);
 
                         const selectedPgn = rawGames[index];
                         
@@ -374,11 +363,11 @@ case 'chess':
                                 headers: false,
                             });
                             
-                            // Apply styles immediately
-                            applyDirectStyles();
+                            // Initialize Zoom
+                            applyZoom();
                             
-                            // Apply styles repeatedly (Enforcer) to fight re-renders
-                            styleEnforcer = setInterval(applyDirectStyles, 500);
+                            // Enforce Zoom (in case library resets style)
+                            zoomEnforcer = setInterval(applyZoom, 500);
 
                             // --- OBSERVER (Comments) ---
                             const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
@@ -386,8 +375,10 @@ case 'chess':
                             
                             if (movesPanel) {
                                 gameObserver = new MutationObserver(() => {
-                                    // When moves change, re-apply fonts immediately
-                                    applyDirectStyles();
+                                    // Re-apply zoom on changes (just to be safe)
+                                    if(movesPanel.style.zoom != currentZoom) {
+                                        movesPanel.style.zoom = currentZoom;
+                                    }
 
                                     const activeMove = movesPanel.querySelector('.pgnvjs-move.active'); 
                                     if (activeMove) {
@@ -432,8 +423,10 @@ case 'chess':
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
-            break;            
+            break;
 
+
+            
             
         case 'html':
             $.ajax({
