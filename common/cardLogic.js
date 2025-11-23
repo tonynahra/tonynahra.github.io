@@ -306,12 +306,14 @@ case 'chess':
                             
                             if (movesPanel) {
                                 const forceStyle = () => {
-                                    // We force styles on the panel, but the parent .chess-white-box does most of the work now
                                     movesPanel.style.setProperty('background-color', '#ffffff', 'important');
                                     movesPanel.style.setProperty('color', '#000000', 'important');
-                                    movesPanel.style.setProperty('font-size', '1.6rem', 'important');
+                                    // UPDATED: Enforce the container font size as a backup
+                                    movesPanel.style.setProperty('font-size', '1.9rem', 'important');
                                 };
                                 forceStyle();
+                                
+                                // ... (rest of observer logic remains the same)
 
                                 styleWatchdog = new MutationObserver((mutations) => {
                                     mutations.forEach((mutation) => {
