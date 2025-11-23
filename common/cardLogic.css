@@ -389,3 +389,99 @@ select:focus, input[type="search"]:focus {
     display: block;
 }
 
+/* --- Chess Viewer Styles --- */
+.chess-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background: white;
+    overflow: hidden;
+}
+
+.chess-toolbar {
+    flex: 0 0 50px; /* Fixed height for toolbar */
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 0 20px;
+    background: var(--bg-medium);
+    border-bottom: 1px solid #ccc;
+}
+
+.chess-toolbar select {
+    width: auto;
+    max-width: 300px;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    border: 1px solid var(--text-light);
+}
+
+.chess-main-area {
+    flex: 1; /* Take remaining height */
+    position: relative;
+    overflow: hidden;
+    display: flex; /* Force side-by-side layout */
+    justify-content: center; /* Center the board if specific width is used */
+    align-items: flex-start;
+    background: #f0f0f0;
+    padding: 10px;
+}
+
+/* Override Library Styles to fit our flex layout */
+.pgnvjs-wrapper {
+    display: flex !important;
+    flex-direction: row !important; /* Board Left, Moves Right */
+    width: 100% !important;
+    height: 100% !important;
+    gap: 20px;
+}
+
+.pgnvjs-board {
+    flex-shrink: 0; /* Prevent board from shrinking */
+}
+
+.pgnvjs-moves {
+    flex: 1; /* Moves area takes remaining width */
+    height: 100% !important;
+    overflow-y: auto !important; /* Scrollable moves/comments */
+    background: white;
+    padding: 15px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    font-size: 1.1rem; /* Larger text for moves */
+    line-height: 1.6;
+}
+
+.pgnvjs-move {
+    cursor: pointer;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+.pgnvjs-move:hover { background: #e0e0e0; }
+.pgnvjs-comment {
+    display: block;
+    color: #666;
+    font-style: italic;
+    margin: 5px 0 10px 20px;
+    border-left: 3px solid var(--text-accent);
+    padding-left: 10px;
+}
+
+/* Metadata Overlay */
+.chess-metadata-overlay {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 100;
+    display: none;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.chess-metadata-overlay h4 { margin-top: 0; color: var(--text-accent); }
+.chess-metadata-overlay table { width: 100%; }
+.chess-metadata-overlay td { padding: 5px; border-bottom: 1px solid #444; }
