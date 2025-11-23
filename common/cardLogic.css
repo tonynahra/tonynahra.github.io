@@ -390,7 +390,7 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Chess Viewer Styles --- */
-/* --- Chess Viewer Styles (Aggressive Fix) --- */
+/* --- Chess Viewer Styles (Theme-Proof) --- */
 .chess-container {
     display: flex;
     flex-direction: column;
@@ -432,29 +432,25 @@ select:focus, input[type="search"]:focus {
     justify-content: center; 
     align-items: flex-start; 
     padding: 20px;
-    
-    /* GAP FIX: Force space on the right side */
     padding-right: 40px !important; 
     box-sizing: border-box;
 }
 
 /* --- LIBRARY OVERRIDES --- */
-
 .pgnvjs-wrapper {
     display: flex !important;
     flex-direction: row !important;
     width: 100% !important;
     height: 100% !important;
     justify-content: center !important;
-    gap: 20px; /* Space between board and moves */
+    gap: 20px;
 }
 
 .pgnvjs-board {
     flex-shrink: 1;
-    /* Board size handled by JS */
 }
 
-/* MOVES PANEL: Force White & Fixed Width */
+/* MOVES PANEL: Theme-Proofing */
 .pgnvjs-moves {
     /* LOCK WIDTH */
     flex: 0 0 240px !important;
@@ -465,10 +461,16 @@ select:focus, input[type="search"]:focus {
     height: 100% !important;
     overflow-y: auto !important;
     
-    /* FORCE WHITE BACKGROUND (Nuclear Option) */
+    /* NUCLEAR OPTION FOR COLORS */
     background: #ffffff !important; 
     background-color: #ffffff !important;
     color: #000000 !important;
+    
+    /* RESET LOCAL VARIABLES (In case theme uses them) */
+    --bg-dark: #ffffff !important;
+    --bg-medium: #ffffff !important;
+    --text-primary: #000000 !important;
+    --text-accent: #000000 !important;
     
     padding: 15px !important;
     box-sizing: border-box;
@@ -476,15 +478,12 @@ select:focus, input[type="search"]:focus {
     line-height: 1.5 !important;
     border-left: 4px solid #d2b48c !important;
     border-radius: 4px;
-    
-    /* RESET ANY THEME VARIABLES */
-    --bg-color: #ffffff;
-    --text-color: #000000;
 }
 
 /* Force all text inside moves to be black */
 .pgnvjs-moves * {
     color: #000000 !important;
+    background-color: transparent !important;
 }
 
 .pgnvjs-move {
@@ -501,10 +500,9 @@ select:focus, input[type="search"]:focus {
     color: #000 !important; 
 }
 
-/* Hide default comments in list */
 .pgnvjs-comment { display: none; }
 
-/* Navigation Buttons (Ensure they are visible) */
+/* Navigation Buttons */
 .pgnvjs-ctrl {
     display: flex !important;
     justify-content: center !important;
@@ -517,11 +515,26 @@ select:focus, input[type="search"]:focus {
     margin: 0 2px;
 }
 
-/* Overlays (Unchanged) */
+/* Overlay Close Button */
+.overlay-close-btn {
+    float: right;
+    padding: 5px 15px;
+    background: #e74c3c; 
+    color: white;
+    border: 1px solid #c0392b;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+.overlay-close-btn:hover { background: #c0392b; }
+
+/* Overlays */
 .chess-comment-overlay {
     position: absolute;
     bottom: 30px; 
-    left: 20px; /* Align more to the left/board area */
+    left: 20px; 
     background: rgba(0, 0, 0, 0.9);
     color: #fff;
     padding: 15px 25px;
@@ -552,20 +565,3 @@ select:focus, input[type="search"]:focus {
 }
 .chess-metadata-overlay table { width: 100%; border-collapse: collapse; }
 .chess-metadata-overlay td { padding: 8px; border-bottom: 1px solid #444; }
-
-/* --- Overlay Close Button --- */
-.overlay-close-btn {
-    float: right;
-    padding: 5px 15px;
-    background: #e74c3c; /* Red */
-    color: white;
-    border: 1px solid #c0392b;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.9rem;
-    margin-top: 10px;
-}
-.overlay-close-btn:hover {
-    background: #c0392b; /* Darker Red */
-}
