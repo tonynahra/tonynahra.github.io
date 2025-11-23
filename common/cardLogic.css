@@ -393,10 +393,10 @@ select:focus, input[type="search"]:focus {
 /* --- Chess Viewer Styles (Updated) --- */
 .chess-container {
     display: flex;
-    flex-direction: column; /* Stack vertically */
+    flex-direction: column;
     height: 100%;
     width: 100%;
-    background: var(--bg-dark);
+    background: var(--bg-dark); /* Dark outer background */
     overflow: hidden;
     position: relative;
 }
@@ -424,74 +424,104 @@ select:focus, input[type="search"]:focus {
 .chess-main-area {
     flex: 1;
     display: flex;
-    flex-direction: column; /* Board Top, Moves Bottom */
-    overflow-y: auto; /* Allow scrolling for the whole area */
+    flex-direction: column;
+    overflow-y: auto; 
     background: var(--bg-dark);
     width: 100%;
-    align-items: center; /* Center the board horizontally */
+    align-items: center;
+    padding-bottom: 20px;
 }
 
-/* Board Area */
+/* --- OVERRIDE LIBRARY DEFAULTS --- */
+
+/* 1. Layout Wrapper */
 .pgnvjs-wrapper {
     display: flex !important;
-    flex-direction: column !important; /* Override library default */
+    flex-direction: column !important;
     width: 100% !important;
     align-items: center;
 }
 
+/* 2. Board Styling */
 .pgnvjs-board {
-    width: 100% !important; /* Max width */
-    max-width: 800px; /* Reasonable limit for large screens */
+    width: 100% !important;
+    max-width: 800px; /* Limits huge boards on big screens */
     margin: 0 auto;
 }
 
-/* Moves Area */
+/* 3. Navigation Buttons (Positioned Top Right above moves) */
+.pgnvjs-ctrl {
+    display: flex !important;
+    justify-content: flex-end !important; /* Puts buttons on the Right */
+    width: 100% !important;
+    max-width: 800px; /* Match board width */
+    margin: 5px auto !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* 4. Moves Panel (Beige & Big Text) */
 .pgnvjs-moves {
     width: 100% !important;
-    background-color: #f5f5dc !important; /* Beige Background */
-    color: #333; /* Dark text for beige bg */
+    max-width: 800px; /* Match board width */
+    
+    /* BEIGE BACKGROUND & TEXT FIXES */
+    background-color: #f5f5dc !important; 
+    color: #000000 !important; /* Force Black Text */
+    
     padding: 20px !important;
     box-sizing: border-box;
-    font-size: 1.1rem;
-    line-height: 1.6;
-    min-height: 150px; /* Ensure space for moves */
-    border-top: 2px solid #d2b48c; /* Tan border */
+    
+    /* BIGGER TEXT */
+    font-size: 1.3rem !important; 
+    line-height: 1.8 !important;
+    font-family: sans-serif !important;
+    
+    min-height: 200px;
+    border-top: 4px solid #d2b48c !important; /* Tan border separator */
 }
 
+/* 5. Individual Moves */
 .pgnvjs-move {
     cursor: pointer;
-    padding: 2px 5px;
-    border-radius: 3px;
-    color: #000;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #000000 !important; /* Ensure move text is black */
+    margin-right: 5px;
 }
-.pgnvjs-move:hover { background: #e0e0e0; }
+.pgnvjs-move:hover { 
+    background-color: #e0e0e0 !important; 
+    color: #000 !important;
+}
+.pgnvjs-move.active {
+    background-color: #FFD700 !important; /* Highlight active move (Gold) */
+    color: #000 !important;
+}
 
-/* Hide default inline comments because we will show them in overlay */
-.pgnvjs-comment {
-    display: none; 
-}
+/* Hide default inline comments */
+.pgnvjs-comment { display: none; }
 
 /* Comment Overlay */
 .chess-comment-overlay {
     position: absolute;
-    bottom: 20px; /* Positioned relative to the board/container */
+    bottom: 20px; 
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     color: #fff;
-    padding: 15px 20px;
+    padding: 15px 25px;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 1.1rem;
     z-index: 100;
     max-width: 80%;
     text-align: center;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    display: none; /* Hidden by default */
-    pointer-events: none; /* Let clicks pass through */
+    display: none; 
+    pointer-events: none; 
     border: 1px solid var(--text-accent);
 }
 
-/* Game Info Overlay (Metadata) */
+/* Metadata Overlay */
 .chess-metadata-overlay {
     position: absolute;
     top: 60px;
