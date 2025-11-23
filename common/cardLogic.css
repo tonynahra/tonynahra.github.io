@@ -159,7 +159,7 @@ select:focus, input[type="search"]:focus {
 .modal-content {
     background-color: var(--bg-dark);
     margin: 20px auto; 
-    padding: 0; /* Remove padding here to let header touch edges */
+    padding: 0; /* Remove padding so header touches edges */
     border: 1px solid var(--bg-medium);
     border-radius: 8px;
     width: 90%; 
@@ -170,28 +170,17 @@ select:focus, input[type="search"]:focus {
     position: relative;
 }
 
-/* Main Content Area */
-#modal-content-area {
-    flex: 1; /* Grow to fill remaining height */
-    overflow-y: auto; 
-    position: relative; 
-    display: flex; /* Use flex for children alignment */
-    flex-direction: column;
-    height: 100%; /* Ensure it knows its height basis */
-    padding: 0; /* No padding here */
-}
-
 /* Modal Header - FIXED ALIGNMENT */
 .modal-header {
     padding: 15px 20px; /* Add padding back here */
     border-bottom: 1px solid var(--bg-medium);
     display: flex;
-    justify-content: space-between; /* Push left/right groups apart */
+    justify-content: space-between; /* Default push */
     align-items: center;
-    flex-wrap: nowrap; /* DO NOT WRAP */
+    flex-wrap: nowrap; /* Prevent wrapping */
     gap: 15px;
     flex-shrink: 0; 
-    min-height: 50px; /* Ensure consistent height */
+    min-height: 50px;
 }
 
 .modal-backdrop.research-mode .modal-header {
@@ -202,10 +191,10 @@ select:focus, input[type="search"]:focus {
     display: flex;
     gap: 10px;
     align-items: center;
-    white-space: nowrap; /* Keep buttons on one line */
+    white-space: nowrap;
 }
 
-/* Force right nav to stay on the right */
+/* FORCE RIGHT ALIGNMENT */
 .modal-nav-right {
     margin-left: auto;
 }
@@ -223,7 +212,6 @@ select:focus, input[type="search"]:focus {
     cursor: pointer;
     font-size: 0.9rem;
     display: inline-block;
-    white-space: nowrap;
 }
 
 .modal-header button:hover, .modal-header a:hover { 
@@ -242,17 +230,25 @@ select:focus, input[type="search"]:focus {
 .modal-header .modal-info-btn { display: none; }
 .modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
 
+/* Main Content Area - FIXES IFRAME CUTOFF */
+#modal-content-area {
+    flex: 1; /* Take remaining height */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Hide overflow, children will handle it */
+    position: relative;
+    padding: 0;
+}
+
 /* --- Wrappers --- */
-/* Ensure iframe wrapper fills space perfectly */
 #modal-content-area .iframe-wrapper {
-    flex: 1; 
+    flex: 1;
     width: 100%;
     height: 100%;
     display: block;
     overflow: hidden;
 }
 
-/* Images are centered */
 #modal-content-area .image-wrapper {
     flex: 1;
     width: 100%;
@@ -260,8 +256,8 @@ select:focus, input[type="search"]:focus {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: auto; /* Allow scrolling for large images */
-    padding: 20px; /* Add padding for images only */
+    overflow: auto;
+    padding: 20px;
 }
 
 #modal-content-area .loaded-image {
@@ -275,7 +271,7 @@ select:focus, input[type="search"]:focus {
     height: 100%; 
     border: none;
     background: #fff;
-    display: block; /* Removes phantom spacing */
+    display: block;
 }
 
 /* --- Photo Info Overlay --- */
@@ -309,7 +305,6 @@ select:focus, input[type="search"]:focus {
 .research-modal-header h2 { margin: 0; color: var(--text-accent); }
 .research-modal-header button, .research-modal-header a { padding: 8px 15px; font-size: 0.9rem; cursor: pointer;}
 
-/* Force research header buttons to the right */
 .research-modal-header .modal-nav-right {
     margin-left: auto;
     display: flex;
@@ -320,7 +315,7 @@ select:focus, input[type="search"]:focus {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    padding: 10px 20px; /* Add padding here since we removed it from modal-content */
+    padding: 10px 20px; 
     border-bottom: 2px solid var(--bg-medium);
     flex-shrink: 0;
 }
@@ -341,14 +336,14 @@ select:focus, input[type="search"]:focus {
 
 /* Tab Content Area */
 .tab-content {
-    flex: 1; /* Grow to fill remaining height */
+    flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden; 
     position: relative;
 }
 .tab-content .iframe-wrapper {
-    flex: 1; /* Fill tab content */
+    flex: 1;
     height: 100%;
     width: 100%;
 }
@@ -367,7 +362,6 @@ select:focus, input[type="search"]:focus {
 
 
 /* --- PURE IMAGE MASONRY STYLES --- */
-/* Apply to both main album and about album */
 #photo-album-list .card-item,
 #about-album-list .card-item {
     padding: 0;
