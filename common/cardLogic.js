@@ -206,7 +206,6 @@ function loadModalContent(index) {
             break;
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -221,22 +220,25 @@ case 'chess':
                     if (rawGames.length === 0) rawGames = [pgnFileContent]; 
 
                     const boardId = 'chess-board-' + Date.now();
+                    const dynamicStyleId = 'chess-dynamic-style-' + Date.now();
                     
                     // State Variables
-                    let currentFontSize = 26; // Start at 26px
+                    let currentFontSize = 26; 
                     let commentsEnabled = false;
 
-                    // 1. INJECT HTML (With new - / + buttons)
+                    // 1. INJECT HTML
+                    // Note: We assign IDs to the buttons so we can find them instantly in JS
                     $modalContent.html(`
+                        <style id="${dynamicStyleId}"></style>
                         <div class="chess-container">
                             <div class="chess-toolbar">
                                 <select id="chess-game-select"></select>
                                 <button id="chess-info-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; margin-right: 10px;">Info</button>
                                 
-                                <button id="chess-font-minus" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; min-width: 30px;">-</button>
-                                <button id="chess-font-plus" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; min-width: 30px; margin-right: 10px;">+</button>
+                                <button id="chess-font-minus" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; min-width: 30px; cursor: pointer;">-</button>
+                                <button id="chess-font-plus" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; min-width: 30px; margin-right: 10px; cursor: pointer;">+</button>
                                 
-                                <button id="chess-comment-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px;">Comments: Off</button>
+                                <button id="chess-comment-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; cursor: pointer;">Comments: Off</button>
                             </div>
                             <div class="chess-main-area">
                                 <div class="chess-white-box">
@@ -248,6 +250,83 @@ case 'chess':
                         </div>
                     `);
 
+                    // --- FUNCTION TO UPDATE CSS ---
+                    // This updates the <style> tag directly
+                    const updateDynamicCss = () => {
+                        console.log("Applying Font Size:", currentFontSize); // DEBUG LOG
+                        
+                        const styleContent = `
+                            /* Force Container styles */
+                            #${boardId} .pgnvjs-moves {
+                                background-color: #ffffff !important;
+                                color: #000000 !important;
+                                padding-left: 15px !important;
+                                border-left: 4px solid #d2b48c !important;
+                            }
+                            
+                            /* TARGET EVERYTHING inside the moves panel */
+                            #${boardId} .pgnvjs-moves,
+                            #${boardId} .pgnvjs-moves * {
+                                font-size: ${currentFontSize}px !important;
+                                line-height: ${currentFontSize + 12}px !important;
+                                color: #000000 !important;
+                                font-family: sans-serif !important;
+                                font-weight: 600 !important;
+                            }
+
+                            /* Specific Link Targeting */
+                            #${boardId} .pgnvjs-moves a {
+                                text-decoration: none !important;
+                                display: inline-block !important;
+                                padding: 2px 4px !important;
+                            }
+                            
+                            /* Active Move */
+                            #${boardId} .pgnvjs-move.active,
+                            #${boardId} .pgnvjs-move.active a {
+                                background-color: #FFD700 !important;
+                                color: #000000 !important;
+                            }
+                        `;
+                        
+                        $(`#${dynamicStyleId}`).text(styleContent);
+                    };
+
+                    // --- BIND EVENTS DIRECTLY (The Fix) ---
+                    // We attach these NOW, while we know the elements exist
+                    document.getElementById('chess-font-minus').onclick = function(e) {
+                        e.preventDefault(); 
+                        if (currentFontSize > 14) {
+                            currentFontSize -= 2;
+                            updateDynamicCss();
+                        }
+                    };
+
+                    document.getElementById('chess-font-plus').onclick = function(e) {
+                        e.preventDefault();
+                        console.log("Plus Button Clicked!"); // DEBUG LOG
+                        currentFontSize += 2;
+                        updateDynamicCss();
+                    };
+
+                    document.getElementById('chess-comment-btn').onclick = function(e) {
+                        e.preventDefault();
+                        commentsEnabled = !commentsEnabled;
+                        const $btn = $(this); // jQuery wrapper for button
+                        const $overlay = $('#chess-comment-overlay');
+                        
+                        if (commentsEnabled) {
+                            $btn.text('Comments: On');
+                            $btn.css('background', 'var(--text-accent)').css('color', 'var(--bg-dark)');
+                            if ($overlay.text().trim().length > 0) $overlay.fadeIn();
+                        } else {
+                            $btn.text('Comments: Off');
+                            $btn.css('background', '').css('color', '');
+                            $overlay.fadeOut();
+                        }
+                    };
+
+                    // --- RENDER GAME LOGIC ---
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -258,23 +337,6 @@ case 'chess':
                     if (rawGames.length <= 1) $select.hide(); 
 
                     let gameObserver = null;
-
-                    // Helper to Apply Font Size
-                    const applyFontSize = () => {
-                        const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
-                        if (movesPanel) {
-                            // Apply to Container
-                            movesPanel.style.setProperty('font-size', `${currentFontSize}px`, 'important');
-                            movesPanel.style.setProperty('line-height', `${currentFontSize + 10}px`, 'important');
-                            
-                            // Apply to ALL children (links, spans, etc)
-                            const allChildren = movesPanel.querySelectorAll('*');
-                            allChildren.forEach(child => {
-                                child.style.setProperty('font-size', `${currentFontSize}px`, 'important');
-                                child.style.setProperty('line-height', `${currentFontSize + 10}px`, 'important');
-                            });
-                        }
-                    };
 
                     function renderGame(index) {
                         if (gameObserver) gameObserver.disconnect();
@@ -314,25 +376,18 @@ case 'chess':
                                 headers: false,
                             });
                             
-                            // --- INITIAL STYLE FORCE ---
-                            setTimeout(applyFontSize, 100);
+                            // Apply styles immediately
+                            updateDynamicCss();
 
-                            // --- OBSERVER (Handles Comments AND Enforcing Styles) ---
+                            // --- OBSERVER (Comments) ---
                             const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
                             const overlay = document.getElementById('chess-comment-overlay');
                             
                             if (movesPanel) {
                                 gameObserver = new MutationObserver(() => {
-                                    // 1. Enforce Font Size on every change
-                                    applyFontSize();
-
-                                    // 2. Handle Comments
                                     const activeMove = movesPanel.querySelector('.pgnvjs-move.active'); 
                                     if (activeMove) {
                                         let commentText = "";
-                                        
-                                        // Strategy: Look at siblings or nested comments
-                                        // Some versions put comment in next sibling span
                                         let next = activeMove.nextElementSibling;
                                         while(next && !next.classList.contains('pgnvjs-move')) {
                                             if (next.classList.contains('pgnvjs-comment')) {
@@ -352,7 +407,7 @@ case 'chess':
                                 gameObserver.observe(movesPanel, { 
                                     attributes: true, 
                                     subtree: true, 
-                                    childList: true, // Watch for new moves being added
+                                    childList: true, 
                                     attributeFilter: ['class'] 
                                 });
                             }
@@ -361,53 +416,21 @@ case 'chess':
                         }
                     }
 
-                    // --- LISTENERS ---
+                    // Initial Render
                     renderGame(0);
                     
+                    // Dropdown and Info Listeners
                     $select.off('change').on('change', function() { renderGame($(this).val()); });
-                    
                     $('#chess-info-btn').off('click').on('click', function() { 
                         $(`#chess-metadata-${boardId}`).fadeToggle(); 
                     });
 
-                    // FONT LISTENERS
-                    $('#chess-font-minus').off('click').on('click', function() {
-                        if (currentFontSize > 12) {
-                            currentFontSize -= 2;
-                            applyFontSize();
-                        }
-                    });
-
-                    $('#chess-font-plus').off('click').on('click', function() {
-                        currentFontSize += 2;
-                        applyFontSize();
-                    });
-
-                    // COMMENT LISTENER
-                    $('#chess-comment-btn').off('click').on('click', function() {
-                        commentsEnabled = !commentsEnabled;
-                        const $btn = $(this);
-                        const $overlay = $('#chess-comment-overlay');
-                        
-                        if (commentsEnabled) {
-                            $btn.text('Comments: On');
-                            $btn.css('background', 'var(--text-accent)').css('color', 'var(--bg-dark)');
-                            // Check if we have text waiting to be shown
-                            if ($overlay.text().trim().length > 0) $overlay.fadeIn();
-                        } else {
-                            $btn.text('Comments: Off');
-                            $btn.css('background', '').css('color', '');
-                            $overlay.fadeOut();
-                        }
-                    });
                 },
                 error: function() { 
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
             break;
-
-
 
             
 
