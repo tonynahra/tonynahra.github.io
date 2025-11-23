@@ -205,31 +205,112 @@ function loadModalContent(index) {
             });
             break;
 
-        case 'chess':
+case 'chess':
+            // Fix CORS for GitHub links automatically
+            if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
+                loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+            }
+
             $.ajax({
-                url: loadUrl, type: 'GET',
+                url: loadUrl, 
                 dataType: 'text',
-                success: function(pgnData) {
+                success: function(pgnFileContent) {
+                    // 1. SPLIT PGN INTO GAMES
+                    // Games usually start with [Event "
+                    // We split by that tag, filter out empty strings, and re-add the tag
+                    let rawGames = pgnFileContent.split(/(?=\[Event ")/g).filter(g => g.trim().length > 0);
+                    
+                    if (rawGames.length === 0) rawGames = [pgnFileContent]; // Fallback
+
+                    // 2. BUILD UI SKELETON (Toolbar + Board Area)
                     const boardId = 'chess-board-' + Date.now();
+                    
                     $modalContent.html(`
-                        <div style="background:white; padding: 20px; display:flex; justify-content:center; align-items:center; height:100%;">
-                            <div id="${boardId}" style="width: 400px;"></div>
+                        <div class="chess-container">
+                            <div class="chess-toolbar">
+                                <select id="chess-game-select"></select>
+                                <button id="chess-info-btn" class="tab-button" style="border: 1px solid var(--text-light);">Game Info</button>
+                            </div>
+                            <div class="chess-main-area">
+                                <div id="${boardId}" style="width: 100%; height: 100%;"></div>
+                                <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
+                            </div>
                         </div>
                     `);
+
+                    // 3. POPULATE DROPDOWN
+                    const $select = $('#chess-game-select');
+                    rawGames.forEach((gamePgn, idx) => {
+                        // Extract names for the dropdown label
+                        const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
+                        const black = (gamePgn.match(/\[Black "(.*?)"\]/) || [])[1] || '?';
+                        const result = (gamePgn.match(/\[Result "(.*?)"\]/) || [])[1] || '*';
+                        $select.append(`<option value="${idx}">${idx + 1}. ${white} vs ${black} (${result})</option>`);
+                    });
                     
-                    if (typeof PGNV !== 'undefined') {
-                        PGNV.pgnView(boardId, { 
-                            pgn: pgnData, 
-                            theme: 'brown', 
-                            boardSize: '400px',
-                            layout: 'left' 
-                        });
-                    } else {
-                        $modalContent.html('<div class="error-message">Error: PGN Viewer library not loaded.</div>');
+                    if (rawGames.length <= 1) $select.hide(); // Hide dropdown if only 1 game
+
+                    // 4. RENDER FUNCTION
+                    function renderGame(index) {
+                        const selectedPgn = rawGames[index];
+                        
+                        // Parse Metadata for the Info Overlay
+                        const headers = {};
+                        const headerRegex = /\[([A-Za-z0-9]+)\s+"(.*?)"\]/g;
+                        let match;
+                        while ((match = headerRegex.exec(selectedPgn)) !== null) {
+                            headers[match[1]] = match[2];
+                        }
+                        
+                        // Build Info Table
+                        let infoHtml = '<h4>Game Details</h4><table>';
+                        for (const [key, val] of Object.entries(headers)) {
+                            if(['Event', 'Site', 'Date', 'Round', 'White', 'Black', 'Result', 'ECO'].includes(key)) {
+                                infoHtml += `<tr><td>${key}</td><td>${val}</td></tr>`;
+                            }
+                        }
+                        infoHtml += '</table><br><button class="modal-close-btn" style="float:right;" onclick="$(this).parent().fadeOut()">Close</button>';
+                        $(`#chess-metadata-${boardId}`).html(infoHtml);
+
+                        // Calculate Available Height for Board
+                        // We grab the height of the container minus padding
+                        const containerHeight = $('.chess-main-area').height() || 600;
+                        const boardSize = containerHeight - 20; // 20px padding buffer
+
+                        // Clear previous instance if any (by emptying container)
+                        $(`#${boardId}`).empty();
+
+                        if (typeof PGNV !== 'undefined') {
+                            PGNV.pgnView(boardId, { 
+                                pgn: selectedPgn, 
+                                theme: 'brown', // or 'blue', 'green', 'zeit', 'sportverlag'
+                                boardSize: boardSize, // Dynamic Size
+                                layout: 'left', // Moves on the right, Board on left
+                                width: '100%', // Ensure component takes full width
+                                headers: false, // Hide default header (we use our custom button)
+                            });
+                        } else {
+                            $(`#${boardId}`).html('<div class="error-message">PGN Library not loaded.</div>');
+                        }
                     }
-                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
+
+                    // 5. EVENT LISTENERS
+                    // Initial Load
+                    renderGame(0);
+
+                    // Dropdown Change
+                    $select.on('change', function() {
+                        renderGame($(this).val());
+                    });
+
+                    // Toggle Info
+                    $('#chess-info-btn').on('click', function() {
+                        $(`#chess-metadata-${boardId}`).fadeToggle();
+                    });
                 },
-                error: function() { $modalContent.html('<div class="error-message">Could not load PGN file. (Check CORS/URL)</div>'); }
+                error: function() { 
+                    $modalContent.html('<div class="error-message">Could not load PGN file. (Check CORS or File Path)</div>'); 
+                }
             });
             break;
 
