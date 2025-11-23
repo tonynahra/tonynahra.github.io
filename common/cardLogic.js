@@ -216,23 +216,23 @@ case 'chess':
                 dataType: 'text',
                 success: function(pgnFileContent) {
                     // 1. SPLIT PGN INTO GAMES
-                    // Games usually start with [Event "
-                    // We split by that tag, filter out empty strings, and re-add the tag
                     let rawGames = pgnFileContent.split(/(?=\[Event ")/g).filter(g => g.trim().length > 0);
-                    
-                    if (rawGames.length === 0) rawGames = [pgnFileContent]; // Fallback
+                    if (rawGames.length === 0) rawGames = [pgnFileContent]; 
 
-                    // 2. BUILD UI SKELETON (Toolbar + Board Area)
+                    // 2. BUILD UI
                     const boardId = 'chess-board-' + Date.now();
                     
+                    // Added Comment Overlay Div and Toggle Button
                     $modalContent.html(`
                         <div class="chess-container">
                             <div class="chess-toolbar">
                                 <select id="chess-game-select"></select>
-                                <button id="chess-info-btn" class="tab-button" style="border: 1px solid var(--text-light);">Game Info</button>
+                                <button id="chess-info-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px;">Info</button>
+                                <button id="chess-comment-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px;">Comments: Off</button>
                             </div>
-                            <div class="chess-main-area">
-                                <div id="${boardId}" style="width: 100%; height: 100%;"></div>
+                            <div class="chess-main-area" style="position: relative;">
+                                <div id="${boardId}"></div>
+                                <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
                         </div>
@@ -241,20 +241,22 @@ case 'chess':
                     // 3. POPULATE DROPDOWN
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
-                        // Extract names for the dropdown label
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
                         const black = (gamePgn.match(/\[Black "(.*?)"\]/) || [])[1] || '?';
                         const result = (gamePgn.match(/\[Result "(.*?)"\]/) || [])[1] || '*';
                         $select.append(`<option value="${idx}">${idx + 1}. ${white} vs ${black} (${result})</option>`);
                     });
-                    
-                    if (rawGames.length <= 1) $select.hide(); // Hide dropdown if only 1 game
+                    if (rawGames.length <= 1) $select.hide(); 
+
+                    let observer = null; // To track the mutation observer
 
                     // 4. RENDER FUNCTION
                     function renderGame(index) {
+                        if (observer) observer.disconnect(); // Stop watching previous game moves
+
                         const selectedPgn = rawGames[index];
                         
-                        // Parse Metadata for the Info Overlay
+                        // -- Metadata --
                         const headers = {};
                         const headerRegex = /\[([A-Za-z0-9]+)\s+"(.*?)"\]/g;
                         let match;
@@ -262,58 +264,118 @@ case 'chess':
                             headers[match[1]] = match[2];
                         }
                         
-                        // Build Info Table
                         let infoHtml = '<h4>Game Details</h4><table>';
                         for (const [key, val] of Object.entries(headers)) {
                             if(['Event', 'Site', 'Date', 'Round', 'White', 'Black', 'Result', 'ECO'].includes(key)) {
                                 infoHtml += `<tr><td>${key}</td><td>${val}</td></tr>`;
                             }
                         }
-                        infoHtml += '</table><br><button class="modal-close-btn" style="float:right;" onclick="$(this).parent().fadeOut()">Close</button>';
+                        infoHtml += '</table><br><button class="modal-close-btn" style="float:right; padding:5px 10px; cursor:pointer;" onclick="$(this).parent().fadeOut()">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // Calculate Available Height for Board
-                        // We grab the height of the container minus padding
-                        const containerHeight = $('.chess-main-area').height() || 600;
-                        const boardSize = containerHeight - 20; // 20px padding buffer
+                        // -- Calculate Width --
+                        // We use window width to ensure it doesn't keep growing based on container
+                        const maxWidth = 800;
+                        const calcWidth = Math.min($(window).width() - 40, maxWidth);
 
-                        // Clear previous instance if any (by emptying container)
                         $(`#${boardId}`).empty();
 
                         if (typeof PGNV !== 'undefined') {
-                            PGNV.pgnView(boardId, { 
+                            const pgnvObj = PGNV.pgnView(boardId, { 
                                 pgn: selectedPgn, 
-                                theme: 'brown', // or 'blue', 'green', 'zeit', 'sportverlag'
-                                boardSize: boardSize, // Dynamic Size
-                                layout: 'left', // Moves on the right, Board on left
-                                width: '100%', // Ensure component takes full width
-                                headers: false, // Hide default header (we use our custom button)
+                                theme: 'brown', 
+                                boardSize: calcWidth, // Fixed calculation
+                                layout: 'top', // Moves BELOW board
+                                width: '100%',
+                                headers: false,
                             });
+
+                            // -- Comment Overlay Logic --
+                            // We assume comments are rendered but hidden via CSS (.pgnvjs-comment { display: none })
+                            // We watch for the 'active' class on moves to update the overlay
+                            const movesContainer = document.querySelector(`#${boardId} .pgnvjs-moves`);
+                            const overlay = document.getElementById('chess-comment-overlay');
+                            
+                            if (movesContainer) {
+                                observer = new MutationObserver(() => {
+                                    // Find active move
+                                    const activeMove = movesContainer.querySelector('.pgnvjs-move.active'); // Library uses 'active' or 'yellow'
+                                    // Sometimes library uses a different class for highlighting, let's try standard
+                                    
+                                    // PGNV usually puts comments in a span next to the move or inside it.
+                                    // Since we can't easily predict the DOM structure of every version, 
+                                    // let's look for the comment associated with the active move.
+                                    
+                                    // Strategy: If active move is found, look at its next sibling for a comment
+                                    if (activeMove) {
+                                        let commentText = "";
+                                        // Check next sibling
+                                        let next = activeMove.nextElementSibling;
+                                        if (next && next.classList.contains('pgnvjs-comment')) {
+                                            commentText = next.textContent;
+                                        }
+                                        
+                                        if (commentText && commentText.trim().length > 0) {
+                                            overlay.textContent = commentText;
+                                            // Only show if the toggle is ON
+                                            if ($('#chess-comment-btn').text().includes('On')) {
+                                                $(overlay).fadeIn(200);
+                                            }
+                                        } else {
+                                            $(overlay).fadeOut(200);
+                                        }
+                                    }
+                                });
+                                
+                                observer.observe(movesContainer, { 
+                                    attributes: true, 
+                                    subtree: true, 
+                                    attributeFilter: ['class'] 
+                                });
+                            }
+
                         } else {
                             $(`#${boardId}`).html('<div class="error-message">PGN Library not loaded.</div>');
                         }
                     }
 
-                    // 5. EVENT LISTENERS
-                    // Initial Load
+                    // 5. LISTENERS
                     renderGame(0);
 
-                    // Dropdown Change
-                    $select.on('change', function() {
+                    $select.off('change').on('change', function() {
                         renderGame($(this).val());
                     });
 
-                    // Toggle Info
-                    $('#chess-info-btn').on('click', function() {
+                    $('#chess-info-btn').off('click').on('click', function() {
                         $(`#chess-metadata-${boardId}`).fadeToggle();
+                    });
+
+                    // Toggle Comments Button
+                    $('#chess-comment-btn').off('click').on('click', function() {
+                        const $btn = $(this);
+                        const $overlay = $('#chess-comment-overlay');
+                        
+                        if ($btn.text().includes('Off')) {
+                            $btn.text('Comments: On');
+                            $btn.css('background', 'var(--text-accent)').css('color', 'var(--bg-dark)');
+                            // If there is text currently, show it
+                            if ($overlay.text().trim().length > 0) $overlay.fadeIn();
+                        } else {
+                            $btn.text('Comments: Off');
+                            $btn.css('background', '').css('color', ''); // Reset styles
+                            $overlay.fadeOut();
+                        }
                     });
                 },
                 error: function() { 
-                    $modalContent.html('<div class="error-message">Could not load PGN file. (Check CORS or File Path)</div>'); 
+                    $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
             break;
 
+
+
+            
         case 'html':
             $.ajax({
                 url: loadUrl, type: 'GET',
