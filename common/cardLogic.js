@@ -251,8 +251,9 @@ case 'chess':
                     let observer = null; // To track the mutation observer
 
                     // 4. RENDER FUNCTION
+
                     function renderGame(index) {
-                        if (observer) observer.disconnect(); // Stop watching previous game moves
+                        if (observer) observer.disconnect(); 
 
                         const selectedPgn = rawGames[index];
                         
@@ -270,34 +271,24 @@ case 'chess':
                                 infoHtml += `<tr><td>${key}</td><td>${val}</td></tr>`;
                             }
                         }
-
-
-                        // CHANGED: Class is now 'overlay-close-btn' to avoid closing the main modal
+                        // FIXED: Use .overlay-close-btn to prevent closing entire modal
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()">Close</button>';
-
-                        
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
-                                                    
+
                         // -- Calculate Size --
-                        // 1. Get container dimensions
                         const availableHeight = $('.chess-main-area').height() || 600;
                         const availableWidth = $('.chess-main-area').width() || 800;
-                        
-                        // 2. Account for Moves Panel (240px) + Padding/Gap (60px)
                         const movesPanelSpace = 300; 
-                        
-                        // 3. Determine base fit
-                        // We take the smaller of: Height OR (Width - MovesPanel)
+
                         let calculatedBaseSize = Math.min(availableHeight, availableWidth - movesPanelSpace);
                         
-                        // 4. SHRINK FOR CONTROLS (Safety Margin)
-                        // Shrink by 10% to ensure bottom navigation buttons are visible
+                        // Shrink by 10% to ensure bottom controls fit
                         const boardSize = calculatedBaseSize * 0.90;
-                        
+
                         $(`#${boardId}`).empty();
-                        
+
                         if (typeof PGNV !== 'undefined') {
-                            const pgnvObj = PGNV.pgnView(boardId, { 
+                            PGNV.pgnView(boardId, { 
                                 pgn: selectedPgn, 
                                 theme: 'brown', 
                                 boardSize: boardSize, 
@@ -305,27 +296,26 @@ case 'chess':
                                 width: '100%',
                                 headers: false,
                             });
+                            
+                            // --- THEME PROOFING: FORCE STYLES JS-SIDE ---
+                            setTimeout(() => {
+                                const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
+                                if (movesPanel) {
+                                    movesPanel.style.setProperty('background-color', '#ffffff', 'important');
+                                    movesPanel.style.setProperty('color', '#000000', 'important');
+                                }
+                            }, 50); // Small delay to run after library renders
 
                             // -- Comment Overlay Logic --
-                            // We assume comments are rendered but hidden via CSS (.pgnvjs-comment { display: none })
-                            // We watch for the 'active' class on moves to update the overlay
                             const movesContainer = document.querySelector(`#${boardId} .pgnvjs-moves`);
                             const overlay = document.getElementById('chess-comment-overlay');
                             
                             if (movesContainer) {
                                 observer = new MutationObserver(() => {
-                                    // Find active move
-                                    const activeMove = movesContainer.querySelector('.pgnvjs-move.active'); // Library uses 'active' or 'yellow'
-                                    // Sometimes library uses a different class for highlighting, let's try standard
+                                    const activeMove = movesContainer.querySelector('.pgnvjs-move.active'); 
                                     
-                                    // PGNV usually puts comments in a span next to the move or inside it.
-                                    // Since we can't easily predict the DOM structure of every version, 
-                                    // let's look for the comment associated with the active move.
-                                    
-                                    // Strategy: If active move is found, look at its next sibling for a comment
                                     if (activeMove) {
                                         let commentText = "";
-                                        // Check next sibling
                                         let next = activeMove.nextElementSibling;
                                         if (next && next.classList.contains('pgnvjs-comment')) {
                                             commentText = next.textContent;
@@ -333,7 +323,6 @@ case 'chess':
                                         
                                         if (commentText && commentText.trim().length > 0) {
                                             overlay.textContent = commentText;
-                                            // Only show if the toggle is ON
                                             if ($('#chess-comment-btn').text().includes('On')) {
                                                 $(overlay).fadeIn(200);
                                             }
