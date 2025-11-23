@@ -52,7 +52,6 @@
     margin-bottom: 10px;
 }
 
-/* Card images (YouTube and Raindrop) - DEFAULT */
 .card-item img.card-image,
 .card-item img.YTi {
     width: 100%;
@@ -179,13 +178,13 @@ select:focus, input[type="search"]:focus {
     flex-direction: column;
 }
 
-/* Modal Header - FIXED */
+/* Modal Header - FIXED ALIGNMENT */
 .modal-header {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
     display: flex;
-    justify-content: space-between; /* Pushes left and right nav apart */
+    justify-content: space-between; /* Pushes items to edges */
     align-items: center;
     flex-wrap: nowrap; /* Prevent wrapping */
     gap: 15px;
@@ -200,10 +199,10 @@ select:focus, input[type="search"]:focus {
     display: flex;
     gap: 10px;
     align-items: center;
-    white-space: nowrap; /* Prevent buttons from wrapping */
+    white-space: nowrap; /* Keep buttons on one line */
 }
 
-/* Force right nav to stay on the right */
+/* This forces the right nav to stay on the right */
 .modal-nav-right {
     margin-left: auto;
 }
@@ -220,7 +219,7 @@ select:focus, input[type="search"]:focus {
     transition: all 0.3s;
     cursor: pointer;
     font-size: 0.9rem;
-    display: inline-block; /* Ensure they behave like buttons */
+    display: inline-block;
 }
 
 .modal-header button:hover, .modal-header a:hover { 
@@ -240,6 +239,7 @@ select:focus, input[type="search"]:focus {
 .modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
 
 /* --- Wrappers --- */
+/* FIX: Make iframe wrapper fill 100% of modal content area */
 #modal-content-area .image-wrapper,
 #modal-content-area .iframe-wrapper {
     flex: 1; /* Grow to fill parent */
@@ -291,7 +291,7 @@ select:focus, input[type="search"]:focus {
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
     flex-shrink: 0;
-    flex-wrap: nowrap; /* Prevent wrapping */
+    flex-wrap: nowrap;
 }
 .research-modal-header h2 { margin: 0; color: var(--text-accent); }
 .research-modal-header button, .research-modal-header a { padding: 8px 15px; font-size: 0.9rem; cursor: pointer;}
