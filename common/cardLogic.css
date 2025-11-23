@@ -552,3 +552,20 @@ select:focus, input[type="search"]:focus {
 }
 .chess-metadata-overlay table { width: 100%; border-collapse: collapse; }
 .chess-metadata-overlay td { padding: 8px; border-bottom: 1px solid #444; }
+
+/* --- Overlay Close Button --- */
+.overlay-close-btn {
+    float: right;
+    padding: 5px 15px;
+    background: #e74c3c; /* Red */
+    color: white;
+    border: 1px solid #c0392b;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+.overlay-close-btn:hover {
+    background: #c0392b; /* Darker Red */
+}
