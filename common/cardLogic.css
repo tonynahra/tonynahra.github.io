@@ -390,7 +390,7 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Chess Viewer Styles --- */
-/* --- Chess Viewer Styles --- */
+/* --- Chess Viewer Styles (Watchdog Edition) --- */
 .chess-container {
     display: flex;
     flex-direction: column;
@@ -432,12 +432,14 @@ select:focus, input[type="search"]:focus {
     justify-content: center; 
     align-items: flex-start; 
     padding: 20px;
-    padding-right: 40px !important; /* Force gap from window edge */
+    padding-right: 40px !important; 
     box-sizing: border-box;
 }
 
-/* --- LIBRARY OVERRIDES (Structure) --- */
-.pgnvjs-wrapper {
+/* --- LIBRARY OVERRIDES --- */
+/* We use #content-modal to overpower any theme classes */
+
+#content-modal .pgnvjs-wrapper {
     display: flex !important;
     flex-direction: row !important;
     width: 100% !important;
@@ -446,36 +448,64 @@ select:focus, input[type="search"]:focus {
     gap: 20px;
 }
 
-.pgnvjs-board {
+#content-modal .pgnvjs-board {
     flex-shrink: 1;
 }
 
-/* MOVES PANEL (Structure Only - Colors handled in JS) */
-.pgnvjs-moves {
-    flex: 0 0 240px !important; /* Fixed Width */
+/* MOVES PANEL: Force White & Big Text */
+#content-modal .pgnvjs-moves {
+    /* LOCK WIDTH */
+    flex: 0 0 240px !important;
     width: 240px !important;
     min-width: 240px !important;
     max-width: 240px !important;
+    
     height: 100% !important;
     overflow-y: auto !important;
+    
+    /* FORCE WHITE BACKGROUND */
+    background: #ffffff !important; 
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    
     padding: 15px !important;
     box-sizing: border-box;
-    font-size: 1.4rem !important; 
-    line-height: 1.5 !important;
+    
+    /* BIGGER FONT */
+    font-size: 1.6rem !important; 
+    line-height: 1.6 !important;
+    font-weight: 500 !important;
+    
+    border-left: 4px solid #d2b48c !important;
     border-radius: 4px;
+    
+    /* RESET VARS LOCALLY */
+    --bg-dark: #ffffff !important;
+    --text-primary: #000000 !important;
 }
 
-.pgnvjs-move {
+/* Force all text inside to be black */
+#content-modal .pgnvjs-moves * {
+    color: #000000 !important;
+}
+
+#content-modal .pgnvjs-move {
     cursor: pointer;
     padding: 2px 5px;
     border-radius: 3px;
+    color: #000 !important;
     margin-right: 5px;
     display: inline-block;
+}
+#content-modal .pgnvjs-move:hover { background: #e0e0e0 !important; }
+#content-modal .pgnvjs-move.active { 
+    background: #FFD700 !important; 
+    color: #000 !important; 
 }
 
 .pgnvjs-comment { display: none; }
 
-/* Navigation Buttons Position */
+/* Navigation Buttons */
 .pgnvjs-ctrl {
     display: flex !important;
     justify-content: center !important;
@@ -497,7 +527,7 @@ select:focus, input[type="search"]:focus {
 }
 .overlay-close-btn:hover { background: #c0392b; }
 
-/* Overlays */
+/* Overlays (Unchanged) */
 .chess-comment-overlay {
     position: absolute;
     bottom: 30px; 
@@ -506,7 +536,7 @@ select:focus, input[type="search"]:focus {
     color: #fff;
     padding: 15px 25px;
     border-radius: 8px;
-    font-size: 1.2rem;
+    font-size: 1.4rem; /* Bigger text here too */
     z-index: 100;
     max-width: 500px;
     text-align: center;
