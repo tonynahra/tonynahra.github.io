@@ -1,5 +1,6 @@
 /* --- Tutorial Engine Styles --- */
 
+/* Reset body for iframe */
 body.tutorial-body {
     margin: 0;
     padding: 0;
@@ -9,6 +10,7 @@ body.tutorial-body {
     background-color: var(--bg-dark, #1f2833); 
     color: var(--text-primary, #ffffff);
     font-family: 'Inter', sans-serif;
+    outline: none; 
 }
 
 #tutorialContainer {
@@ -43,12 +45,16 @@ body.tutorial-body {
 }
 
 .tutorial-slide {
+    /* This makes the image as big as possible within the container */
     max-width: 100%;
     max-height: 100%;
     width: auto;
     height: auto;
-    object-fit: contain; /* Ensure aspect ratio is kept */
+    object-fit: contain; 
     cursor: pointer;
+    /* Force full width if aspect ratio allows, otherwise height constrains */
+    min-width: 50%; 
+    min-height: 50%;
 }
 
 /* Navigation Bar */
@@ -144,8 +150,7 @@ body.tutorial-body {
     border: 5px solid var(--bg-medium, #2c3e50); 
     border-top: 5px solid var(--text-accent, #66fcf1); 
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: 50px; height: 50px;
     animation: spin 1s linear infinite;
     margin-bottom: 20px;
 }
