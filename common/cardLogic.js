@@ -26,13 +26,14 @@ function decodeText(text) {
    (Defined outside $(document).ready so they are accessible to mainPage.js)
    ========================================================================== */
 
-function handleCardView($scope, initialLoadOverride) {
+function handleCardView($scope, initialLoadOverride, incrementOverride) {
     $scope.find('.card-list').each(function() {
         const $list = $(this);
         const $items = $list.children('.card-item');
         const totalItems = $items.length;
         const initialLimit = parseInt(initialLoadOverride) || 10;
-        const increment = 10;
+        // Use override if provided, otherwise default to 10
+        const increment = parseInt(incrementOverride) || 10; 
         
         $list.next('.toggle-card-button').remove(); 
         
@@ -41,7 +42,12 @@ function handleCardView($scope, initialLoadOverride) {
             const remaining = totalItems - initialLimit;
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
             
-            $button.data({'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems});
+            $button.data({
+                'visible-count': initialLimit, 
+                'increment': increment, 
+                'total-items': totalItems
+            });
+            // Note: The click listener for this button is delegated in mainPage.js or the bottom of this file
             $list.after($button);
         }
     });
@@ -52,14 +58,19 @@ function showMoreCards($button, $list) {
     const totalItems = parseInt($button.data('total-items') || 0);
     const increment = parseInt($button.data('increment') || 10);
     const visibleCount = parseInt($button.data('visible-count') || 0);
+    
+    // Calculate new visible count
     const newVisibleCount = visibleCount + increment;
     
     $items.slice(visibleCount, newVisibleCount).removeClass('hidden-card-item');
     $button.data('visible-count', newVisibleCount);
     
     const remaining = totalItems - newVisibleCount;
-    if (remaining <= 0) { $button.hide(); } 
-    else { $button.text(`Show More (${remaining} more) \u25BC`); }
+    if (remaining <= 0) { 
+        $button.hide(); 
+    } else { 
+        $button.text(`Show More (${remaining} more) \u25BC`); 
+    }
 }
 
 function handleModalKeys(e) {
@@ -248,28 +259,54 @@ function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResult
 
 /* === LOAD DATA FUNCTIONS === */
 
-function loadPhotoAlbum(jsonUrl, initialLoadOverride) {
+function loadPhotoAlbum(jsonUrl, initialLoadOverride, incrementOverride) {
     const $albumList = $('#photo-album-list');
+    // If called from about page, check for #about-album-list
+    const $targetList = $albumList.length ? $albumList : $('#about-album-list');
+    
     $.getJSON(jsonUrl, function (albumData) {
-        $('#album-title').text(decodeText(albumData.albumTitle));
-        $albumList.empty(); 
+        // Only set title if it exists (main album page)
+        if ($('#album-title').length) {
+            $('#album-title').text(decodeText(albumData.albumTitle));
+        }
+        
+        $targetList.empty(); 
+        
         $.each(albumData.photos, function(index, photo) {
             const title = decodeText(photo.title);
             const category = decodeText(photo.category);
             const description = decodeText(photo.description);
+            
+            // Clean HTML for masonry view (no details div)
+            // We store data in attributes for the modal
             const cardHtml = `
-                <div class="card-item" data-category="${category}" data-keywords="${title},${description}">
+                <div class="card-item" 
+                     data-category="${category}" 
+                     data-keywords="${title},${description}"
+                     data-title="${title}"
+                     data-desc="${description}">
                     <a href="${photo.url}" data-load-type="image">
                         <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
-                        <div class="photo-details"><h3>${title}</h3><p>${description}</p></div>
                     </a>
                 </div>`;
-            $albumList.append(cardHtml);
+            $targetList.append(cardHtml);
         });
-        populateCategoryFilter('#photo-album-list', '#album-category-filter');
-        populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
-        handleCardView($('#content-area'), initialLoadOverride);
-    }).fail(function() { $('#album-title').text("Error Loading Album"); });
+        
+        // Populate filters only if they exist (main album page)
+        if ($('#album-category-filter').length) {
+            populateCategoryFilter('#photo-album-list', '#album-category-filter');
+            populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
+        }
+        
+        // Default to 20 for about page if not specified
+        const defaultIncrement = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
+        const increment = incrementOverride || defaultIncrement;
+        
+        handleCardView($targetList.parent(), initialLoadOverride, increment);
+        
+    }).fail(function() { 
+        if ($('#album-title').length) $('#album-title').text("Error Loading Album"); 
+    });
 }
 
 function loadVids(PL, Category, BKcol, initialLoadOverride) {
@@ -466,12 +503,20 @@ function loadModalContent(index) {
     const desc = $card.find('p').text();
     let infoHtml = '';
 
-    if (title) {
+    // For regular images, we get title/desc from the card itself
+    // For "clean masonry" album items, we get it from data attributes
+    const dataTitle = $card.data('title');
+    const dataDesc = $card.data('desc');
+    
+    const finalTitle = title || dataTitle;
+    const finalDesc = desc || dataDesc;
+
+    if (finalTitle) {
         const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
         infoHtml = `
             <div class="modal-photo-info ${infoVisibleClass}">
-                <h3>${title}</h3>
-                <p>${desc}</p>
+                <h3>${finalTitle}</h3>
+                <p>${finalDesc}</p>
             </div>`;
     }
 
@@ -495,6 +540,7 @@ function loadModalContent(index) {
             if (infoHtml) { $modalInfoBtn.show(); }
             break;
         case 'iframe':
+            // No inline style="height:..."
             $modalContent.html(`
                 <div class="iframe-wrapper">
                     <iframe src="${loadUrl}" class="loaded-iframe"></iframe>
@@ -544,9 +590,123 @@ function filterYouTubeCards() {
     }
 }
 
-// ... (Keeping listeners inside ready) ...
+// --- EVENT LISTENERS (DELEGATED) ---
 $(document).ready(function () {
-    // ... (Listeners remain the same as previously provided, but I'll omit for brevity to fit in response)
-    // See the next step in your instructions to verify this block.
-    // The critical part is the global functions above.
+    
+    // Inject modal
+    $('body').append(`
+        <div id="content-modal" class="modal-backdrop">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-nav-left">
+                        <button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button>
+                        <button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button>
+                        <button class="modal-info-btn" title="Toggle Info (I)">Info</button>
+                    </div>
+                    <div class="modal-nav-right">
+                        <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
+                            Open in new window &nearr;
+                        </a>
+                        <button class="modal-close-btn" title="Close (Esc)">&times; Close</button>
+                    </div>
+                </div>
+                <div id="modal-content-area"></div>
+            </div>
+        </div>
+    `);
+
+    // Listeners
+    $('body').on('click', '.toggle-card-button', function() {
+        const $button = $(this);
+        const $list = $button.prev('.card-list');
+        if ($list.length) { showMoreCards($button, $list); }
+    });
+
+    $('body').on('click', '.card-item, .item', function(e) {
+        const $clickedCard = $(this);
+        const $link = $clickedCard.find('a').first();
+        if (!$link.length) { return; } 
+        
+        const $clickedLink = $(e.target).closest('a');
+        if ($clickedLink.length > 0 && !$clickedLink.is($link)) { return; }
+        
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        
+        const $cardList = $clickedCard.closest('.card-list');
+        const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible');
+        
+        currentCardList = [];
+        $allVisibleCards.each(function() {
+            currentCardList.push($(this).find('a').first());
+        });
+        
+        currentCardIndex = $allVisibleCards.index($clickedCard);
+        
+        if (currentCardList.length > 0) {
+            loadModalContent(currentCardIndex);
+            $('body').addClass('modal-open');
+            $('#content-modal').fadeIn(200);
+            $(document).on('keydown.modalNav', handleModalKeys);
+        }
+    });
+
+    // Generalized Close Button Logic
+    $('body').on('click', '.modal-close-btn', function() {
+        const $modal = $('#content-modal');
+        $('body').removeClass('modal-open');
+        $modal.fadeOut(200);
+        $('#modal-content-area').html(''); 
+        currentCardList = [];
+        currentCardIndex = 0;
+        isModalInfoVisible = false; 
+        $(document).off('keydown.modalNav');
+        $modal.find('.modal-header').show();
+    });
+    
+    $('body').on('click', '#content-modal', function(e) {
+        if (e.target.id === 'content-modal') {
+            $(this).find('.modal-close-btn').first().click();
+        }
+    });
+    
+    $('body').on('click', '.modal-prev-btn', function() {
+        if (currentCardIndex > 0) loadModalContent(currentCardIndex - 1);
+    });
+    
+    $('body').on('click', '.modal-next-btn', function() {
+        if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1);
+    });
+
+    $('body').on('click', '.modal-info-btn', function() {
+        isModalInfoVisible = !isModalInfoVisible;
+        $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible', isModalInfoVisible);
+    });
+
+    // Filter listeners
+    $('body').on('input', '#youtube-search-box', filterYouTubeCards);
+    $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
+    $('body').on('input', '#post-search-box', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
+    $('body').on('change', '#post-category-filter', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
+    $('body').on('change', '#post-keyword-filter', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
+    $('body').on('input', '#cert-search-box', () => filterCardsGeneric('#cert-card-list', '#cert-search-box', '#cert-category-filter', '#cert-keyword-filter', '#cert-no-results', 12));
+    $('body').on('change', '#cert-category-filter', () => filterCardsGeneric('#cert-card-list', '#cert-search-box', '#cert-category-filter', '#cert-keyword-filter', '#cert-no-results', 12));
+    $('body').on('change', '#cert-keyword-filter', () => filterCardsGeneric('#cert-card-list', '#cert-search-box', '#cert-category-filter', '#cert-keyword-filter', '#cert-no-results', 12));
+    $('body').on('input', '#album-search-box', () => filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20));
+    $('body').on('change', '#album-category-filter', () => filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20));
+    $('body').on('change', '#album-keyword-filter', () => filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20));
+    $('body').on('input', '#research-search-box', () => filterCardsGeneric('#research-card-list', '#research-search-box', '#research-category-filter', '#research-keyword-filter', '#research-no-results', 10));
+    $('body').on('change', '#research-category-filter', () => filterCardsGeneric('#research-card-list', '#research-search-box', '#research-category-filter', '#research-keyword-filter', '#research-no-results', 10));
+    $('body').on('change', '#research-keyword-filter', () => filterCardsGeneric('#research-card-list', '#research-search-box', '#research-category-filter', '#research-keyword-filter', '#research-no-results', 10));
+    $('body').on('input', '#tutorials-search-box', () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
+    $('body').on('change', '#tutorials-category-filter', () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
+    $('body').on('change', '#tutorials-keyword-filter', () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
+
+    // Research Tab listener
+    $('#content-modal').on('click', '.tab-button', function() {
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+        const htmlUrl = $(this).data('content-url');
+        loadModalTabContent(htmlUrl, '#research-tab-content-modal');
+    });
 });
