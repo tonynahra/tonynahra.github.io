@@ -390,7 +390,7 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Chess Viewer Styles --- */
-/* --- Chess Viewer Styles (Theme-Proof) --- */
+/* --- Chess Viewer Styles --- */
 .chess-container {
     display: flex;
     flex-direction: column;
@@ -432,11 +432,11 @@ select:focus, input[type="search"]:focus {
     justify-content: center; 
     align-items: flex-start; 
     padding: 20px;
-    padding-right: 40px !important; 
+    padding-right: 40px !important; /* Force gap from window edge */
     box-sizing: border-box;
 }
 
-/* --- LIBRARY OVERRIDES --- */
+/* --- LIBRARY OVERRIDES (Structure) --- */
 .pgnvjs-wrapper {
     display: flex !important;
     flex-direction: row !important;
@@ -450,69 +450,36 @@ select:focus, input[type="search"]:focus {
     flex-shrink: 1;
 }
 
-/* MOVES PANEL: Theme-Proofing */
+/* MOVES PANEL (Structure Only - Colors handled in JS) */
 .pgnvjs-moves {
-    /* LOCK WIDTH */
-    flex: 0 0 240px !important;
+    flex: 0 0 240px !important; /* Fixed Width */
     width: 240px !important;
     min-width: 240px !important;
     max-width: 240px !important;
-    
     height: 100% !important;
     overflow-y: auto !important;
-    
-    /* NUCLEAR OPTION FOR COLORS */
-    background: #ffffff !important; 
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    
-    /* RESET LOCAL VARIABLES (In case theme uses them) */
-    --bg-dark: #ffffff !important;
-    --bg-medium: #ffffff !important;
-    --text-primary: #000000 !important;
-    --text-accent: #000000 !important;
-    
     padding: 15px !important;
     box-sizing: border-box;
     font-size: 1.4rem !important; 
     line-height: 1.5 !important;
-    border-left: 4px solid #d2b48c !important;
     border-radius: 4px;
-}
-
-/* Force all text inside moves to be black */
-.pgnvjs-moves * {
-    color: #000000 !important;
-    background-color: transparent !important;
 }
 
 .pgnvjs-move {
     cursor: pointer;
     padding: 2px 5px;
     border-radius: 3px;
-    color: #000 !important;
     margin-right: 5px;
     display: inline-block;
-}
-.pgnvjs-move:hover { background: #e0e0e0 !important; }
-.pgnvjs-move.active { 
-    background: #FFD700 !important; 
-    color: #000 !important; 
 }
 
 .pgnvjs-comment { display: none; }
 
-/* Navigation Buttons */
+/* Navigation Buttons Position */
 .pgnvjs-ctrl {
     display: flex !important;
     justify-content: center !important;
     margin-top: 10px !important;
-}
-.pgnvjs-ctrl button {
-    background: #444 !important;
-    color: #fff !important;
-    border: 1px solid #666 !important;
-    margin: 0 2px;
 }
 
 /* Overlay Close Button */
