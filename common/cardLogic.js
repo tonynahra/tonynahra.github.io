@@ -431,22 +431,72 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, incrementOverride) {
 }
 
 function loadVids(PL, Category, BKcol, initialLoadOverride) {
-    $('#Grid').empty(); 
-    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
-    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
-    var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
+    $('#Grid').empty();
+    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; // Note: Ensure you restrict this key in Google Cloud Console
+    
+    // Step 1: Get the Playlist Items
+    var playlistURL = 'https://www.googleapis.com/youtube/v3/playlistItems';
+    var playlistOptions = { 
+        part: 'snippet,contentDetails', // Added contentDetails to get clean video IDs
+        key: key, 
+        maxResults: 50, 
+        playlistId: PL 
+    };
 
-    $.getJSON(URL, options, function (data) {
+    $.getJSON(playlistURL, playlistOptions, function (data) {
         $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
-        if (data.items) {
-            resultsLoop(data, Category, BKcol);
-            handleCardView($('#content-area'), initialLoadOverride);
-            populateSmartKeywords('#Grid', '#youtube-keyword-filter');
-            populateCategoryFilter('#Grid', '#youtube-category-filter');
+
+        if (data.items && data.items.length > 0) {
+            
+            // Step 2: Extract Video IDs into a comma-separated string
+            // distinct from the playlist Item ID
+            var videoIds = data.items.map(function(item) {
+                return item.contentDetails.videoId; 
+            }).join(',');
+
+            // Step 3: Verify Status with Videos Endpoint
+            var videoURL = 'https://www.googleapis.com/youtube/v3/videos';
+            var videoOptions = {
+                part: 'status',
+                id: videoIds,
+                key: key
+            };
+
+            $.getJSON(videoURL, videoOptions, function(videoData) {
+                
+                // Create a Set of valid IDs for O(1) lookup
+                // We filter for existence AND public status
+                var validIds = new Set();
+                if (videoData.items) {
+                    videoData.items.forEach(function(vid) {
+                        if (vid.status.privacyStatus === 'public' && vid.status.embeddable) {
+                            validIds.add(vid.id);
+                        }
+                    });
+                }
+
+                // Step 4: Filter the original playlist items
+                // Only keep items that exist in our "validIds" set
+                var activeItems = data.items.filter(function(item) {
+                    return validIds.has(item.contentDetails.videoId);
+                });
+
+                // Update the data object with the filtered list
+                data.items = activeItems;
+
+                // Step 5: Resume original UI logic with clean data
+                resultsLoop(data, Category, BKcol);
+                handleCardView($('#content-area'), initialLoadOverride);
+                populateSmartKeywords('#Grid', '#youtube-keyword-filter');
+                populateCategoryFilter('#Grid', '#youtube-category-filter');
+            });
+        } else {
+            // Handle empty playlist case
+            console.log("No items found in playlist");
         }
     });
 }
-    
+
 function resultsLoop(data, Cat, BKcol) {
     $.each(data.items, function (i, item) {
         if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) {
