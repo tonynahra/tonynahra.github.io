@@ -208,8 +208,7 @@ function loadModalContent(index) {
 
 
 
-
-case 'chess':
+            case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -219,11 +218,9 @@ case 'chess':
                 url: loadUrl, 
                 dataType: 'text',
                 success: function(pgnFileContent) {
-                    // 1. SPLIT PGN
                     let rawGames = pgnFileContent.split(/(?=\[Event ")/g).filter(g => g.trim().length > 0);
                     if (rawGames.length === 0) rawGames = [pgnFileContent]; 
 
-                    // 2. BUILD UI
                     const boardId = 'chess-board-' + Date.now();
                     
                     $modalContent.html(`
@@ -237,7 +234,6 @@ case 'chess':
                                 <div class="chess-white-box">
                                     <div id="${boardId}"></div>
                                 </div>
-                                
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
@@ -254,23 +250,19 @@ case 'chess':
                     if (rawGames.length <= 1) $select.hide(); 
 
                     let gameObserver = null;
-                    let styleWatchdog = null;
+                    let fontEnforcer = null; // New interval variable
 
-                    // 4. RENDER FUNCTION
                     function renderGame(index) {
                         if (gameObserver) gameObserver.disconnect();
-                        if (styleWatchdog) styleWatchdog.disconnect();
+                        if (fontEnforcer) clearInterval(fontEnforcer); // Stop previous enforcer
 
                         const selectedPgn = rawGames[index];
                         
-                        // Metadata
+                        // Metadata (Hidden by default)
                         const headers = {};
                         const headerRegex = /\[([A-Za-z0-9]+)\s+"(.*?)"\]/g;
                         let match;
-                        while ((match = headerRegex.exec(selectedPgn)) !== null) {
-                            headers[match[1]] = match[2];
-                        }
-                        
+                        while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
                         let infoHtml = '<h4>Game Details</h4><table>';
                         for (const [key, val] of Object.entries(headers)) {
                             if(['Event', 'Site', 'Date', 'Round', 'White', 'Black', 'Result', 'ECO'].includes(key)) {
@@ -284,8 +276,6 @@ case 'chess':
                         const availableHeight = $('.chess-main-area').height() || 600;
                         const availableWidth = $('.chess-main-area').width() || 800;
                         const movesPanelSpace = 300; 
-                        
-                        // We subtract extra padding (60px) because of the new White Box padding
                         let calculatedBaseSize = Math.min(availableHeight - 60, availableWidth - movesPanelSpace - 40);
                         const boardSize = calculatedBaseSize * 0.95; 
 
@@ -301,50 +291,32 @@ case 'chess':
                                 headers: false,
                             });
                             
-                            // --- WATCHDOG: Enforce White Box properties ---
-                            const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
-                            
-                            if (movesPanel) {
-                                const forceStyle = () => {
-                                    // 1. Force Container Styles
-                                    movesPanel.style.setProperty('background-color', '#ffffff', 'important');
-                                    movesPanel.style.setProperty('color', '#000000', 'important');
-                                    movesPanel.style.setProperty('font-size', '26px', 'important'); // Backup
+                            // --- THE ENFORCER (Fix for Font Size) ---
+                            // Instead of waiting for a change, we force it repeatedly.
+                            const applyStyles = () => {
+                                const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
+                                if (movesPanel) {
+                                    // 1. Force Container
+                                    movesPanel.setAttribute('style', 'background-color: #ffffff !important; color: #000000 !important; font-size: 26px !important; line-height: 36px !important; width: 240px !important;');
                                     
-                                    // 2. Force INDIVIDUAL MOVE Styles (The Fix)
-                                    const allMoves = movesPanel.querySelectorAll('.pgnvjs-move, .pgnvjs-move a');
-                                    allMoves.forEach(move => {
-                                        move.style.setProperty('font-size', '26px', 'important');
-                                        move.style.setProperty('line-height', '34px', 'important');
-                                        move.style.setProperty('color', '#000000', 'important');
+                                    // 2. Force Children (Numbers, Moves, Links)
+                                    const allChildren = movesPanel.querySelectorAll('*');
+                                    allChildren.forEach(child => {
+                                        child.style.setProperty('font-size', '26px', 'important');
+                                        child.style.setProperty('line-height', '36px', 'important');
+                                        child.style.setProperty('color', '#000000', 'important');
                                     });
-                                };
-                                
-                                // Run immediately
-                                forceStyle();
-                                
-                                // Run again after a short delay (in case library renders moves slowly)
-                                setTimeout(forceStyle, 100);
-                                setTimeout(forceStyle, 500);
+                                }
+                            };
 
-                                // Watch for changes
-                                styleWatchdog = new MutationObserver((mutations) => {
-                                    // If styles change, re-apply forceStyle
-                                    forceStyle();
-                                });
-                                styleWatchdog.observe(movesPanel, { 
-                                    attributes: true, 
-                                    childList: true, // Also watch if new moves are added
-                                    subtree: true,   // Watch deep inside the tree
-                                    attributeFilter: ['style', 'class'] 
-                                });
-                            }
-
-
-
-
+                            // Run immediately
+                            applyStyles();
                             
-                            // -- Comment Overlay Logic --
+                            // Run continually every 500ms to fight any re-renders or theme scripts
+                            fontEnforcer = setInterval(applyStyles, 500);
+
+                            // -- Comment Overlay --
+                            const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
                             const overlay = document.getElementById('chess-comment-overlay');
                             if (movesPanel) {
                                 gameObserver = new MutationObserver(() => {
@@ -393,8 +365,7 @@ case 'chess':
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
-            break;
-            
+            break;            
 
 
             
