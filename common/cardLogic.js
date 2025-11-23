@@ -206,7 +206,7 @@ function loadModalContent(index) {
             break;
 
 case 'chess':
-            // Fix CORS for GitHub links automatically
+            // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
@@ -215,22 +215,51 @@ case 'chess':
                 url: loadUrl, 
                 dataType: 'text',
                 success: function(pgnFileContent) {
-                    // 1. SPLIT PGN INTO GAMES
+                    // 1. SPLIT PGN
                     let rawGames = pgnFileContent.split(/(?=\[Event ")/g).filter(g => g.trim().length > 0);
                     if (rawGames.length === 0) rawGames = [pgnFileContent]; 
 
-                    // 2. BUILD UI
+                    // 2. BUILD UI WITH ID-SPECIFIC STYLE OVERRIDE
                     const boardId = 'chess-board-' + Date.now();
                     
-                    // Added Comment Overlay Div and Toggle Button
-                    $modalContent.html(`
+                    // This style block uses the ID (#) which beats class selectors (.) from your theme
+                    const styleOverride = `
+                        <style>
+                            #${boardId} .pgnvjs-moves {
+                                background-color: #ffffff !important;
+                                color: #000000 !important;
+                                border-left: 4px solid #d2b48c !important;
+                            }
+                            /* Force all text inside to be black */
+                            #${boardId} .pgnvjs-moves * {
+                                color: #000000 !important;
+                            }
+                            /* Hover and Active States */
+                            #${boardId} .pgnvjs-move:hover {
+                                background-color: #e0e0e0 !important;
+                                color: #000000 !important;
+                            }
+                            #${boardId} .pgnvjs-move.active {
+                                background-color: #FFD700 !important; /* Gold for active move */
+                                color: #000000 !important;
+                            }
+                            /* Navigation Buttons */
+                            #${boardId} .pgnvjs-ctrl button {
+                                background: #444 !important;
+                                color: white !important;
+                                margin: 0 2px;
+                            }
+                        </style>
+                    `;
+
+                    $modalContent.html(styleOverride + `
                         <div class="chess-container">
                             <div class="chess-toolbar">
                                 <select id="chess-game-select"></select>
                                 <button id="chess-info-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px;">Info</button>
                                 <button id="chess-comment-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px;">Comments: Off</button>
                             </div>
-                            <div class="chess-main-area" style="position: relative;">
+                            <div class="chess-main-area">
                                 <div id="${boardId}"></div>
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
@@ -248,10 +277,9 @@ case 'chess':
                     });
                     if (rawGames.length <= 1) $select.hide(); 
 
-                    let observer = null; // To track the mutation observer
+                    let observer = null;
 
                     // 4. RENDER FUNCTION
-
                     function renderGame(index) {
                         if (observer) observer.disconnect(); 
 
@@ -271,19 +299,20 @@ case 'chess':
                                 infoHtml += `<tr><td>${key}</td><td>${val}</td></tr>`;
                             }
                         }
-                        // FIXED: Use .overlay-close-btn to prevent closing entire modal
+                        // Close button for info window
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
                         // -- Calculate Size --
                         const availableHeight = $('.chess-main-area').height() || 600;
                         const availableWidth = $('.chess-main-area').width() || 800;
-                        const movesPanelSpace = 300; 
+                        const movesPanelSpace = 300; // Panel width + Gap
 
+                        // Base fit
                         let calculatedBaseSize = Math.min(availableHeight, availableWidth - movesPanelSpace);
                         
-                        // Shrink by 10% to ensure bottom controls fit
-                        const boardSize = calculatedBaseSize * 0.90;
+                        // Shrink by 5% to leave room for controls
+                        const boardSize = calculatedBaseSize * 0.95;
 
                         $(`#${boardId}`).empty();
 
@@ -296,15 +325,6 @@ case 'chess':
                                 width: '100%',
                                 headers: false,
                             });
-                            
-                            // --- THEME PROOFING: FORCE STYLES JS-SIDE ---
-                            setTimeout(() => {
-                                const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
-                                if (movesPanel) {
-                                    movesPanel.style.setProperty('background-color', '#ffffff', 'important');
-                                    movesPanel.style.setProperty('color', '#000000', 'important');
-                                }
-                            }, 50); // Small delay to run after library renders
 
                             // -- Comment Overlay Logic --
                             const movesContainer = document.querySelector(`#${boardId} .pgnvjs-moves`);
@@ -313,14 +333,12 @@ case 'chess':
                             if (movesContainer) {
                                 observer = new MutationObserver(() => {
                                     const activeMove = movesContainer.querySelector('.pgnvjs-move.active'); 
-                                    
                                     if (activeMove) {
                                         let commentText = "";
                                         let next = activeMove.nextElementSibling;
                                         if (next && next.classList.contains('pgnvjs-comment')) {
                                             commentText = next.textContent;
                                         }
-                                        
                                         if (commentText && commentText.trim().length > 0) {
                                             overlay.textContent = commentText;
                                             if ($('#chess-comment-btn').text().includes('On')) {
@@ -331,14 +349,8 @@ case 'chess':
                                         }
                                     }
                                 });
-                                
-                                observer.observe(movesContainer, { 
-                                    attributes: true, 
-                                    subtree: true, 
-                                    attributeFilter: ['class'] 
-                                });
+                                observer.observe(movesContainer, { attributes: true, subtree: true, attributeFilter: ['class'] });
                             }
-
                         } else {
                             $(`#${boardId}`).html('<div class="error-message">PGN Library not loaded.</div>');
                         }
@@ -346,28 +358,18 @@ case 'chess':
 
                     // 5. LISTENERS
                     renderGame(0);
-
-                    $select.off('change').on('change', function() {
-                        renderGame($(this).val());
-                    });
-
-                    $('#chess-info-btn').off('click').on('click', function() {
-                        $(`#chess-metadata-${boardId}`).fadeToggle();
-                    });
-
-                    // Toggle Comments Button
+                    $select.off('change').on('change', function() { renderGame($(this).val()); });
+                    $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
                     $('#chess-comment-btn').off('click').on('click', function() {
                         const $btn = $(this);
                         const $overlay = $('#chess-comment-overlay');
-                        
                         if ($btn.text().includes('Off')) {
                             $btn.text('Comments: On');
                             $btn.css('background', 'var(--text-accent)').css('color', 'var(--bg-dark)');
-                            // If there is text currently, show it
                             if ($overlay.text().trim().length > 0) $overlay.fadeIn();
                         } else {
                             $btn.text('Comments: Off');
-                            $btn.css('background', '').css('color', ''); // Reset styles
+                            $btn.css('background', '').css('color', '');
                             $overlay.fadeOut();
                         }
                     });
@@ -377,7 +379,7 @@ case 'chess':
                 }
             });
             break;
-
+            
 
 
             
