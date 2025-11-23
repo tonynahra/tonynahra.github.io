@@ -183,14 +183,14 @@ select:focus, input[type="search"]:focus {
 
 /* Modal Header - FIXED ALIGNMENT */
 .modal-header {
-    padding: 15px 20px;
+    padding: 15px 20px; /* Add padding back here */
     border-bottom: 1px solid var(--bg-medium);
     display: flex;
     justify-content: space-between; /* Push left/right groups apart */
     align-items: center;
     flex-wrap: nowrap; /* DO NOT WRAP BUTTONS */
     gap: 15px;
-    flex-shrink: 0; /* Prevent header from shrinking */
+    flex-shrink: 0; 
     min-height: 50px;
     width: 100%; 
     box-sizing: border-box; 
@@ -225,6 +225,7 @@ select:focus, input[type="search"]:focus {
     cursor: pointer;
     font-size: 0.9rem;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .modal-header button:hover, .modal-header a:hover { 
@@ -242,6 +243,7 @@ select:focus, input[type="search"]:focus {
 
 .modal-header .modal-info-btn { display: none; }
 .modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
+
 
 /* --- Wrappers --- */
 /* Ensure iframe wrapper fills space perfectly */
@@ -276,7 +278,7 @@ select:focus, input[type="search"]:focus {
     height: 100%; 
     border: none;
     background: #fff;
-    display: block; 
+    display: block; /* Removes phantom spacing */
 }
 
 /* --- Photo Info Overlay --- */
@@ -368,6 +370,7 @@ select:focus, input[type="search"]:focus {
 
 
 /* --- PURE IMAGE MASONRY STYLES --- */
+/* Apply to both main album and about album */
 #photo-album-list .card-item,
 #about-album-list .card-item {
     padding: 0;
@@ -397,11 +400,13 @@ select:focus, input[type="search"]:focus {
     filter: brightness(1.1);
 }
 
+/* Hide the details box in the grid view */
 #photo-album-list .photo-details,
 #about-album-list .photo-details {
     display: none !important;
 }
 
+/* Remove any left border used for categories */
 #photo-album-list .card-item,
 #about-album-list .card-item {
     border-left: none !important;
