@@ -99,6 +99,10 @@ function loadModalContent(index) {
     const jsonUrl = $link.data('json-url');
     const manifestUrl = $link.data('manifest-url');
     
+    // Reset modal state
+    $modal.removeClass('research-mode tutorial-mode');
+    $modal.find('.modal-header').show(); // Always show header now
+    
     // 1. Research Logic
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
@@ -110,36 +114,24 @@ function loadModalContent(index) {
     // 2. Tutorial Logic
     if (loadType === 'tutorial' && manifestUrl) {
         $modal.addClass('tutorial-mode'); 
-        $modal.removeClass('research-mode');
-        $modal.find('.modal-header').hide();
+        // Do NOT hide modal header if you want the "Close" button there
+        // $modal.find('.modal-header').hide(); 
         
         $modalOpenLink.attr('href', manifestUrl);
         
+        const playerUrl = `tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}`;
+        
+        // Just load iframe in content area
         const playerHtml = `
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
-                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
+                <iframe src="${playerUrl}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
             </div>
-            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 20px;">&times;</button>
         `;
         $modalContent.html(playerHtml);
-        
-        // --- THIS WAS THE SCROLLING FIX ---
-        $modalContent.find('.modal-close-btn').on('click', function() {
-            // Correctly remove class from BODY to restore scrolling
-            $('body').removeClass('modal-open');
-            $('#content-modal').removeClass('tutorial-mode').fadeOut(200);
-            $('#modal-content-area').html('');
-            currentCardList = [];
-            $(document).off('keydown.modalNav');
-            $modal.find('.modal-header').show(); 
-        });
         return;
     }
     
     // 3. Regular Logic
-    $modal.removeClass('research-mode tutorial-mode'); 
-    $modal.find('.modal-header').show();
-    
     $modalOpenLink.attr('href', loadUrl);
     $modalContent.find('.modal-photo-info').remove();
     $modalInfoBtn.hide(); 
@@ -165,7 +157,6 @@ function loadModalContent(index) {
     const desc = $card.find('p').text();
     let infoHtml = '';
 
-    // Metadata extraction
     const dataTitle = $card.data('title');
     const dataDesc = $card.data('desc');
     const finalTitle = title || dataTitle;
@@ -293,7 +284,11 @@ function checkKeywordMatch(cardText, selectedKeyword) {
     if (selectedKeyword === "all") return true;
     const synonyms = (typeof SYNONYM_MAP !== 'undefined') ? (SYNONYM_MAP[selectedKeyword] || []) : [];
     const keywordsToMatch = [selectedKeyword, ...synonyms];
-    return keywordsToMatch.some(key => new RegExp(`\\b${key}\\b`, 'i').test(cardText));
+    
+    return keywordsToMatch.some(key => {
+        const regex = new RegExp(`\\b${key}\\b`, 'i'); 
+        return regex.test(cardText);
+    });
 }
 
 function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResultsId, initialLoad) {
@@ -489,6 +484,7 @@ function filterYouTubeCards() {
     }
 }
 
+// ... (Listeners attached in mainPage.js) ...
 
 // --- EVENT LISTENERS (DELEGATED) ---
 $(document).ready(function () {
