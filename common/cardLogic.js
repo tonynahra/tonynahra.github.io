@@ -207,6 +207,7 @@ function loadModalContent(index) {
 
 
 
+
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -223,11 +224,10 @@ case 'chess':
                     const boardId = 'chess-board-' + Date.now();
                     
                     // State Variables
-                    let currentZoom = 1.0; // Start at 100% scale
+                    let currentZoom = 1.0; 
                     let commentsEnabled = false;
 
                     // 1. INJECT HTML
-                    // Note: We use 'transform-origin: top left' to ensure zoom grows naturally
                     $modalContent.html(`
                         <div class="chess-container">
                             <div class="chess-toolbar">
@@ -240,8 +240,8 @@ case 'chess':
                                 <button id="chess-comment-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; cursor: pointer;">Comments: Off</button>
                             </div>
                             <div class="chess-main-area">
-                                <div class="chess-white-box" style="overflow: hidden; position: relative;">
-                                    <div id="${boardId}"></div>
+                                <div class="chess-white-box" style="overflow: auto; position: relative; display: flex;">
+                                    <div id="${boardId}" style="width: 100%; display: flex;"></div>
                                 </div>
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
@@ -251,51 +251,63 @@ case 'chess':
 
                     // --- THE ZOOM FIX ---
                     const applyZoom = () => {
-                        const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
+                        // FIX: Use a broader selector to find the panel anywhere in the modal
+                        const movesPanel = document.querySelector('.pgnvjs-moves');
+                        
                         if (!movesPanel) {
                             console.log("Moves panel not found yet...");
                             return;
                         }
 
-                        // 1. Apply ZOOM (The Magnifying Glass)
-                        // 'zoom' works in most browsers; for safety we could add transform, but try zoom first.
-                        movesPanel.style.zoom = currentZoom;
-                        
-                        // 2. Force Basic Colors (Just in case)
+                        // 1. Force Basic Styles (White Background)
                         movesPanel.style.setProperty('background-color', '#ffffff', 'important');
                         movesPanel.style.setProperty('color', '#000000', 'important');
+                        movesPanel.style.setProperty('border-left', '4px solid #d2b48c', 'important');
+                        movesPanel.style.setProperty('padding', '10px', 'important');
+
+                        // 2. Apply ZOOM (The Magnifying Glass)
+                        // We set 'zoom' for Chrome/Edge/Safari
+                        movesPanel.style.zoom = currentZoom;
                         
-                        // 3. Force Font Family (to ensure readability when zoomed)
+                        // 3. Fallback for Firefox (Transform)
+                        // If 'zoom' doesn't exist or isn't supported, we use transform
+                        if (typeof movesPanel.style.zoom === 'undefined' || movesPanel.style.zoom === '') {
+                             movesPanel.style.transform = `scale(${currentZoom})`;
+                             movesPanel.style.transformOrigin = 'top left';
+                             movesPanel.style.width = `${100 / currentZoom}%`; // Adjust width so it doesn't overflow
+                        }
+                        
+                        // 4. Force Text Colors
                         const allText = movesPanel.querySelectorAll('*');
                         allText.forEach(el => {
                             el.style.setProperty('color', '#000000', 'important');
                             el.style.setProperty('font-family', 'sans-serif', 'important');
-                            // We explicitly DO NOT set font-size here, allowing Zoom to do the work
+                            if(el.tagName === 'A') {
+                                el.style.setProperty('text-decoration', 'none', 'important');
+                            }
                         });
                         
                         console.log("Applied Zoom Level:", currentZoom);
                     };
 
                     // --- BIND BUTTONS ---
-                    document.getElementById('chess-font-minus').onclick = function(e) {
+                    // Using generic document listeners to catch elements even if re-created
+                    $('#content-modal').off('click', '#chess-font-minus').on('click', '#chess-font-minus', function(e) {
                         e.preventDefault(); 
-                        e.stopPropagation();
                         if (currentZoom > 0.6) {
-                            currentZoom -= 0.1; // Decrease by 10%
+                            currentZoom -= 0.1; 
                             applyZoom();
                         }
-                    };
+                    });
 
-                    document.getElementById('chess-font-plus').onclick = function(e) {
+                    $('#content-modal').off('click', '#chess-font-plus').on('click', '#chess-font-plus', function(e) {
                         e.preventDefault();
-                        e.stopPropagation();
-                        currentZoom += 0.1; // Increase by 10%
+                        currentZoom += 0.1; 
                         applyZoom();
-                    };
+                    });
 
-                    document.getElementById('chess-comment-btn').onclick = function(e) {
+                    $('#content-modal').off('click', '#chess-comment-btn').on('click', '#chess-comment-btn', function(e) {
                         e.preventDefault();
-                        e.stopPropagation();
                         commentsEnabled = !commentsEnabled;
                         const $btn = $(this);
                         const $overlay = $('#chess-comment-overlay');
@@ -309,7 +321,7 @@ case 'chess':
                             $btn.css('background', '').css('color', '');
                             $overlay.fadeOut();
                         }
-                    };
+                    });
 
                     // --- RENDER LOGIC ---
                     const $select = $('#chess-game-select');
@@ -364,48 +376,52 @@ case 'chess':
                             });
                             
                             // Initialize Zoom
-                            applyZoom();
+                            // We use a short timeout to let the library render the DOM nodes first
+                            setTimeout(applyZoom, 200);
                             
-                            // Enforce Zoom (in case library resets style)
-                            zoomEnforcer = setInterval(applyZoom, 500);
+                            // Enforce Zoom repeatedly to catch re-renders
+                            zoomEnforcer = setInterval(applyZoom, 1000);
 
                             // --- OBSERVER (Comments) ---
-                            const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
-                            const overlay = document.getElementById('chess-comment-overlay');
-                            
-                            if (movesPanel) {
-                                gameObserver = new MutationObserver(() => {
-                                    // Re-apply zoom on changes (just to be safe)
-                                    if(movesPanel.style.zoom != currentZoom) {
-                                        movesPanel.style.zoom = currentZoom;
-                                    }
+                            // We wait slightly to find the panel
+                            setTimeout(() => {
+                                const movesPanel = document.querySelector('.pgnvjs-moves');
+                                const overlay = document.getElementById('chess-comment-overlay');
+                                
+                                if (movesPanel) {
+                                    gameObserver = new MutationObserver(() => {
+                                        // Re-apply zoom logic if style gets wiped
+                                        if(movesPanel.style.backgroundColor !== 'rgb(255, 255, 255)' && movesPanel.style.backgroundColor !== '#ffffff') {
+                                            applyZoom();
+                                        }
 
-                                    const activeMove = movesPanel.querySelector('.pgnvjs-move.active'); 
-                                    if (activeMove) {
-                                        let commentText = "";
-                                        let next = activeMove.nextElementSibling;
-                                        while(next && !next.classList.contains('pgnvjs-move')) {
-                                            if (next.classList.contains('pgnvjs-comment')) {
-                                                commentText += " " + next.textContent;
+                                        const activeMove = movesPanel.querySelector('.pgnvjs-move.active'); 
+                                        if (activeMove) {
+                                            let commentText = "";
+                                            let next = activeMove.nextElementSibling;
+                                            while(next && !next.classList.contains('pgnvjs-move')) {
+                                                if (next.classList.contains('pgnvjs-comment')) {
+                                                    commentText += " " + next.textContent;
+                                                }
+                                                next = next.nextElementSibling;
                                             }
-                                            next = next.nextElementSibling;
-                                        }
 
-                                        if (commentText && commentText.trim().length > 0) {
-                                            overlay.textContent = commentText;
-                                            if (commentsEnabled) $(overlay).show();
-                                        } else {
-                                            $(overlay).hide();
+                                            if (commentText && commentText.trim().length > 0) {
+                                                overlay.textContent = commentText;
+                                                if (commentsEnabled) $(overlay).show();
+                                            } else {
+                                                $(overlay).hide();
+                                            }
                                         }
-                                    }
-                                });
-                                gameObserver.observe(movesPanel, { 
-                                    attributes: true, 
-                                    subtree: true, 
-                                    childList: true, 
-                                    attributeFilter: ['class'] 
-                                });
-                            }
+                                    });
+                                    gameObserver.observe(movesPanel, { 
+                                        attributes: true, 
+                                        subtree: true, 
+                                        childList: true, 
+                                        attributeFilter: ['class', 'style'] 
+                                    });
+                                }
+                            }, 500);
                         } else {
                             $(`#${boardId}`).html('<div class="error-message">PGN Library not loaded.</div>');
                         }
@@ -424,8 +440,6 @@ case 'chess':
                 }
             });
             break;
-
-
             
             
         case 'html':
