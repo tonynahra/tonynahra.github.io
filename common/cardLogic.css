@@ -36,7 +36,6 @@
 
 .card-item p {
     font-size: 0.95rem;
-    /* Limit text to 4 lines */
     display: -webkit-box;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
@@ -123,24 +122,28 @@
 
 .search-wrapper { margin-bottom: 0; }
 
-/* Dropdowns & Inputs */
-select, input[type="search"] {
-    width: 100%;
-    padding: 12px 15px;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--bg-medium);
-    border-radius: 4px;
-    color: var(--text-primary);
-    font-family: var(--font-code);
-    font-size: 1rem;
-    box-sizing: border-box;
+#post-category-filter, #cert-category-filter, #post-keyword-filter, #cert-keyword-filter,
+#youtube-category-filter, #youtube-keyword-filter, #album-category-filter, #album-keyword-filter,
+#research-category-filter, #research-keyword-filter, #tutorials-category-filter, #tutorials-keyword-filter { 
+    width: 100%; padding: 12px 15px; background-color: var(--bg-dark); border: 1px solid var(--bg-medium);
+    border-radius: 4px; color: var(--text-primary); font-family: var(--font-code); font-size: 1rem; box-sizing: border-box;
 }
 
-select:focus, input[type="search"]:focus {
-    outline: none;
-    border-color: var(--text-accent);
-    box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+#post-category-filter:focus, #cert-category-filter:focus, #post-keyword-filter:focus, #cert-keyword-filter:focus,
+#youtube-category-filter:focus, #youtube-keyword-filter:focus, #album-category-filter:focus, #album-keyword-filter:focus,
+#research-category-filter:focus, #research-keyword-filter:focus, #tutorials-category-filter:focus, #tutorials-keyword-filter:focus { 
+    outline: none; border-color: var(--text-accent);
 }
+
+#youtube-search-box, #post-search-box, #cert-search-box, #album-search-box, #research-search-box, #tutorials-search-box { 
+    width: 100%; padding: 12px 15px; background-color: var(--bg-dark); border: 1px solid var(--bg-medium);
+    border-radius: 4px; color: var(--text-primary); font-family: var(--font-code); font-size: 1rem; box-sizing: border-box;
+}
+
+#youtube-search-box:focus, #post-search-box:focus, #cert-search-box:focus, #album-search-box:focus, #research-search-box:focus, #tutorials-search-box:focus { 
+    outline: none; border-color: var(--text-accent); box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+}
+
 
 /* --- Modal Styles --- */
 .modal-backdrop {
@@ -174,7 +177,7 @@ select:focus, input[type="search"]:focus {
     flex: 1; /* Grow to fill remaining height */
     overflow-y: auto; 
     position: relative; 
-    display: flex; /* Use flex for children alignment */
+    display: flex; 
     flex-direction: column;
 }
 
@@ -184,9 +187,9 @@ select:focus, input[type="search"]:focus {
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
     display: flex;
-    justify-content: space-between; /* Pushes left and right nav apart */
+    justify-content: space-between; 
     align-items: center;
-    flex-wrap: nowrap; /* Prevent wrapping to keep on same line */
+    flex-wrap: nowrap; /* Keep on one line */
     gap: 15px;
     flex-shrink: 0; 
 }
@@ -199,7 +202,11 @@ select:focus, input[type="search"]:focus {
     display: flex;
     gap: 10px;
     align-items: center;
-    white-space: nowrap; /* Keep buttons on same line */
+}
+
+/* Force right nav to the right */
+.modal-nav-right {
+    margin-left: auto; 
 }
 
 .modal-header button, .modal-header a { 
@@ -235,7 +242,7 @@ select:focus, input[type="search"]:focus {
 /* --- Wrappers --- */
 #modal-content-area .image-wrapper,
 #modal-content-area .iframe-wrapper {
-    flex: 1; /* Grow to fill parent */
+    flex: 1; 
     width: 100%;
     height: 100%;
     display: flex;
@@ -284,9 +291,17 @@ select:focus, input[type="search"]:focus {
     padding-bottom: 15px;
     border-bottom: 1px solid var(--bg-medium);
     flex-shrink: 0;
+    flex-wrap: nowrap;
 }
 .research-modal-header h2 { margin: 0; color: var(--text-accent); }
 .research-modal-header button, .research-modal-header a { padding: 8px 15px; font-size: 0.9rem; cursor: pointer;}
+
+/* Force research header buttons to the right */
+.research-modal-header .modal-nav-right {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+}
 
 .tab-nav {
     display: flex;
@@ -313,13 +328,13 @@ select:focus, input[type="search"]:focus {
 
 /* Tab Content Area */
 .tab-content {
-    flex: 1; /* Grow to fill remaining height */
+    flex: 1; 
     display: flex;
     flex-direction: column;
     overflow: hidden; 
 }
 .tab-content .iframe-wrapper {
-    flex: 1; /* Fill tab content */
+    flex: 1; 
     height: 100%;
 }
 
@@ -337,22 +352,21 @@ select:focus, input[type="search"]:focus {
 
 
 /* --- PURE IMAGE MASONRY STYLES --- */
-/* Apply to both main album and about album */
 #photo-album-list .card-item,
 #about-album-list .card-item {
     padding: 0;
     background: transparent;
     box-shadow: none;
     border: none;
-    border-radius: 8px; /* Slightly round corners of the image container */
+    border-radius: 8px; 
     overflow: hidden;
 }
 
 #photo-album-list .card-image,
 #about-album-list .card-image {
     width: 100%;
-    height: auto; /* Let height flow naturally */
-    display: block; /* Removes bottom gap */
+    height: auto; 
+    display: block; 
     object-fit: cover;
     border-radius: 8px;
     transition: transform 0.3s ease;
@@ -362,17 +376,15 @@ select:focus, input[type="search"]:focus {
 
 #photo-album-list .card-item:hover .card-image,
 #about-album-list .card-item:hover .card-image {
-    transform: scale(1.03); /* Subtle zoom */
+    transform: scale(1.03); 
     filter: brightness(1.1);
 }
 
-/* Hide the details box in the grid view */
 #photo-album-list .photo-details,
 #about-album-list .photo-details {
     display: none !important;
 }
 
-/* Remove any left border used for categories */
 #photo-album-list .card-item,
 #about-album-list .card-item {
     border-left: none !important;
