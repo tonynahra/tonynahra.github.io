@@ -99,7 +99,8 @@ function loadModalContent(index) {
 
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
-    const loadUrl = $link.attr('href');
+    // CHANGED: Use 'let' instead of 'const' so we can modify the URL if needed
+    let loadUrl = $link.attr('href');
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
     const manifestUrl = $link.data('manifest-url');
@@ -128,13 +129,14 @@ function loadModalContent(index) {
         return;
     }
 
-    // 3. Standard Logic (HTML, Image, Iframe, Markdown, Chess)
+    // 3. Standard Logic
     $modal.removeClass('research-mode'); 
-    $modalOpenLink.attr('href', loadUrl);
+    // We keep the ORIGINAL link for the "Open in new window" button (user friendly)
+    $modalOpenLink.attr('href', loadUrl); 
     $modalContent.find('.modal-photo-info').remove();
     $modalInfoBtn.hide(); 
     
-    // === AUTO DETECT TYPE IF NOT SPECIFIED ===
+    // === AUTO DETECT TYPE ===
     if (!loadType) {
         if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
             loadType = 'image';
@@ -155,9 +157,15 @@ function loadModalContent(index) {
         }
     }
 
+    // === NEW: GitHub Link Fixer ===
+    // If we are fetching data (Markdown or Chess) from GitHub, 
+    // we must use the "raw" domain to avoid CORS errors.
+    if ((loadType === 'markdown' || loadType === 'chess') && loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
+        loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+    }
+
     const customHeight = $link.data('height') || '90vh';
     
-    // Info extraction
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
     const desc = $card.find('p').text();
@@ -174,12 +182,10 @@ function loadModalContent(index) {
 
     switch (loadType) {
         case 'markdown':
-            // Ensure 'marked' library is loaded in your HTML
             $.ajax({
                 url: loadUrl, type: 'GET',
                 dataType: 'text',
                 success: function(markdownText) { 
-                    // Parse Markdown to HTML
                     const htmlContent = typeof marked !== 'undefined' 
                         ? marked.parse(markdownText) 
                         : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
@@ -191,12 +197,11 @@ function loadModalContent(index) {
                     `);
                     if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
                 },
-                error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
+                error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file. (Check CORS/URL)</div>'); }
             });
             break;
 
         case 'chess':
-            // Ensure PGNViewer library is loaded
             $.ajax({
                 url: loadUrl, type: 'GET',
                 dataType: 'text',
@@ -213,15 +218,14 @@ function loadModalContent(index) {
                             pgn: pgnData, 
                             theme: 'brown', 
                             boardSize: '400px',
-                            layout: 'left' // or 'top', 'left', 'right'
+                            layout: 'left' 
                         });
                     } else {
                         $modalContent.html('<div class="error-message">Error: PGN Viewer library not loaded.</div>');
                     }
-                    
                     if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
                 },
-                error: function() { $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); }
+                error: function() { $modalContent.html('<div class="error-message">Could not load PGN file. (Check CORS/URL)</div>'); }
             });
             break;
 
@@ -262,8 +266,6 @@ function loadModalContent(index) {
     $('.modal-prev-btn').prop('disabled', index <= 0);
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
-// ... (Rest of file remains the same) ...
-
 /* === RESEARCH BUILDER (Uses Main Header) === */
 
 function buildResearchModal(jsonUrl) {
