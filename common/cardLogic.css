@@ -464,7 +464,7 @@ select:focus, input[type="search"]:focus {
     flex-shrink: 1;
 }
 
-/* Moves Panel */
+/* Moves Panel inside the White Box */
 .chess-white-box .pgnvjs-moves {
     flex: 0 0 240px !important;
     width: 240px !important;
@@ -475,24 +475,43 @@ select:focus, input[type="search"]:focus {
     /* STYLE ENFORCEMENT */
     background-color: #ffffff !important;
     color: #000000 !important;
-    font-size: 1.6rem !important; /* BIG FONT */
-    line-height: 1.6 !important;
-    font-weight: 500 !important;
     
     border-left: 4px solid #d2b48c !important;
     padding-left: 15px !important;
 }
 
-/* Force all text inside to be black */
+/* Force all text container inside to be black */
 .chess-white-box .pgnvjs-moves * {
     color: #000000 !important;
+}
+
+/* --- THE FONT SIZE FIX --- */
+.chess-white-box .pgnvjs-move {
+    font-size: 1.9rem !important;  /* Much Bigger */
+    line-height: 2.0rem !important; /* Spaced out lines */
+    font-weight: 600 !important;    /* Bold and clear */
+    
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-right: 8px; /* More space between moves */
+    margin-bottom: 5px; /* More space between lines */
+    display: inline-block;
 }
 
 /* Active Move Highlight */
 .chess-white-box .pgnvjs-move.active {
     background: #FFD700 !important;
     color: #000 !important;
+    transform: scale(1.1); /* Slight pop effect for active move */
 }
+
+
+/* Force all text inside to be black */
+.chess-white-box .pgnvjs-moves * {
+    color: #000000 !important;
+}
+
 
 /* Hide Comments in list */
 .pgnvjs-comment { display: none; }
