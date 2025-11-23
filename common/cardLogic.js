@@ -272,23 +272,27 @@ case 'chess':
                         }
                         infoHtml += '</table><br><button class="modal-close-btn" style="float:right; padding:5px 10px; cursor:pointer;" onclick="$(this).parent().fadeOut()">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
-
-                        // -- Calculate Width --
-                        // We use window width to ensure it doesn't keep growing based on container
-                        const maxWidth = 800;
-                        const calcWidth = Math.min($(window).width() - 40, maxWidth);
-
-                        $(`#${boardId}`).empty();
-
-                        if (typeof PGNV !== 'undefined') {
-                            const pgnvObj = PGNV.pgnView(boardId, { 
-                                pgn: selectedPgn, 
-                                theme: 'brown', 
-                                boardSize: calcWidth, // Fixed calculation
-                                layout: 'left', // Moves RIGHT board
-                                width: '100%',
-                                headers: false,
-                            });
+                            
+                            // -- Calculate Size --
+                            // We check both Height AND Width to ensure the board fits.
+                            const availableHeight = $('.chess-main-area').height() || 600;
+                            const availableWidth = $('.chess-main-area').width() || 800;
+                            const movesPanelWidth = 300; // 280px width + 20px padding/gap buffer
+                            
+                            // Board size is the smaller of: (Height - padding) OR (Width - MovesPanel)
+                            const boardSize = Math.min(availableHeight - 40, availableWidth - movesPanelWidth);
+                            
+                            $(`#${boardId}`).empty();
+                            
+                            if (typeof PGNV !== 'undefined') {
+                                const pgnvObj = PGNV.pgnView(boardId, { 
+                                    pgn: selectedPgn, 
+                                    theme: 'brown', 
+                                    boardSize: boardSize, 
+                                    layout: 'left',
+                                    width: '100%',
+                                    headers: false,
+                                });
 
                             // -- Comment Overlay Logic --
                             // We assume comments are rendered but hidden via CSS (.pgnvjs-comment { display: none })
