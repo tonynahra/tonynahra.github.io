@@ -390,15 +390,15 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Chess Viewer Styles --- */
-/* --- Chess Viewer Styles (Updated) --- */
+
+/* --- Chess Viewer Styles (Side-by-Side Fixed) --- */
 .chess-container {
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 100%;
-    background: var(--bg-dark); /* Dark outer background */
+    background: var(--bg-dark);
     overflow: hidden;
-    position: relative;
 }
 
 .chess-toolbar {
@@ -412,100 +412,85 @@ select:focus, input[type="search"]:focus {
     z-index: 10;
 }
 
+/* FIXED: Double the dropdown width */
 .chess-toolbar select {
-    width: auto;
-    max-width: 300px;
+    width: 600px; /* Increased from 300px */
+    max-width: 80%; /* Responsive safety */
     background: var(--bg-dark);
     color: var(--text-primary);
     border: 1px solid var(--text-light);
+    padding: 8px;
+    font-size: 1rem;
 }
 
-/* Wrapper for the board and moves */
+/* Main Area: Side-by-Side Layout */
 .chess-main-area {
     flex: 1;
     display: flex;
-    flex-direction: column;
-    overflow-y: auto; 
+    flex-direction: row; /* Board Left, Moves Right */
+    overflow: hidden; /* Container doesn't scroll, inner elements do */
     background: var(--bg-dark);
     width: 100%;
-    align-items: center;
-    padding-bottom: 20px;
+    justify-content: center;
+    padding: 20px;
+    gap: 20px;
 }
 
-/* --- OVERRIDE LIBRARY DEFAULTS --- */
+/* --- LIBRARY OVERRIDES --- */
 
-/* 1. Layout Wrapper */
 .pgnvjs-wrapper {
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: row !important; /* Force Side-by-Side */
     width: 100% !important;
-    align-items: center;
+    height: 100% !important;
+    align-items: flex-start !important; /* Align to top */
+    justify-content: center !important;
 }
 
-/* 2. Board Styling */
 .pgnvjs-board {
-    width: 100% !important;
-    max-width: 800px; /* Limits huge boards on big screens */
-    margin: 0 auto;
+    /* Ensure board fits vertically */
+    height: 100% !important;
+    width: auto !important; 
+    aspect-ratio: 1 / 1; /* Keep square */
+    max-height: 80vh; /* Prevent overflow */
 }
 
-/* 3. Navigation Buttons (Positioned Top Right above moves) */
-.pgnvjs-ctrl {
-    display: flex !important;
-    justify-content: flex-end !important; /* Puts buttons on the Right */
-    width: 100% !important;
-    max-width: 800px; /* Match board width */
-    margin: 5px auto !important;
-    background: transparent !important;
-    border: none !important;
-}
-
-/* 4. Moves Panel (Beige & Big Text) */
+/* MOVES PANEL: White BG, Big Text, Right Side */
 .pgnvjs-moves {
-    width: 100% !important;
-    max-width: 800px; /* Match board width */
+    flex: 1;
+    height: 100% !important;
+    overflow-y: auto !important;
     
-    /* BEIGE BACKGROUND & TEXT FIXES */
-    background-color: #f5f5dc !important; 
-    color: #000000 !important; /* Force Black Text */
+    background-color: #ffffff !important; /* White Background */
+    color: #000000 !important; /* Black Text */
     
     padding: 20px !important;
     box-sizing: border-box;
-    
-    /* BIGGER TEXT */
-    font-size: 1.3rem !important; 
-    line-height: 1.8 !important;
-    font-family: sans-serif !important;
-    
-    min-height: 200px;
-    border-top: 4px solid #d2b48c !important; /* Tan border separator */
+    font-size: 1.3rem !important; /* Big Font */
+    line-height: 1.6 !important;
+    border-left: 4px solid #d2b48c !important; /* Separator border */
+    min-width: 300px; /* Prevent it from being too narrow */
 }
 
-/* 5. Individual Moves */
 .pgnvjs-move {
     cursor: pointer;
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: #000000 !important; /* Ensure move text is black */
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: #000 !important;
     margin-right: 5px;
+    display: inline-block;
 }
-.pgnvjs-move:hover { 
-    background-color: #e0e0e0 !important; 
-    color: #000 !important;
-}
-.pgnvjs-move.active {
-    background-color: #FFD700 !important; /* Highlight active move (Gold) */
-    color: #000 !important;
-}
+.pgnvjs-move:hover { background: #e0e0e0 !important; }
+.pgnvjs-move.active { background: #FFD700 !important; color: #000 !important; }
 
-/* Hide default inline comments */
+/* Keep comments hidden in the list if using the overlay feature */
 .pgnvjs-comment { display: none; }
 
-/* Comment Overlay */
+/* Styles for the overlays remain the same */
 .chess-comment-overlay {
     position: absolute;
-    bottom: 20px; 
-    left: 50%;
+    bottom: 30px; 
+    left: 50%; /* This might need adjustment relative to board if side-by-side */
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.9);
     color: #fff;
@@ -513,18 +498,16 @@ select:focus, input[type="search"]:focus {
     border-radius: 8px;
     font-size: 1.1rem;
     z-index: 100;
-    max-width: 80%;
+    max-width: 600px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     display: none; 
     pointer-events: none; 
     border: 1px solid var(--text-accent);
 }
 
-/* Metadata Overlay */
 .chess-metadata-overlay {
     position: absolute;
-    top: 60px;
+    top: 70px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.95);
@@ -537,6 +520,5 @@ select:focus, input[type="search"]:focus {
     box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     border: 1px solid var(--text-accent);
 }
-.chess-metadata-overlay h4 { margin-top: 0; color: var(--text-accent); }
 .chess-metadata-overlay table { width: 100%; border-collapse: collapse; }
 .chess-metadata-overlay td { padding: 8px; border-bottom: 1px solid #444; }
