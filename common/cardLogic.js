@@ -3,7 +3,7 @@ var currentCardList = [];
 var currentCardIndex = 0; 
 var isModalInfoVisible = false; 
 
-/* === HELPER FUNCTIONS === */
+/* === HELPER FUNCTIONS (Global Scope) === */
 
 function decodeText(text) {
     if (!text) return "";
@@ -24,7 +24,6 @@ function handleCardView($scope, initialLoadOverride, incrementOverride) {
         const $items = $list.children('.card-item');
         const totalItems = $items.length;
         const initialLimit = parseInt(initialLoadOverride) || 10;
-        // Use override if provided, otherwise default to 10
         const increment = parseInt(incrementOverride) || 10; 
         
         $list.next('.toggle-card-button').remove(); 
@@ -50,8 +49,6 @@ function showMoreCards($button, $list) {
     const totalItems = parseInt($button.data('total-items') || 0);
     const increment = parseInt($button.data('increment') || 10);
     const visibleCount = parseInt($button.data('visible-count') || 0);
-    
-    // Calculate new visible count
     const newVisibleCount = visibleCount + increment;
     
     $items.slice(visibleCount, newVisibleCount).removeClass('hidden-card-item');
@@ -97,7 +94,7 @@ function loadModalContent(index) {
     const $modalInfoBtn = $modal.find('.modal-info-btn');
     const $modalHeader = $modal.find('.modal-header');
     
-    // --- RESET HEADER STATE ---
+    // --- RESET HEADER STATE (Critical Step) ---
     // 1. Ensure the single main header is visible
     $modalHeader.show();
     
@@ -506,7 +503,7 @@ function filterYouTubeCards() {
     }
 }
 
-// --- EVENT LISTENERS (DELEGATED) ---
+/* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
     
     // Inject modal
