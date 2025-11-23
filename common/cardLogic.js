@@ -190,13 +190,17 @@ function loadModalContent(index) {
                         ? marked.parse(markdownText) 
                         : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
                     
+                    // CHANGED: Wrapped in .markdown-wrapper
                     $modalContent.html(`
-                        <div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">
-                            ${htmlContent}
+                        <div class="markdown-wrapper">
+                            <div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">
+                                ${htmlContent}
+                            </div>
                         </div>
                     `);
                     if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
                 },
+                                
                 error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file. (Check CORS/URL)</div>'); }
             });
             break;
