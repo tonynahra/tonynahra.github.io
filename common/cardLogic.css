@@ -36,6 +36,7 @@
 
 .card-item p {
     font-size: 0.95rem;
+    /* Limit text to 4 lines */
     display: -webkit-box;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
@@ -141,7 +142,7 @@ select:focus, input[type="search"]:focus {
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-/* --- Modal Styles --- */
+/* --- Modal Styles (FIXED LAYOUT) --- */
 .modal-backdrop {
     display: none; 
     position: fixed;
@@ -158,7 +159,7 @@ select:focus, input[type="search"]:focus {
 .modal-content {
     background-color: var(--bg-dark);
     margin: 20px auto; 
-    padding: 0; /* Remove padding to let header touch edges */
+    padding: 0; /* No padding, let header touch edges */
     border: 1px solid var(--bg-medium);
     border-radius: 8px;
     width: 90%; 
@@ -172,11 +173,12 @@ select:focus, input[type="search"]:focus {
 /* Main Content Area */
 #modal-content-area {
     flex: 1; /* Grow to fill remaining height */
-    overflow-y: auto; 
-    position: relative; 
-    display: flex; 
+    display: flex; /* Use flex for children alignment */
     flex-direction: column;
-    height: 100%;
+    overflow: hidden; /* Hide overflow on container, let children scroll if needed */
+    position: relative;
+    padding: 0; /* No padding here */
+    height: 100%; /* Ensure it knows its height basis */
 }
 
 /* Modal Header - FIXED ALIGNMENT */
@@ -186,10 +188,12 @@ select:focus, input[type="search"]:focus {
     display: flex;
     justify-content: space-between; /* Push left/right groups apart */
     align-items: center;
-    flex-wrap: nowrap; /* DO NOT WRAP */
+    flex-wrap: nowrap; /* DO NOT WRAP BUTTONS */
     gap: 15px;
-    flex-shrink: 0; 
+    flex-shrink: 0; /* Prevent header from shrinking */
     min-height: 50px;
+    width: 100%; 
+    box-sizing: border-box; 
 }
 
 .modal-backdrop.research-mode .modal-header {
@@ -203,7 +207,7 @@ select:focus, input[type="search"]:focus {
     white-space: nowrap; /* Keep buttons on one line */
 }
 
-/* Force right nav to stay on the right */
+/* Force right nav to the far right */
 .modal-nav-right {
     margin-left: auto;
 }
@@ -221,7 +225,6 @@ select:focus, input[type="search"]:focus {
     cursor: pointer;
     font-size: 0.9rem;
     display: inline-block;
-    white-space: nowrap;
 }
 
 .modal-header button:hover, .modal-header a:hover { 
@@ -241,14 +244,16 @@ select:focus, input[type="search"]:focus {
 .modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
 
 /* --- Wrappers --- */
+/* Ensure iframe wrapper fills space perfectly */
 #modal-content-area .iframe-wrapper {
     flex: 1; 
     width: 100%;
     height: 100%;
     display: block;
-    overflow: hidden;
+    overflow: hidden; /* Prevent double scrollbars */
 }
 
+/* Images are centered */
 #modal-content-area .image-wrapper {
     flex: 1;
     width: 100%;
@@ -256,7 +261,7 @@ select:focus, input[type="search"]:focus {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: auto; 
+    overflow: auto; /* Allow scrolling for large images */
     padding: 20px; 
 }
 
@@ -305,6 +310,7 @@ select:focus, input[type="search"]:focus {
 .research-modal-header h2 { margin: 0; color: var(--text-accent); }
 .research-modal-header button, .research-modal-header a { padding: 8px 15px; font-size: 0.9rem; cursor: pointer;}
 
+/* Force research header buttons to the right */
 .research-modal-header .modal-nav-right {
     margin-left: auto;
     display: flex;
@@ -336,14 +342,14 @@ select:focus, input[type="search"]:focus {
 
 /* Tab Content Area */
 .tab-content {
-    flex: 1; 
+    flex: 1; /* Grow to fill remaining height */
     display: flex;
     flex-direction: column;
     overflow: hidden; 
     position: relative;
 }
 .tab-content .iframe-wrapper {
-    flex: 1; 
+    flex: 1; /* Fill tab content */
     height: 100%;
     width: 100%;
 }
