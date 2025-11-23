@@ -142,7 +142,7 @@ select:focus, input[type="search"]:focus {
     box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
 }
 
-/* --- Modal Styles (FIXED) --- */
+/* --- Modal Styles --- */
 .modal-backdrop {
     display: none; 
     position: fixed;
@@ -170,6 +170,17 @@ select:focus, input[type="search"]:focus {
     position: relative;
 }
 
+/* Main Content Area */
+#modal-content-area {
+    flex: 1; /* Grow to fill remaining height */
+    overflow-y: auto; 
+    position: relative; 
+    display: flex; /* Use flex for children alignment */
+    flex-direction: column;
+    height: 100%; /* Ensure it knows its height basis */
+    padding: 0; /* No padding here */
+}
+
 /* Modal Header - FIXED ALIGNMENT */
 .modal-header {
     padding: 15px 20px; /* Add padding back here */
@@ -180,7 +191,7 @@ select:focus, input[type="search"]:focus {
     flex-wrap: nowrap; /* DO NOT WRAP */
     gap: 15px;
     flex-shrink: 0; 
-    min-height: 50px;
+    min-height: 50px; /* Ensure consistent height */
 }
 
 .modal-backdrop.research-mode .modal-header {
@@ -230,17 +241,6 @@ select:focus, input[type="search"]:focus {
 
 .modal-header .modal-info-btn { display: none; }
 .modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
-
-
-/* Main Content Area - FIXED SCROLLING/TRIMMING */
-#modal-content-area {
-    flex: 1; /* Grow to fill remaining height */
-    display: flex; /* Use flex for children */
-    flex-direction: column;
-    overflow: hidden; /* Hide overflow on container, let children scroll if needed */
-    position: relative;
-    padding: 0; /* No padding here */
-}
 
 /* --- Wrappers --- */
 /* Ensure iframe wrapper fills space perfectly */
