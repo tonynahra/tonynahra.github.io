@@ -485,25 +485,30 @@ select:focus, input[type="search"]:focus {
     color: #000000 !important;
 }
 
-/* --- THE FONT SIZE FIX --- */
-.chess-white-box .pgnvjs-move {
-    font-size: 1.9rem !important;  /* Much Bigger */
-    line-height: 2.0rem !important; /* Spaced out lines */
-    font-weight: 600 !important;    /* Bold and clear */
+/* --- THE FONT SIZE FIX (Nuclear Option) --- */
+.chess-white-box .pgnvjs-move,
+.chess-white-box .pgnvjs-move a,
+.chess-white-box .pgnvjs-move span {
+    font-size: 26px !important;      /* Fixed Pixel Size */
+    line-height: 34px !important;    /* Spacing for big text */
+    font-weight: 600 !important;
+    font-family: sans-serif !important;
     
     cursor: pointer;
-    padding: 2px 6px;
     border-radius: 3px;
-    margin-right: 8px; /* More space between moves */
-    margin-bottom: 5px; /* More space between lines */
+    margin-right: 8px;
+    margin-bottom: 5px;
     display: inline-block;
+    color: #000000 !important;
+    text-decoration: none !important; /* Remove underline from links */
 }
 
 /* Active Move Highlight */
-.chess-white-box .pgnvjs-move.active {
+.chess-white-box .pgnvjs-move.active,
+.chess-white-box .pgnvjs-move.active a {
     background: #FFD700 !important;
     color: #000 !important;
-    transform: scale(1.1); /* Slight pop effect for active move */
+    transform: scale(1.05); 
 }
 
 
