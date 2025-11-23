@@ -1,6 +1,5 @@
 /* --- Tutorial Engine Styles --- */
 
-/* Reset body for iframe */
 body.tutorial-body {
     margin: 0;
     padding: 0;
@@ -27,6 +26,7 @@ body.tutorial-body {
     flex-direction: column;
     height: 100%;
     width: 100%;
+    overflow: hidden;
 }
 
 /* Slide Wrapper - maximize space */
@@ -38,6 +38,8 @@ body.tutorial-body {
     background-color: #000;
     overflow: hidden;
     position: relative;
+    width: 100%;
+    height: 0; /* Let flex grow handle it */
 }
 
 .tutorial-slide {
@@ -45,7 +47,7 @@ body.tutorial-body {
     max-height: 100%;
     width: auto;
     height: auto;
-    object-fit: contain;
+    object-fit: contain; /* Ensure aspect ratio is kept */
     cursor: pointer;
 }
 
@@ -142,7 +144,8 @@ body.tutorial-body {
     border: 5px solid var(--bg-medium, #2c3e50); 
     border-top: 5px solid var(--text-accent, #66fcf1); 
     border-radius: 50%;
-    width: 50px; height: 50px;
+    width: 50px;
+    height: 50px;
     animation: spin 1s linear infinite;
     margin-bottom: 20px;
 }
