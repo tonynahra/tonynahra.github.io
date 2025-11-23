@@ -472,17 +472,45 @@ select:focus, input[type="search"]:focus {
     height: 100% !important;
     overflow-y: auto !important;
     
-    /* STYLE ENFORCEMENT */
+    /* ENFORCEMENT */
     background-color: #ffffff !important;
     color: #000000 !important;
-    
     border-left: 4px solid #d2b48c !important;
     padding-left: 15px !important;
+    
+    /* Force container font settings */
+    font-size: 26px !important;
+    line-height: 36px !important;
 }
 
-/* Force all text container inside to be black */
+/* NUCLEAR TARGETING: Select EVERY element inside moves */
 .chess-white-box .pgnvjs-moves * {
-    color: #000000 !important;
+    font-size: 26px !important;      /* Force Big Font on everything */
+    line-height: 36px !important;    /* Spacing */
+    color: #000000 !important;       /* Force Black */
+    font-family: sans-serif !important;
+    font-weight: 600 !important;
+    
+    background-color: transparent !important; /* No weird backgrounds */
+}
+
+/* Specific fix for the clickable moves to ensure they behave like buttons */
+.chess-white-box .pgnvjs-move {
+    display: inline-block;
+    cursor: pointer;
+    margin-right: 8px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    padding: 0 4px;
+}
+
+/* Active Highlight */
+.chess-white-box .pgnvjs-move.active {
+    background: #FFD700 !important;
+    color: #000 !important;
+}
+.chess-white-box .pgnvjs-move:hover {
+    background: #e0e0e0 !important;
 }
 
 /* --- THE FONT SIZE FIX (Nuclear Option) --- */
