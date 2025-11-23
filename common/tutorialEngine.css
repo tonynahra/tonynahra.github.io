@@ -48,13 +48,10 @@ body.tutorial-body {
     /* This makes the image as big as possible within the container */
     max-width: 100%;
     max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain; 
+    width: 100%; /* Force full width */
+    height: 100%; /* Force full height */
+    object-fit: contain; /* Ensure aspect ratio is kept and image fits */
     cursor: pointer;
-    /* Force full width if aspect ratio allows, otherwise height constrains */
-    min-width: 50%; 
-    min-height: 50%;
 }
 
 /* Navigation Bar */
