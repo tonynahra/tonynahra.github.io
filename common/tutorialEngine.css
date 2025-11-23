@@ -1,6 +1,5 @@
 /* --- Tutorial Engine Styles --- */
 
-/* Reset body for iframe */
 body.tutorial-body {
     margin: 0;
     padding: 0;
@@ -31,13 +30,13 @@ body.tutorial-body {
     overflow: hidden;
 }
 
-/* Slide Wrapper - maximize space */
+/* Slide Wrapper */
 .slide-container {
-    flex-grow: 1; /* Take up all available space above nav */
+    flex-grow: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #000; /* Black background for slides */
+    background-color: #000;
     overflow: hidden;
     position: relative;
     width: 100%;
