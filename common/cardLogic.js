@@ -285,7 +285,7 @@ case 'chess':
                                 pgn: selectedPgn, 
                                 theme: 'brown', 
                                 boardSize: calcWidth, // Fixed calculation
-                                layout: 'top', // Moves BELOW board
+                                layout: 'left', // Moves RIGHT board
                                 width: '100%',
                                 headers: false,
                             });
