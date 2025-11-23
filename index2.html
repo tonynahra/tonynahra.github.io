@@ -104,7 +104,15 @@
     <script src="common/mainPage.js"></script> 
     
 
-
+<script>
+  const trackerUrl = 'https://mediamaze.com/tony/track.php';
+  const payload = {
+    url: window.location.href,
+    referrer: document.referrer
+  };
+  const blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
+  navigator.sendBeacon(trackerUrl, blob);
+</script>
     
 </body>
 </html>
