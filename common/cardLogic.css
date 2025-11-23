@@ -36,7 +36,6 @@
 
 .card-item p {
     font-size: 0.95rem;
-    /* Limit text to 4 lines */
     display: -webkit-box;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
@@ -159,7 +158,7 @@ select:focus, input[type="search"]:focus {
 .modal-content {
     background-color: var(--bg-dark);
     margin: 20px auto; 
-    padding: 0; /* Remove padding so header touches edges */
+    padding: 0; /* Remove padding to let header touch edges */
     border: 1px solid var(--bg-medium);
     border-radius: 8px;
     width: 90%; 
@@ -170,14 +169,24 @@ select:focus, input[type="search"]:focus {
     position: relative;
 }
 
+/* Main Content Area */
+#modal-content-area {
+    flex: 1; /* Grow to fill remaining height */
+    overflow-y: auto; 
+    position: relative; 
+    display: flex; 
+    flex-direction: column;
+    height: 100%;
+}
+
 /* Modal Header - FIXED ALIGNMENT */
 .modal-header {
-    padding: 15px 20px; /* Add padding back here */
+    padding: 15px 20px;
     border-bottom: 1px solid var(--bg-medium);
     display: flex;
-    justify-content: space-between; /* Default push */
+    justify-content: space-between; /* Push left/right groups apart */
     align-items: center;
-    flex-wrap: nowrap; /* Prevent wrapping */
+    flex-wrap: nowrap; /* DO NOT WRAP */
     gap: 15px;
     flex-shrink: 0; 
     min-height: 50px;
@@ -191,10 +200,10 @@ select:focus, input[type="search"]:focus {
     display: flex;
     gap: 10px;
     align-items: center;
-    white-space: nowrap;
+    white-space: nowrap; /* Keep buttons on one line */
 }
 
-/* FORCE RIGHT ALIGNMENT */
+/* Force right nav to stay on the right */
 .modal-nav-right {
     margin-left: auto;
 }
@@ -212,6 +221,7 @@ select:focus, input[type="search"]:focus {
     cursor: pointer;
     font-size: 0.9rem;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .modal-header button:hover, .modal-header a:hover { 
@@ -230,19 +240,9 @@ select:focus, input[type="search"]:focus {
 .modal-header .modal-info-btn { display: none; }
 .modal-header .open-new-window { background: transparent; border-color: var(--text-accent); }
 
-/* Main Content Area - FIXES IFRAME CUTOFF */
-#modal-content-area {
-    flex: 1; /* Take remaining height */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* Hide overflow, children will handle it */
-    position: relative;
-    padding: 0;
-}
-
 /* --- Wrappers --- */
 #modal-content-area .iframe-wrapper {
-    flex: 1;
+    flex: 1; 
     width: 100%;
     height: 100%;
     display: block;
@@ -256,8 +256,8 @@ select:focus, input[type="search"]:focus {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: auto;
-    padding: 20px;
+    overflow: auto; 
+    padding: 20px; 
 }
 
 #modal-content-area .loaded-image {
@@ -271,7 +271,7 @@ select:focus, input[type="search"]:focus {
     height: 100%; 
     border: none;
     background: #fff;
-    display: block;
+    display: block; 
 }
 
 /* --- Photo Info Overlay --- */
@@ -336,14 +336,14 @@ select:focus, input[type="search"]:focus {
 
 /* Tab Content Area */
 .tab-content {
-    flex: 1;
+    flex: 1; 
     display: flex;
     flex-direction: column;
     overflow: hidden; 
     position: relative;
 }
 .tab-content .iframe-wrapper {
-    flex: 1;
+    flex: 1; 
     height: 100%;
     width: 100%;
 }
