@@ -390,6 +390,7 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Chess Viewer Styles --- */
+
 /* --- CHESS MODE STRUCTURE --- */
 body.chess-mode-active .modal-content,
 #content-modal.chess-mode .modal-content {
@@ -404,14 +405,11 @@ body.chess-mode-active .modal-content,
     overflow: hidden !important; 
 }
 
-/* Hide Header */
 body.chess-mode-active .modal-header,
 #content-modal.chess-mode .modal-header { display: none !important; }
 
-/* Main Layout */
 .chess-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; background: #222; }
 
-/* Align Board Top */
 .chess-main-area {
     flex: 1;
     width: 100%;
@@ -420,79 +418,49 @@ body.chess-mode-active .modal-header,
     background: #222;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Top Align */
-    padding-top: 10px;
+    align-items: flex-start; 
+    padding: 0 !important; 
 }
 
-.chess-white-box {
-    padding: 4px !important;
-    background-color: #ffffff !important;
-    border-radius: 2px !important;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-/* CRITICAL: Force comments to exist in DOM so JS can read them */
-.pgnvjs-moves .comment {
-    display: inline !important;
-    font-size: 0px !important; /* Hide from list visually */
-    opacity: 0;
-}
-
-/* --- OVERLAYS --- */
-/* --- CHESS MODE STRUCTURE --- */
-body.chess-mode-active .modal-content,
-#content-modal.chess-mode .modal-content {
-    height: 98vh !important;
-    width: 98vw !important;
-    max-width: 100% !important;
-    margin: 1vh auto !important;
-    border: none !important;
-    background: #111 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important; 
-}
-
-/* Hide Header */
-body.chess-mode-active .modal-header,
-#content-modal.chess-mode .modal-header { display: none !important; }
-
-/* Main Layout */
-.chess-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; background: #222; }
-
-/* Align Board Top, Full Width */
-/* --- CHESS BOARD WRAPPER --- */
 .chess-white-box {
     width: 100% !important;
     height: 100% !important;
-    
-    /* MARGIN FIX: Add padding to the left side */
-    padding-left: 30px !important; 
+    /* MARGIN FIX: */
+    padding-left: 30px !important;
     padding-top: 10px !important;
     padding-right: 10px !important;
     
     background-color: #ffffff !important;
     display: flex;
-    justify-content: center; /* Keeps it centered relative to available space */
+    justify-content: center;
     align-items: flex-start;
-    overflow-y: auto; 
 }
 
-/* Ensure the wrapper allows the board to sit with the margin */
-.chess-main-area {
-    padding: 0 !important;
-    display: flex;
-    justify-content: flex-start; /* Allow left alignment if screen is wide */
-}
-
-
-
-/* Force comments to exist in DOM */
 .pgnvjs-moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
 
-/* --- OVERLAYS --- */
+/* COMMENT OVERLAY */
+.chess-comment-overlay {
+    font-size: 1.2rem !important;
+    padding: 15px !important;
+    background: rgba(0, 0, 0, 0.95) !important;
+    border: 1px solid #777;
+    border-radius: 6px;
+    color: #fff !important;
+    
+    /* Bottom Right Position */
+    position: absolute;
+    bottom: 20px;
+    right: 30px; 
+    
+    width: 320px;
+    z-index: 6000 !important;
+    text-align: center;
+    display: none; 
+    pointer-events: none;
+    box-shadow: -5px -5px 20px rgba(0,0,0,0.5);
+}
+
+/* METADATA OVERLAY */
 .chess-metadata-overlay {
     font-size: 1.1rem !important; 
     padding: 20px !important;
@@ -512,28 +480,6 @@ body.chess-mode-active .modal-header,
 }
 .chess-metadata-overlay td { padding: 8px 12px !important; border-bottom: 1px solid #444; }
 
-/* COMMENT BOX - Bottom Right */
-.chess-comment-overlay {
-    font-size: 1.2rem !important;
-    padding: 15px !important;
-    background: rgba(0, 0, 0, 0.95) !important;
-    border: 1px solid #777;
-    border-radius: 6px;
-    color: #fff !important;
-    
-    /* Position: Bottom Right */
-    position: absolute;
-    bottom: 20px;
-    right: 30px; 
-    
-    width: 300px;
-    z-index: 6000 !important;
-    text-align: center;
-    display: none; 
-    pointer-events: none;
-    box-shadow: -5px -5px 20px rgba(0,0,0,0.5);
-}
-
 /* Eval Bar */
 .eval-bar-container {
     display: flex; align-items: center; width: 100%; margin-bottom: 8px;
@@ -542,5 +488,3 @@ body.chess-mode-active .modal-header,
 .eval-score { font-weight: bold; min-width: 50px; text-align: right; margin-right: 10px; color: #fff; }
 .eval-track { flex: 1; height: 12px; background: #444; border-radius: 3px; overflow: hidden; }
 .eval-fill { height: 100%; transition: width 0.3s ease; }
-
-
