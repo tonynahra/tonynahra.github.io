@@ -209,7 +209,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -284,12 +283,11 @@ case 'chess':
                             }
                         }
                         
-                        // --- DEBUG: PRINT FIRST 5 COMMENTS ---
+                        // DEBUG: Print first 5 comments to verify mapping
                         console.log(`[DEBUG] Total Comments Mapped: ${Object.keys(map).length}`);
                         for(let i = 0; i < 5; i++) {
-                            console.log(`[DEBUG] Move Index ${i}:`, map[i] ? map[i].substring(0, 30) + "..." : "NO COMMENT");
+                            console.log(`[DEBUG] Move Index ${i}:`, map[i] ? map[i].substring(0, 20) + "..." : "NO COMMENT");
                         }
-                        
                         return map;
                     };
 
@@ -311,7 +309,7 @@ case 'chess':
                                 <div class="chess-white-box">
                                     <div id="${boardId}"></div>
                                 </div>
-                                <div id="chess-comment-overlay" class="chess-comment-overlay">...</div>
+                                <div id="chess-comment-overlay" class="chess-comment-overlay">Start of Game</div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
                         </div>
@@ -346,7 +344,10 @@ case 'chess':
                                 padding: 2px 4px !important;
                             }
                             ${movesId} move:hover { background-color: #e0e0e0 !important; }
-                            ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
+                            /* We support multiple active class names just in case */
+                            ${movesId} move.active, ${movesId} move.yellow, ${movesId} move.selected { 
+                                background-color: #FFD700 !important; color: #000 !important; 
+                            }
                             
                             #${boardId} .pgnvjs-wrapper {
                                 display: flex !important;
@@ -362,6 +363,7 @@ case 'chess':
                     // --- LISTENERS ---
                     document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
                     document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
+                    
                     document.getElementById('chess-close-btn').onclick = (e) => { 
                         e.preventDefault(); 
                         $modal.removeClass('chess-mode');
@@ -409,20 +411,21 @@ case 'chess':
                         $(overlay).fadeIn();
 
                         if (moveIndex === -1) {
-                            overlay.innerHTML = '<div style="color:#ccc; font-size: 0.9em;">Start of Game</div>';
+                            const introComment = commentMap[-1];
+                            if (introComment) {
+                                overlay.innerHTML = `<div style="color:#fff; font-size: 1rem;">${introComment}</div>`;
+                            } else {
+                                overlay.innerHTML = '<div style="color:#ccc; font-size: 0.9em;">Start of Game</div>';
+                            }
                             return;
                         }
 
                         const commentText = commentMap[moveIndex];
                         
-                        // Only log if we found a comment to reduce spam
-                        if (commentText) console.log(`[LOOKUP] Index ${moveIndex} found comment:`, commentText.substring(0, 10));
-
                         if (commentText && commentText.trim().length > 0) {
                             const parsed = generateEvalHtml(commentText);
                             overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
                         } else {
-                            // Move Counter if no comment
                             const displayMove = moveIndex + 1; 
                             const displayTotal = totalMoves || '?';
                             overlay.innerHTML = `<div style="color:#ccc; font-size: 1rem; font-weight:bold;">Move ${displayMove} / ${displayTotal}</div>`;
@@ -460,6 +463,7 @@ case 'chess':
                         const selectedPgn = rawGames[index];
                         commentMap = parseCommentsMap(selectedPgn);
                         
+                        // 1. METADATA
                         const headers = {};
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
@@ -472,11 +476,11 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // SIZE
+                        // 2. SIZE
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
                         const maxWidth = winWidth * 0.90; 
-                        const maxHeight = winHeight * 0.80; 
+                        const maxHeight = winHeight - 250; 
                         const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
@@ -494,7 +498,7 @@ case 'chess':
                             updateChessStyles();
                             updateCommentContent(-1, 0); 
 
-                            // --- ROBUST OBSERVER + CLICK BACKUP ---
+                            // --- ROBUST OBSERVER (The Fix) ---
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 
@@ -503,41 +507,47 @@ case 'chess':
                                     console.log("[DEBUG] Moves Panel Found. Attaching Observer.");
                                     
                                     const checkActiveMove = () => {
-                                        // 1. Find active element
-                                        const activeEl = movesPanel.querySelector('.active');
+                                        // Find active move by ANY valid class or style
+                                        // This covers 'active', 'yellow', 'selected', OR inline background color
+                                        let activeEl = movesPanel.querySelector('.active') || 
+                                                       movesPanel.querySelector('.yellow') || 
+                                                       movesPanel.querySelector('.selected');
+                                        
+                                        // If no class, check for inline styles (last resort)
+                                        if (!activeEl) {
+                                            const allMoves = movesPanel.querySelectorAll('move');
+                                            for(let m of allMoves) {
+                                                if (m.style.backgroundColor && m.style.backgroundColor !== 'transparent') {
+                                                    activeEl = m;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
                                         if (activeEl) {
-                                            // 2. Get parent <move>
                                             const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
                                             if (activeMove) {
-                                                // 3. Get index
                                                 const allMoves = Array.from(movesPanel.querySelectorAll('move'));
                                                 const index = allMoves.indexOf(activeMove);
                                                 updateCommentContent(index, allMoves.length);
                                                 return;
                                             }
                                         }
-                                        // Start state
+                                        
+                                        // If nothing found, assume Start
                                         const total = movesPanel.querySelectorAll('move').length;
                                         updateCommentContent(-1, total);
                                     };
 
-                                    // A. Mutation Observer (Catches class changes)
-                                    gameObserver = new MutationObserver((mutations) => {
-                                        // console.log("[OBSERVER] Mutation detected"); // Uncomment to debug
-                                        checkActiveMove();
-                                    });
+                                    // A. Observer
+                                    gameObserver = new MutationObserver(() => checkActiveMove());
+                                    gameObserver.observe(movesPanel, { subtree: true, attributes: true, childList: true, attributeFilter: ['class', 'style'] });
                                     
-                                    gameObserver.observe(movesPanel, { 
-                                        attributes: true, 
-                                        subtree: true, 
-                                        childList: true, // In case moves are added/removed
-                                        attributeFilter: ['class'] 
-                                    });
-                                    
-                                    // B. Click Listener (Backup for manual clicks)
-                                    $(movesPanel).on('click', function() {
-                                        console.log("[CLICK] Move clicked manually");
-                                        setTimeout(checkActiveMove, 50); // Small delay for active class to update
+                                    // B. Click Listener (Debug + Backup)
+                                    $(movesPanel).on('click', 'move', function() {
+                                        console.log("[DEBUG CLICK] Clicked element classes:", this.className);
+                                        // Force immediate check after click
+                                        setTimeout(checkActiveMove, 50);
                                     });
                                 }
                             }, 200);
@@ -562,8 +572,6 @@ case 'chess':
                 }
             });
             break;
-
-
 
 
 
