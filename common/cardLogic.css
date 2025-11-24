@@ -619,17 +619,14 @@ select:focus, input[type="search"]:focus {
     padding: 20px !important;
     width: 60% !important;
     max-width: 800px !important;
-    
-    /* SCROLLBAR FIX */
     max-height: 80vh !important;
     overflow-y: auto !important;
-    
     border: 2px solid var(--text-accent) !important;
     z-index: 2000 !important;
     background: rgba(0, 0, 0, 0.95);
     color: white;
     position: absolute;
-    top: 50px; /* Below toolbar */
+    top: 50px;
     left: 50%;
     transform: translateX(-50%);
     display: none;
@@ -637,47 +634,40 @@ select:focus, input[type="search"]:focus {
 }
 .chess-metadata-overlay td { padding: 8px 12px !important; border-bottom: 1px solid #444; }
 
+/* Comment & Eval Overlay - Force Visibility settings */
 .chess-comment-overlay {
-    font-size: 1.3rem !important;
+    font-size: 1.2rem !important;
     padding: 15px !important;
-    background: rgba(0,0,0,0.85) !important;
+    background: rgba(0,0,0,0.9) !important;
     border-radius: 8px;
-    max-width: 80% !important;
-    z-index: 1500 !important;
-    border: 1px solid #777;
+    border: 1px solid #999;
+    color: #fff !important;
     
-    /* Position it over the bottom of the board area */
+    /* Positioning */
     position: absolute;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    display: none; /* Hidden by default until move */
-    color: #fff;
+    
+    width: 60%; 
+    max-width: 600px;
+    z-index: 3000 !important;
     text-align: center;
+    display: none; 
+    pointer-events: none; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
 }
 
-
-
-
-
-
-#content-modal.chess-mode .modal-header {
-    display: none !important; /* Hide default header in chess mode */
+/* EVAL BAR STYLES */
+.eval-bar-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 8px;
+    background: #333;
+    padding: 4px;
+    border-radius: 4px;
 }
-
-/* Ensure the container takes full height minus the removed header */
-#content-modal.chess-mode .modal-content {
-    height: 95vh !important;
-    border: none;
-}
-
-#content-modal.chess-mode #modal-content-area {
-    height: 100% !important;
-    display: block !important;
-}
-
-/* Board Wrapper Alignment */
-.chess-white-box {
-    align-items: flex-start !important; /* Force Top Align */
-    padding-top: 10px !important;
-}
+.eval-score { font-weight: bold; min-width: 50px; text-align: right; margin-right: 10px; color: #fff; }
+.eval-track { flex: 1; height: 12px; background: #555; border-radius: 6px; overflow: hidden; position: relative; }
+.eval-fill { height: 100%; transition: width 0.3s ease, background-color 0.3s ease; }
