@@ -613,49 +613,71 @@ select:focus, input[type="search"]:focus {
     margin: 0 2px;
 }
 
-/* --- Overlays (Unchanged) --- */
-.overlay-close-btn {
-    float: right;
-    padding: 5px 15px;
-    background: #e74c3c; 
-    color: white;
-    border: 1px solid #c0392b;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.9rem;
-    margin-top: 10px;
-}
-.chess-comment-overlay {
-    position: absolute;
-    bottom: 30px; 
-    left: 20px; 
-    background: rgba(0, 0, 0, 0.9);
-    color: #fff;
-    padding: 15px 25px;
-    border-radius: 8px;
-    font-size: 1.4rem; 
-    z-index: 100;
-    max-width: 500px;
-    text-align: center;
-    display: none; 
-    pointer-events: none; 
-    border: 1px solid var(--text-accent);
-}
+/* --- OVERLAYS --- */
 .chess-metadata-overlay {
-    position: absolute;
-    top: 70px;
-    left: 50%;
-    transform: translateX(-50%);
+    font-size: 1.1rem !important; 
+    padding: 20px !important;
+    width: 60% !important;
+    max-width: 800px !important;
+    
+    /* SCROLLBAR FIX */
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+    
+    border: 2px solid var(--text-accent) !important;
+    z-index: 2000 !important;
     background: rgba(0, 0, 0, 0.95);
     color: white;
-    padding: 20px;
-    border-radius: 8px;
-    z-index: 200;
+    position: absolute;
+    top: 50px; /* Below toolbar */
+    left: 50%;
+    transform: translateX(-50%);
     display: none;
-    max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    border: 1px solid var(--text-accent);
+    border-radius: 8px;
 }
-.chess-metadata-overlay table { width: 100%; border-collapse: collapse; }
-.chess-metadata-overlay td { padding: 8px; border-bottom: 1px solid #444; }
+.chess-metadata-overlay td { padding: 8px 12px !important; border-bottom: 1px solid #444; }
+
+.chess-comment-overlay {
+    font-size: 1.3rem !important;
+    padding: 15px !important;
+    background: rgba(0,0,0,0.85) !important;
+    border-radius: 8px;
+    max-width: 80% !important;
+    z-index: 1500 !important;
+    border: 1px solid #777;
+    
+    /* Position it over the bottom of the board area */
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none; /* Hidden by default until move */
+    color: #fff;
+    text-align: center;
+}
+
+
+
+
+
+
+#content-modal.chess-mode .modal-header {
+    display: none !important; /* Hide default header in chess mode */
+}
+
+/* Ensure the container takes full height minus the removed header */
+#content-modal.chess-mode .modal-content {
+    height: 95vh !important;
+    border: none;
+}
+
+#content-modal.chess-mode #modal-content-area {
+    height: 100% !important;
+    display: block !important;
+}
+
+/* Board Wrapper Alignment */
+.chess-white-box {
+    align-items: flex-start !important; /* Force Top Align */
+    padding-top: 10px !important;
+}
