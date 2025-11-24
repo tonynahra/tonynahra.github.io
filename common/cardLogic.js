@@ -207,8 +207,7 @@ function loadModalContent(index) {
 
 
 
-
-            case 'chess':
+case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -236,10 +235,10 @@ function loadModalContent(index) {
                     // --- PARSER ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
-                        // 1. Clean Headers
+                        console.log("--- STARTING PGN PARSE ---");
+                        
                         let body = pgnText.replace(/\[.*?\]/g, "").trim();
 
-                        // 2. Remove Variations
                         const cleanPGN = (text) => {
                             let result = "";
                             let depth = 0;
@@ -252,7 +251,6 @@ function loadModalContent(index) {
                         };
                         body = cleanPGN(body);
 
-                        // Format
                         body = body.replace(/(\r\n|\n|\r)/gm, " ");
                         body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
@@ -282,6 +280,7 @@ function loadModalContent(index) {
                                 moveIndex++;
                             }
                         }
+                        console.log(`[PARSER] Mapped ${Object.keys(map).length} comments.`);
                         return map;
                     };
 
@@ -351,7 +350,7 @@ function loadModalContent(index) {
                         $(`#${styleId}`).text(css);
                     };
 
-                    // --- HANDLERS ---
+                    // --- LISTENERS ---
                     document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
                     document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
                     
@@ -363,7 +362,7 @@ function loadModalContent(index) {
                         $('.modal-close-btn').first().click(); 
                     };
 
-                    // --- CENTERED EVAL BAR GENERATOR ---
+                    // --- GENERATE DUAL BARS ---
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -373,50 +372,64 @@ function loadModalContent(index) {
                         
                         if (evalMatch) {
                             const valStr = evalMatch[1];
+                            
+                            // -- Bar 1: Move Score (-10 to +10) --
                             let displayVal = valStr;
-                            let widthPct = 0;
-                            let leftPct = 50; // Start at center
-                            let color = "#888";
+                            let widthPct1 = 0;
+                            let leftPct1 = 50; 
+                            let color1 = "#888";
+                            let rawVal = 0;
+
+                            // -- Bar 2: Win Balance (0% to 100%) --
+                            let whiteWinPct = 50;
 
                             if (valStr.startsWith('#')) {
                                 // Mate
                                 if (valStr.includes('-')) {
-                                    // Mate Black
-                                    widthPct = 50; leftPct = 0; color = "#e74c3c";
+                                    // Black Mate
+                                    widthPct1 = 50; leftPct1 = 0; color1 = "#e74c3c"; // Red
                                     displayVal = "Mate " + valStr;
+                                    whiteWinPct = 0;
                                 } else {
-                                    // Mate White
-                                    widthPct = 50; leftPct = 50; color = "#2ecc71";
+                                    // White Mate
+                                    widthPct1 = 50; leftPct1 = 50; color1 = "#2ecc71"; // Green
                                     displayVal = "Mate " + valStr;
+                                    whiteWinPct = 100;
                                 }
                             } else {
-                                // Centipawns: Scale -10 to +10
-                                const val = parseFloat(valStr);
-                                const absVal = Math.min(Math.abs(val), 10); // Cap at 10
+                                // Centipawns
+                                rawVal = parseFloat(valStr);
+                                const absVal = Math.min(Math.abs(rawVal), 10); // Cap at 10
+                                widthPct1 = (absVal / 10) * 50; 
                                 
-                                // Calculate width percentage relative to container (max width is 50% from center)
-                                // 10.0 = 50% width
-                                widthPct = (absVal / 10) * 50; 
-                                
-                                if (val > 0) {
-                                    // White Advantage -> Grow Right
-                                    leftPct = 50;
-                                    color = "#2ecc71"; // Green
+                                if (rawVal > 0) {
+                                    leftPct1 = 50;
+                                    color1 = "#2ecc71"; // Green
                                 } else {
-                                    // Black Advantage -> Grow Left
-                                    leftPct = 50 - widthPct;
-                                    color = "#e74c3c"; // Red
+                                    leftPct1 = 50 - widthPct1;
+                                    color1 = "#e74c3c"; // Red
                                 }
+                                displayVal = rawVal > 0 ? `+${rawVal}` : rawVal;
                                 
-                                displayVal = val > 0 ? `+${val}` : val;
+                                // Calculate Balance Percentage (Rough sigmoid approximation: 50 + score*8)
+                                whiteWinPct = 50 + (rawVal * 8);
+                                whiteWinPct = Math.max(5, Math.min(95, whiteWinPct)); // Clamp 5% - 95%
                             }
 
                             evalHtml = `
-                                <div class="eval-wrapper">
-                                    <div class="eval-text-score">${displayVal}</div>
-                                    <div class="eval-track">
-                                        <div class="eval-center-line"></div>
-                                        <div class="eval-fill" style="left: ${leftPct}%; width: ${widthPct}%; background-color: ${color};"></div>
+                                <div>
+                                    <div class="eval-label-small">Move Score</div>
+                                    <div class="eval-bar-container">
+                                        <div class="eval-score-text">${displayVal}</div>
+                                        <div class="eval-track">
+                                            <div class="eval-fill" style="left: ${leftPct1}%; width: ${widthPct1}%; background-color: ${color1};"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="eval-label-small">Game Balance (W vs B)</div>
+                                    <div class="win-rate-bar">
+                                        <div class="win-white" style="width: ${whiteWinPct}%;"></div>
+                                        <div class="win-black"></div>
                                     </div>
                                 </div>
                             `;
@@ -424,33 +437,28 @@ function loadModalContent(index) {
                         return { html: evalHtml, text: cleanText };
                     };
 
-                    // --- UPDATE CONTENT (With Move Counter) ---
                     const updateCommentContent = (moveIndex, totalMoves) => {
                         const overlay = document.getElementById('chess-comment-overlay');
                         if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         $(overlay).fadeIn();
 
-                        const commentText = commentMap[moveIndex];
-                        let innerHtmlContent = "";
+                        if (moveIndex === -1) {
+                            overlay.innerHTML = '<div style="color:#546e7a; font-size: 0.9em;">Start of Game</div>';
+                            return;
+                        }
 
-                        // 1. Eval Bar (if exists)
-                        let displayText = "";
-                        if (commentText) {
+                        const commentText = commentMap[moveIndex];
+
+                        let innerHtmlContent = "";
+                        if (commentText && commentText.trim().length > 0) {
                             const parsed = generateEvalHtml(commentText);
                             if (parsed.html) innerHtmlContent += parsed.html;
-                            if (parsed.text) displayText = parsed.text;
+                            if (parsed.text) innerHtmlContent += `<div style="margin-top: 8px; margin-bottom: 8px; font-size: 1rem;">${parsed.text}</div>`;
+                        } else {
+                            innerHtmlContent += `<div style="color:#90a4ae; font-style:italic; margin-bottom:8px;">...</div>`;
                         }
 
-                        // 2. Comment Text
-                        if (displayText) {
-                            innerHtmlContent += `<div style="margin-bottom: 8px;">${displayText}</div>`;
-                        } else if (!innerHtmlContent && moveIndex !== -1) {
-                            innerHtmlContent += `<div style="color:#aaa; font-style:italic; margin-bottom:8px;">...</div>`;
-                        } else if (moveIndex === -1) {
-                            innerHtmlContent += `<div style="color:#ccc; margin-bottom:8px;">Start of Game</div>`;
-                        }
-
-                        // 3. Move Counter (Always Visible at Bottom)
+                        // Move Counter
                         const displayMove = moveIndex + 1; 
                         const displayTotal = totalMoves || '?';
                         innerHtmlContent += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
@@ -523,27 +531,26 @@ function loadModalContent(index) {
                             updateChessStyles();
                             updateCommentContent(-1, 0); 
 
-                            // Observer
+                            // OBSERVER
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 
                                 if (movesPanel) {
                                     clearInterval(checkInterval);
                                     
-                                    // Set initial total moves
+                                    // Init total moves
                                     const totalMoves = movesPanel.querySelectorAll('move').length;
                                     updateCommentContent(-1, totalMoves);
 
                                     gameObserver = new MutationObserver(() => {
-                                        // Universal Active Finder
                                         let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow') || movesPanel.querySelector('.selected');
                                         
                                         if (activeEl) {
                                             const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
                                             if (activeMove) {
                                                 const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                                const idx = allMoves.indexOf(activeMove);
-                                                updateCommentContent(idx, allMoves.length);
+                                                const index = allMoves.indexOf(activeMove);
+                                                updateCommentContent(index, allMoves.length);
                                                 return;
                                             }
                                         }
@@ -574,8 +581,6 @@ function loadModalContent(index) {
                 }
             });
             break;
-            
-
 
 
             
