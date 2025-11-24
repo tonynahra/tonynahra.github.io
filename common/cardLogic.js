@@ -614,8 +614,6 @@ function loadModalContent(index) {
 
 
 
-
-
 /* === RESEARCH BUILDER (Uses Main Header) === */
 
 function buildResearchModal(jsonUrl) {
