@@ -235,56 +235,59 @@ function loadModalContent(index) {
             let commentMap = {}; 
 
             // --- PARSER (FIX APPLIED HERE) ---
-            const parseCommentsMap = (pgnText) => {
-                const map = {};
-                
-                // *** FIX: Safely remove standard PGN headers [Key "Value"] only. ***
-                // This prevents accidentally stripping the non-standard [%eval X] tags from comments.
-                let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim();
-                
-                const cleanPGN = (text) => {
-                    let result = "";
-                    let depth = 0;
-                    for (let i = 0; i < text.length; i++) {
-                        if (text[i] === '(') { depth++; continue; }
-                        if (text[i] === ')') { if(depth > 0) depth--; continue; }
-                        if (depth === 0) result += text[i];
-                    }
-                    return result;
-                };
-                body = cleanPGN(body);
+// --- PARSER (FIX APPLIED HERE) ---
+const parseCommentsMap = (pgnText) => {
+    const map = {};
+    
+    // *** FIX: Safely remove standard PGN headers [Key "Value"] only. ***
+    // This prevents accidentally stripping the non-standard [%eval X] tags from comments, 
+    // which was the cause of "Parsed Value: N/A".
+    let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim();
+    
+    const cleanPGN = (text) => {
+        let result = "";
+        let depth = 0;
+        for (let i = 0; i < text.length; i++) {
+            if (text[i] === '(') { depth++; continue; }
+            if (text[i] === ')') { if(depth > 0) depth--; continue; }
+            if (depth === 0) result += text[i];
+        }
+        return result;
+    };
+    body = cleanPGN(body);
 
-                body = body.replace(/(\r\n|\n|\r)/gm, " ");
-                body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
+    body = body.replace(/(\r\n|\n|\r)/gm, " ");
+    body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
-                const tokens = body.split(/\s+/);
-                let moveIndex = 0;
-                let insideComment = false;
-                let currentComment = [];
+    const tokens = body.split(/\s+/);
+    let moveIndex = 0;
+    let insideComment = false;
+    let currentComment = [];
 
-                for (let i = 0; i < tokens.length; i++) {
-                    const token = tokens[i].trim();
-                    if (!token) continue;
+    for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i].trim();
+        if (!token) continue;
 
-                    if (token === '{') { insideComment = true; currentComment = []; continue; }
-                    if (token === '}') { 
-                        insideComment = false; 
-                        const idx = moveIndex === 0 ? -1 : moveIndex - 1;
-                        map[idx] = currentComment.join(" ");
-                        continue; 
-                    }
+        if (token === '{') { insideComment = true; currentComment = []; continue; }
+        if (token === '}') { 
+            insideComment = false; 
+            const idx = moveIndex === 0 ? -1 : moveIndex - 1;
+            map[idx] = currentComment.join(" ");
+            continue; 
+        }
 
-                    if (insideComment) {
-                        currentComment.push(token);
-                    } else {
-                        if (/^\d+\.+/.test(token)) continue;
-                        if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
-                        if (token.startsWith('$')) continue;
-                        moveIndex++;
-                    }
-                }
-                return map;
-            };
+        if (insideComment) {
+            currentComment.push(token);
+        } else {
+            if (/^\d+\.+/.test(token)) continue;
+            if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
+            if (token.startsWith('$')) continue;
+            moveIndex++;
+        }
+    }
+    return map;
+};
+            
 
             // 2. INJECT HTML (Unchanged)
             $modalContent.html(`
