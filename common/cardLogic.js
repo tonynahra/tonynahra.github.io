@@ -207,13 +207,28 @@ function loadModalContent(index) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
 
-            // 1. HIDE DEFAULT HEADER (Enter Chess Mode)
+            // 1. HIDE DEFAULT HEADER
             $modal.addClass('chess-mode');
 
             $.ajax({
@@ -228,31 +243,27 @@ case 'chess':
                     
                     // State Variables
                     let currentFontSize = 26; 
-                    let commentsEnabled = true; // Default to ON so evaluations show up
+                    let commentsEnabled = true; 
 
-                    // 2. INJECT HTML (With Custom Close Button)
+                    // 2. INJECT HTML
                     $modalContent.html(`
                         <style id="${styleId}"></style>
                         <div class="chess-container" style="height: 100%; display: flex; flex-direction: column;">
                             <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 10px; background: #222; gap: 10px;">
                                 <select id="chess-game-select" style="flex: 1; max-width: 400px; padding: 5px;"></select>
-                                
                                 <button id="chess-info-btn" class="tab-button" style="color: #fff; border: 1px solid #555; padding: 5px 10px;">Info</button>
-                                
                                 <button id="chess-font-minus" class="tab-button" style="color: #fff; border: 1px solid #555; padding: 5px 10px; font-weight: bold;">-</button>
                                 <button id="chess-font-plus" class="tab-button" style="color: #fff; border: 1px solid #555; padding: 5px 10px; font-weight: bold;">+</button>
-                                
                                 <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 5px 10px;">Comments: On</button>
-                                
                                 <div style="flex: 1;"></div>
-                                
                                 <button id="chess-close-btn" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; font-weight: bold; cursor: pointer; border-radius: 4px;">X Close</button>
                             </div>
                             
                             <div class="chess-main-area" style="flex: 1; width: 100%; overflow: hidden; position: relative; background: #fff;">
-                                <div class="chess-white-box" style="width: 100%; height: 100%; overflow-y: auto; display: flex; justify-content: center;">
+                                <div class="chess-white-box" style="width: 100%; height: 100%; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start; padding-top: 20px;">
                                     <div id="${boardId}"></div>
                                 </div>
+                                
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
@@ -263,6 +274,7 @@ case 'chess':
                     const updateChessStyles = () => {
                         const movesId = `#${boardId}Moves`; 
                         const css = `
+                            /* MOVES CONTAINER */
                             ${movesId} {
                                 background-color: #ffffff !important;
                                 color: #000000 !important;
@@ -276,6 +288,7 @@ case 'chess':
                                 min-width: 340px !important;
                                 display: block !important; 
                             }
+                            /* MOVES */
                             ${movesId} move {
                                 font-size: ${currentFontSize}px !important;
                                 line-height: ${currentFontSize + 10}px !important;
@@ -290,11 +303,11 @@ case 'chess':
                             ${movesId} move:hover { background-color: #e0e0e0 !important; }
                             ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
                             
-                            /* Layout Alignment */
+                            /* LAYOUT */
                             #${boardId} .pgnvjs-wrapper {
                                 display: flex !important;
                                 flex-direction: row !important;
-                                align-items: flex-start !important; /* TOP ALIGN */
+                                align-items: flex-start !important;
                                 width: 100% !important;
                                 justify-content: center !important;
                             }
@@ -302,19 +315,16 @@ case 'chess':
                         $(`#${styleId}`).text(css);
                     };
 
-                    // --- LISTENERS ---
+                    // --- BUTTON HANDLERS ---
                     document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
                     document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
-                    
-                    // Close Button Logic
-                    document.getElementById('chess-close-btn').onclick = (e) => {
-                        e.preventDefault();
-                        $('.modal-close-btn').first().click(); // Trigger main close
-                    };
+                    document.getElementById('chess-close-btn').onclick = (e) => { e.preventDefault(); $('.modal-close-btn').first().click(); };
 
+                    // Comment Toggle Logic
                     const updateCommentVisibility = () => {
                         const overlay = $('#chess-comment-overlay');
                         const btn = $('#chess-comment-btn');
+                        // We check actual visibility state when toggling
                         if (commentsEnabled) {
                             btn.text('Comments: On').css({background: 'var(--text-accent)', color: '#000'});
                             if (overlay.html().trim().length > 0) overlay.fadeIn();
@@ -330,7 +340,7 @@ case 'chess':
                         updateCommentVisibility();
                     };
 
-                    // --- RENDER ---
+                    // --- RENDER FUNCTION ---
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -347,7 +357,7 @@ case 'chess':
 
                         const selectedPgn = rawGames[index];
                         
-                        // 1. METADATA
+                        // 1. INFO PANEL
                         const headers = {};
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
@@ -360,11 +370,15 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 2. SIZING
+                        // 2. SIZE CALCULATION (Restricted Width)
                         const mainArea = $('.chess-main-area');
                         const availableHeight = mainArea.height() || 600;
-                        // Reserve 60px for bottom controls so they aren't cut off
-                        const boardSize = availableHeight - 60; 
+                        const availableWidth = mainArea.width() || 800;
+                        
+                        // Restrict board to 55% of width or fit height (minus controls)
+                        const maxWidth = availableWidth * 0.55;
+                        const maxHeight = availableHeight - 100; // 100px buffer for nav/headers
+                        const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
 
@@ -380,7 +394,7 @@ case 'chess':
                             
                             updateChessStyles();
 
-                            // 3. EVALUATION & COMMENTS
+                            // 3. GENERATE EVAL BAR
                             const generateEvalHtml = (rawText) => {
                                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -389,7 +403,7 @@ case 'chess':
                                 if (evalMatch) {
                                     const valStr = evalMatch[1];
                                     let widthPercent = 50; 
-                                    let colorClass = "background-color: #95a5a6;"; // draw
+                                    let colorClass = "background-color: #95a5a6;"; // Draw grey
                                     let displayVal = valStr;
 
                                     if (valStr.startsWith('#')) {
@@ -399,15 +413,15 @@ case 'chess':
                                         const val = parseFloat(valStr);
                                         const capped = Math.max(-5, Math.min(5, val));
                                         widthPercent = ((capped + 5) / 10) * 100;
-                                        if (val > 0.2) colorClass = "background-color: #2ecc71;"; // white
-                                        else if (val < -0.2) colorClass = "background-color: #e74c3c;"; // black
+                                        if (val > 0.2) colorClass = "background-color: #2ecc71;";
+                                        else if (val < -0.2) colorClass = "background-color: #e74c3c;";
                                     }
 
                                     evalHtml = `
-                                        <div style="display: flex; align-items: center; margin-bottom: 8px; background: rgba(255,255,255,0.1); padding: 5px; border-radius: 4px;">
-                                            <div style="font-weight: bold; margin-right: 10px; min-width: 50px; text-align: right;">${displayVal}</div>
-                                            <div style="flex: 1; height: 10px; background-color: #555; border-radius: 5px; overflow: hidden;">
-                                                <div style="height: 100%; width: ${widthPercent}%; ${colorClass} transition: width 0.3s;"></div>
+                                        <div class="eval-bar-container">
+                                            <div class="eval-score">${displayVal}</div>
+                                            <div class="eval-track">
+                                                <div class="eval-fill" style="width: ${widthPercent}%; ${colorClass}"></div>
                                             </div>
                                         </div>
                                     `;
@@ -415,6 +429,7 @@ case 'chess':
                                 return { html: evalHtml, text: cleanText };
                             };
 
+                            // 4. OBSERVER (Robust Text Extraction)
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 const overlay = document.getElementById('chess-comment-overlay');
@@ -426,15 +441,23 @@ case 'chess':
                                         const activeMove = movesPanel.querySelector('move.active'); 
                                         if (activeMove) {
                                             let rawCommentText = "";
-                                            let next = activeMove.nextElementSibling;
-                                            while(next && next.tagName !== 'MOVE') {
-                                                if (next.tagName !== 'MOVE-NUMBER') {
-                                                    rawCommentText += " " + next.textContent;
+                                            
+                                            // Inspect ALL nodes following the move (Text Nodes + Elements)
+                                            let next = activeMove.nextSibling;
+                                            
+                                            // Loop until we hit another move tag or run out of siblings
+                                            while(next) {
+                                                // Stop if we hit the next move
+                                                if (next.nodeType === 1 && next.tagName === 'MOVE') break;
+                                                if (next.nodeType === 1 && next.tagName === 'MOVE-NUMBER') break; // Optional break on numbers
+                                                
+                                                // Capture text content
+                                                if (next.textContent) {
+                                                    rawCommentText += next.textContent;
                                                 }
-                                                next = next.nextElementSibling;
+                                                next = next.nextSibling;
                                             }
 
-                                            // Check for Eval
                                             if (rawCommentText.trim().length > 0) {
                                                 const parsed = generateEvalHtml(rawCommentText);
                                                 overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
@@ -442,6 +465,7 @@ case 'chess':
                                                 if (commentsEnabled) $(overlay).fadeIn();
                                             } else {
                                                 $(overlay).fadeOut();
+                                                overlay.innerHTML = ""; 
                                             }
                                         }
                                     });
@@ -460,15 +484,11 @@ case 'chess':
 
                 },
                 error: function() { 
-                    // Remove chess mode if error
                     $modal.removeClass('chess-mode');
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
             break;
-
-
-
 
             
 
