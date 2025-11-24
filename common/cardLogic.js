@@ -210,7 +210,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -236,15 +235,15 @@ case 'chess':
                     let commentsEnabled = true; 
                     let commentMap = {}; 
 
-                    // --- DEBUG PARSER ---
+                    // --- PARSER ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
                         console.log("--- STARTING PGN PARSE ---");
                         
-                        // 1. Remove Headers
+                        // 1. Clean Headers
                         let body = pgnText.replace(/\[.*?\]/g, "");
 
-                        // 2. Remove Variations (Recursive) - Keeps main line only
+                        // 2. Remove Variations (Keep Main Line)
                         const cleanPGN = (text) => {
                             let result = "";
                             let depth = 0;
@@ -259,7 +258,6 @@ case 'chess':
 
                         // 3. Formatting
                         body = body.replace(/(\r\n|\n|\r)/gm, " ");
-                        // Add spaces around braces
                         body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
                         // 4. Tokenize
@@ -278,10 +276,7 @@ case 'chess':
                                 insideComment = false; 
                                 // Assign comment to the LAST move processed (moveIndex - 1)
                                 if (moveIndex > 0) {
-                                    const cText = currentComment.join(" ");
-                                    map[moveIndex - 1] = cText;
-                                    // Log first few for debugging
-                                    if (moveIndex < 5) console.log(`[PARSER] Move ${moveIndex-1} assigned:`, cText.substring(0, 20) + "...");
+                                    map[moveIndex - 1] = currentComment.join(" ");
                                 }
                                 continue; 
                             }
@@ -289,20 +284,16 @@ case 'chess':
                             if (insideComment) {
                                 currentComment.push(token);
                             } else {
-                                // NOT a comment. Is it a move?
-                                // Ignore numbers ("1.", "1...", "25.")
-                                if (/^\d+\.+/.test(token)) continue;
-                                // Ignore results
-                                if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
-                                // Ignore NAGs ($1)
-                                if (token.startsWith('$')) continue;
+                                // Check for Moves
+                                if (/^\d+\.+/.test(token)) continue; // "1."
+                                if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue; // Result
+                                if (token.startsWith('$')) continue; // NAG
 
                                 // It IS a move
                                 moveIndex++;
                             }
                         }
                         
-                        console.log(`[PARSER] Total Moves Found: ${moveIndex}`);
                         console.log(`[PARSER] Total Comments Mapped: ${Object.keys(map).length}`);
                         return map;
                     };
@@ -325,7 +316,7 @@ case 'chess':
                                 <div class="chess-white-box">
                                     <div id="${boardId}"></div>
                                 </div>
-                                <div id="chess-comment-overlay" class="chess-comment-overlay">...</div>
+                                <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
                         </div>
@@ -418,20 +409,23 @@ case 'chess':
                         return { html: evalHtml, text: cleanText };
                     };
 
-                    // --- UPDATE BOX (With Logs) ---
                     const updateCommentContent = (moveIndex) => {
                         const overlay = document.getElementById('chess-comment-overlay');
-                        
                         if (!commentsEnabled) {
                             $(overlay).fadeOut();
                             return;
                         }
                         $(overlay).fadeIn();
 
+                        // Start of Game
+                        if (moveIndex === -1) {
+                            overlay.innerHTML = '<div style="color:#ccc; font-size: 0.9em;">Start of Game</div>';
+                            return;
+                        }
+
+                        // Check Map
                         const commentText = commentMap[moveIndex];
-                        
-                        // DEBUG LOG
-                        console.log(`[LOOKUP] Index: ${moveIndex} | Has Comment? ${!!commentText}`);
+                        // console.log(`[LOOKUP] Index: ${moveIndex} | Comment:`, commentText);
 
                         if (commentText && commentText.trim().length > 0) {
                             const parsed = generateEvalHtml(commentText);
@@ -490,9 +484,8 @@ case 'chess':
                         // 3. SIZE CALCULATION
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
-                        
-                        const maxWidth = winWidth * 0.90; // 90% Width
-                        const maxHeight = winHeight - 200; 
+                        const maxWidth = winWidth * 0.90; 
+                        const maxHeight = winHeight * 0.80; // 80vh max
                         const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
@@ -510,7 +503,7 @@ case 'chess':
                             updateChessStyles();
                             updateCommentContent(-1); 
 
-                            // 4. OBSERVER
+                            // 4. OBSERVER (DOM INDEXING)
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 
@@ -518,17 +511,17 @@ case 'chess':
                                     clearInterval(checkInterval);
                                     
                                     gameObserver = new MutationObserver(() => {
-                                        const activeMove = movesPanel.querySelector('move.active'); 
+                                        // 1. Find Active Move Element
+                                        const activeMove = movesPanel.querySelector('.active'); 
+                                        
                                         if (activeMove) {
-                                            // Extract ID Index: ...Moves15 -> 15
-                                            const prefix = boardId + 'Moves';
-                                            const rawId = activeMove.id;
+                                            // 2. Find its numeric index among ALL moves
+                                            const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                                            const index = allMoves.indexOf(activeMove);
                                             
-                                            if (rawId && rawId.startsWith(prefix)) {
-                                                const indexStr = rawId.substring(prefix.length);
-                                                const index = parseInt(indexStr);
-                                                updateCommentContent(index);
-                                            }
+                                            // 3. Lookup
+                                            console.log(`Active Move DOM Index: ${index}`);
+                                            updateCommentContent(index);
                                         } else {
                                             updateCommentContent(-1);
                                         }
@@ -558,7 +551,6 @@ case 'chess':
                 }
             });
             break;
-
             
 
 
