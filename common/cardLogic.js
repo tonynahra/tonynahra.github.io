@@ -213,7 +213,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -236,55 +235,75 @@ case 'chess':
                     const styleId = 'chess-style-' + Date.now(); 
                     
                     let currentFontSize = 26; 
-                    let commentsEnabled = true; // Start ON
+                    let commentsEnabled = true; 
                     let commentMap = {}; 
 
-                    // --- NEW: CLEAN PARSER (Handles Variations) ---
+                    // --- NEW: STACK-BASED PARSER (Handles Nested Variations) ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
                         
                         // 1. Remove Headers
                         let body = pgnText.replace(/\[.*?\]/g, "");
-                        
-                        // 2. Remove Variations (Recursive parentheses removal)
-                        // This is crucial: ( ... ) moves must NOT count towards index
-                        let previousLength = body.length;
-                        while (true) {
-                            body = body.replace(/\([^\(\)]*\)/g, "");
-                            if (body.length === previousLength) break;
-                            previousLength = body.length;
-                        }
 
-                        // 3. Clean Format
-                        body = body.replace(/(\r\n|\n|\r)/gm, " "); // Remove newlines
-                        body = body.replace(/\d+(\.+)/g, ""); // Remove "1." "1..."
-                        body = body.replace(/(1-0|0-1|1\/2-1\/2|\*)/g, ""); // Remove result
+                        // 2. Robust Variation Stripper (The Fix)
+                        // We cannot use Regex for nested ( ... ( ... ) )
+                        const cleanPGN = (text) => {
+                            let result = "";
+                            let depth = 0;
+                            let inComment = false;
+                            
+                            for (let i = 0; i < text.length; i++) {
+                                const char = text[i];
+                                
+                                // Handle Comments { ... } - Keep them, but ignore parens inside them
+                                if (char === '{') inComment = true;
+                                if (char === '}') inComment = false;
+                                
+                                if (!inComment) {
+                                    if (char === '(') {
+                                        depth++;
+                                        continue; // Skip the '('
+                                    }
+                                    if (char === ')') {
+                                        if (depth > 0) depth--;
+                                        continue; // Skip the ')'
+                                    }
+                                }
+                                
+                                // Only keep text if we are at Depth 0 (Main Line)
+                                if (depth === 0) {
+                                    result += char;
+                                }
+                            }
+                            return result;
+                        };
 
-                        // 4. Tokenize: Grab Comments {..} OR Moves (words)
-                        // Regex looks for {comment} OR move_string
-                        const regex = /\{[\s\S]*?\}|[A-Za-z0-9\+\#\=\-]+/g;
-                        const tokens = body.match(regex) || [];
-                        
+                        const mainLine = cleanPGN(body);
+
+                        // 3. Tokenize
+                        // Matches: Comments {..} OR Move Numbers (1.) OR Result OR Moves
+                        const regex = /(\{[^}]+\})|(\d+\.+)|(1-0|0-1|1\/2-1\/2|\*)|([a-zA-Z0-9][a-zA-Z0-9\+\#\=\-\!\?]*)/g;
+                        let match;
                         let moveIndex = 0;
-                        
-                        tokens.forEach(token => {
-                            token = token.trim();
-                            if (!token) return;
 
-                            if (token.startsWith('{')) {
-                                // It's a comment for the PREVIOUS move
+                        while ((match = regex.exec(mainLine)) !== null) {
+                            if (match[1]) { 
+                                // COMMENT { ... }
                                 if (moveIndex > 0) {
-                                    const clean = token.substring(1, token.length - 1).trim();
-                                    // Map index is 0-based (Move 1 = Index 0)
+                                    const clean = match[1].substring(1, match[1].length - 1).trim();
                                     map[moveIndex - 1] = clean;
                                 }
-                            } else {
-                                // It's a move (e4, Nf3, etc)
+                            } else if (match[2]) { 
+                                // Move Number (ignore)
+                            } else if (match[3]) {
+                                // Result (ignore)
+                            } else if (match[4]) {
+                                // MOVE (e4, Nf3, Ng3!)
                                 moveIndex++;
                             }
-                        });
+                        }
                         
-                        console.log(`Mapped ${Object.keys(map).length} comments for ${moveIndex} main-line moves.`);
+                        console.log(`Parsed ${Object.keys(map).length} comments. Total moves found: ${moveIndex}`);
                         return map;
                     };
 
@@ -370,7 +389,7 @@ case 'chess':
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                        cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); // Remove other clock tags
+                        cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
                         
                         let evalHtml = "";
                         if (evalMatch) {
@@ -409,17 +428,14 @@ case 'chess':
                             return;
                         }
 
-                        // Show box
                         $(overlay).fadeIn();
 
-                        // Look up
                         const commentText = commentMap[moveIndex];
 
                         if (commentText && commentText.trim().length > 0) {
                             const parsed = generateEvalHtml(commentText);
                             overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
                         } else {
-                            // Placeholder
                             overlay.innerHTML = '<div style="color:#777; font-style:italic; font-size: 0.9em;">...</div>';
                         }
                     };
@@ -455,7 +471,7 @@ case 'chess':
 
                         const selectedPgn = rawGames[index];
                         
-                        // 1. PARSE COMMENTS (With Variation Removal)
+                        // 1. PARSE COMMENTS (Clean)
                         commentMap = parseCommentsMap(selectedPgn);
                         
                         // 2. METADATA
@@ -471,11 +487,11 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 3. SIZE CALCULATION
+                        // 3. SIZE CALCULATION (Buffer for buttons)
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
                         const maxWidth = winWidth * 0.60; 
-                        const maxHeight = winHeight - 200; // 200px Buffer for Nav Buttons
+                        const maxHeight = winHeight - 250; 
                         const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
@@ -541,8 +557,6 @@ case 'chess':
                 }
             });
             break;
-            
-
 
 
 
