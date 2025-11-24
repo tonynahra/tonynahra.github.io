@@ -439,7 +439,7 @@ body.chess-mode-active .modal-header,
 
 .pgnvjs-moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
 
-/* COMMENT BOX (Bottom Right) */
+/* COMMENT BOX */
 .chess-comment-overlay {
     font-size: 1.2rem !important;
     padding: 15px !important;
@@ -447,10 +447,13 @@ body.chess-mode-active .modal-header,
     border: 1px solid #777;
     border-radius: 6px;
     color: #fff !important;
+    
+    /* Bottom Right Position */
     position: absolute;
     bottom: 20px;
     right: 30px; 
     width: 320px;
+    
     z-index: 6000 !important;
     text-align: center;
     display: none; 
