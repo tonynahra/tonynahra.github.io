@@ -209,6 +209,7 @@ function loadModalContent(index) {
 
 
 
+
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -239,10 +240,8 @@ case 'chess':
                         const map = {};
                         console.log("--- STARTING PGN PARSE ---");
                         
-                        // Clean Headers
                         let body = pgnText.replace(/\[.*?\]/g, "").trim();
 
-                        // Remove Variations
                         const cleanPGN = (text) => {
                             let result = "";
                             let depth = 0;
@@ -255,7 +254,6 @@ case 'chess':
                         };
                         body = cleanPGN(body);
 
-                        // Format
                         body = body.replace(/(\r\n|\n|\r)/gm, " ");
                         body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
@@ -271,7 +269,6 @@ case 'chess':
                             if (token === '{') { insideComment = true; currentComment = []; continue; }
                             if (token === '}') { 
                                 insideComment = false; 
-                                // Assign to LAST move (moveIndex - 1)
                                 const idx = moveIndex === 0 ? -1 : moveIndex - 1;
                                 map[idx] = currentComment.join(" ");
                                 continue; 
@@ -287,7 +284,12 @@ case 'chess':
                             }
                         }
                         
-                        console.log(`[PARSER] Mapped ${Object.keys(map).length} comments.`);
+                        // --- DEBUG: PRINT FIRST 5 COMMENTS ---
+                        console.log(`[DEBUG] Total Comments Mapped: ${Object.keys(map).length}`);
+                        for(let i = 0; i < 5; i++) {
+                            console.log(`[DEBUG] Move Index ${i}:`, map[i] ? map[i].substring(0, 30) + "..." : "NO COMMENT");
+                        }
+                        
                         return map;
                     };
 
@@ -309,7 +311,7 @@ case 'chess':
                                 <div class="chess-white-box">
                                     <div id="${boardId}"></div>
                                 </div>
-                                <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
+                                <div id="chess-comment-overlay" class="chess-comment-overlay">...</div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
                         </div>
@@ -360,7 +362,6 @@ case 'chess':
                     // --- LISTENERS ---
                     document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
                     document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
-                    
                     document.getElementById('chess-close-btn').onclick = (e) => { 
                         e.preventDefault(); 
                         $modal.removeClass('chess-mode');
@@ -402,28 +403,29 @@ case 'chess':
                         return { html: evalHtml, text: cleanText };
                     };
 
-                    // --- UPDATE CONTENT LOGIC (With Move Counter) ---
                     const updateCommentContent = (moveIndex, totalMoves) => {
                         const overlay = document.getElementById('chess-comment-overlay');
                         if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         $(overlay).fadeIn();
 
-                        // Start of Game
                         if (moveIndex === -1) {
                             overlay.innerHTML = '<div style="color:#ccc; font-size: 0.9em;">Start of Game</div>';
                             return;
                         }
 
                         const commentText = commentMap[moveIndex];
-                        console.log(`[OBSERVER] Active Move Index: ${moveIndex}`);
+                        
+                        // Only log if we found a comment to reduce spam
+                        if (commentText) console.log(`[LOOKUP] Index ${moveIndex} found comment:`, commentText.substring(0, 10));
 
                         if (commentText && commentText.trim().length > 0) {
                             const parsed = generateEvalHtml(commentText);
                             overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
                         } else {
-                            // NEW: Show Move Counter if no comment
-                            const displayMove = moveIndex + 1; // 0-based to 1-based
-                            overlay.innerHTML = `<div style="color:#ccc; font-size: 1rem; font-weight:bold;">Move ${displayMove} / ${totalMoves}</div>`;
+                            // Move Counter if no comment
+                            const displayMove = moveIndex + 1; 
+                            const displayTotal = totalMoves || '?';
+                            overlay.innerHTML = `<div style="color:#ccc; font-size: 1rem; font-weight:bold;">Move ${displayMove} / ${displayTotal}</div>`;
                         }
                     };
 
@@ -458,7 +460,6 @@ case 'chess':
                         const selectedPgn = rawGames[index];
                         commentMap = parseCommentsMap(selectedPgn);
                         
-                        // 1. METADATA
                         const headers = {};
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
@@ -471,11 +472,11 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 2. SIZE
+                        // SIZE
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
                         const maxWidth = winWidth * 0.90; 
-                        const maxHeight = winHeight - 250; 
+                        const maxHeight = winHeight * 0.80; 
                         const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
@@ -493,43 +494,53 @@ case 'chess':
                             updateChessStyles();
                             updateCommentContent(-1, 0); 
 
-                            // 4. SUBTREE OBSERVER (Alive Forever)
-                            // We attach to the CONTAINER (White Box), which is static.
-                            const whiteBox = $modalContent.find('.chess-white-box')[0];
-                            
-                            if (whiteBox) {
-                                gameObserver = new MutationObserver(() => {
-                                    // Look for moves panel dynamically
-                                    const movesPanel = document.getElementById(boardId + 'Moves');
-                                    if (!movesPanel) return;
-
-                                    // Find active element (closest('move') handles inner span highlights)
-                                    const activeEl = movesPanel.querySelector('.active');
+                            // --- ROBUST OBSERVER + CLICK BACKUP ---
+                            const checkInterval = setInterval(() => {
+                                const movesPanel = document.getElementById(boardId + 'Moves');
+                                
+                                if (movesPanel) {
+                                    clearInterval(checkInterval);
+                                    console.log("[DEBUG] Moves Panel Found. Attaching Observer.");
                                     
-                                    if (activeEl) {
-                                        const activeMove = activeEl.closest('move');
-                                        if (activeMove) {
-                                            const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                            const index = allMoves.indexOf(activeMove);
-                                            const total = allMoves.length;
-                                            
-                                            updateCommentContent(index, total);
+                                    const checkActiveMove = () => {
+                                        // 1. Find active element
+                                        const activeEl = movesPanel.querySelector('.active');
+                                        if (activeEl) {
+                                            // 2. Get parent <move>
+                                            const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
+                                            if (activeMove) {
+                                                // 3. Get index
+                                                const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                                                const index = allMoves.indexOf(activeMove);
+                                                updateCommentContent(index, allMoves.length);
+                                                return;
+                                            }
                                         }
-                                    } else {
-                                        // Start of game
+                                        // Start state
                                         const total = movesPanel.querySelectorAll('move').length;
                                         updateCommentContent(-1, total);
-                                    }
-                                });
-                                
-                                // SUBTREE: TRUE catches everything inside the box, including re-renders
-                                gameObserver.observe(whiteBox, { 
-                                    subtree: true, 
-                                    attributes: true, 
-                                    childList: true, 
-                                    attributeFilter: ['class'] 
-                                });
-                            }
+                                    };
+
+                                    // A. Mutation Observer (Catches class changes)
+                                    gameObserver = new MutationObserver((mutations) => {
+                                        // console.log("[OBSERVER] Mutation detected"); // Uncomment to debug
+                                        checkActiveMove();
+                                    });
+                                    
+                                    gameObserver.observe(movesPanel, { 
+                                        attributes: true, 
+                                        subtree: true, 
+                                        childList: true, // In case moves are added/removed
+                                        attributeFilter: ['class'] 
+                                    });
+                                    
+                                    // B. Click Listener (Backup for manual clicks)
+                                    $(movesPanel).on('click', function() {
+                                        console.log("[CLICK] Move clicked manually");
+                                        setTimeout(checkActiveMove, 50); // Small delay for active class to update
+                                    });
+                                }
+                            }, 200);
                         } else {
                             $modal.removeClass('chess-mode');
                             $('body').removeClass('chess-mode-active');
@@ -551,7 +562,15 @@ case 'chess':
                 }
             });
             break;
-            
+
+
+
+
+
+
+
+
+
             
 
 
