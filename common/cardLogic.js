@@ -468,7 +468,7 @@ case 'chess':
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
                         const black = (gamePgn.match(/\[Black "(.*?)"\]/) || [])[1] || '?';
-                        const result = (gameGpn.match(/\[Result "(.*?)"\]/) || [])[1] || '*';
+                        const result = (gamePgn.match(/\[Result "(.*?)"\]/) || [])[1] || '*';
                         $select.append(`<option value="${idx}">${idx + 1}. ${white} vs ${black} (${result})</option>`);
                     });
                     if (rawGames.length <= 1) $select.hide(); 
