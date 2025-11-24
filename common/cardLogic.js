@@ -208,8 +208,7 @@ function loadModalContent(index) {
 
 
 
-
-            case 'chess':
+case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
         loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -233,216 +232,181 @@ function loadModalContent(index) {
             let currentFontSize = 26; 
             let commentsEnabled = true; 
             let commentMap = {}; 
-
-            // --- PARSER (FIX APPLIED HERE) ---
-// --- PARSER (FIX APPLIED HERE) ---
-const parseCommentsMap = (pgnText) => {
-    const map = {};
-    
-    // *** FIX: Safely remove standard PGN headers [Key "Value"] only. ***
-    // This prevents accidentally stripping the non-standard [%eval X] tags from comments, 
-    // which was the cause of "Parsed Value: N/A".
-    let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim();
-    
-    const cleanPGN = (text) => {
-        let result = "";
-        let depth = 0;
-        for (let i = 0; i < text.length; i++) {
-            if (text[i] === '(') { depth++; continue; }
-            if (text[i] === ')') { if(depth > 0) depth--; continue; }
-            if (depth === 0) result += text[i];
-        }
-        return result;
-    };
-    body = cleanPGN(body);
-
-    body = body.replace(/(\r\n|\n|\r)/gm, " ");
-    body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
-
-    const tokens = body.split(/\s+/);
-    let moveIndex = 0;
-    let insideComment = false;
-    let currentComment = [];
-
-    for (let i = 0; i < tokens.length; i++) {
-        const token = tokens[i].trim();
-        if (!token) continue;
-
-        if (token === '{') { insideComment = true; currentComment = []; continue; }
-        if (token === '}') { 
-            insideComment = false; 
-            const idx = moveIndex === 0 ? -1 : moveIndex - 1;
-            map[idx] = currentComment.join(" ");
-            continue; 
-        }
-
-        if (insideComment) {
-            currentComment.push(token);
-        } else {
-            if (/^\d+\.+/.test(token)) continue;
-            if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
-            if (token.startsWith('$')) continue;
-            moveIndex++;
-        }
-    }
-    return map;
-};
             
+            // --------------------------------------------------------------------------
+            // --- CORE PARSING HELPERS ---
+            
+            // FIX: Safely remove standard PGN headers [Key "Value"] only.
+            const parseCommentsMap = (pgnText) => {
+                const map = {};
+                
+                let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim();
+                
+                const cleanPGN = (text) => {
+                    let result = "";
+                    let depth = 0;
+                    for (let i = 0; i < text.length; i++) {
+                        if (text[i] === '(') { depth++; continue; }
+                        if (text[i] === ')') { if(depth > 0) depth--; continue; }
+                        if (depth === 0) result += text[i];
+                    }
+                    return result;
+                };
+                body = cleanPGN(body);
 
-            // 2. INJECT HTML (Unchanged)
-            $modalContent.html(`
-                <style id="${styleId}"></style>
-                <div class="chess-container">
-                    <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 8px; background: #1a1a1a; gap: 10px; border-bottom: 1px solid #333;">
-                        <select id="chess-game-select" style="flex: 1; max-width: 400px; padding: 5px; background:#000; color:#fff; border:1px solid #444;"></select>
-                        <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Info</button>
-                        <button id="chess-font-minus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">-</button>
-                        <button id="chess-font-plus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">+</button>
-                        <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 4px 10px;">Comments: On</button>
-                        <div style="flex: 1;"></div>
-                        <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
-                    </div>
-                    <div class="chess-main-area">
-                        <div class="chess-white-box">
-                            <div id="${boardId}"></div>
-                        </div>
-                        <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
-                        <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
-                    </div>
-                </div>
-            `);
+                body = body.replace(/(\r\n|\n|\r)/gm, " ");
+                body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
-            // --- DYNAMIC STYLES (Unchanged) ---
-            const updateChessStyles = () => {
-                const movesId = `#${boardId}Moves`; 
-                const css = `
-                    ${movesId} {
-                        background-color: #ffffff !important;
-                        color: #000000 !important;
-                        font-size: ${currentFontSize}px !important;
-                        line-height: ${currentFontSize + 10}px !important;
-                        padding: 20px !important;
-                        border-left: 4px solid #d2b48c !important;
-                        height: 100% !important;
-                        overflow-y: auto !important;
-                        width: 360px !important; 
-                        min-width: 360px !important;
-                        display: block !important; 
+                const tokens = body.split(/\s+/);
+                let moveIndex = 0;
+                let insideComment = false;
+                let currentComment = [];
+
+                for (let i = 0; i < tokens.length; i++) {
+                    const token = tokens[i].trim();
+                    if (!token) continue;
+
+                    if (token === '{') { insideComment = true; currentComment = []; continue; }
+                    if (token === '}') { 
+                        insideComment = false; 
+                        const idx = moveIndex === 0 ? -1 : moveIndex - 1;
+                        map[idx] = currentComment.join(" ");
+                        continue; 
                     }
-                    ${movesId} move {
-                        font-size: ${currentFontSize}px !important;
-                        line-height: ${currentFontSize + 10}px !important;
-                        color: #000000 !important;
-                        cursor: pointer !important;
-                        display: inline-block !important;
-                        margin-right: 8px !important;
-                        margin-bottom: 5px !important;
-                        border-radius: 3px !important;
-                        padding: 2px 4px !important;
+
+                    if (insideComment) {
+                        currentComment.push(token);
+                    } else {
+                        if (/^\d+\.+/.test(token)) continue;
+                        if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
+                        if (token.startsWith('$')) continue;
+                        moveIndex++;
                     }
-                    ${movesId} move:hover { background-color: #e0e0e0 !important; }
-                    ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
-                    
-                    #${boardId} .pgnvjs-wrapper {
-                        display: flex !important;
-                        flex-direction: row !important;
-                        align-items: flex-start !important;
-                        width: 100% !important;
-                        justify-content: center !important;
-                    }
-                `;
-                $(`#${styleId}`).text(css);
+                }
+                return map;
             };
 
-            // --- EVAL GENERATOR (Unchanged - contains debug logs) ---
-// --- EVAL GENERATOR (Updated Game Balance Scaling) ---
-const generateEvalHtml = (rawText) => {
-    const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-    let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-    cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
-    
-    let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
-    let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
-    let whiteWinPct = 50;
-    
-    let debugEvalValue = "N/A";
+            // NEW: Extracts evaluation number only (to be used by Move/Game Balance logic)
+            const extractEvaluation = (rawText) => {
+                const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+                if (!evalMatch) return 0;
 
-    if (evalMatch) {
-        const valStr = evalMatch[1];
-        let rawVal = 0;
-        
-        debugEvalValue = valStr;
+                const valStr = evalMatch[1];
+                if (valStr.startsWith('#')) {
+                    return valStr; // Mate score (string)
+                } else {
+                    return parseFloat(valStr); // Pawn score (float)
+                }
+            };
+            
+            // --------------------------------------------------------------------------
+            // --- EVAL GENERATOR (Accepts delta, fixes formatting) ---
 
-        if (valStr.startsWith('#')) {
-            const isBlackMate = valStr.includes('-');
-            moveDisplay = "Mate " + valStr;
-            moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
-            
-            balanceScore = isBlackMate ? "-1000" : "+1000"; // Display is now 1000 for mate
-            balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
-            whiteWinPct = isBlackMate ? 0 : 100;
-        } else {
-            rawVal = parseFloat(valStr);
-            
-            // --- Move Score Logic (Caps at +/- 10 pawns) ---
-            moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
-            const absMove = Math.min(Math.abs(rawVal), 10);
-            moveWidth = (absMove / 10) * 50;
-            if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
-            else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
+            const generateEvalHtml = (rawText, rawEval, deltaEval) => {
+                let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
+                
+                let moveDisplay = "0.0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
+                let balanceScoreDisplay = "0.0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
+                let whiteWinPct = 50;
+                
+                // ----------------------------------------------------
+                // --- MATE SCORING ---
+                if (typeof rawEval === 'string' && rawEval.startsWith('#')) {
+                    const valStr = rawEval;
+                    const isBlackMate = valStr.includes('-');
+                    
+                    // Move Score (Delta not meaningful for mate, show mate status)
+                    moveDisplay = "Mate " + valStr;
+                    moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
+                    
+                    // Game Balance
+                    balanceScoreDisplay = isBlackMate ? "-M" : "+M"; 
+                    balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
+                    whiteWinPct = isBlackMate ? 0 : 100;
+                    
+                } else {
+                    const rawVal = rawEval; // rawVal is the current position score (float)
+                    
+                    // --- 1. Move Score Logic (DELTA/Non-Cumulative, 1 Decimal Place) ---
+                    const delta = deltaEval;
+                    
+                    // Format to 1 decimal place (e.g., 1.25 -> +1.3)
+                    moveDisplay = (delta > 0 ? '+' : '') + (Math.round(delta * 10) / 10).toFixed(1); 
+                    const absMove = Math.min(Math.abs(delta), 10); // Cap at 10 pawns
+                    moveWidth = (absMove / 10) * 50;
+                    
+                    if (delta > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
+                    else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
 
-            // --- Game Balance Logic (Caps at +/- 10 pawns) ---
-            let balanceCP = Math.round(rawVal * 100); // Evaluation in centipawns
-            balanceScore = Math.max(-1000, Math.min(1000, balanceCP)); // Cap display at +/- 1000 cp
-            
-            const absBal = Math.min(Math.abs(balanceCP), 1000); // Cap visual scaling at 1000 cp
-            balanceWidth = (absBal / 1000) * 50; // Scale 0-1000 cp to 0-50% width
-            
-            if (balanceScore > 0) { balanceLeft = 50; balanceColor = "#2ecc71"; }
-            else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
-            
-            if (balanceScore > 0) balanceScore = `+${balanceScore}`;
-            
-            whiteWinPct = 50 + (rawVal * 8);
-            whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
-        }
-    }
-    
-    // *** DEBUGGING: Log to console ***
-    console.log(`[Chess Eval] Raw PGN Text: "${rawText}"`);
-    console.log(`[Chess Eval] Parsed Value: ${debugEvalValue}`);
-    console.log(`[Chess Eval] Cleaned Comment: "${cleanText}"`);
-    // **********************************
+                    // --- 2. Game Balance Logic (POSITION Score, 1 Decimal Place) ---
+                    // Format to 1 decimal place (e.g., 1.25 -> +1.3)
+                    balanceScoreDisplay = (rawVal > 0 ? '+' : '') + (Math.round(rawVal * 10) / 10).toFixed(1); 
 
-    const evalHtml = `
-        <div class="eval-row">
-            <div class="eval-header"><span>Move Score</span><span class="eval-value">${moveDisplay}</span></div>
-            <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
-        </div>
-        <div class="eval-row">
-            <div class="eval-header"><span>Game Balance</span><span class="eval-value">${balanceScore}</span></div>
-            <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
-        </div>
-        <div class="eval-row">
-            <div class="eval-header"><span>White vs Black</span><span class="eval-value">${whiteWinPct}% / ${100 - whiteWinPct}%</span></div>
-            <div class="win-rate-bar">
-                <div class="win-white" style="width: ${whiteWinPct}%;"></div>
-                <div class="win-black"></div>
-            </div>
-        </div>
-    `;
-    return { html: evalHtml, text: cleanText };
-};
+                    let balanceCP = Math.round(rawVal * 100); // Evaluation in centipawns
+                    
+                    // Cap visual scaling at 1000 cp (+/- 10 pawns)
+                    const absBal = Math.min(Math.abs(balanceCP), 1000); 
+                    balanceWidth = (absBal / 1000) * 50; 
+                    
+                    if (rawVal > 0) { balanceLeft = 50; balanceColor = "#2ecc71"; }
+                    else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
+                    
+                    // Win Percentage
+                    whiteWinPct = 50 + (rawVal * 8);
+                    whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
+                }
+                // ----------------------------------------------------
+                
+                // *** DEBUGGING: Log to console ***
+                console.log(`[Chess Eval] Raw PGN Text: "${rawText}"`);
+                console.log(`[Chess Eval] Current Position Score: ${rawEval}`);
+                console.log(`[Chess Eval] Delta/Move Score: ${deltaEval}`);
+                console.log(`[Chess Eval] Cleaned Comment: "${cleanText}"`);
+                // **********************************
 
+                const evalHtml = `
+                    <div class="eval-row">
+                        <div class="eval-header"><span>Move Score</span><span class="eval-value">${moveDisplay}</span></div>
+                        <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
+                    </div>
+                    <div class="eval-row">
+                        <div class="eval-header"><span>Game Balance</span><span class="eval-value">${balanceScoreDisplay}</span></div>
+                        <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
+                    </div>
+                    <div class="eval-row">
+                        <div class="eval-header"><span>White vs Black</span><span class="eval-value">${whiteWinPct}% / ${100 - whiteWinPct}%</span></div>
+                        <div class="win-rate-bar">
+                            <div class="win-white" style="width: ${whiteWinPct}%;"></div>
+                            <div class="win-black"></div>
+                        </div>
+                    </div>
+                `;
+                return { html: evalHtml, text: cleanText };
+            };
             
-            // --- COMMENT UPDATER (Unchanged) ---
-            const updateCommentContent = (moveIndex, totalMoves) => {
+            // --------------------------------------------------------------------------
+            // --- COMMENT UPDATER (Calculates Delta and passes to generator) ---
+            
+            const updateCommentContent = (moveIndex, totalMoves, evaluations) => {
                 const overlay = document.getElementById('chess-comment-overlay');
                 if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                 $(overlay).fadeIn();
 
                 const commentText = commentMap[moveIndex] || ""; 
-                const parsed = generateEvalHtml(commentText); 
+                
+                // NEW: Calculate Raw Eval and Delta Eval
+                const currentEval = evaluations[moveIndex] || 0;
+                const previousEval = evaluations[moveIndex - 1] || 0;
+                
+                let deltaEval = 0;
+                // Only calculate delta if both are numeric (i.e., not a mate score)
+                if (typeof currentEval === 'number' && typeof previousEval === 'number') {
+                    deltaEval = currentEval - previousEval;
+                }
+                
+                // NEW: Pass Delta and Current Eval
+                const parsed = generateEvalHtml(commentText, currentEval, deltaEval); 
                 let content = "";
                 
                 // 1. TEXT (TOP BLOCK)
@@ -467,6 +431,9 @@ const generateEvalHtml = (rawText) => {
                 
                 overlay.innerHTML = content + footer; 
             };
+            
+            // --------------------------------------------------------------------------
+            // --- EVENT HANDLERS / RENDERER (Updated to use new helper functions) ---
 
             document.getElementById('chess-comment-btn').onclick = (e) => {
                 e.preventDefault();
@@ -481,7 +448,6 @@ const generateEvalHtml = (rawText) => {
                 }
             };
 
-            // --- RENDER (Unchanged) ---
             const $select = $('#chess-game-select');
             rawGames.forEach((gamePgn, idx) => {
                 const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -498,6 +464,12 @@ const generateEvalHtml = (rawText) => {
 
                 const selectedPgn = rawGames[index];
                 commentMap = parseCommentsMap(selectedPgn);
+                
+                // NEW: Pre-calculate all evaluations for delta calculation
+                const evaluations = {};
+                for (const [moveIndex, comment] of Object.entries(commentMap)) {
+                    evaluations[moveIndex] = extractEvaluation(comment);
+                }
                 
                 const headers = {};
                 const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
@@ -532,7 +504,8 @@ const generateEvalHtml = (rawText) => {
                     
                     updateChessStyles();
                     const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
-                    updateCommentContent(-1, total); 
+                    // Pass evaluations to updateCommentContent
+                    updateCommentContent(-1, total, evaluations); 
 
                     // Observer
                     const checkInterval = setInterval(() => {
@@ -551,11 +524,11 @@ const generateEvalHtml = (rawText) => {
                                     if (activeMove) {
                                         const allMoves = Array.from(movesPanel.querySelectorAll('move'));
                                         const index = allMoves.indexOf(activeMove);
-                                        updateCommentContent(index, totalMoves);
+                                        updateCommentContent(index, totalMoves, evaluations); // Pass evaluations
                                         return;
                                     }
                                 }
-                                updateCommentContent(-1, totalMoves);
+                                updateCommentContent(-1, totalMoves, evaluations); // Pass evaluations
                             });
                             
                             gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
@@ -582,11 +555,6 @@ const generateEvalHtml = (rawText) => {
         }
     });
     break;
-
-
-
-
-
 
 
 
