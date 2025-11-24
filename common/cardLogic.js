@@ -425,7 +425,6 @@ function loadModalContent(index) {
                         if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         $(overlay).fadeIn();
 
-                        // FINAL FIX: Use toString() for reliable map lookup
                         const commentText = commentMap[moveIndex.toString()] || ""; 
                         
                         const parsed = generateEvalHtml(commentText);
@@ -612,8 +611,6 @@ function loadModalContent(index) {
     $('.modal-prev-btn').prop('disabled', index <= 0);
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
-
-
 
 
 
