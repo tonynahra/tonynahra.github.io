@@ -206,8 +206,6 @@ function loadModalContent(index) {
             break;
 
 
-
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -240,6 +238,7 @@ case 'chess':
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
+                // FIX: Use a more targeted regex to strip PGN headers, preserving [%eval X] tags.
                 let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim();
                 
                 const cleanPGN = (text) => {
@@ -286,7 +285,7 @@ case 'chess':
                 return map;
             };
 
-            // NEW: Extracts evaluation number only (to be used by Move/Game Balance logic)
+            // NEW: Extracts evaluation number only (Used for delta calculation)
             const extractEvaluation = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 if (!evalMatch) return 0;
@@ -300,7 +299,7 @@ case 'chess':
             };
             
             // --------------------------------------------------------------------------
-            // --- EVAL GENERATOR (Accepts delta, fixes formatting) ---
+            // --- EVAL GENERATOR (Delta logic, 1 decimal place formatting) ---
 
             const generateEvalHtml = (rawText, rawEval, deltaEval) => {
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -433,9 +432,10 @@ case 'chess':
             };
             
             // --------------------------------------------------------------------------
-            // --- EVENT HANDLERS / RENDERER (Updated to use new helper functions) ---
+            // --- EVENT HANDLERS / RENDERER (Updated for consistency and error fix) ---
 
-            document.getElementById('chess-comment-btn').onclick = (e) => {
+            // FIX: Use jQuery for comment button handler to prevent "Cannot set properties of null" error
+            $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 commentsEnabled = !commentsEnabled;
                 const btn = $('#chess-comment-btn');
@@ -446,7 +446,7 @@ case 'chess':
                     btn.text('Comments: Off').css({background: '', color: '#fff'});
                     $('#chess-comment-overlay').fadeOut();
                 }
-            };
+            });
 
             const $select = $('#chess-game-select');
             rawGames.forEach((gamePgn, idx) => {
@@ -545,6 +545,17 @@ case 'chess':
             renderGame(0);
             $select.off('change').on('change', function() { renderGame($(this).val()); });
             $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
+            
+            // Also need to handle font size buttons here, as they were likely missing the event handler
+            $('#chess-font-minus').off('click').on('click', function() {
+                currentFontSize = Math.max(14, currentFontSize - 2);
+                updateChessStyles();
+            });
+            $('#chess-font-plus').off('click').on('click', function() {
+                currentFontSize = Math.min(40, currentFontSize + 2);
+                updateChessStyles();
+            });
+
 
         },
         error: function() { 
@@ -555,7 +566,6 @@ case 'chess':
         }
     });
     break;
-
 
 
 
