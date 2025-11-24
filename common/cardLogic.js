@@ -416,39 +416,41 @@ case 'chess':
                         return { html: evalHtml, text: cleanText };
                     };
 
-                    const updateCommentContent = (moveIndex, totalMoves) => {
-                        const overlay = document.getElementById('chess-comment-overlay');
-                        if (!commentsEnabled) { $(overlay).fadeOut(); return; }
-                        $(overlay).fadeIn();
+            const updateCommentContent = (moveIndex, totalMoves) => {
+                const overlay = document.getElementById('chess-comment-overlay');
+                if (!commentsEnabled) { $(overlay).fadeOut(); return; }
+                $(overlay).fadeIn();
 
-                        // FINAL FIX: Accessing Array index directly
-                        const commentText = commentMap[moveIndex] || ""; 
-                        
-                        let content = "";
-                        const parsed = generateEvalHtml(commentText);
-                        
-                        // 1. TEXT (TOP BLOCK)
-                        let textContent = "";
-                        if (parsed.text) {
-                            textContent = `<div style="margin-bottom:12px; font-size: 1rem; color: #2c3e50;">${parsed.text}</div>`;
-                        } else if (moveIndex === -1) {
-                            textContent = `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
-                        } else {
-                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">No commentary.</div>`;
-                        }
-                        content += `<div class="comment-text-content">${textContent}</div>`;
+                // FINAL FIX: Accessing Array index directly
+                const commentText = commentMap[moveIndex] || ""; 
+                
+                // *** FIX: Call generateEvalHtml here to process the comment for the current move ***
+                const parsed = generateEvalHtml(commentText);
+                let content = "";
+                
+                // 1. TEXT (TOP BLOCK)
+                let textContent = "";
+                if (parsed.text) {
+                    textContent = `<div style="margin-bottom:12px; font-size: 1rem; color: #2c3e50;">${parsed.text}</div>`;
+                } else if (moveIndex === -1) {
+                    textContent = `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
+                } else {
+                    textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">No commentary.</div>`;
+                }
+                content += `<div class="comment-text-content">${textContent}</div>`;
 
 
-                        // 2. BARS & COUNTER (BOTTOM FOOTER)
-                        let footer = "";
-                        footer += parsed.html;
-                        
-                        const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1; 
-                        const displayTotal = totalMoves || '?';
-                        footer += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
-                        
-                        overlay.innerHTML = footer;
-                    };
+                // 2. BARS & COUNTER (BOTTOM FOOTER)
+                let footer = "";
+                footer += parsed.html; // *** FIX: Use the HTML generated from the current move's comment ***
+                
+                const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1; 
+                const displayTotal = totalMoves || '?';
+                footer += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
+                
+                overlay.innerHTML = content + footer; // Combine text and footer
+            };
+                    
 
                     document.getElementById('chess-comment-btn').onclick = (e) => {
                         e.preventDefault();
