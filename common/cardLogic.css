@@ -422,14 +422,12 @@ body.chess-mode-active .modal-header,
 }
 
 /* BOARD WRAPPER */
-
 .chess-white-box {
     width: 100% !important;
     height: 100% !important;
     
-    /* MARGIN: Pushes board away from left edge */
-    padding-left: 40px !important; 
-    
+    /* MARGIN FIX */
+    padding-left: 40px !important;
     padding-top: 10px !important;
     padding-right: 10px !important;
     
@@ -439,12 +437,9 @@ body.chess-mode-active .modal-header,
     align-items: flex-start;
 }
 
-
-
-
 .pgnvjs-moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
 
-/* OVERLAYS */
+/* COMMENT BOX (Bottom Right) */
 .chess-comment-overlay {
     font-size: 1.2rem !important;
     padding: 15px !important;
@@ -454,7 +449,7 @@ body.chess-mode-active .modal-header,
     color: #fff !important;
     position: absolute;
     bottom: 20px;
-    right: 30px; /* Bottom Right */
+    right: 30px; 
     width: 320px;
     z-index: 6000 !important;
     text-align: center;
