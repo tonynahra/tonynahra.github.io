@@ -207,12 +207,14 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
+
+            // 1. HIDE DEFAULT HEADER (Enter Chess Mode)
+            $modal.addClass('chess-mode');
 
             $.ajax({
                 url: loadUrl, 
@@ -226,23 +228,29 @@ case 'chess':
                     
                     // State Variables
                     let currentFontSize = 26; 
-                    let commentsEnabled = false;
+                    let commentsEnabled = true; // Default to ON so evaluations show up
 
-                    // 1. INJECT HTML
+                    // 2. INJECT HTML (With Custom Close Button)
                     $modalContent.html(`
                         <style id="${styleId}"></style>
-                        <div class="chess-container">
-                            <div class="chess-toolbar">
-                                <select id="chess-game-select"></select>
-                                <button id="chess-info-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; margin-right: 10px;">Info</button>
+                        <div class="chess-container" style="height: 100%; display: flex; flex-direction: column;">
+                            <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 10px; background: #222; gap: 10px;">
+                                <select id="chess-game-select" style="flex: 1; max-width: 400px; padding: 5px;"></select>
                                 
-                                <button id="chess-font-minus" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; min-width: 30px; cursor: pointer; font-weight: bold;">-</button>
-                                <button id="chess-font-plus" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; min-width: 30px; margin-right: 10px; cursor: pointer; font-weight: bold;">+</button>
+                                <button id="chess-info-btn" class="tab-button" style="color: #fff; border: 1px solid #555; padding: 5px 10px;">Info</button>
                                 
-                                <button id="chess-comment-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; cursor: pointer;">Comments: Off</button>
+                                <button id="chess-font-minus" class="tab-button" style="color: #fff; border: 1px solid #555; padding: 5px 10px; font-weight: bold;">-</button>
+                                <button id="chess-font-plus" class="tab-button" style="color: #fff; border: 1px solid #555; padding: 5px 10px; font-weight: bold;">+</button>
+                                
+                                <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 5px 10px;">Comments: On</button>
+                                
+                                <div style="flex: 1;"></div>
+                                
+                                <button id="chess-close-btn" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; font-weight: bold; cursor: pointer; border-radius: 4px;">X Close</button>
                             </div>
-                            <div class="chess-main-area" style="width: 100%; padding: 0;">
-                                <div class="chess-white-box" style="width: 100%; height: 100%; overflow: hidden; display: flex; justify-content: center;">
+                            
+                            <div class="chess-main-area" style="flex: 1; width: 100%; overflow: hidden; position: relative; background: #fff;">
+                                <div class="chess-white-box" style="width: 100%; height: 100%; overflow-y: auto; display: flex; justify-content: center;">
                                     <div id="${boardId}"></div>
                                 </div>
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
@@ -255,7 +263,6 @@ case 'chess':
                     const updateChessStyles = () => {
                         const movesId = `#${boardId}Moves`; 
                         const css = `
-                            /* 1. MOVES CONTAINER */
                             ${movesId} {
                                 background-color: #ffffff !important;
                                 color: #000000 !important;
@@ -265,12 +272,10 @@ case 'chess':
                                 border-left: 4px solid #d2b48c !important;
                                 height: 100% !important;
                                 overflow-y: auto !important;
-                                box-sizing: border-box !important;
                                 width: 340px !important;
                                 min-width: 340px !important;
                                 display: block !important; 
                             }
-                            /* 2. THE MOVES */
                             ${movesId} move {
                                 font-size: ${currentFontSize}px !important;
                                 line-height: ${currentFontSize + 10}px !important;
@@ -282,43 +287,14 @@ case 'chess':
                                 border-radius: 3px !important;
                                 padding: 2px 4px !important;
                             }
-                            /* 3. MOVE NUMBERS */
-                            ${movesId} move-number {
-                                font-size: ${currentFontSize}px !important;
-                                color: #666666 !important;
-                                font-weight: bold !important;
-                                margin-right: 5px !important;
-                            }
-                            /* 4. ACTIVE STATE */
                             ${movesId} move:hover { background-color: #e0e0e0 !important; }
                             ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
                             
-                            /* 5. OVERLAYS */
-                            .chess-metadata-overlay {
-                                font-size: 1.4rem !important; 
-                                padding: 30px !important;
-                                width: 60% !important;
-                                max-width: 800px !important;
-                                border: 2px solid var(--text-accent) !important;
-                                z-index: 2000 !important;
-                            }
-                            .chess-metadata-overlay td { padding: 12px 15px !important; border-bottom: 1px solid #444; }
-                            
-                            .chess-comment-overlay {
-                                font-size: 1.3rem !important;
-                                padding: 20px !important;
-                                background: rgba(0,0,0,0.9) !important;
-                                border-radius: 8px;
-                                max-width: 70% !important;
-                                z-index: 1500 !important;
-                                border: 1px solid #ccc;
-                            }
-
-                            /* 6. LAYOUT */
+                            /* Layout Alignment */
                             #${boardId} .pgnvjs-wrapper {
                                 display: flex !important;
                                 flex-direction: row !important;
-                                align-items: flex-start !important;
+                                align-items: flex-start !important; /* TOP ALIGN */
                                 width: 100% !important;
                                 justify-content: center !important;
                             }
@@ -326,42 +302,35 @@ case 'chess':
                         $(`#${styleId}`).text(css);
                     };
 
-                    // --- BIND BUTTONS ---
-                    document.getElementById('chess-font-minus').onclick = (e) => {
-                        e.preventDefault(); e.stopPropagation();
-                        if (currentFontSize > 14) { currentFontSize -= 2; updateChessStyles(); }
-                    };
-                    document.getElementById('chess-font-plus').onclick = (e) => {
-                        e.preventDefault(); e.stopPropagation();
-                        currentFontSize += 2; updateChessStyles();
+                    // --- LISTENERS ---
+                    document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
+                    document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
+                    
+                    // Close Button Logic
+                    document.getElementById('chess-close-btn').onclick = (e) => {
+                        e.preventDefault();
+                        $('.modal-close-btn').first().click(); // Trigger main close
                     };
 
-                    // --- COMMENTS TOGGLE ---
                     const updateCommentVisibility = () => {
-                        const overlay = document.getElementById('chess-comment-overlay');
-                        const btn = document.getElementById('chess-comment-btn');
-                        
+                        const overlay = $('#chess-comment-overlay');
+                        const btn = $('#chess-comment-btn');
                         if (commentsEnabled) {
-                            btn.textContent = 'Comments: On';
-                            btn.style.background = 'var(--text-accent)';
-                            btn.style.color = 'var(--bg-dark)';
-                            // If content exists, show it
-                            if (overlay.innerHTML.trim().length > 0) $(overlay).fadeIn();
+                            btn.text('Comments: On').css({background: 'var(--text-accent)', color: '#000'});
+                            if (overlay.html().trim().length > 0) overlay.fadeIn();
                         } else {
-                            btn.textContent = 'Comments: Off';
-                            btn.style.background = '';
-                            btn.style.color = '';
-                            $(overlay).fadeOut();
+                            btn.text('Comments: Off').css({background: '', color: '#fff'});
+                            overlay.fadeOut();
                         }
                     };
 
                     document.getElementById('chess-comment-btn').onclick = (e) => {
-                        e.preventDefault(); e.stopPropagation();
+                        e.preventDefault();
                         commentsEnabled = !commentsEnabled;
                         updateCommentVisibility();
                     };
 
-                    // --- RENDER LOGIC ---
+                    // --- RENDER ---
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -378,44 +347,24 @@ case 'chess':
 
                         const selectedPgn = rawGames[index];
                         
-                        // 1. PARSE EXTENDED METADATA
-
-                                // 1. PARSE ALL METADATA
-                                const headers = {};
-                                // The regex captures the [Key "Value"] format
-                                const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g; 
-                                let match;
-                                
-                                // Extract every header found in the raw PGN string
-                                while ((match = headerRegex.exec(selectedPgn)) !== null) { 
-                                    headers[match[1]] = match[2]; 
-                                }
-                                
-                                let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
-                                
-                                // DYNAMICALLY LOOP through all found headers
-                                for (const [key, val] of Object.entries(headers)) {
-                                    // Optional: Skip technical headers if you want (e.g. 'SetUp', 'FEN')
-                                    // if (key === 'SetUp' || key === 'FEN') continue;
-                                
-                                    infoHtml += `
-                                        <tr>
-                                            <td style="color: var(--text-accent); font-weight:bold; width: 40%;">${key}</td>
-                                            <td style="color: #fff;">${val}</td>
-                                        </tr>`;
-                                }
-                                
-                                infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()">Close</button>';
-                                $(`#chess-metadata-${boardId}`).html(infoHtml);
-
+                        // 1. METADATA
+                        const headers = {};
+                        const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
+                        let match;
+                        while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
                         
-                        // 2. SIZE CALCULATION
+                        let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
+                        for (const [key, val] of Object.entries(headers)) {
+                            infoHtml += `<tr><td style="color: var(--text-accent); font-weight:bold; width: 30%;">${key}</td><td style="color: #fff;">${val}</td></tr>`;
+                        }
+                        infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
+                        $(`#chess-metadata-${boardId}`).html(infoHtml);
+
+                        // 2. SIZING
                         const mainArea = $('.chess-main-area');
                         const availableHeight = mainArea.height() || 600;
-                        const availableWidth = mainArea.width() || 800;
-                        const movesPanelSpace = 360;
-                        let calculatedBaseSize = Math.min(availableHeight - 40, availableWidth - movesPanelSpace - 40);
-                        const boardSize = calculatedBaseSize * 0.98; 
+                        // Reserve 60px for bottom controls so they aren't cut off
+                        const boardSize = availableHeight - 60; 
 
                         $(`#${boardId}`).empty();
 
@@ -431,49 +380,34 @@ case 'chess':
                             
                             updateChessStyles();
 
-                            // 3. EVALUATION PARSER
+                            // 3. EVALUATION & COMMENTS
                             const generateEvalHtml = (rawText) => {
-                                // Look for [%eval 0.25] or [%eval #3]
                                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                                
                                 let evalHtml = "";
                                 
                                 if (evalMatch) {
                                     const valStr = evalMatch[1];
-                                    let widthPercent = 50; // Default center
-                                    let colorClass = "eval-draw";
+                                    let widthPercent = 50; 
+                                    let colorClass = "background-color: #95a5a6;"; // draw
                                     let displayVal = valStr;
 
                                     if (valStr.startsWith('#')) {
-                                        // Mate
-                                        if (valStr.includes('-')) {
-                                            widthPercent = 5; // Black winning big
-                                            colorClass = "eval-black";
-                                        } else {
-                                            widthPercent = 95; // White winning big
-                                            colorClass = "eval-white";
-                                        }
-                                        displayVal = "Mate " + valStr;
+                                        widthPercent = valStr.includes('-') ? 5 : 95;
+                                        colorClass = valStr.includes('-') ? "background-color: #e74c3c;" : "background-color: #2ecc71;";
                                     } else {
-                                        // Centipawn
                                         const val = parseFloat(valStr);
-                                        // Cap visual at +/- 5.0
                                         const capped = Math.max(-5, Math.min(5, val));
-                                        // Map -5..5 to 0..100%
                                         widthPercent = ((capped + 5) / 10) * 100;
-                                        
-                                        if (val > 0.5) colorClass = "eval-white";
-                                        else if (val < -0.5) colorClass = "eval-black";
-                                        
-                                        displayVal = val > 0 ? `+${val}` : val;
+                                        if (val > 0.2) colorClass = "background-color: #2ecc71;"; // white
+                                        else if (val < -0.2) colorClass = "background-color: #e74c3c;"; // black
                                     }
 
                                     evalHtml = `
-                                        <div class="eval-container">
-                                            <div class="eval-label" style="color: #fff;">${displayVal}</div>
-                                            <div class="eval-bar-wrapper">
-                                                <div class="eval-bar-fill ${colorClass}" style="width: ${widthPercent}%;"></div>
+                                        <div style="display: flex; align-items: center; margin-bottom: 8px; background: rgba(255,255,255,0.1); padding: 5px; border-radius: 4px;">
+                                            <div style="font-weight: bold; margin-right: 10px; min-width: 50px; text-align: right;">${displayVal}</div>
+                                            <div style="flex: 1; height: 10px; background-color: #555; border-radius: 5px; overflow: hidden;">
+                                                <div style="height: 100%; width: ${widthPercent}%; ${colorClass} transition: width 0.3s;"></div>
                                             </div>
                                         </div>
                                     `;
@@ -481,7 +415,6 @@ case 'chess':
                                 return { html: evalHtml, text: cleanText };
                             };
 
-                            // 4. OBSERVER
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 const overlay = document.getElementById('chess-comment-overlay');
@@ -494,8 +427,6 @@ case 'chess':
                                         if (activeMove) {
                                             let rawCommentText = "";
                                             let next = activeMove.nextElementSibling;
-                                            
-                                            // Gather comment text
                                             while(next && next.tagName !== 'MOVE') {
                                                 if (next.tagName !== 'MOVE-NUMBER') {
                                                     rawCommentText += " " + next.textContent;
@@ -503,28 +434,19 @@ case 'chess':
                                                 next = next.nextElementSibling;
                                             }
 
-                                            // Process Eval and Text
+                                            // Check for Eval
                                             if (rawCommentText.trim().length > 0) {
                                                 const parsed = generateEvalHtml(rawCommentText);
-                                                overlay.innerHTML = parsed.html + `<div style="margin-top:5px;">${parsed.text}</div>`;
+                                                overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
                                                 
-                                                if (commentsEnabled) {
-                                                    $(overlay).fadeIn();
-                                                }
+                                                if (commentsEnabled) $(overlay).fadeIn();
                                             } else {
-                                                // Hide if no comment for this move
                                                 $(overlay).fadeOut();
-                                                overlay.innerHTML = ""; 
                                             }
                                         }
                                     });
                                     
-                                    gameObserver.observe(movesPanel, { 
-                                        attributes: true, 
-                                        subtree: true, 
-                                        childList: true, 
-                                        attributeFilter: ['class'] 
-                                    });
+                                    gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
                                 }
                             }, 200);
                         } else {
@@ -534,18 +456,21 @@ case 'chess':
 
                     renderGame(0);
                     $select.off('change').on('change', function() { renderGame($(this).val()); });
-                    $('#chess-info-btn').off('click').on('click', function() { 
-                        $(`#chess-metadata-${boardId}`).fadeToggle(); 
-                    });
+                    $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
 
                 },
                 error: function() { 
+                    // Remove chess mode if error
+                    $modal.removeClass('chess-mode');
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
-            break;            
+            break;
 
 
+
+
+            
 
 
 
