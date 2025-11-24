@@ -212,7 +212,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -238,65 +237,42 @@ case 'chess':
                     let commentsEnabled = true; 
                     let commentMap = {}; 
 
-                    // --- NEW: TOKEN-BASED PARSER (Most Reliable) ---
+                    // --- PARSER ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
-                        
-                        // 1. Clean headers and newlines
-                        let body = pgnText.replace(/\[.*?\]/g, "").replace(/(\r\n|\n|\r)/gm, " ");
-                        
+                        // 1. Remove Headers
+                        let body = pgnText.replace(/\[.*?\]/g, "").trim();
                         // 2. Remove Variations (Recursive)
-                        // We remove anything inside (...) so we only count main line moves
                         let prevLen = body.length;
                         while(true) {
                             body = body.replace(/\([^\(\)]*\)/g, "");
                             if(body.length === prevLen) break;
                             prevLen = body.length;
                         }
+                        // 3. Clean Formatting
+                        body = body.replace(/(\r\n|\n|\r)/gm, " "); 
+                        body = body.replace(/\d+(\.+)/g, ""); // Remove move numbers
+                        body = body.replace(/(1-0|0-1|1\/2-1\/2|\*)/g, ""); // Remove results
 
-                        // 3. Insert spaces around braces to ensure clear tokenization
-                        body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
-
-                        // 4. Split into tokens
-                        const tokens = body.split(/\s+/);
-                        
+                        // 4. Tokenize
+                        const regex = /(\{[^}]+\})|([a-zA-Z0-9][a-zA-Z0-9\+\#\=\-\!\?]*)/g;
+                        let match;
                         let moveIndex = 0;
-                        let insideComment = false;
-                        let currentComment = [];
 
-                        for (let i = 0; i < tokens.length; i++) {
-                            const token = tokens[i].trim();
-                            if (!token) continue;
-
-                            if (token === '{') {
-                                insideComment = true;
-                                currentComment = [];
-                                continue;
-                            }
-                            if (token === '}') {
-                                insideComment = false;
+                        while ((match = regex.exec(body)) !== null) {
+                            if (match[1]) { 
+                                // COMMENT found
                                 if (moveIndex > 0) {
-                                    // Save comment for the PREVIOUS move
-                                    map[moveIndex - 1] = currentComment.join(" ");
+                                    const clean = match[1].substring(1, match[1].length - 1).trim();
+                                    // Map index 0-based (Move 1 = Index 0)
+                                    map[moveIndex - 1] = clean;
                                 }
-                                continue;
-                            }
-
-                            if (insideComment) {
-                                currentComment.push(token);
-                            } else {
-                                // We are in move text. Check if it's a real move.
-                                // Ignore: "1.", "1...", "1/2-1/2", "1-0", "0-1", "*"
-                                if (token.match(/^\d+\.+/)) continue; // Move numbers
-                                if (token.match(/^(1-0|0-1|1\/2-1\/2|\*)$/)) continue; // Results
-                                if (token.startsWith('$')) continue; // NAGs ($1)
-
-                                // It must be a move (e4, Nf3, etc)
+                            } else if (match[2]) { 
+                                // MOVE found
                                 moveIndex++;
                             }
                         }
                         
-                        console.log(`[PGN PARSER] Found ${moveIndex} moves.`);
                         console.log(`[PGN PARSER] Mapped ${Object.keys(map).length} comments.`);
                         return map;
                     };
@@ -319,7 +295,7 @@ case 'chess':
                                 <div class="chess-white-box">
                                     <div id="${boardId}"></div>
                                 </div>
-                                <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
+                                <div id="chess-comment-overlay" class="chess-comment-overlay">...</div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
                         </div>
@@ -421,13 +397,16 @@ case 'chess':
 
                         $(overlay).fadeIn();
 
+                        // DEBUG LOG
+                        // console.log(`Lookup Index: ${moveIndex}. Found:`, !!commentMap[moveIndex]);
+
                         const commentText = commentMap[moveIndex];
 
                         if (commentText && commentText.trim().length > 0) {
                             const parsed = generateEvalHtml(commentText);
                             overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
                         } else {
-                            overlay.innerHTML = '<div style="color:#aaa; font-style:italic; font-size: 0.9em;">...</div>';
+                            overlay.innerHTML = '<div style="color:#777; font-style:italic; font-size: 0.9em;">...</div>';
                         }
                     };
 
@@ -444,7 +423,7 @@ case 'chess':
                         }
                     };
 
-                    // --- RENDER FUNCTION ---
+                    // --- RENDER ---
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -461,7 +440,7 @@ case 'chess':
 
                         const selectedPgn = rawGames[index];
                         
-                        // 1. PARSE COMMENTS
+                        // 1. PARSE
                         commentMap = parseCommentsMap(selectedPgn);
                         
                         // 2. METADATA
@@ -477,12 +456,11 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 3. SIZE CALCULATION (90% Width)
+                        // 3. SIZE (90% Width)
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
-                        
-                        const maxWidth = winWidth * 0.90; // 90% Width
-                        const maxHeight = winHeight - 200; // Buffer for controls
+                        const maxWidth = winWidth * 0.90; 
+                        const maxHeight = winHeight - 200; 
                         const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
@@ -498,7 +476,7 @@ case 'chess':
                             });
                             
                             updateChessStyles();
-                            updateCommentContent(-1);
+                            updateCommentContent(-1); 
 
                             // 4. OBSERVER
                             const checkInterval = setInterval(() => {
@@ -510,6 +488,7 @@ case 'chess':
                                     gameObserver = new MutationObserver(() => {
                                         const activeMove = movesPanel.querySelector('move.active'); 
                                         if (activeMove) {
+                                            // ID Format: ...Moves15 -> 15
                                             const prefix = boardId + 'Moves';
                                             const rawId = activeMove.id;
                                             if (rawId && rawId.startsWith(prefix)) {
@@ -545,10 +524,7 @@ case 'chess':
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
-            break;
-
-
-            
+            break;            
 
 
 
