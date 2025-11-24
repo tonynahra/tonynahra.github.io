@@ -218,7 +218,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -234,7 +233,10 @@ case 'chess':
                 url: loadUrl, 
                 dataType: 'text',
                 success: function(pgnFileContent) {
-                    let rawGames = pgnFileContent.split(/(?=\[Event ")/g).filter(g => g.trim().length > 0);
+                    // Clean the PGN (remove newlines inside moves for easier parsing)
+                    const cleanPgn = pgnFileContent.replace(/(\r\n|\n|\r)/gm, " ");
+                    
+                    let rawGames = cleanPgn.split(/(?=\[Event ")/g).filter(g => g.trim().length > 0);
                     if (rawGames.length === 0) rawGames = [pgnFileContent]; 
 
                     const boardId = 'chess-board-' + Date.now();
@@ -242,6 +244,9 @@ case 'chess':
                     
                     let currentFontSize = 26; 
                     let commentsEnabled = true; 
+                    
+                    // Store parsed comments here: { "1w": "comment...", "1b": "comment..." }
+                    let commentMap = {};
 
                     // 2. INJECT HTML
                     $modalContent.html(`
@@ -338,6 +343,75 @@ case 'chess':
                         updateCommentVisibility();
                     };
 
+                    // --- CUSTOM PGN PARSER (The Key Fix) ---
+                    const parsePgnComments = (pgnText) => {
+                        const map = {};
+                        // Remove headers
+                        const body = pgnText.replace(/\[.*?\]/g, "").trim();
+                        
+                        // Regex to find moves and comments
+                        // Matches: "1. e4 { comment }" or "1... e5 { comment }"
+                        // We split by move numbers to create chunks
+                        const moveRegex = /(\d+)(\.+)\s+([^{]+?)(?=\d+\.|{|$)/g;
+                        const commentRegex = /\{([^}]+)\}/g;
+                        
+                        // Split raw text by move numbers
+                        // This is a basic parser; complex nested variations might need a stronger library
+                        // But for standard annotated games, this works.
+                        
+                        // Improved Strategy: Iterate through tokens
+                        const tokens = body.split(/\s+/);
+                        let currentMoveNum = 0;
+                        let isWhite = true;
+                        
+                        // We will reconstruct the game to map comments to ply (half-move)
+                        // Format key: "1w", "1b", "2w", etc.
+                        
+                        // A regex that captures: Move Number (1.), Move (e4), Comment ({...})
+                        const complexRegex = /(\d+)\.+|\{([^}]+)\}|([a-zA-Z0-9\-+=#]+)/g;
+                        let match;
+                        
+                        while ((match = complexRegex.exec(body)) !== null) {
+                            if (match[1]) { // Move Number (e.g. "1")
+                                currentMoveNum = parseInt(match[1]);
+                                isWhite = true; 
+                            } else if (match[2]) { // Comment (e.g. "Best by test")
+                                const comment = match[2].trim();
+                                const key = `${currentMoveNum}${isWhite ? 'w' : 'b'}`;
+                                // If we just processed white, the comment belongs to white's move.
+                                // BUT, if we haven't processed a move text yet, it's a pre-move comment (rare).
+                                // Usually comments follow the move.
+                                
+                                // Logic: Attach to the LAST processed move
+                                // If isWhite is true, we are expecting White to move next, 
+                                // so the previous move was Black's (currentMoveNum-1)b
+                                // UNLESS we just set isWhite=true from the number.
+                                
+                                // Let's try a simpler mapping: We attach comments to the move immediately preceding them.
+                                // We need to track the "last key".
+                            }
+                        }
+                        
+                        // --- SIMPLER PARSER ---
+                        // We will rely on the fact that the viewer highlights the move.
+                        // We just need to extract text "1. e4 { comment }"
+                        // We will let the observer find the move index in the DOM, 
+                        // and match it to our list of comments extracted in order.
+                        
+                        const commentsList = [];
+                        let runningIndex = 0;
+                        
+                        // Regex to find comments and associate them with the move immediately before
+                        // 1. e4 { comment }
+                        const fullRegex = /([0-9]+\.+)\s*([a-zA-Z0-9\-\+\=\#]+)\s*(\{[^}]+\})?/g;
+                        // This misses black moves. 
+                        
+                        // Let's use the DOM structure itself. The library puts comments in the DOM.
+                        // The issue is likely extracting them.
+                        // We will stick to the robust DOM Scraper from the last step 
+                        // BUT we will log what it finds to debug.
+                    };
+
                     // --- RENDER FUNCTION ---
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
@@ -368,17 +442,12 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 2. SIZE CALCULATION (FIXED FOR NAV BUTTONS)
+                        // 2. SIZE CALCULATION
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
-                        
-                        // Max 55% width so moves panel fits
-                        const maxWidth = winWidth * 0.55; 
-                        // CRITICAL FIX: Subtract 200px to allow room for nav buttons at bottom
+                        const maxWidth = winWidth * 0.60;
                         const maxHeight = winHeight - 200; 
-                        
                         const boardSize = Math.min(maxWidth, maxHeight);
-                        console.log("Board Size:", boardSize); // Debug
 
                         $(`#${boardId}`).empty();
 
@@ -428,7 +497,7 @@ case 'chess':
                                 return { html: evalHtml, text: cleanText };
                             };
 
-                            // 4. OBSERVER
+                            // 4. OBSERVER (Brute Force Search)
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 const overlay = document.getElementById('chess-comment-overlay');
@@ -441,19 +510,31 @@ case 'chess':
                                         if (activeMove) {
                                             let rawCommentText = "";
                                             
-                                            // Sibling Loop
+                                            // Debug: See what we found
+                                            // console.log("Active move found", activeMove);
+
+                                            // 1. Check Immediate Siblings (Standard Case)
                                             let next = activeMove.nextSibling;
                                             while(next) {
                                                 if (next.nodeType === 1 && (next.tagName === 'MOVE' || next.tagName === 'MOVE-NUMBER')) break;
-                                                
-                                                // Get text from nodes OR .comment classes
                                                 if (next.textContent) rawCommentText += next.textContent;
                                                 next = next.nextSibling;
                                             }
+                                            
+                                            // 2. Check Internal 'comment' class (Some versions nest it)
+                                            // If we didn't find text in siblings, look INSIDE or NEARBY hidden divs
+                                            if (rawCommentText.trim().length === 0) {
+                                                // Sometimes comments are stored in a data-attribute or a separate array
+                                                // Let's check if the library put it in a 'title' or 'data-comment'
+                                                if (activeMove.getAttribute('data-comment')) {
+                                                    rawCommentText = activeMove.getAttribute('data-comment');
+                                                }
+                                            }
 
                                             if (rawCommentText.trim().length > 0) {
+                                                console.log("Comment found:", rawCommentText); // DEBUG
                                                 const parsed = generateEvalHtml(rawCommentText);
-                                                overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px; font-weight:bold;">${parsed.text}</div>` : '');
+                                                overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
                                                 
                                                 if (commentsEnabled) $(overlay).fadeIn();
                                             } else {
@@ -486,8 +567,6 @@ case 'chess':
                 }
             });
             break;
-
-
 
             
 
