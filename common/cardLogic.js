@@ -211,7 +211,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -496,55 +495,62 @@ case 'chess':
                 const maxHeight = winHeight - 250; 
                 const boardSize = Math.min(maxWidth, maxHeight);
 
-                // --- FIX APPLIED HERE: Get the actual DOM element reference ---
+                // --- Element Setup ---
                 const targetId = boardId;
                 const targetElement = document.getElementById(targetId);
 
                 $(`#${targetId}`).empty(); 
 
                 if (targetElement && typeof PGNV !== 'undefined') {
-                    // FIX: Pass the ID string, but only if the element exists in the native DOM
-                    PGNV.pgnView(targetId, { 
-                        pgn: selectedPgn, 
-                        theme: 'brown', 
-                        boardSize: boardSize, 
-                        layout: 'left',
-                        width: '100%', 
-                        headers: false,
-                    });
-                    
-                    updateChessStyles();
-                    const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
-                    // Pass evaluations to updateCommentContent
-                    updateCommentContent(-1, total, evaluations); 
+                    // FIX: Introduce a small delay to resolve the PGNV race condition (TypeError)
+                    setTimeout(() => {
+                        const delayedTargetElement = document.getElementById(targetId);
+                        if (!delayedTargetElement) return;
 
-                    // Observer
-                    const checkInterval = setInterval(() => {
-                        const movesPanel = document.getElementById(boardId + 'Moves');
+                        PGNV.pgnView(targetId, { 
+                            pgn: selectedPgn, 
+                            theme: 'brown', 
+                            boardSize: boardSize, 
+                            layout: 'left',
+                            width: '100%', 
+                            headers: false,
+                        });
                         
-                        if (movesPanel) {
-                            clearInterval(checkInterval);
-                            
-                            const totalMoves = movesPanel.querySelectorAll('move').length;
+                        // The rest of the observer setup runs *after* PGNV.pgnView has finished
+                        updateChessStyles();
+                        const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
+                        updateCommentContent(-1, total, evaluations); 
 
-                            gameObserver = new MutationObserver(() => {
-                                let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
-                                
-                                if (activeEl) {
-                                    const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
-                                    if (activeMove) {
-                                        const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                        const index = allMoves.indexOf(activeMove);
-                                        updateCommentContent(index, totalMoves, evaluations); // Pass evaluations
-                                        return;
-                                    }
-                                }
-                                updateCommentContent(-1, totalMoves, evaluations); // Pass evaluations
-                            });
+                        // Observer setup
+                        const checkInterval = setInterval(() => {
+                            const movesPanel = document.getElementById(boardId + 'Moves');
                             
-                            gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
-                        }
-                    }, 200);
+                            if (movesPanel) {
+                                clearInterval(checkInterval);
+                                
+                                const totalMoves = movesPanel.querySelectorAll('move').length;
+
+                                gameObserver = new MutationObserver(() => {
+                                    let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
+                                    
+                                    if (activeEl) {
+                                        const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
+                                        if (activeMove) {
+                                            const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                                            const index = allMoves.indexOf(activeMove);
+                                            updateCommentContent(index, totalMoves, evaluations); 
+                                            return;
+                                        }
+                                    }
+                                    updateCommentContent(-1, totalMoves, evaluations); 
+                                });
+                                
+                                gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
+                            }
+                        }, 200);
+
+                    }, 50); // 50 millisecond delay
+
                 } else {
                     $modal.removeClass('chess-mode');
                     $('body').removeClass('chess-mode-active');
@@ -579,7 +585,7 @@ case 'chess':
     break;
 
 
-
+            
             
 
 
