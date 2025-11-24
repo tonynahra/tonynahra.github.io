@@ -82,6 +82,11 @@ function handleModalKeys(e) {
 
 // ... (Keep global variables and helper functions like decodeText) ...
 
+
+
+
+
+
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) {
         return;
@@ -99,17 +104,25 @@ function loadModalContent(index) {
 
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
-    // CHANGED: Use 'let' instead of 'const' so we can modify the URL if needed
-    let loadUrl = $link.attr('href');
+    const loadUrl = $link.attr('href');
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
-    const manifestUrl = $link.data('manifest-url');
+    const manifestUrl = $link.data('manifest-url'); 
+    
+    // Reset Chess Mode class at the start of every load
+    $modal.removeClass('research-mode').removeClass('chess-mode');
+    $('body').removeClass('chess-mode-active');
+    $modal.find('.modal-header').show(); 
     
     // 1. Research Logic
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', jsonUrl); 
-        buildResearchModal(jsonUrl); 
+        if (typeof buildResearchModal === 'function') {
+             buildResearchModal(jsonUrl); 
+        } else {
+             $modalContent.html('<div class="error-message">Error: Research module not loaded.</div>');
+        }
         return; 
     } 
     
@@ -122,17 +135,15 @@ function loadModalContent(index) {
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
                 <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
             </div>
-            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2rem;">&times;</button>
+            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2rem;">&times;</button>
         `;
         $modalContent.html(playerHtml);
         $modalContent.find('.modal-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
         return;
     }
 
-    // 3. Standard Logic
-    $modal.removeClass('research-mode'); 
-    // We keep the ORIGINAL link for the "Open in new window" button (user friendly)
-    $modalOpenLink.attr('href', loadUrl); 
+    // 3. Regular Logic
+    $modalOpenLink.attr('href', loadUrl);
     $modalContent.find('.modal-photo-info').remove();
     $modalInfoBtn.hide(); 
     
@@ -157,15 +168,9 @@ function loadModalContent(index) {
         }
     }
 
-    // === NEW: GitHub Link Fixer ===
-    // If we are fetching data (Markdown or Chess) from GitHub, 
-    // we must use the "raw" domain to avoid CORS errors.
-    if ((loadType === 'markdown' || loadType === 'chess') && loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
-        loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-    }
-
     const customHeight = $link.data('height') || '90vh';
     
+    // Info extraction
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
     const desc = $card.find('p').text();
@@ -182,6 +187,9 @@ function loadModalContent(index) {
 
     switch (loadType) {
         case 'markdown':
+            if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
+                loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+            }
             $.ajax({
                 url: loadUrl, type: 'GET',
                 dataType: 'text',
@@ -190,7 +198,6 @@ function loadModalContent(index) {
                         ? marked.parse(markdownText) 
                         : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
                     
-                    // CHANGED: Wrapped in .markdown-wrapper
                     $modalContent.html(`
                         <div class="markdown-wrapper">
                             <div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">
@@ -200,16 +207,11 @@ function loadModalContent(index) {
                     `);
                     if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
                 },
-                                
-                error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file. (Check CORS/URL)</div>'); }
+                error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
             });
             break;
 
-
-
-
-case 'chess':
-            // Fix GitHub CORS
+        case 'chess':
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
@@ -236,6 +238,7 @@ case 'chess':
                     // --- PARSER ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
+                        
                         let body = pgnText.replace(/\[.*?\]/g, "").trim();
 
                         const cleanPGN = (text) => {
@@ -304,12 +307,21 @@ case 'chess':
                         </div>
                     `);
 
+                    // --- DROPDOWN POPULATION ---
+                    const $select = $('#chess-game-select');
+                    rawGames.forEach((gamePgn, idx) => {
+                        const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
+                        const black = (gamePgn.match(/\[Black "(.*?)"\]/) || [])[1] || '?';
+                        const result = (gamePgn.match(/\[Result "(.*?)"\]/) || [])[1] || '*';
+                        $select.append(`<option value="${idx}">${idx + 1}. ${white} vs ${black} (${result})</option>`);
+                    });
+                    if (rawGames.length <= 1) $select.hide(); 
+
                     // --- DYNAMIC STYLES ---
                     const updateChessStyles = () => {
-                        const movesClass = `#${boardId} .moves`; // Targeted generic class
+                        const movesId = `#${boardId}Moves`; 
                         const css = `
-                            /* MOVES CONTAINER */
-                            ${movesClass} {
+                            ${movesId} {
                                 background-color: #ffffff !important;
                                 color: #000000 !important;
                                 font-size: ${currentFontSize}px !important;
@@ -322,8 +334,7 @@ case 'chess':
                                 min-width: 360px !important;
                                 display: block !important; 
                             }
-                            /* MOVES */
-                            ${movesClass} move {
+                            ${movesId} move {
                                 font-size: ${currentFontSize}px !important;
                                 line-height: ${currentFontSize + 10}px !important;
                                 color: #000000 !important;
@@ -334,8 +345,8 @@ case 'chess':
                                 border-radius: 3px !important;
                                 padding: 2px 4px !important;
                             }
-                            ${movesClass} move:hover { background-color: #e0e0e0 !important; }
-                            ${movesClass} move.active { background-color: #FFD700 !important; color: #000 !important; }
+                            ${movesId} move:hover { background-color: #e0e0e0 !important; }
+                            ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
                             
                             #${boardId} .pgnvjs-wrapper {
                                 display: flex !important;
@@ -348,52 +359,38 @@ case 'chess':
                         $(`#${styleId}`).text(css);
                     };
 
-                    // --- LISTENERS ---
-                    document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
-                    document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
-                    
-                    document.getElementById('chess-close-btn').onclick = (e) => { 
-                        e.preventDefault(); 
-                        $modal.removeClass('chess-mode');
-                        $('body').removeClass('chess-mode-active');
-                        $modal.find('.modal-header').show();
-                        $('.modal-close-btn').first().click(); 
-                    };
-
                     // --- EVAL GENERATOR ---
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                         cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
                         
-                        // DEFAULT BARS (0.00)
-                        let displayVal = "0";
-                        let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
-                        let balanceScore = 0; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
-
+                        let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
+                        let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
+                        let whiteWinPct = 50;
+                        
                         if (evalMatch) {
                             const valStr = evalMatch[1];
+                            let rawVal = 0;
+
                             if (valStr.startsWith('#')) {
-                                // Mate
                                 const isBlackMate = valStr.includes('-');
+                                moveDisplay = "Mate " + valStr;
                                 moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
-                                displayVal = "Mate " + valStr;
                                 
-                                balanceScore = isBlackMate ? -100 : 100;
+                                balanceScore = isBlackMate ? "-100" : "+100";
                                 balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
+                                whiteWinPct = isBlackMate ? 0 : 100;
                             } else {
-                                // CP
-                                const val = parseFloat(valStr);
+                                rawVal = parseFloat(valStr);
                                 
-                                // Bar 1: Score (-10 to +10)
-                                displayVal = Math.round(val) > 0 ? `+${Math.round(val)}` : Math.round(val);
-                                const absVal = Math.min(Math.abs(val), 10);
-                                moveWidth = (absVal / 10) * 50;
-                                if (val > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
+                                moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
+                                const absMove = Math.min(Math.abs(rawVal), 10);
+                                moveWidth = (absMove / 10) * 50;
+                                if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
                                 else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
 
-                                // Bar 2: Balance (-100 to +100)
-                                balanceScore = Math.round(val * 10);
+                                balanceScore = Math.round(rawVal * 10);
                                 balanceScore = Math.max(-100, Math.min(100, balanceScore));
                                 
                                 const absBal = Math.abs(balanceScore);
@@ -402,17 +399,27 @@ case 'chess':
                                 else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
                                 
                                 if (balanceScore > 0) balanceScore = `+${balanceScore}`;
+                                
+                                whiteWinPct = 50 + (rawVal * 8);
+                                whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                             }
                         }
 
                         const evalHtml = `
                             <div class="eval-row">
-                                <div class="eval-header"><span>Move Score</span><span class="eval-value">${displayVal}</span></div>
+                                <div class="eval-header"><span>Move Score</span><span class="eval-value">${moveDisplay}</span></div>
                                 <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
                             </div>
                             <div class="eval-row">
                                 <div class="eval-header"><span>Game Balance</span><span class="eval-value">${balanceScore}</span></div>
                                 <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
+                            </div>
+                            <div class="eval-row">
+                                <div class="eval-header"><span>White vs Black</span><span class="eval-value">${whiteWinPct}% / ${100 - whiteWinPct}%</span></div>
+                                <div class="win-rate-bar">
+                                    <div class="win-white" style="width: ${whiteWinPct}%;"></div>
+                                    <div class="win-black"></div>
+                                </div>
                             </div>
                         `;
                         return { html: evalHtml, text: cleanText };
@@ -423,28 +430,34 @@ case 'chess':
                         if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         $(overlay).fadeIn();
 
-                        const commentText = commentMap[moveIndex] || "";
+                        // FINAL FIX: Use toString() for reliable map lookup
+                        const commentText = commentMap[moveIndex.toString()] || ""; 
+                        
                         const parsed = generateEvalHtml(commentText);
                         
-                        // TEXT
                         let content = "";
-                        if (moveIndex === -1) {
-                            content += `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
-                        } else if (parsed.text) {
-                            content += `<div style="margin-bottom:12px; font-size: 1rem;">${parsed.text}</div>`;
+                        
+                        // 1. TEXT (TOP BLOCK)
+                        let textContent = "";
+                        if (parsed.text) {
+                            textContent = `<div style="margin-bottom:12px; font-size: 1rem; color: #2c3e50;">${parsed.text}</div>`;
+                        } else if (moveIndex === -1) {
+                            textContent = `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
                         } else {
-                            content += `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">...</div>`;
+                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">No commentary.</div>`;
                         }
+                        content += `<div class="comment-text-content">${textContent}</div>`;
 
-                        // BARS
-                        content += parsed.html;
 
-                        // COUNTER
+                        // 2. BARS & COUNTER (BOTTOM FOOTER)
+                        let footer = "";
+                        footer += parsed.html;
+                        
                         const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1; 
                         const displayTotal = totalMoves || '?';
-                        content += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
-
-                        overlay.innerHTML = content;
+                        footer += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
+                        
+                        overlay.innerHTML = footer;
                     };
 
                     document.getElementById('chess-comment-btn').onclick = (e) => {
@@ -483,6 +496,7 @@ case 'chess':
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
                         while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
+                        
                         let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
                         for (const [key, val] of Object.entries(headers)) {
                             infoHtml += `<tr><td style="color: var(--text-accent); font-weight:bold; width: 30%;">${key}</td><td style="color: #fff;">${val}</td></tr>`;
@@ -510,45 +524,37 @@ case 'chess':
                             });
                             
                             updateChessStyles();
-                            updateCommentContent(-1, 0); 
+                            const movesPanel = document.getElementById(boardId + 'Moves');
+                            const total = movesPanel ? movesPanel.querySelectorAll('move').length : 0;
+                            updateCommentContent(-1, total); 
 
-                            // --- ROBUST OBSERVER (Targets .moves class) ---
-                            // We attach to the CONTAINER (White Box)
-                            const whiteBox = $modalContent.find('.chess-white-box')[0];
-                            
-                            if (whiteBox) {
-                                console.log("[DEBUG] Observer attached to White Box");
+                            // Observer
+                            const checkInterval = setInterval(() => {
+                                const movesPanel = document.getElementById(boardId + 'Moves');
                                 
-                                gameObserver = new MutationObserver(() => {
-                                    // Look for generic .moves class inside
-                                    const movesPanel = whiteBox.querySelector('.moves');
-                                    if (!movesPanel) return;
-
-                                    // Find active element
-                                    const activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
-                                    const totalMoves = movesPanel.querySelectorAll('move').length;
+                                if (movesPanel) {
+                                    clearInterval(checkInterval);
                                     
-                                    if (activeEl) {
-                                        const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
-                                        if (activeMove) {
-                                            const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                            const index = allMoves.indexOf(activeMove);
-                                            
-                                            // console.log("Observer Found Index:", index); // DEBUG
-                                            updateCommentContent(index, totalMoves);
-                                            return;
+                                    const totalMoves = movesPanel.querySelectorAll('move').length;
+
+                                    gameObserver = new MutationObserver(() => {
+                                        let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
+                                        
+                                        if (activeEl) {
+                                            const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
+                                            if (activeMove) {
+                                                const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                                                const index = allMoves.indexOf(activeMove);
+                                                updateCommentContent(index, totalMoves);
+                                                return;
+                                            }
                                         }
-                                    }
-                                    updateCommentContent(-1, totalMoves);
-                                });
-                                
-                                gameObserver.observe(whiteBox, { 
-                                    subtree: true, 
-                                    attributes: true, 
-                                    childList: true, 
-                                    attributeFilter: ['class'] 
-                                });
-                            }
+                                        updateCommentContent(-1, totalMoves);
+                                    });
+                                    
+                                    gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
+                                }
+                            }, 200);
                         } else {
                             $modal.removeClass('chess-mode');
                             $('body').removeClass('chess-mode-active');
@@ -558,7 +564,7 @@ case 'chess':
                     }
 
                     renderGame(0);
-                    $select.off('change').on('change', function() { renderGame($(this).val()); });
+                    $('#chess-game-select').off('change').on('change', function() { renderGame($(this).val()); });
                     $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
 
                 },
@@ -570,21 +576,16 @@ case 'chess':
                 }
             });
             break;
-
-
-            
-
-
-
-
-            
-            
+        
         case 'html':
             $.ajax({
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
                     $modalContent.html(data); 
-                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -608,7 +609,7 @@ case 'chess':
         case 'blocked':
             $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
             break;
-        default: 
+        default: // newtab
             $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
             break;
     }
@@ -616,6 +617,22 @@ case 'chess':
     $('.modal-prev-btn').prop('disabled', index <= 0);
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* === RESEARCH BUILDER (Uses Main Header) === */
 
 function buildResearchModal(jsonUrl) {
