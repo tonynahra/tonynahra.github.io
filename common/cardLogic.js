@@ -212,7 +212,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -236,11 +235,12 @@ case 'chess':
                     
                     let currentFontSize = 26; 
                     let commentsEnabled = true; 
-                    let commentArray = []; // CHANGED TO ARRAY FOR 1:1 INDEXING
+                    let commentMap = {}; 
 
-                    // --- PARSER (Now Populates Array) ---
+                    // --- PARSER ---
                     const parseCommentsMap = (pgnText) => {
-                        let array = []; // Use a local array
+                        const map = {};
+                        
                         let body = pgnText.replace(/\[.*?\]/g, "").trim();
 
                         const cleanPGN = (text) => {
@@ -254,11 +254,12 @@ case 'chess':
                             return result;
                         };
                         body = cleanPGN(body);
+
                         body = body.replace(/(\r\n|\n|\r)/gm, " ");
                         body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
                         const tokens = body.split(/\s+/);
-                        let moveIndex = 0; // The array index
+                        let moveIndex = 0;
                         let insideComment = false;
                         let currentComment = [];
 
@@ -269,9 +270,8 @@ case 'chess':
                             if (token === '{') { insideComment = true; currentComment = []; continue; }
                             if (token === '}') { 
                                 insideComment = false; 
-                                // ASSIGNMENT FIX: Map comment to current index (which is moveIndex - 1)
                                 const idx = moveIndex === 0 ? -1 : moveIndex - 1;
-                                array[idx] = currentComment.join(" "); // Use array index for direct assignment
+                                map[idx] = currentComment.join(" ");
                                 continue; 
                             }
 
@@ -281,10 +281,10 @@ case 'chess':
                                 if (/^\d+\.+/.test(token)) continue;
                                 if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
                                 if (token.startsWith('$')) continue;
-                                moveIndex++; // It's a move, increment the index
+                                moveIndex++;
                             }
                         }
-                        return array;
+                        return map;
                     };
 
                     // 2. INJECT HTML
@@ -423,10 +423,11 @@ case 'chess':
                         if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         $(overlay).fadeIn();
 
-                        const commentText = commentMap[moveIndex] || "";
-                        const parsed = generateEvalHtml(commentText);
+                        // FINAL FIX: Accessing Array index directly
+                        const commentText = commentMap[moveIndex] || ""; 
                         
                         let content = "";
+                        const parsed = generateEvalHtml(commentText);
                         
                         // 1. TEXT (TOP BLOCK)
                         let textContent = "";
@@ -435,9 +436,10 @@ case 'chess':
                         } else if (moveIndex === -1) {
                             textContent = `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
                         } else {
-                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">...</div>`;
+                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">No commentary.</div>`;
                         }
                         content += `<div class="comment-text-content">${textContent}</div>`;
+
 
                         // 2. BARS & COUNTER (BOTTOM FOOTER)
                         let footer = "";
@@ -468,7 +470,7 @@ case 'chess':
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
                         const black = (gamePgn.match(/\[Black "(.*?)"\]/) || [])[1] || '?';
-                        const result = (gamePgn.match(/\[Result "(.*?)"\]/) || [])[1] || '*';
+                        const result = (gameGpn.match(/\[Result "(.*?)"\]/) || [])[1] || '*';
                         $select.append(`<option value="${idx}">${idx + 1}. ${white} vs ${black} (${result})</option>`);
                     });
                     if (rawGames.length <= 1) $select.hide(); 
@@ -564,7 +566,28 @@ case 'chess':
                 }
             });
             break;
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             
 
