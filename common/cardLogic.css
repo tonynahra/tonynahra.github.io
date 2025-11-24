@@ -421,11 +421,10 @@ body.chess-mode-active .modal-header,
     padding: 0 !important; 
 }
 
-/* BOARD WRAPPER */
 .chess-white-box {
     width: 100% !important;
     height: 100% !important;
-    padding-left: 40px !important; /* Left Margin */
+    padding-left: 40px !important;
     padding-top: 10px !important;
     padding-right: 10px !important;
     background-color: #ffffff !important;
@@ -456,87 +455,63 @@ body.chess-mode-active .modal-header,
 }
 .chess-metadata-overlay td { padding: 8px 12px !important; border-bottom: 1px solid #444; }
 
-/* UPDATED COMMENT BOX (Pastel Blue) */
+/* UPDATED COMMENT BOX (Always Visible Structure) */
 .chess-comment-overlay {
-    font-size: 1.4rem !important; /* Slightly bigger font */
-    font-weight: 500;
-    padding: 20px !important;
-    
-    /* Light Pastel Blue Background */
-    background: #e3f2fd !important; 
-    color: #2c3e50 !important; /* Dark Blue-Grey Text */
-    
+    font-size: 1.2rem !important;
+    padding: 15px !important;
+    background: #e3f2fd !important; /* Pastel Blue */
     border: 1px solid #90caf9;
     border-radius: 8px;
+    color: #2c3e50 !important;
     
-    /* Shadow Border */
+    /* Shadow */
     box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.5) inset;
     
-    /* Position Bottom Right */
     position: absolute;
     bottom: 20px;
     right: 30px; 
-    
     width: 340px;
     z-index: 6000 !important;
     text-align: center;
     display: none; 
     pointer-events: none;
+    min-height: 120px; /* Ensure height for bars */
 }
 
-/* --- DUAL EVAL BARS --- */
-
-/* Label for bars */
+/* DUAL BARS */
 .eval-label-small {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #546e7a;
     text-align: left;
-    margin-top: 4px;
     margin-bottom: 2px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
     font-weight: bold;
 }
 
-/* Bar 1: Move Score (-10 to +10) */
 .eval-bar-container {
-    display: flex; align-items: center; width: 100%; margin-bottom: 8px;
+    display: flex; align-items: center; width: 100%; margin-bottom: 10px;
     background: #cfd8dc; padding: 3px; border-radius: 4px;
 }
-.eval-score-text { 
-    font-weight: bold; min-width: 50px; text-align: right; 
-    margin-right: 10px; color: #000; 
-}
+.eval-score-text { font-weight: bold; min-width: 50px; text-align: right; margin-right: 10px; color: #000; }
 .eval-track { 
     flex: 1; height: 10px; background: #b0bec5; 
     border-radius: 3px; overflow: hidden; position: relative; 
 }
-/* Center line for Bar 1 */
 .eval-track::after {
     content: ''; position: absolute; left: 50%; top: 0; bottom: 0;
     width: 2px; background: #78909c; transform: translateX(-50%); z-index: 2;
 }
 .eval-fill { height: 100%; transition: width 0.3s ease, left 0.3s ease; z-index: 1; }
 
-/* Bar 2: Win Probability (White vs Black 100%) */
 .win-rate-bar {
-    width: 100%;
-    height: 14px;
-    display: flex;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 5px;
+    width: 100%; height: 12px; display: flex;
+    border-radius: 4px; overflow: hidden; margin-bottom: 5px;
     border: 1px solid #90a4ae;
 }
 .win-white { background-color: #ffffff; height: 100%; transition: width 0.3s ease; }
-.win-black { background-color: #455a64; height: 100%; flex: 1; } /* Fills remaining space */
+.win-black { background-color: #455a64; height: 100%; flex: 1; }
 
-/* Move Counter (Dark text for pastel bg) */
 .move-counter {
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid #90caf9;
-    color: #546e7a;
-    font-size: 0.9rem;
-    font-weight: bold;
+    margin-top: 10px; padding-top: 8px; border-top: 1px solid #90caf9;
+    color: #546e7a; font-size: 0.9rem; font-weight: bold;
 }
