@@ -237,50 +237,45 @@ case 'chess':
                     const styleId = 'chess-style-' + Date.now(); 
                     
                     let currentFontSize = 26; 
-                    let commentsEnabled = true; 
+                    let commentsEnabled = true; // Start ON
                     let commentMap = {}; 
 
-                    // --- NEW: ROBUST PGN PARSER (FIXED) ---
+                    // --- ROBUST PARSER (Token Stream) ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
-                        // 1. Remove Headers
-                        let body = pgnText.replace(/\[.*?\]/g, "").trim();
+                        // 1. Clean headers
+                        let body = pgnText.replace(/\[.*?\]/g, "");
+                        // 2. Clean newlines to make regex easier
+                        body = body.replace(/(\r\n|\n|\r)/gm, " ");
+                        // 3. Remove move numbers (1. or 1... or 25.)
+                        body = body.replace(/\d+(\.+)/g, "");
+                        // 4. Remove result at end
+                        body = body.replace(/(1-0|0-1|1\/2-1\/2|\*)/g, "");
+
+                        // 5. Tokenize: Grab Comments {..} OR Moves (words)
+                        const regex = /\{[\s\S]*?\}|[A-Za-z0-9\+\#\=\-]+/g;
+                        const tokens = body.match(regex) || [];
                         
-                        // 2. Tokenize: Split into "words" or "comments { ... }"
-                        // This regex captures:
-                        // Group 1: Comments { ... }
-                        // Group 2: Move Numbers (1. or 1...)
-                        // Group 3: Result (1-0, etc)
-                        // Group 4: Moves (e4, Nf3, etc)
+                        let moveIndex = 0;
                         
-                        // We iterate through matches
-                        const tokenRegex = /(\{[^}]+\})|(\d+\.+)|(1-0|0-1|1\/2-1\/2|\*)|([a-zA-Z0-9\+\#\=\-]+)/g;
-                        
-                        let match;
-                        let plyIndex = 0; // Half-move count (0 = white 1st, 1 = black 1st)
-                        
-                        while ((match = tokenRegex.exec(body)) !== null) {
-                            if (match[1]) { 
-                                // It is a COMMENT { ... }
-                                // Associate it with the PREVIOUS move (plyIndex - 1)
-                                if (plyIndex > 0) {
-                                    // Remove braces
-                                    const clean = match[1].substring(1, match[1].length - 1).trim();
-                                    map[plyIndex - 1] = clean;
+                        tokens.forEach(token => {
+                            token = token.trim();
+                            if (!token) return;
+
+                            if (token.startsWith('{')) {
+                                // It's a comment for the PREVIOUS move
+                                if (moveIndex > 0) {
+                                    const clean = token.substring(1, token.length - 1).trim();
+                                    // Map index is 0-based (Move 1 = Index 0)
+                                    map[moveIndex - 1] = clean;
                                 }
-                            } else if (match[2]) { 
-                                // It is a Move Number (1. or 2...) -> IGNORE
-                                continue;
-                            } else if (match[3]) {
-                                // It is a Result -> IGNORE
-                                continue;
-                            } else if (match[4]) {
-                                // It is a MOVE (e4, Nf3)
-                                plyIndex++;
+                            } else {
+                                // It's a move (e4, Nf3, etc)
+                                moveIndex++;
                             }
-                        }
+                        });
                         
-                        console.log(`Parsed ${Object.keys(map).length} comments from PGN.`);
+                        console.log(`Parsed ${Object.keys(map).length} comments. Total moves: ${moveIndex}`);
                         return map;
                     };
 
@@ -302,7 +297,7 @@ case 'chess':
                                 <div class="chess-white-box">
                                     <div id="${boardId}"></div>
                                 </div>
-                                <div id="chess-comment-overlay" class="chess-comment-overlay">...</div>
+                                <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
                         </div>
@@ -350,7 +345,7 @@ case 'chess':
                         $(`#${styleId}`).text(css);
                     };
 
-                    // --- LISTENERS ---
+                    // --- HANDLERS ---
                     document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
                     document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
                     
@@ -362,25 +357,81 @@ case 'chess':
                         $('.modal-close-btn').first().click(); 
                     };
 
-                    const updateCommentVisibility = (forceShow = false) => {
-                        const overlay = $('#chess-comment-overlay');
-                        const btn = $('#chess-comment-btn');
-                        if (commentsEnabled) {
-                            btn.text('Comments: On').css({background: 'var(--text-accent)', color: '#000'});
-                            if (forceShow || overlay.html().trim().length > 0) overlay.fadeIn();
+                    // Evaluation HTML Generator
+                    const generateEvalHtml = (rawText) => {
+                        const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+                        let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+                        cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
+                        
+                        let evalHtml = "";
+                        if (evalMatch) {
+                            const valStr = evalMatch[1];
+                            let widthPercent = 50; 
+                            let colorClass = "background-color: #95a5a6;"; 
+                            let displayVal = valStr;
+
+                            if (valStr.startsWith('#')) {
+                                widthPercent = valStr.includes('-') ? 5 : 95;
+                                colorClass = valStr.includes('-') ? "background-color: #e74c3c;" : "background-color: #2ecc71;";
+                            } else {
+                                const val = parseFloat(valStr);
+                                const capped = Math.max(-5, Math.min(5, val));
+                                widthPercent = ((capped + 5) / 10) * 100;
+                                if (val > 0.2) colorClass = "background-color: #2ecc71;";
+                                else if (val < -0.2) colorClass = "background-color: #e74c3c;";
+                            }
+
+                            evalHtml = `
+                                <div class="eval-bar-container">
+                                    <div class="eval-score">${displayVal}</div>
+                                    <div class="eval-track"><div class="eval-fill" style="width: ${widthPercent}%; ${colorClass}"></div></div>
+                                </div>
+                            `;
+                        }
+                        return { html: evalHtml, text: cleanText };
+                    };
+
+                    // UPDATE COMMENT BOX LOGIC
+                    const updateCommentContent = (moveIndex) => {
+                        const overlay = document.getElementById('chess-comment-overlay');
+                        
+                        if (!commentsEnabled) {
+                            $(overlay).fadeOut();
+                            return;
+                        }
+
+                        // Show box immediately
+                        $(overlay).fadeIn();
+
+                        // Look up in MAP
+                        const commentText = commentMap[moveIndex];
+
+                        if (commentText && commentText.trim().length > 0) {
+                            const parsed = generateEvalHtml(commentText);
+                            overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
                         } else {
-                            btn.text('Comments: Off').css({background: '', color: '#fff'});
-                            overlay.fadeOut();
+                            overlay.innerHTML = '<div style="color:#888; font-style:italic; font-size: 0.9em;">...</div>';
                         }
                     };
 
                     document.getElementById('chess-comment-btn').onclick = (e) => {
                         e.preventDefault();
                         commentsEnabled = !commentsEnabled;
-                        updateCommentVisibility(true); 
+                        const btn = $('#chess-comment-btn');
+                        
+                        if (commentsEnabled) {
+                            btn.text('Comments: On').css({background: 'var(--text-accent)', color: '#000'});
+                            // Trigger update based on current active move
+                            // We can't easily get the active index without the observer firing, 
+                            // so we just show the box. The next move will populate it correctly.
+                            $('#chess-comment-overlay').fadeIn();
+                        } else {
+                            btn.text('Comments: Off').css({background: '', color: '#fff'});
+                            $('#chess-comment-overlay').fadeOut();
+                        }
                     };
 
-                    // --- RENDER FUNCTION ---
+                    // --- RENDER ---
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -397,7 +448,7 @@ case 'chess':
 
                         const selectedPgn = rawGames[index];
                         
-                        // 1. PARSE COMMENTS (Using new Fixed Parser)
+                        // 1. PARSE COMMENTS MAP
                         commentMap = parseCommentsMap(selectedPgn);
                         
                         // 2. METADATA
@@ -413,11 +464,13 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 3. SIZE CALCULATION
+                        // 3. SIZE CALCULATION (Fixed Buffer for buttons)
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
                         const maxWidth = winWidth * 0.60; 
-                        const maxHeight = winHeight - 200; 
+                        
+                        // Increase bottom buffer to 250px to save nav buttons
+                        const maxHeight = winHeight - 250; 
                         const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
@@ -433,45 +486,12 @@ case 'chess':
                             });
                             
                             updateChessStyles();
+                            // Initial Comment State (Sync)
+                            updateCommentContent(-1); // -1 = start
 
-                            // 4. EVAL BAR GENERATOR
-                            const generateEvalHtml = (rawText) => {
-                                const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                                let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
-                                
-                                let evalHtml = "";
-                                if (evalMatch) {
-                                    const valStr = evalMatch[1];
-                                    let widthPercent = 50; 
-                                    let colorClass = "background-color: #95a5a6;"; 
-                                    let displayVal = valStr;
-
-                                    if (valStr.startsWith('#')) {
-                                        widthPercent = valStr.includes('-') ? 5 : 95;
-                                        colorClass = valStr.includes('-') ? "background-color: #e74c3c;" : "background-color: #2ecc71;";
-                                    } else {
-                                        const val = parseFloat(valStr);
-                                        const capped = Math.max(-5, Math.min(5, val));
-                                        widthPercent = ((capped + 5) / 10) * 100;
-                                        if (val > 0.2) colorClass = "background-color: #2ecc71;";
-                                        else if (val < -0.2) colorClass = "background-color: #e74c3c;";
-                                    }
-
-                                    evalHtml = `
-                                        <div class="eval-bar-container">
-                                            <div class="eval-score">${displayVal}</div>
-                                            <div class="eval-track"><div class="eval-fill" style="width: ${widthPercent}%; ${colorClass}"></div></div>
-                                        </div>
-                                    `;
-                                }
-                                return { html: evalHtml, text: cleanText };
-                            };
-
-                            // 5. OBSERVER (Using Correct ID Indexing)
+                            // 4. OBSERVER (Map Lookup)
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
-                                const overlay = document.getElementById('chess-comment-overlay');
                                 
                                 if (movesPanel) {
                                     clearInterval(checkInterval);
@@ -479,31 +499,19 @@ case 'chess':
                                     gameObserver = new MutationObserver(() => {
                                         const activeMove = movesPanel.querySelector('move.active'); 
                                         if (activeMove) {
-                                            // Extract Index from ID: "chess-board-123Moves15" -> 15
-                                            // The library ID format is [boardId]Moves[Index]
-                                            // Example: chess-board-173...Moves0
-                                            
+                                            // Get Index from ID
+                                            // ID Format: chess-board-123...Moves15
                                             const prefix = boardId + 'Moves';
                                             const rawId = activeMove.id;
                                             
                                             if (rawId && rawId.startsWith(prefix)) {
                                                 const indexStr = rawId.substring(prefix.length);
                                                 const index = parseInt(indexStr);
-                                                
-                                                console.log(`Active Move Index: ${index}`); // DEBUG
-                                                
-                                                const commentText = commentMap[index];
-
-                                                if (commentText && commentText.trim().length > 0) {
-                                                    const parsed = generateEvalHtml(commentText);
-                                                    overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
-                                                    
-                                                    if (commentsEnabled) $(overlay).fadeIn();
-                                                } else {
-                                                    overlay.innerHTML = '<div style="color:#aaa; font-style:italic; font-size: 0.9em;">...</div>';
-                                                    if (!commentsEnabled) $(overlay).fadeOut();
-                                                }
+                                                updateCommentContent(index);
                                             }
+                                        } else {
+                                            // Start position
+                                            updateCommentContent(-1);
                                         }
                                     });
                                     
@@ -531,7 +539,22 @@ case 'chess':
                 }
             });
             break;
+
+
+
+
+
+
+
+
+
             
+
+
+
+
+
+
             
 
 
