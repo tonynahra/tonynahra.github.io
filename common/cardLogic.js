@@ -82,6 +82,7 @@ function handleModalKeys(e) {
 
 // ... (Keep global variables and helper functions like decodeText) ...
 
+
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) {
         return;
@@ -426,7 +427,6 @@ function loadModalContent(index) {
                         if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         $(overlay).fadeIn();
 
-                        // CRITICAL FIX: Use toString() for map lookup
                         const commentText = commentMap[moveIndex.toString()] || ""; 
                         
                         const parsed = generateEvalHtml(commentText);
@@ -613,6 +613,18 @@ function loadModalContent(index) {
     $('.modal-prev-btn').prop('disabled', index <= 0);
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
