@@ -206,10 +206,9 @@ function loadModalContent(index) {
             break;
 
 
-
-            case 'chess':
+case 'chess':
             // Fix GitHub CORS
-            if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
+            if (loadUrl.includes('github.com') && loadLoad.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
 
@@ -357,7 +356,6 @@ function loadModalContent(index) {
                         $('.modal-close-btn').first().click(); 
                     };
 
-                    // EVAL GENERATOR
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -383,14 +381,12 @@ function loadModalContent(index) {
                             } else {
                                 rawVal = parseFloat(valStr);
                                 
-                                // Bar 1: Move Score (-10 to +10)
                                 moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
                                 const absMove = Math.min(Math.abs(rawVal), 10);
                                 moveWidth = (absMove / 10) * 50;
                                 if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
                                 else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
 
-                                // Bar 2: Game Balance (-100 to +100)
                                 balanceScore = Math.round(rawVal * 10);
                                 balanceScore = Math.max(-100, Math.min(100, balanceScore));
                                 
@@ -401,7 +397,6 @@ function loadModalContent(index) {
                                 
                                 if (balanceScore > 0) balanceScore = `+${balanceScore}`;
                                 
-                                // Bar 3: Win Percentage (100% Split)
                                 whiteWinPct = 50 + (rawVal * 8);
                                 whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                             }
@@ -435,7 +430,6 @@ function loadModalContent(index) {
                         const commentText = commentMap[moveIndex] || "";
                         const parsed = generateEvalHtml(commentText);
                         
-                        // --- START BUILDING CONTENT ---
                         let content = "";
                         
                         // 1. TEXT (TOP BLOCK)
@@ -445,8 +439,9 @@ function loadModalContent(index) {
                         } else if (moveIndex === -1) {
                             textContent = `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
                         } else {
-                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">...</div>`;
+                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">No specific notes.</div>`;
                         }
+                        // This block should be at the top of the comment box
                         content += `<div class="comment-text-content">${textContent}</div>`;
 
 
@@ -492,11 +487,11 @@ function loadModalContent(index) {
                         const selectedPgn = rawGames[index];
                         commentMap = parseCommentsMap(selectedPgn);
                         
-                        // Metadata
                         const headers = {};
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
                         while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
+                        
                         let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
                         for (const [key, val] of Object.entries(headers)) {
                             infoHtml += `<tr><td style="color: var(--text-accent); font-weight:bold; width: 30%;">${key}</td><td style="color: #fff;">${val}</td></tr>`;
@@ -504,7 +499,7 @@ function loadModalContent(index) {
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // Size
+                        // SIZE
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
                         const maxWidth = winWidth * 0.90; 
@@ -543,8 +538,8 @@ function loadModalContent(index) {
                                             const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
                                             if (activeMove) {
                                                 const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                                const idx = allMoves.indexOf(activeMove);
-                                                updateCommentContent(idx, totalMoves);
+                                                const index = allMoves.indexOf(activeMove);
+                                                updateCommentContent(index, allMoves.length);
                                                 return;
                                             }
                                         }
@@ -575,8 +570,6 @@ function loadModalContent(index) {
             });
             break;
             
-
-
 
 
             
