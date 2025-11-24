@@ -225,16 +225,13 @@ case 'chess':
                     if (rawGames.length === 0) rawGames = [pgnFileContent]; 
 
                     const boardId = 'chess-board-' + Date.now();
-                    const styleId = 'chess-dynamic-styles-' + Date.now();
                     
                     // State Variables
                     let currentFontSize = 26; 
                     let commentsEnabled = false;
 
                     // 1. INJECT HTML
-                    // We include the <style> tag here to hold our dynamic rules
                     $modalContent.html(`
-                        <style id="${styleId}"></style>
                         <div class="chess-container">
                             <div class="chess-toolbar">
                                 <select id="chess-game-select"></select>
@@ -255,84 +252,74 @@ case 'chess':
                         </div>
                     `);
 
-                    // --- THE FONT FIX ---
-                    // This function rewrites the CSS rules whenever the variable changes.
-                    // This persists even if the library re-renders the board.
-                    const updateFontSize = () => {
-                        console.log("Updating CSS to Font Size:", currentFontSize);
-                        
-                        const cssRules = `
-                            /* 1. Layout Fixes: Keep board and moves side-by-side */
-                            #${boardId} .pgnvjs-wrapper {
-                                display: flex !important;
-                                flex-direction: row !important;
-                                align-items: flex-start !important;
-                                gap: 0 !important;
-                            }
-                            
-                            /* 2. Moves Panel Container */
-                            #${boardId} .pgnvjs-moves {
-                                width: 300px !important;
-                                min-width: 300px !important;
-                                max-width: 300px !important;
-                                height: 100% !important;
-                                overflow-y: auto !important;
-                                background-color: #ffffff !important;
-                                color: #000000 !important;
-                                padding: 15px !important;
-                                box-sizing: border-box !important;
-                                border-left: 4px solid #d2b48c !important;
-                                margin: 0 !important; /* Prevent pushing to right */
-                            }
+                    // --- THE DIRECT FONT FIX ---
+                    const applyDirectFont = () => {
+                        const boardEl = document.getElementById(boardId);
+                        if (!boardEl) return;
 
-                            /* 3. THE TEXT SIZE (Applies to all inner elements) */
-                            #${boardId} .pgnvjs-moves * {
-                                font-size: ${currentFontSize}px !important;
-                                line-height: ${currentFontSize + 10}px !important;
-                                color: #000000 !important;
-                                font-family: sans-serif !important;
-                                font-weight: 600 !important;
-                            }
-                            
-                            /* 4. Link Specifics */
-                            #${boardId} .pgnvjs-moves a {
-                                text-decoration: none !important;
-                                display: inline-block !important;
-                                padding: 2px 5px !important;
-                            }
-                            
-                            /* 5. Active Highlight */
-                            #${boardId} .pgnvjs-move.active, 
-                            #${boardId} .pgnvjs-move.active a {
-                                background-color: #FFD700 !important;
-                                color: #000 !important;
-                            }
-                        `;
+                        const movesPanel = boardEl.querySelector('.pgnvjs-moves');
+                        if (!movesPanel) return;
+
+                        // 1. Fix Container Layout
+                        // Ensure it stays side-by-side and doesn't push right
+                        movesPanel.style.setProperty('background-color', '#ffffff', 'important');
+                        movesPanel.style.setProperty('color', '#000000', 'important');
+                        movesPanel.style.setProperty('width', '300px', 'important');
+                        movesPanel.style.setProperty('min-width', '300px', 'important');
+                        movesPanel.style.setProperty('flex', '0 0 300px', 'important');
+                        movesPanel.style.setProperty('border-left', '4px solid #d2b48c', 'important');
+                        movesPanel.style.setProperty('padding', '15px', 'important');
+                        movesPanel.style.setProperty('margin', '0', 'important');
+
+                        // 2. Find ALL Move Elements (Links, Spans, Move Numbers)
+                        // We target everything that might contain text
+                        const allElements = movesPanel.querySelectorAll('.pgnvjs-move, a, span');
                         
-                        $(`#${styleId}`).text(cssRules);
+                        console.log(`Updating font to ${currentFontSize}px on ${allElements.length} elements`); // DEBUG LOG
+
+                        allElements.forEach(el => {
+                            // Skip hidden elements if necessary, but forcing style is safer
+                            el.style.setProperty('font-size', `${currentFontSize}px`, 'important');
+                            el.style.setProperty('line-height', `${currentFontSize + 12}px`, 'important');
+                            el.style.setProperty('color', '#000000', 'important');
+                            el.style.setProperty('font-family', 'sans-serif', 'important');
+                            el.style.setProperty('font-weight', '600', 'important');
+                            
+                            // Specific fix for links to make them look like buttons
+                            if (el.tagName === 'A') {
+                                el.style.setProperty('display', 'inline-block', 'important');
+                                el.style.setProperty('text-decoration', 'none', 'important');
+                                el.style.setProperty('padding', '2px 4px', 'important');
+                            }
+                            
+                            // Active Highlight
+                            if (el.classList.contains('active')) {
+                                el.style.setProperty('background-color', '#FFD700', 'important');
+                            }
+                        });
+                        
+                        // Also set the container itself (for raw text)
+                        movesPanel.style.fontSize = `${currentFontSize}px`;
+                        movesPanel.style.lineHeight = `${currentFontSize + 12}px`;
                     };
 
                     // --- BIND BUTTONS ---
-                    // We bind directly to the elements to avoid bubbling issues
                     document.getElementById('chess-font-minus').onclick = function(e) {
                         e.preventDefault(); 
-                        e.stopPropagation();
                         if (currentFontSize > 14) {
                             currentFontSize -= 2;
-                            updateFontSize();
+                            applyDirectFont();
                         }
                     };
 
                     document.getElementById('chess-font-plus').onclick = function(e) {
                         e.preventDefault();
-                        e.stopPropagation();
                         currentFontSize += 2;
-                        updateFontSize();
+                        applyDirectFont();
                     };
 
                     document.getElementById('chess-comment-btn').onclick = function(e) {
                         e.preventDefault();
-                        e.stopPropagation();
                         commentsEnabled = !commentsEnabled;
                         const $btn = $(this);
                         const $overlay = $('#chess-comment-overlay');
@@ -359,9 +346,11 @@ case 'chess':
                     if (rawGames.length <= 1) $select.hide(); 
 
                     let gameObserver = null;
+                    let styleEnforcer = null;
 
                     function renderGame(index) {
                         if (gameObserver) gameObserver.disconnect();
+                        if (styleEnforcer) clearInterval(styleEnforcer);
 
                         const selectedPgn = rawGames[index];
                         
@@ -382,8 +371,7 @@ case 'chess':
                         // Size Calculation
                         const availableHeight = $('.chess-main-area').height() || 600;
                         const availableWidth = $('.chess-main-area').width() || 800;
-                        const movesPanelSpace = 320; // 300px width + 20px gap
-                        
+                        const movesPanelSpace = 320; 
                         let calculatedBaseSize = Math.min(availableHeight - 60, availableWidth - movesPanelSpace - 40);
                         const boardSize = calculatedBaseSize * 0.95; 
 
@@ -399,20 +387,25 @@ case 'chess':
                                 headers: false,
                             });
                             
-                            // APPLY STYLES IMMEDIATELY
-                            updateFontSize();
+                            // Apply styles immediately
+                            applyDirectFont();
+
+                            // Start Enforcer: Runs every 500ms to fight re-renders
+                            styleEnforcer = setInterval(applyDirectFont, 500);
 
                             // --- OBSERVER (Comments) ---
-                            // We use a broader selector interval to find the panel once it renders
-                            const findPanelInterval = setInterval(() => {
+                            // Wait for panel to exist
+                            const checkInterval = setInterval(() => {
                                 const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
                                 const overlay = document.getElementById('chess-comment-overlay');
                                 
                                 if (movesPanel) {
-                                    clearInterval(findPanelInterval);
+                                    clearInterval(checkInterval);
                                     
-                                    // Start observing for active moves
                                     gameObserver = new MutationObserver(() => {
+                                        // Trigger font update on any change
+                                        applyDirectFont();
+
                                         const activeMove = movesPanel.querySelector('.pgnvjs-move.active'); 
                                         if (activeMove) {
                                             let commentText = "";
@@ -439,7 +432,7 @@ case 'chess':
                                         attributeFilter: ['class'] 
                                     });
                                 }
-                            }, 500);
+                            }, 200);
                         } else {
                             $(`#${boardId}`).html('<div class="error-message">PGN Library not loaded.</div>');
                         }
@@ -458,9 +451,6 @@ case 'chess':
                 }
             });
             break;
-
-
-
 
 
 
