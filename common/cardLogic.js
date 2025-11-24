@@ -355,81 +355,86 @@ const parseCommentsMap = (pgnText) => {
             };
 
             // --- EVAL GENERATOR (Unchanged - contains debug logs) ---
-            const generateEvalHtml = (rawText) => {
-                const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
-                
-                let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
-                let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
-                let whiteWinPct = 50;
-                
-                let debugEvalValue = "N/A";
+// --- EVAL GENERATOR (Updated Game Balance Scaling) ---
+const generateEvalHtml = (rawText) => {
+    const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+    let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+    cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
+    
+    let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
+    let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
+    let whiteWinPct = 50;
+    
+    let debugEvalValue = "N/A";
 
-                if (evalMatch) {
-                    const valStr = evalMatch[1];
-                    let rawVal = 0;
-                    
-                    debugEvalValue = valStr;
+    if (evalMatch) {
+        const valStr = evalMatch[1];
+        let rawVal = 0;
+        
+        debugEvalValue = valStr;
 
-                    if (valStr.startsWith('#')) {
-                        const isBlackMate = valStr.includes('-');
-                        moveDisplay = "Mate " + valStr;
-                        moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
-                        
-                        balanceScore = isBlackMate ? "-100" : "+100";
-                        balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
-                        whiteWinPct = isBlackMate ? 0 : 100;
-                    } else {
-                        rawVal = parseFloat(valStr);
-                        
-                        moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
-                        const absMove = Math.min(Math.abs(rawVal), 10);
-                        moveWidth = (absMove / 10) * 50;
-                        if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
-                        else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
+        if (valStr.startsWith('#')) {
+            const isBlackMate = valStr.includes('-');
+            moveDisplay = "Mate " + valStr;
+            moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
+            
+            balanceScore = isBlackMate ? "-1000" : "+1000"; // Display is now 1000 for mate
+            balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
+            whiteWinPct = isBlackMate ? 0 : 100;
+        } else {
+            rawVal = parseFloat(valStr);
+            
+            // --- Move Score Logic (Caps at +/- 10 pawns) ---
+            moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
+            const absMove = Math.min(Math.abs(rawVal), 10);
+            moveWidth = (absMove / 10) * 50;
+            if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
+            else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
 
-                        balanceScore = Math.round(rawVal * 10);
-                        balanceScore = Math.max(-100, Math.min(100, balanceScore));
-                        
-                        const absBal = Math.abs(balanceScore);
-                        balanceWidth = (absBal / 100) * 50;
-                        if (balanceScore > 0) { balanceLeft = 50; balanceColor = "#2ecc71"; }
-                        else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
-                        
-                        if (balanceScore > 0) balanceScore = `+${balanceScore}`;
-                        
-                        whiteWinPct = 50 + (rawVal * 8);
-                        whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
-                    }
-                }
-                
-                // *** DEBUGGING: Log to console ***
-                console.log(`[Chess Eval] Raw PGN Text: "${rawText}"`);
-                console.log(`[Chess Eval] Parsed Value: ${debugEvalValue}`);
-                console.log(`[Chess Eval] Cleaned Comment: "${cleanText}"`);
-                // **********************************
+            // --- Game Balance Logic (Caps at +/- 10 pawns) ---
+            let balanceCP = Math.round(rawVal * 100); // Evaluation in centipawns
+            balanceScore = Math.max(-1000, Math.min(1000, balanceCP)); // Cap display at +/- 1000 cp
+            
+            const absBal = Math.min(Math.abs(balanceCP), 1000); // Cap visual scaling at 1000 cp
+            balanceWidth = (absBal / 1000) * 50; // Scale 0-1000 cp to 0-50% width
+            
+            if (balanceScore > 0) { balanceLeft = 50; balanceColor = "#2ecc71"; }
+            else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
+            
+            if (balanceScore > 0) balanceScore = `+${balanceScore}`;
+            
+            whiteWinPct = 50 + (rawVal * 8);
+            whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
+        }
+    }
+    
+    // *** DEBUGGING: Log to console ***
+    console.log(`[Chess Eval] Raw PGN Text: "${rawText}"`);
+    console.log(`[Chess Eval] Parsed Value: ${debugEvalValue}`);
+    console.log(`[Chess Eval] Cleaned Comment: "${cleanText}"`);
+    // **********************************
 
-                const evalHtml = `
-                    <div class="eval-row">
-                        <div class="eval-header"><span>Move Score</span><span class="eval-value">${moveDisplay}</span></div>
-                        <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
-                    </div>
-                    <div class="eval-row">
-                        <div class="eval-header"><span>Game Balance</span><span class="eval-value">${balanceScore}</span></div>
-                        <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
-                    </div>
-                    <div class="eval-row">
-                        <div class="eval-header"><span>White vs Black</span><span class="eval-value">${whiteWinPct}% / ${100 - whiteWinPct}%</span></div>
-                        <div class="win-rate-bar">
-                            <div class="win-white" style="width: ${whiteWinPct}%;"></div>
-                            <div class="win-black"></div>
-                        </div>
-                    </div>
-                `;
-                return { html: evalHtml, text: cleanText };
-            };
+    const evalHtml = `
+        <div class="eval-row">
+            <div class="eval-header"><span>Move Score</span><span class="eval-value">${moveDisplay}</span></div>
+            <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
+        </div>
+        <div class="eval-row">
+            <div class="eval-header"><span>Game Balance</span><span class="eval-value">${balanceScore}</span></div>
+            <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
+        </div>
+        <div class="eval-row">
+            <div class="eval-header"><span>White vs Black</span><span class="eval-value">${whiteWinPct}% / ${100 - whiteWinPct}%</span></div>
+            <div class="win-rate-bar">
+                <div class="win-white" style="width: ${whiteWinPct}%;"></div>
+                <div class="win-black"></div>
+            </div>
+        </div>
+    `;
+    return { html: evalHtml, text: cleanText };
+};
 
+            
             // --- COMMENT UPDATER (Unchanged) ---
             const updateCommentContent = (moveIndex, totalMoves) => {
                 const overlay = document.getElementById('chess-comment-overlay');
