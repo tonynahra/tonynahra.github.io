@@ -99,11 +99,15 @@ function loadModalContent(index) {
 
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
-    // CHANGED: Use 'let' instead of 'const' so we can modify the URL if needed
-    let loadUrl = $link.attr('href');
+    const loadUrl = $link.attr('href');
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
-    const manifestUrl = $link.data('manifest-url');
+    const manifestUrl = $link.data('manifest-url'); 
+    
+    // Reset Chess Mode class at the start of every load
+    $modal.removeClass('research-mode').removeClass('chess-mode');
+    $('body').removeClass('chess-mode-active');
+    $modal.find('.modal-header').show(); 
     
     // 1. Research Logic
     if (loadType === 'research' && jsonUrl) {
@@ -122,17 +126,15 @@ function loadModalContent(index) {
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
                 <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
             </div>
-            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2rem;">&times;</button>
+            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2rem;">&times;</button>
         `;
         $modalContent.html(playerHtml);
         $modalContent.find('.modal-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
         return;
     }
 
-    // 3. Standard Logic
-    $modal.removeClass('research-mode'); 
-    // We keep the ORIGINAL link for the "Open in new window" button (user friendly)
-    $modalOpenLink.attr('href', loadUrl); 
+    // 3. Regular Logic
+    $modalOpenLink.attr('href', loadUrl);
     $modalContent.find('.modal-photo-info').remove();
     $modalInfoBtn.hide(); 
     
@@ -157,15 +159,9 @@ function loadModalContent(index) {
         }
     }
 
-    // === NEW: GitHub Link Fixer ===
-    // If we are fetching data (Markdown or Chess) from GitHub, 
-    // we must use the "raw" domain to avoid CORS errors.
-    if ((loadType === 'markdown' || loadType === 'chess') && loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
-        loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-    }
-
     const customHeight = $link.data('height') || '90vh';
     
+    // Info extraction
     const $card = $link.closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt');
     const desc = $card.find('p').text();
@@ -182,6 +178,9 @@ function loadModalContent(index) {
 
     switch (loadType) {
         case 'markdown':
+            if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
+                loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+            }
             $.ajax({
                 url: loadUrl, type: 'GET',
                 dataType: 'text',
@@ -190,7 +189,6 @@ function loadModalContent(index) {
                         ? marked.parse(markdownText) 
                         : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
                     
-                    // CHANGED: Wrapped in .markdown-wrapper
                     $modalContent.html(`
                         <div class="markdown-wrapper">
                             <div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">
@@ -200,18 +198,11 @@ function loadModalContent(index) {
                     `);
                     if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
                 },
-                                
-                error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file. (Check CORS/URL)</div>'); }
+                error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
             });
             break;
 
-
-
-
-
-
-case 'chess':
-            // Fix GitHub CORS
+        case 'chess':
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
@@ -252,7 +243,6 @@ case 'chess':
                             return result;
                         };
                         body = cleanPGN(body);
-
                         body = body.replace(/(\r\n|\n|\r)/gm, " ");
                         body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
@@ -307,6 +297,16 @@ case 'chess':
                             </div>
                         </div>
                     `);
+
+                    // --- DROPDOWN POPULATION ---
+                    const $select = $('#chess-game-select');
+                    rawGames.forEach((gamePgn, idx) => {
+                        const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
+                        const black = (gamePgn.match(/\[Black "(.*?)"\]/) || [])[1] || '?';
+                        const result = (gamePgn.match(/\[Result "(.*?)"\]/) || [])[1] || '*';
+                        $select.append(`<option value="${idx}">${idx + 1}. ${white} vs ${black} (${result})</option>`);
+                    });
+                    if (rawGames.length <= 1) $select.hide(); 
 
                     // --- DYNAMIC STYLES ---
                     const updateChessStyles = () => {
@@ -421,11 +421,12 @@ case 'chess':
                         if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         $(overlay).fadeIn();
 
-                        // FINAL FIX: Accessing Array index directly
-                        const commentText = commentMap[moveIndex] || ""; 
+                        // CRITICAL FIX: Ensure index is converted to string for object lookup
+                        const commentText = commentMap[moveIndex.toString()] || ""; 
+                        
+                        const parsed = generateEvalHtml(commentText);
                         
                         let content = "";
-                        const parsed = generateEvalHtml(commentText);
                         
                         // 1. TEXT (TOP BLOCK)
                         let textContent = "";
@@ -481,6 +482,7 @@ case 'chess':
                         const selectedPgn = rawGames[index];
                         commentMap = parseCommentsMap(selectedPgn);
                         
+                        // Metadata
                         const headers = {};
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
@@ -493,7 +495,7 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // SIZE
+                        // Size
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
                         const maxWidth = winWidth * 0.90; 
@@ -513,7 +515,8 @@ case 'chess':
                             });
                             
                             updateChessStyles();
-                            const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
+                            const movesPanel = document.getElementById(boardId + 'Moves');
+                            const total = movesPanel ? movesPanel.querySelectorAll('move').length : 0;
                             updateCommentContent(-1, total); 
 
                             // Observer
@@ -552,7 +555,7 @@ case 'chess':
                     }
 
                     renderGame(0);
-                    $select.off('change').on('change', function() { renderGame($(this).val()); });
+                    $('#chess-game-select').off('change').on('change', function() { renderGame($(this).val()); });
                     $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
 
                 },
@@ -564,36 +567,16 @@ case 'chess':
                 }
             });
             break;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
-
-
-
-
-            
-            
+        
         case 'html':
             $.ajax({
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
                     $modalContent.html(data); 
-                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -617,7 +600,7 @@ case 'chess':
         case 'blocked':
             $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
             break;
-        default: 
+        default: // newtab
             $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
             break;
     }
@@ -625,6 +608,12 @@ case 'chess':
     $('.modal-prev-btn').prop('disabled', index <= 0);
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
+
+
+
+
+
+
 /* === RESEARCH BUILDER (Uses Main Header) === */
 
 function buildResearchModal(jsonUrl) {
