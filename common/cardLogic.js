@@ -207,7 +207,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -497,55 +496,49 @@ case 'chess':
 
                 $(`#${targetId}`).empty(); 
 
+                // FIX: Removed the unnecessary and problematic setTimeout and reverted to the synchronous flow
                 if (targetElement && typeof PGNV !== 'undefined') {
-                    // FIX: Introduce a small delay to resolve the PGNV race condition (TypeError)
-                    setTimeout(() => {
-                        const delayedTargetElement = document.getElementById(targetId);
-                        if (!delayedTargetElement) return;
+                    
+                    PGNV.pgnView(targetId, { 
+                        pgn: selectedPgn, 
+                        theme: 'brown', 
+                        boardSize: boardSize, 
+                        layout: 'left',
+                        width: '100%', 
+                        headers: false,
+                    });
+                    
+                    updateChessStyles();
+                    const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
+                    updateCommentContent(-1, total, evaluations); 
 
-                        PGNV.pgnView(targetId, { 
-                            pgn: selectedPgn, 
-                            theme: 'brown', 
-                            boardSize: boardSize, 
-                            layout: 'left',
-                            width: '100%', 
-                            headers: false,
-                        });
+                    // Observer setup
+                    const checkInterval = setInterval(() => {
+                        const movesPanel = document.getElementById(boardId + 'Moves');
                         
-                        // The rest of the observer setup runs *after* PGNV.pgnView has finished
-                        updateChessStyles();
-                        const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
-                        updateCommentContent(-1, total, evaluations); 
-
-                        // Observer setup
-                        const checkInterval = setInterval(() => {
-                            const movesPanel = document.getElementById(boardId + 'Moves');
+                        if (movesPanel) {
+                            clearInterval(checkInterval);
                             
-                            if (movesPanel) {
-                                clearInterval(checkInterval);
-                                
-                                const totalMoves = movesPanel.querySelectorAll('move').length;
+                            const totalMoves = movesPanel.querySelectorAll('move').length;
 
-                                gameObserver = new MutationObserver(() => {
-                                    let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
-                                    
-                                    if (activeEl) {
-                                        const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
-                                        if (activeMove) {
-                                            const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                            const index = allMoves.indexOf(activeMove);
-                                            updateCommentContent(index, totalMoves, evaluations); 
-                                            return;
-                                        }
+                            gameObserver = new MutationObserver(() => {
+                                let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
+                                
+                                if (activeEl) {
+                                    const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
+                                    if (activeMove) {
+                                        const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                                        const index = allMoves.indexOf(activeMove);
+                                        updateCommentContent(index, totalMoves, evaluations); 
+                                        return;
                                     }
-                                    updateCommentContent(-1, totalMoves, evaluations); 
-                                });
-                                
-                                gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
-                            }
-                        }, 200);
-
-                    }, 50); // 50 millisecond delay
+                                }
+                                updateCommentContent(-1, totalMoves, evaluations); 
+                            });
+                            
+                            gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
+                        }
+                    }, 200);
 
                 } else {
                     $modal.removeClass('chess-mode');
@@ -579,10 +572,6 @@ case 'chess':
         }
     });
     break;
-            
-
-
-
 
 
 
