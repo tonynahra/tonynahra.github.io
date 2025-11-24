@@ -456,15 +456,16 @@ body.chess-mode-active .modal-header,
 }
 .chess-metadata-overlay td { padding: 8px 12px !important; border-bottom: 1px solid #444; }
 
-/* UPDATED COMMENT BOX (Pastel Blue) */
+/* COMMENT BOX (Bottom Right, Pastel Blue) */
 .chess-comment-overlay {
-    font-size: 1.2rem !important;
+    font-size: 1.3rem !important;
     padding: 15px !important;
     background: #e3f2fd !important; /* Pastel Blue */
     border: 1px solid #90caf9;
     border-radius: 8px;
     color: #2c3e50 !important;
     
+    /* Shadow */
     box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.5) inset;
     
     position: absolute;
@@ -475,67 +476,37 @@ body.chess-mode-active .modal-header,
     text-align: center;
     display: none; 
     pointer-events: none;
-    min-height: 100px;
-}
-
-/* --- NEW BAR LAYOUT --- */
-.eval-row {
-    margin-bottom: 12px;
-}
-
-/* Header Line: Title + Value */
-.eval-header {
+    
+    /* Ensure flex layout for vertical stacking */
     display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    color: #455a64;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-}
-.eval-value {
-    color: #000;
-    font-size: 1rem;
+    flex-direction: column;
+    justify-content: flex-end;
 }
 
-/* Full Width Track */
+/* BARS */
+.eval-row { margin-top: 10px; }
+
+.eval-header {
+    display: flex; justify-content: space-between; font-size: 0.85rem;
+    color: #546e7a; font-weight: bold; text-transform: uppercase; margin-bottom: 4px;
+}
+.eval-value { color: #000; font-size: 1rem; font-weight: 800; }
+
 .eval-track {
-    width: 100%;
-    height: 10px;
-    background: #cfd8dc;
-    border-radius: 3px;
-    position: relative;
-    overflow: hidden;
+    width: 100%; height: 10px; background: #cfd8dc;
+    border-radius: 3px; position: relative; overflow: hidden;
     border: 1px solid #b0bec5;
 }
-
-/* Center Marker */
 .eval-center-line {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #78909c;
-    transform: translateX(-50%);
-    z-index: 2;
+    position: absolute; left: 50%; top: 0; bottom: 0;
+    width: 2px; background: #78909c; transform: translateX(-50%); z-index: 2;
 }
-
-/* The Bar Fill */
 .eval-fill {
-    height: 100%;
-    position: absolute;
-    top: 0;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    z-index: 1;
+    height: 100%; position: absolute; top: 0;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
 }
 
-/* Move Counter */
 .move-counter {
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid #90caf9;
-    color: #546e7a;
-    font-size: 0.9rem;
-    font-weight: bold;
+    margin-top: 10px; padding-top: 8px; border-top: 1px solid #90caf9;
+    color: #546e7a; font-size: 0.9rem; font-weight: bold;
 }
