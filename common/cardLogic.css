@@ -422,11 +422,14 @@ body.chess-mode-active .modal-header,
 }
 
 /* BOARD WRAPPER */
+
 .chess-white-box {
     width: 100% !important;
     height: 100% !important;
-    /* LEFT MARGIN FIX */
-    padding-left: 40px !important;
+    
+    /* MARGIN: Pushes board away from left edge */
+    padding-left: 40px !important; 
+    
     padding-top: 10px !important;
     padding-right: 10px !important;
     
@@ -435,6 +438,9 @@ body.chess-mode-active .modal-header,
     justify-content: center;
     align-items: flex-start;
 }
+
+
+
 
 .pgnvjs-moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
 
