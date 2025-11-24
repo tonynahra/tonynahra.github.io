@@ -425,10 +425,7 @@ body.chess-mode-active .modal-header,
 .chess-white-box {
     width: 100% !important;
     height: 100% !important;
-    
-    /* MARGIN FIX: 40px Left Padding */
-    padding-left: 40px !important;
-    
+    padding-left: 40px !important; /* Left Margin */
     padding-top: 10px !important;
     padding-right: 10px !important;
     background-color: #ffffff !important;
@@ -437,31 +434,9 @@ body.chess-mode-active .modal-header,
     align-items: flex-start;
 }
 
-/* Force comments to exist in DOM */
 .pgnvjs-moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
 
-/* COMMENT BOX (Bottom Right) */
-.chess-comment-overlay {
-    font-size: 1.2rem !important;
-    padding: 15px !important;
-    background: rgba(0, 0, 0, 0.95) !important;
-    border: 1px solid #777;
-    border-radius: 6px;
-    color: #fff !important;
-    
-    /* Position: Bottom Right */
-    position: absolute;
-    bottom: 20px;
-    right: 30px; 
-    
-    width: 320px;
-    z-index: 6000 !important;
-    text-align: center;
-    display: none; 
-    pointer-events: none;
-    box-shadow: -5px -5px 20px rgba(0,0,0,0.5);
-}
-
+/* OVERLAYS */
 .chess-metadata-overlay {
     font-size: 1.1rem !important; 
     padding: 20px !important;
@@ -481,11 +456,78 @@ body.chess-mode-active .modal-header,
 }
 .chess-metadata-overlay td { padding: 8px 12px !important; border-bottom: 1px solid #444; }
 
-/* Eval Bar */
-.eval-bar-container {
-    display: flex; align-items: center; width: 100%; margin-bottom: 8px;
-    background: #222; padding: 4px; border-radius: 4px; border: 1px solid #444;
+/* COMMENT BOX (Bottom Right) */
+.chess-comment-overlay {
+    font-size: 1.2rem !important;
+    padding: 15px !important;
+    background: rgba(0, 0, 0, 0.95) !important;
+    border: 1px solid #777;
+    border-radius: 6px;
+    color: #fff !important;
+    
+    position: absolute;
+    bottom: 20px;
+    right: 30px; 
+    width: 320px;
+    z-index: 6000 !important;
+    text-align: center;
+    display: none; 
+    pointer-events: none;
+    box-shadow: -5px -5px 20px rgba(0,0,0,0.5);
 }
-.eval-score { font-weight: bold; min-width: 50px; text-align: right; margin-right: 10px; color: #fff; }
-.eval-track { flex: 1; height: 12px; background: #444; border-radius: 3px; overflow: hidden; }
-.eval-fill { height: 100%; transition: width 0.3s ease; }
+
+/* --- NEW CENTERED EVAL BAR --- */
+.eval-wrapper {
+    width: 100%;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #444;
+}
+
+.eval-text-score {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+.eval-track {
+    width: 100%;
+    height: 12px;
+    background: #444; /* Neutral background */
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* The center marker line */
+.eval-center-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #888;
+    z-index: 2;
+    transform: translateX(-50%);
+}
+
+/* The colored bar */
+.eval-fill {
+    height: 100%;
+    position: absolute;
+    top: 0;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+/* Move Counter at Bottom */
+.move-counter {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #555;
+    color: #ccc;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
