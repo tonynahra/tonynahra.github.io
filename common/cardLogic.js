@@ -207,7 +207,7 @@ function loadModalContent(index) {
 
 
 
-case 'chess':
+            case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -345,13 +345,24 @@ case 'chess':
                         $(`#${styleId}`).text(css);
                     };
 
-                    // --- HTML GENERATOR (NEW DUAL BARS) ---
+                    // --- LISTENERS ---
+                    document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
+                    document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
+                    
+                    document.getElementById('chess-close-btn').onclick = (e) => { 
+                        e.preventDefault(); 
+                        $modal.removeClass('chess-mode');
+                        $('body').removeClass('chess-mode-active');
+                        $modal.find('.modal-header').show();
+                        $('.modal-close-btn').first().click(); 
+                    };
+
+                    // EVAL GENERATOR
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                         cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
                         
-                        // DEFAULTS (Neutral)
                         let moveDisplay = "0";
                         let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
                         let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
@@ -362,7 +373,6 @@ case 'chess':
                             let rawVal = 0;
 
                             if (valStr.startsWith('#')) {
-                                // Mate
                                 const isBlackMate = valStr.includes('-');
                                 moveDisplay = "Mate " + valStr;
                                 moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
@@ -371,17 +381,16 @@ case 'chess':
                                 balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
                                 whiteWinPct = isBlackMate ? 0 : 100;
                             } else {
-                                // Centipawns
                                 rawVal = parseFloat(valStr);
                                 
-                                // BAR 1: Move Score (-10 to +10) -> Integer Display
+                                // Bar 1: Move Score (-10 to +10)
                                 moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
                                 const absMove = Math.min(Math.abs(rawVal), 10);
                                 moveWidth = (absMove / 10) * 50;
                                 if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
                                 else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
 
-                                // BAR 2: Game Balance (-100 to +100)
+                                // Bar 2: Game Balance (-100 to +100)
                                 balanceScore = Math.round(rawVal * 10);
                                 balanceScore = Math.max(-100, Math.min(100, balanceScore));
                                 
@@ -389,7 +398,8 @@ case 'chess':
                                 balanceWidth = (absBal / 100) * 50;
                                 if (balanceScore > 0) { balanceLeft = 50; balanceColor = "#2ecc71"; }
                                 else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
-                                balanceScore = balanceScore > 0 ? `+${balanceScore}` : balanceScore;
+                                
+                                if (balanceScore > 0) balanceScore = `+${balanceScore}`;
                                 
                                 // Bar 3: Win Percentage (100% Split)
                                 whiteWinPct = 50 + (rawVal * 8);
@@ -425,21 +435,30 @@ case 'chess':
                         const commentText = commentMap[moveIndex] || "";
                         const parsed = generateEvalHtml(commentText);
                         
-                        let content = parsed.html;
+                        // --- START BUILDING CONTENT ---
+                        let content = "";
                         
-                        if (parsed.text && parsed.text.length > 0) {
-                            content += `<div style="margin-top: 8px; margin-bottom: 5px; font-size: 1rem; color: #2c3e50;">${parsed.text}</div>`;
+                        // 1. TEXT (TOP BLOCK)
+                        let textContent = "";
+                        if (parsed.text) {
+                            textContent = `<div style="margin-bottom:12px; font-size: 1rem; color: #2c3e50;">${parsed.text}</div>`;
                         } else if (moveIndex === -1) {
-                            content += `<div style="color:#78909c; margin-top: 8px; margin-bottom: 5px;">Start of Game</div>`;
+                            textContent = `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
                         } else {
-                            content += `<div style="color:#90a4ae; font-style:italic; margin-top: 8px; margin-bottom: 5px;">...</div>`;
+                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">...</div>`;
                         }
+                        content += `<div class="comment-text-content">${textContent}</div>`;
 
+
+                        // 2. BARS & COUNTER (BOTTOM FOOTER)
+                        let footer = "";
+                        footer += parsed.html;
+                        
                         const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1; 
                         const displayTotal = totalMoves || '?';
-                        content += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
-
-                        overlay.innerHTML = content;
+                        footer += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
+                        
+                        overlay.innerHTML = footer;
                     };
 
                     document.getElementById('chess-comment-btn').onclick = (e) => {
@@ -478,7 +497,6 @@ case 'chess':
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
                         while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
-                        
                         let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
                         for (const [key, val] of Object.entries(headers)) {
                             infoHtml += `<tr><td style="color: var(--text-accent); font-weight:bold; width: 30%;">${key}</td><td style="color: #fff;">${val}</td></tr>`;
@@ -525,14 +543,13 @@ case 'chess':
                                             const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
                                             if (activeMove) {
                                                 const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                                const index = allMoves.indexOf(activeMove);
-                                                updateCommentContent(index, totalMoves);
+                                                const idx = allMoves.indexOf(activeMove);
+                                                updateCommentContent(idx, totalMoves);
                                                 return;
                                             }
                                         }
                                         updateCommentContent(-1, totalMoves);
                                     });
-                                    
                                     gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
                                 }
                             }, 200);
@@ -557,9 +574,7 @@ case 'chess':
                 }
             });
             break;
-
-
-
+            
 
 
 
