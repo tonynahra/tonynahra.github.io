@@ -238,72 +238,66 @@ case 'chess':
                     let commentsEnabled = true; 
                     let commentMap = {}; 
 
-                    // --- NEW: STACK-BASED PARSER (Handles Nested Variations) ---
+                    // --- NEW: TOKEN-BASED PARSER (Most Reliable) ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
                         
-                        // 1. Remove Headers
-                        let body = pgnText.replace(/\[.*?\]/g, "");
+                        // 1. Clean headers and newlines
+                        let body = pgnText.replace(/\[.*?\]/g, "").replace(/(\r\n|\n|\r)/gm, " ");
+                        
+                        // 2. Remove Variations (Recursive)
+                        // We remove anything inside (...) so we only count main line moves
+                        let prevLen = body.length;
+                        while(true) {
+                            body = body.replace(/\([^\(\)]*\)/g, "");
+                            if(body.length === prevLen) break;
+                            prevLen = body.length;
+                        }
 
-                        // 2. Robust Variation Stripper (The Fix)
-                        // We cannot use Regex for nested ( ... ( ... ) )
-                        const cleanPGN = (text) => {
-                            let result = "";
-                            let depth = 0;
-                            let inComment = false;
-                            
-                            for (let i = 0; i < text.length; i++) {
-                                const char = text[i];
-                                
-                                // Handle Comments { ... } - Keep them, but ignore parens inside them
-                                if (char === '{') inComment = true;
-                                if (char === '}') inComment = false;
-                                
-                                if (!inComment) {
-                                    if (char === '(') {
-                                        depth++;
-                                        continue; // Skip the '('
-                                    }
-                                    if (char === ')') {
-                                        if (depth > 0) depth--;
-                                        continue; // Skip the ')'
-                                    }
-                                }
-                                
-                                // Only keep text if we are at Depth 0 (Main Line)
-                                if (depth === 0) {
-                                    result += char;
-                                }
-                            }
-                            return result;
-                        };
+                        // 3. Insert spaces around braces to ensure clear tokenization
+                        body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
-                        const mainLine = cleanPGN(body);
-
-                        // 3. Tokenize
-                        // Matches: Comments {..} OR Move Numbers (1.) OR Result OR Moves
-                        const regex = /(\{[^}]+\})|(\d+\.+)|(1-0|0-1|1\/2-1\/2|\*)|([a-zA-Z0-9][a-zA-Z0-9\+\#\=\-\!\?]*)/g;
-                        let match;
+                        // 4. Split into tokens
+                        const tokens = body.split(/\s+/);
+                        
                         let moveIndex = 0;
+                        let insideComment = false;
+                        let currentComment = [];
 
-                        while ((match = regex.exec(mainLine)) !== null) {
-                            if (match[1]) { 
-                                // COMMENT { ... }
+                        for (let i = 0; i < tokens.length; i++) {
+                            const token = tokens[i].trim();
+                            if (!token) continue;
+
+                            if (token === '{') {
+                                insideComment = true;
+                                currentComment = [];
+                                continue;
+                            }
+                            if (token === '}') {
+                                insideComment = false;
                                 if (moveIndex > 0) {
-                                    const clean = match[1].substring(1, match[1].length - 1).trim();
-                                    map[moveIndex - 1] = clean;
+                                    // Save comment for the PREVIOUS move
+                                    map[moveIndex - 1] = currentComment.join(" ");
                                 }
-                            } else if (match[2]) { 
-                                // Move Number (ignore)
-                            } else if (match[3]) {
-                                // Result (ignore)
-                            } else if (match[4]) {
-                                // MOVE (e4, Nf3, Ng3!)
+                                continue;
+                            }
+
+                            if (insideComment) {
+                                currentComment.push(token);
+                            } else {
+                                // We are in move text. Check if it's a real move.
+                                // Ignore: "1.", "1...", "1/2-1/2", "1-0", "0-1", "*"
+                                if (token.match(/^\d+\.+/)) continue; // Move numbers
+                                if (token.match(/^(1-0|0-1|1\/2-1\/2|\*)$/)) continue; // Results
+                                if (token.startsWith('$')) continue; // NAGs ($1)
+
+                                // It must be a move (e4, Nf3, etc)
                                 moveIndex++;
                             }
                         }
                         
-                        console.log(`Parsed ${Object.keys(map).length} comments. Total moves found: ${moveIndex}`);
+                        console.log(`[PGN PARSER] Found ${moveIndex} moves.`);
+                        console.log(`[PGN PARSER] Mapped ${Object.keys(map).length} comments.`);
                         return map;
                     };
 
@@ -376,7 +370,6 @@ case 'chess':
                     // --- LISTENERS ---
                     document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
                     document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
-                    
                     document.getElementById('chess-close-btn').onclick = (e) => { 
                         e.preventDefault(); 
                         $modal.removeClass('chess-mode');
@@ -385,7 +378,6 @@ case 'chess':
                         $('.modal-close-btn').first().click(); 
                     };
 
-                    // Evaluation HTML Generator
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -419,7 +411,6 @@ case 'chess':
                         return { html: evalHtml, text: cleanText };
                     };
 
-                    // UPDATE CONTENT LOGIC
                     const updateCommentContent = (moveIndex) => {
                         const overlay = document.getElementById('chess-comment-overlay');
                         
@@ -436,7 +427,7 @@ case 'chess':
                             const parsed = generateEvalHtml(commentText);
                             overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
                         } else {
-                            overlay.innerHTML = '<div style="color:#777; font-style:italic; font-size: 0.9em;">...</div>';
+                            overlay.innerHTML = '<div style="color:#aaa; font-style:italic; font-size: 0.9em;">...</div>';
                         }
                     };
 
@@ -444,7 +435,6 @@ case 'chess':
                         e.preventDefault();
                         commentsEnabled = !commentsEnabled;
                         const btn = $('#chess-comment-btn');
-                        
                         if (commentsEnabled) {
                             btn.text('Comments: On').css({background: 'var(--text-accent)', color: '#000'});
                             $('#chess-comment-overlay').fadeIn();
@@ -454,7 +444,7 @@ case 'chess':
                         }
                     };
 
-                    // --- RENDER ---
+                    // --- RENDER FUNCTION ---
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -471,7 +461,7 @@ case 'chess':
 
                         const selectedPgn = rawGames[index];
                         
-                        // 1. PARSE COMMENTS (Clean)
+                        // 1. PARSE COMMENTS
                         commentMap = parseCommentsMap(selectedPgn);
                         
                         // 2. METADATA
@@ -487,11 +477,12 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 3. SIZE CALCULATION (Buffer for buttons)
+                        // 3. SIZE CALCULATION (90% Width)
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
-                        const maxWidth = winWidth * 0.60; 
-                        const maxHeight = winHeight - 250; 
+                        
+                        const maxWidth = winWidth * 0.90; // 90% Width
+                        const maxHeight = winHeight - 200; // Buffer for controls
                         const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
@@ -507,9 +498,9 @@ case 'chess':
                             });
                             
                             updateChessStyles();
-                            updateCommentContent(-1); 
+                            updateCommentContent(-1);
 
-                            // 4. OBSERVER (Map Lookup)
+                            // 4. OBSERVER
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 
@@ -519,10 +510,8 @@ case 'chess':
                                     gameObserver = new MutationObserver(() => {
                                         const activeMove = movesPanel.querySelector('move.active'); 
                                         if (activeMove) {
-                                            // ID Format: chess-board-123...Moves15 -> 15
                                             const prefix = boardId + 'Moves';
                                             const rawId = activeMove.id;
-                                            
                                             if (rawId && rawId.startsWith(prefix)) {
                                                 const indexStr = rawId.substring(prefix.length);
                                                 const index = parseInt(indexStr);
@@ -559,7 +548,7 @@ case 'chess':
             break;
 
 
-
+            
 
 
 
