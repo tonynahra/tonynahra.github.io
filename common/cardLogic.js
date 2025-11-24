@@ -209,7 +209,6 @@ function loadModalContent(index) {
 
 
 
-
             case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -235,12 +234,14 @@ function loadModalContent(index) {
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (Remains Unchanged) ---
+            // --- PARSER (FIX APPLIED HERE) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                let body = pgnText.replace(/\[.*?\]/g, "").trim();
-
+                // *** FIX: Safely remove standard PGN headers [Key "Value"] only. ***
+                // This prevents accidentally stripping the non-standard [%eval X] tags from comments.
+                let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim();
+                
                 const cleanPGN = (text) => {
                     let result = "";
                     let depth = 0;
@@ -285,7 +286,7 @@ function loadModalContent(index) {
                 return map;
             };
 
-            // 2. INJECT HTML (Remains Unchanged)
+            // 2. INJECT HTML (Unchanged)
             $modalContent.html(`
                 <style id="${styleId}"></style>
                 <div class="chess-container">
@@ -308,7 +309,7 @@ function loadModalContent(index) {
                 </div>
             `);
 
-            // --- DYNAMIC STYLES (Remains Unchanged) ---
+            // --- DYNAMIC STYLES (Unchanged) ---
             const updateChessStyles = () => {
                 const movesId = `#${boardId}Moves`; 
                 const css = `
@@ -350,7 +351,7 @@ function loadModalContent(index) {
                 $(`#${styleId}`).text(css);
             };
 
-            // --- EVAL GENERATOR (FIXED and DEBUG LOGS Added) ---
+            // --- EVAL GENERATOR (Unchanged - contains debug logs) ---
             const generateEvalHtml = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -426,14 +427,14 @@ function loadModalContent(index) {
                 return { html: evalHtml, text: cleanText };
             };
 
-            // --- COMMENT UPDATER (The previous fix to call generateEvalHtml on every move) ---
+            // --- COMMENT UPDATER (Unchanged) ---
             const updateCommentContent = (moveIndex, totalMoves) => {
                 const overlay = document.getElementById('chess-comment-overlay');
                 if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                 $(overlay).fadeIn();
 
                 const commentText = commentMap[moveIndex] || ""; 
-                const parsed = generateEvalHtml(commentText); // This ensures the bars are updated
+                const parsed = generateEvalHtml(commentText); 
                 let content = "";
                 
                 // 1. TEXT (TOP BLOCK)
@@ -472,7 +473,7 @@ function loadModalContent(index) {
                 }
             };
 
-            // --- RENDER (Remains Unchanged) ---
+            // --- RENDER (Unchanged) ---
             const $select = $('#chess-game-select');
             rawGames.forEach((gamePgn, idx) => {
                 const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -573,9 +574,6 @@ function loadModalContent(index) {
         }
     });
     break;
-
-
-
 
 
 
