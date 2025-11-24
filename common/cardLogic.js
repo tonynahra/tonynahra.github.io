@@ -206,6 +206,12 @@ function loadModalContent(index) {
             break;
 
 
+
+
+
+
+
+
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -285,7 +291,7 @@ case 'chess':
                 return map;
             };
 
-            // NEW: Extracts evaluation number only (Used for delta calculation)
+            // Extracts evaluation number only (Used for delta calculation)
             const extractEvaluation = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 if (!evalMatch) return 0;
@@ -434,7 +440,7 @@ case 'chess':
             // --------------------------------------------------------------------------
             // --- EVENT HANDLERS / RENDERER (Updated for consistency and error fix) ---
 
-            // FIX: Use jQuery for comment button handler to prevent "Cannot set properties of null" error
+            // FIX: Use jQuery for event handlers to prevent "Cannot set properties of null" error
             $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 commentsEnabled = !commentsEnabled;
@@ -490,10 +496,15 @@ case 'chess':
                 const maxHeight = winHeight - 250; 
                 const boardSize = Math.min(maxWidth, maxHeight);
 
-                $(`#${boardId}`).empty();
+                // --- FIX APPLIED HERE: Get the actual DOM element reference ---
+                const targetId = boardId;
+                const targetElement = document.getElementById(targetId);
 
-                if (typeof PGNV !== 'undefined') {
-                    PGNV.pgnView(boardId, { 
+                $(`#${targetId}`).empty(); 
+
+                if (targetElement && typeof PGNV !== 'undefined') {
+                    // FIX: Pass the ID string, but only if the element exists in the native DOM
+                    PGNV.pgnView(targetId, { 
                         pgn: selectedPgn, 
                         theme: 'brown', 
                         boardSize: boardSize, 
@@ -538,7 +549,7 @@ case 'chess':
                     $modal.removeClass('chess-mode');
                     $('body').removeClass('chess-mode-active');
                     $modal.find('.modal-header').show();
-                    $modalContent.html('<div class="error-message">PGN Library not loaded.</div>');
+                    $modalContent.html('<div class="error-message">PGN Library not loaded or board element missing.</div>');
                 }
             }
 
@@ -546,7 +557,7 @@ case 'chess':
             $select.off('change').on('change', function() { renderGame($(this).val()); });
             $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
             
-            // Also need to handle font size buttons here, as they were likely missing the event handler
+            // Font size buttons handlers
             $('#chess-font-minus').off('click').on('click', function() {
                 currentFontSize = Math.max(14, currentFontSize - 2);
                 updateChessStyles();
@@ -566,9 +577,6 @@ case 'chess':
         }
     });
     break;
-
-
-
 
 
 
