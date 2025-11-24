@@ -208,7 +208,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -295,7 +294,6 @@ case 'chess':
                                 <div style="flex: 1;"></div>
                                 <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
                             </div>
-                            
                             <div class="chess-main-area">
                                 <div class="chess-white-box">
                                     <div id="${boardId}"></div>
@@ -306,11 +304,12 @@ case 'chess':
                         </div>
                     `);
 
-                    // --- STYLES ---
+                    // --- DYNAMIC STYLES ---
                     const updateChessStyles = () => {
-                        const movesId = `#${boardId}Moves`; 
+                        const movesClass = `#${boardId} .moves`; // Targeted generic class
                         const css = `
-                            ${movesId} {
+                            /* MOVES CONTAINER */
+                            ${movesClass} {
                                 background-color: #ffffff !important;
                                 color: #000000 !important;
                                 font-size: ${currentFontSize}px !important;
@@ -323,7 +322,8 @@ case 'chess':
                                 min-width: 360px !important;
                                 display: block !important; 
                             }
-                            ${movesId} move {
+                            /* MOVES */
+                            ${movesClass} move {
                                 font-size: ${currentFontSize}px !important;
                                 line-height: ${currentFontSize + 10}px !important;
                                 color: #000000 !important;
@@ -334,8 +334,8 @@ case 'chess':
                                 border-radius: 3px !important;
                                 padding: 2px 4px !important;
                             }
-                            ${movesId} move:hover { background-color: #e0e0e0 !important; }
-                            ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
+                            ${movesClass} move:hover { background-color: #e0e0e0 !important; }
+                            ${movesClass} move.active { background-color: #FFD700 !important; color: #000 !important; }
                             
                             #${boardId} .pgnvjs-wrapper {
                                 display: flex !important;
@@ -351,6 +351,7 @@ case 'chess':
                     // --- LISTENERS ---
                     document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
                     document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
+                    
                     document.getElementById('chess-close-btn').onclick = (e) => { 
                         e.preventDefault(); 
                         $modal.removeClass('chess-mode');
@@ -384,7 +385,7 @@ case 'chess':
                                 // CP
                                 const val = parseFloat(valStr);
                                 
-                                // Bar 1: Integer Score (-10 to +10)
+                                // Bar 1: Score (-10 to +10)
                                 displayVal = Math.round(val) > 0 ? `+${Math.round(val)}` : Math.round(val);
                                 const absVal = Math.min(Math.abs(val), 10);
                                 moveWidth = (absVal / 10) * 50;
@@ -392,7 +393,7 @@ case 'chess':
                                 else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
 
                                 // Bar 2: Balance (-100 to +100)
-                                balanceScore = Math.round(val * 10); // roughly 1 pawn = 10 points of balance
+                                balanceScore = Math.round(val * 10);
                                 balanceScore = Math.max(-100, Math.min(100, balanceScore));
                                 
                                 const absBal = Math.abs(balanceScore);
@@ -419,13 +420,13 @@ case 'chess':
 
                     const updateCommentContent = (moveIndex, totalMoves) => {
                         const overlay = document.getElementById('chess-comment-overlay');
-                        // Always show if enabled (even if empty, to keep layout stable)
-                        if (commentsEnabled) $(overlay).fadeIn(); else $(overlay).fadeOut();
+                        if (!commentsEnabled) { $(overlay).fadeOut(); return; }
+                        $(overlay).fadeIn();
 
                         const commentText = commentMap[moveIndex] || "";
                         const parsed = generateEvalHtml(commentText);
                         
-                        // TEXT TOP
+                        // TEXT
                         let content = "";
                         if (moveIndex === -1) {
                             content += `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
@@ -435,10 +436,10 @@ case 'chess':
                             content += `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">...</div>`;
                         }
 
-                        // BARS BOTTOM
+                        // BARS
                         content += parsed.html;
 
-                        // COUNTER BOTTOM
+                        // COUNTER
                         const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1; 
                         const displayTotal = totalMoves || '?';
                         content += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
@@ -509,34 +510,45 @@ case 'chess':
                             });
                             
                             updateChessStyles();
-                            const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
-                            updateCommentContent(-1, total);
+                            updateCommentContent(-1, 0); 
 
-                            // Observer
-                            const checkInterval = setInterval(() => {
-                                const movesPanel = document.getElementById(boardId + 'Moves');
-                                if (movesPanel) {
-                                    clearInterval(checkInterval);
-                                    
+                            // --- ROBUST OBSERVER (Targets .moves class) ---
+                            // We attach to the CONTAINER (White Box)
+                            const whiteBox = $modalContent.find('.chess-white-box')[0];
+                            
+                            if (whiteBox) {
+                                console.log("[DEBUG] Observer attached to White Box");
+                                
+                                gameObserver = new MutationObserver(() => {
+                                    // Look for generic .moves class inside
+                                    const movesPanel = whiteBox.querySelector('.moves');
+                                    if (!movesPanel) return;
+
+                                    // Find active element
+                                    const activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
                                     const totalMoves = movesPanel.querySelectorAll('move').length;
-                                    updateCommentContent(-1, totalMoves);
-
-                                    gameObserver = new MutationObserver(() => {
-                                        let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow') || movesPanel.querySelector('.selected');
-                                        if (activeEl) {
-                                            const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
-                                            if (activeMove) {
-                                                const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                                const idx = allMoves.indexOf(activeMove);
-                                                updateCommentContent(idx, totalMoves);
-                                                return;
-                                            }
+                                    
+                                    if (activeEl) {
+                                        const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
+                                        if (activeMove) {
+                                            const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                                            const index = allMoves.indexOf(activeMove);
+                                            
+                                            // console.log("Observer Found Index:", index); // DEBUG
+                                            updateCommentContent(index, totalMoves);
+                                            return;
                                         }
-                                        updateCommentContent(-1, totalMoves);
-                                    });
-                                    gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
-                                }
-                            }, 200);
+                                    }
+                                    updateCommentContent(-1, totalMoves);
+                                });
+                                
+                                gameObserver.observe(whiteBox, { 
+                                    subtree: true, 
+                                    attributes: true, 
+                                    childList: true, 
+                                    attributeFilter: ['class'] 
+                                });
+                            }
                         } else {
                             $modal.removeClass('chess-mode');
                             $('body').removeClass('chess-mode-active');
@@ -557,9 +569,7 @@ case 'chess':
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
-            break;            
-
-
+            break;
 
 
             
