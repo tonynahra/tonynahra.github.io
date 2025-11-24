@@ -441,6 +441,7 @@ body.chess-mode-active .modal-header,
 }
 
 /* --- OVERLAYS --- */
+/* --- OVERLAYS --- */
 .chess-metadata-overlay {
     font-size: 1.1rem !important; 
     padding: 20px !important;
@@ -460,7 +461,7 @@ body.chess-mode-active .modal-header,
 }
 .chess-metadata-overlay td { padding: 8px 12px !important; border-bottom: 1px solid #444; }
 
-/* UPDATED COMMENT BOX LOCATION */
+/* COMMENT BOX - Bottom Right */
 .chess-comment-overlay {
     font-size: 1.2rem !important;
     padding: 15px !important;
@@ -469,29 +470,24 @@ body.chess-mode-active .modal-header,
     border-radius: 6px;
     color: #fff !important;
     
-    /* Position: Bottom Right (Over the moves panel) */
+    /* Fixed Position Bottom Right */
     position: absolute;
-    bottom: 20px;
-    right: 20px; 
+    bottom: 10px;
+    right: 10px; 
     
-    width: 300px; /* Match moves panel width */
+    width: 320px; 
     z-index: 6000 !important;
     text-align: center;
+    /* Let JS handle display toggling */
     display: none; 
-    pointer-events: none; /* Allow clicks to pass through if empty */
+    pointer-events: none;
     box-shadow: -5px -5px 20px rgba(0,0,0,0.5);
 }
 
 /* Eval Bar */
 .eval-bar-container {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 8px;
-    background: #222;
-    padding: 4px;
-    border-radius: 4px;
-    border: 1px solid #444;
+    display: flex; align-items: center; width: 100%; margin-bottom: 8px;
+    background: #222; padding: 4px; border-radius: 4px; border: 1px solid #444;
 }
 .eval-score { font-weight: bold; min-width: 50px; text-align: right; margin-right: 10px; color: #fff; }
 .eval-track { flex: 1; height: 12px; background: #444; border-radius: 3px; overflow: hidden; }
