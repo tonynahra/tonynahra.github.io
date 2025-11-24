@@ -213,8 +213,7 @@ function loadModalContent(index) {
 
 
 
-
-            case 'chess':
+case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -237,12 +236,11 @@ function loadModalContent(index) {
                     
                     let currentFontSize = 26; 
                     let commentsEnabled = true; 
-                    let commentMap = {}; 
+                    let commentArray = []; // CHANGED TO ARRAY FOR 1:1 INDEXING
 
-                    // --- PARSER ---
+                    // --- PARSER (Now Populates Array) ---
                     const parseCommentsMap = (pgnText) => {
-                        const map = {};
-                        
+                        let array = []; // Use a local array
                         let body = pgnText.replace(/\[.*?\]/g, "").trim();
 
                         const cleanPGN = (text) => {
@@ -260,7 +258,7 @@ function loadModalContent(index) {
                         body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
                         const tokens = body.split(/\s+/);
-                        let moveIndex = 0;
+                        let moveIndex = 0; // The array index
                         let insideComment = false;
                         let currentComment = [];
 
@@ -271,8 +269,9 @@ function loadModalContent(index) {
                             if (token === '{') { insideComment = true; currentComment = []; continue; }
                             if (token === '}') { 
                                 insideComment = false; 
+                                // ASSIGNMENT FIX: Map comment to current index (which is moveIndex - 1)
                                 const idx = moveIndex === 0 ? -1 : moveIndex - 1;
-                                map[idx] = currentComment.join(" ");
+                                array[idx] = currentComment.join(" "); // Use array index for direct assignment
                                 continue; 
                             }
 
@@ -282,10 +281,10 @@ function loadModalContent(index) {
                                 if (/^\d+\.+/.test(token)) continue;
                                 if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
                                 if (token.startsWith('$')) continue;
-                                moveIndex++;
+                                moveIndex++; // It's a move, increment the index
                             }
                         }
-                        return map;
+                        return array;
                     };
 
                     // 2. INJECT HTML
@@ -353,25 +352,13 @@ function loadModalContent(index) {
                         $(`#${styleId}`).text(css);
                     };
 
-                    // --- LISTENERS ---
-                    document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
-                    document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
-                    
-                    document.getElementById('chess-close-btn').onclick = (e) => { 
-                        e.preventDefault(); 
-                        $modal.removeClass('chess-mode');
-                        $('body').removeClass('chess-mode-active');
-                        $modal.find('.modal-header').show();
-                        $('.modal-close-btn').first().click(); 
-                    };
-
+                    // --- EVAL GENERATOR ---
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                         cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
                         
-                        let moveDisplay = "0";
-                        let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
+                        let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
                         let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
                         let whiteWinPct = 50;
                         
@@ -448,11 +435,9 @@ function loadModalContent(index) {
                         } else if (moveIndex === -1) {
                             textContent = `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
                         } else {
-                            // The line that shows "..." if no comment/eval is found
-                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">No commentary.</div>`;
+                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">...</div>`;
                         }
                         content += `<div class="comment-text-content">${textContent}</div>`;
-
 
                         // 2. BARS & COUNTER (BOTTOM FOOTER)
                         let footer = "";
@@ -579,8 +564,6 @@ function loadModalContent(index) {
                 }
             });
             break;
-            
-
             
 
             
