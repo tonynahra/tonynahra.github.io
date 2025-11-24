@@ -219,7 +219,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -299,7 +298,6 @@ case 'chess':
                             ${movesId} move:hover { background-color: #e0e0e0 !important; }
                             ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
                             
-                            /* Force layout to stay side-by-side */
                             #${boardId} .pgnvjs-wrapper {
                                 display: flex !important;
                                 flex-direction: row !important;
@@ -311,7 +309,7 @@ case 'chess':
                         $(`#${styleId}`).text(css);
                     };
 
-                    // --- BUTTON HANDLERS ---
+                    // --- LISTENERS ---
                     document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
                     document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
                     document.getElementById('chess-close-btn').onclick = (e) => { 
@@ -362,6 +360,7 @@ case 'chess':
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
                         while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
+                        
                         let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
                         for (const [key, val] of Object.entries(headers)) {
                             infoHtml += `<tr><td style="color: var(--text-accent); font-weight:bold; width: 30%;">${key}</td><td style="color: #fff;">${val}</td></tr>`;
@@ -369,18 +368,17 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 2. SIZE CALCULATION (FIXED)
-                        // We use Window dimensions to guarantee fit
+                        // 2. SIZE CALCULATION (FIXED FOR NAV BUTTONS)
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
                         
-                        // Board should be max 60% of width
-                        const maxWidth = winWidth * 0.60;
-                        // Board should leave 180px for toolbar + nav buttons
-                        const maxHeight = winHeight - 180; 
+                        // Max 55% width so moves panel fits
+                        const maxWidth = winWidth * 0.55; 
+                        // CRITICAL FIX: Subtract 200px to allow room for nav buttons at bottom
+                        const maxHeight = winHeight - 200; 
                         
                         const boardSize = Math.min(maxWidth, maxHeight);
-                        console.log("Recalculated Board Size:", boardSize);
+                        console.log("Board Size:", boardSize); // Debug
 
                         $(`#${boardId}`).empty();
 
@@ -396,11 +394,11 @@ case 'chess':
                             
                             updateChessStyles();
 
-                            // 3. EVAL BAR GEN
+                            // 3. EVAL BAR GENERATOR
                             const generateEvalHtml = (rawText) => {
                                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); // Remove other clocks
+                                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
                                 
                                 let evalHtml = "";
                                 if (evalMatch) {
@@ -430,7 +428,7 @@ case 'chess':
                                 return { html: evalHtml, text: cleanText };
                             };
 
-                            // 4. OBSERVER (Fixed for Text Nodes)
+                            // 4. OBSERVER
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 const overlay = document.getElementById('chess-comment-overlay');
@@ -443,21 +441,13 @@ case 'chess':
                                         if (activeMove) {
                                             let rawCommentText = "";
                                             
-                                            // Look at siblings
+                                            // Sibling Loop
                                             let next = activeMove.nextSibling;
                                             while(next) {
-                                                // Stop if we hit another move
                                                 if (next.nodeType === 1 && (next.tagName === 'MOVE' || next.tagName === 'MOVE-NUMBER')) break;
                                                 
-                                                // Capture TEXT nodes (Node.TEXT_NODE = 3)
-                                                if (next.nodeType === 3) {
-                                                    rawCommentText += next.textContent;
-                                                } 
-                                                // Capture Element nodes (like span)
-                                                else if (next.nodeType === 1) {
-                                                    rawCommentText += next.textContent;
-                                                }
-                                                
+                                                // Get text from nodes OR .comment classes
+                                                if (next.textContent) rawCommentText += next.textContent;
                                                 next = next.nextSibling;
                                             }
 
@@ -496,8 +486,6 @@ case 'chess':
                 }
             });
             break;
-
-
 
 
 
