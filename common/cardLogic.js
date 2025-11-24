@@ -206,9 +206,17 @@ function loadModalContent(index) {
             break;
 
 
-case 'chess':
+
+
+
+
+
+
+
+
+            case 'chess':
             // Fix GitHub CORS
-            if (loadUrl.includes('github.com') && loadLoad.includes('/blob/')) {
+            if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
 
@@ -234,6 +242,7 @@ case 'chess':
                     // --- PARSER ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
+                        
                         let body = pgnText.replace(/\[.*?\]/g, "").trim();
 
                         const cleanPGN = (text) => {
@@ -439,9 +448,9 @@ case 'chess':
                         } else if (moveIndex === -1) {
                             textContent = `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
                         } else {
-                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">No specific notes.</div>`;
+                            // The line that shows "..." if no comment/eval is found
+                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">No commentary.</div>`;
                         }
-                        // This block should be at the top of the comment box
                         content += `<div class="comment-text-content">${textContent}</div>`;
 
 
@@ -539,12 +548,13 @@ case 'chess':
                                             if (activeMove) {
                                                 const allMoves = Array.from(movesPanel.querySelectorAll('move'));
                                                 const index = allMoves.indexOf(activeMove);
-                                                updateCommentContent(index, allMoves.length);
+                                                updateCommentContent(index, totalMoves);
                                                 return;
                                             }
                                         }
                                         updateCommentContent(-1, totalMoves);
                                     });
+                                    
                                     gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
                                 }
                             }, 200);
@@ -570,7 +580,6 @@ case 'chess':
             });
             break;
             
-
 
             
 
