@@ -391,7 +391,6 @@ select:focus, input[type="search"]:focus {
 
 /* --- Chess Viewer Styles --- */
 /* --- CHESS MODE STRUCTURE --- */
-/* 1. Force Modal to Fit Screen */
 body.chess-mode-active .modal-content,
 #content-modal.chess-mode .modal-content {
     height: 98vh !important;
@@ -402,30 +401,21 @@ body.chess-mode-active .modal-content,
     background: #111 !important;
     display: flex !important;
     flex-direction: column !important;
-    overflow: hidden !important; /* Prevent outer scroll */
+    overflow: hidden !important; 
 }
 
-/* 2. Hide Default Header */
+/* Hide Header */
 body.chess-mode-active .modal-header,
-#content-modal.chess-mode .modal-header {
-    display: none !important;
-}
+#content-modal.chess-mode .modal-header { display: none !important; }
 
-/* 3. Main Area Wrapper */
-.chess-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-    background: #222;
-}
+/* Main Layout */
+.chess-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; background: #222; }
 
-/* 4. Board & Moves Wrapper */
+/* Align Board Top */
 .chess-main-area {
     flex: 1;
     width: 100%;
-    overflow: hidden; /* Inner content handles scroll */
+    overflow: hidden;
     position: relative;
     background: #222;
     display: flex;
@@ -434,7 +424,6 @@ body.chess-mode-active .modal-header,
     padding-top: 10px;
 }
 
-/* 5. The White Box (Board Container) */
 .chess-white-box {
     padding: 4px !important;
     background-color: #ffffff !important;
@@ -444,7 +433,14 @@ body.chess-mode-active .modal-header,
     align-items: flex-start;
 }
 
-/* 6. OVERLAYS */
+/* CRITICAL: Force comments to exist in DOM so JS can read them */
+.pgnvjs-moves .comment {
+    display: inline !important;
+    font-size: 0px !important; /* Hide from list visually */
+    opacity: 0;
+}
+
+/* --- OVERLAYS --- */
 .chess-metadata-overlay {
     font-size: 1.1rem !important; 
     padding: 20px !important;
@@ -463,6 +459,7 @@ body.chess-mode-active .modal-header,
 }
 .chess-metadata-overlay td { padding: 8px 12px !important; border-bottom: 1px solid #444; }
 
+/* THE EVALUATION BOX */
 .chess-comment-overlay {
     font-size: 1.3rem !important;
     padding: 15px !important;
@@ -470,32 +467,27 @@ body.chess-mode-active .modal-header,
     border: 1px solid #777;
     border-radius: 6px;
     
-    /* Position fixed to bottom center of board area */
+    /* Position: Bottom Center of Board Area */
     position: absolute;
-    bottom: 10px;
+    bottom: 20px; 
     left: 50%;
     transform: translateX(-50%);
     
     width: auto;
-    min-width: 400px;
+    min-width: 300px;
     max-width: 800px;
     z-index: 4000 !important;
     color: #fff;
     text-align: center;
-    display: none;
+    display: none; /* Hidden until move is made */
     pointer-events: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.8);
 }
 
 /* Eval Bar */
 .eval-bar-container {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 8px;
-    background: #222;
-    padding: 4px;
-    border-radius: 4px;
-    border: 1px solid #444;
+    display: flex; align-items: center; width: 100%; margin-bottom: 8px;
+    background: #222; padding: 4px; border-radius: 4px; border: 1px solid #444;
 }
 .eval-score { font-weight: bold; min-width: 50px; text-align: right; margin-right: 10px; color: #fff; }
 .eval-track { flex: 1; height: 12px; background: #444; border-radius: 3px; overflow: hidden; }
