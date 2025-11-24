@@ -240,10 +240,9 @@ case 'chess':
                         const map = {};
                         console.log("--- STARTING PGN PARSE ---");
                         
-                        // 1. Clean Headers
-                        let body = pgnText.replace(/\[.*?\]/g, "");
+                        let body = pgnText.replace(/\[.*?\]/g, "").trim();
 
-                        // 2. Remove Variations (Keep Main Line)
+                        // Clean Variations
                         const cleanPGN = (text) => {
                             let result = "";
                             let depth = 0;
@@ -256,13 +255,11 @@ case 'chess':
                         };
                         body = cleanPGN(body);
 
-                        // 3. Formatting
+                        // Format
                         body = body.replace(/(\r\n|\n|\r)/gm, " ");
                         body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
-                        // 4. Tokenize
                         const tokens = body.split(/\s+/);
-                        
                         let moveIndex = 0;
                         let insideComment = false;
                         let currentComment = [];
@@ -274,27 +271,24 @@ case 'chess':
                             if (token === '{') { insideComment = true; currentComment = []; continue; }
                             if (token === '}') { 
                                 insideComment = false; 
-                                // Assign comment to the LAST move processed (moveIndex - 1)
-                                if (moveIndex > 0) {
-                                    map[moveIndex - 1] = currentComment.join(" ");
-                                }
+                                // Assign to LAST move (moveIndex - 1)
+                                // Note: If a comment appears before any move (intro), it maps to -1
+                                const idx = moveIndex === 0 ? -1 : moveIndex - 1;
+                                map[idx] = currentComment.join(" ");
                                 continue; 
                             }
 
                             if (insideComment) {
                                 currentComment.push(token);
                             } else {
-                                // Check for Moves
-                                if (/^\d+\.+/.test(token)) continue; // "1."
-                                if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue; // Result
-                                if (token.startsWith('$')) continue; // NAG
-
-                                // It IS a move
+                                if (/^\d+\.+/.test(token)) continue;
+                                if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
+                                if (token.startsWith('$')) continue;
                                 moveIndex++;
                             }
                         }
                         
-                        console.log(`[PARSER] Total Comments Mapped: ${Object.keys(map).length}`);
+                        console.log(`[PARSER] Mapped ${Object.keys(map).length} comments.`);
                         return map;
                     };
 
@@ -316,7 +310,7 @@ case 'chess':
                                 <div class="chess-white-box">
                                     <div id="${boardId}"></div>
                                 </div>
-                                <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
+                                <div id="chess-comment-overlay" class="chess-comment-overlay">...</div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
                         </div>
@@ -411,21 +405,12 @@ case 'chess':
 
                     const updateCommentContent = (moveIndex) => {
                         const overlay = document.getElementById('chess-comment-overlay');
-                        if (!commentsEnabled) {
-                            $(overlay).fadeOut();
-                            return;
-                        }
+                        if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         $(overlay).fadeIn();
 
-                        // Start of Game
-                        if (moveIndex === -1) {
-                            overlay.innerHTML = '<div style="color:#ccc; font-size: 0.9em;">Start of Game</div>';
-                            return;
-                        }
-
-                        // Check Map
                         const commentText = commentMap[moveIndex];
-                        // console.log(`[LOOKUP] Index: ${moveIndex} | Comment:`, commentText);
+                        
+                        // console.log(`[LOOKUP] Index: ${moveIndex}. Text:`, commentText); // Debug
 
                         if (commentText && commentText.trim().length > 0) {
                             const parsed = generateEvalHtml(commentText);
@@ -464,11 +449,8 @@ case 'chess':
                         if (gameObserver) gameObserver.disconnect();
 
                         const selectedPgn = rawGames[index];
-                        
-                        // 1. PARSE
                         commentMap = parseCommentsMap(selectedPgn);
                         
-                        // 2. METADATA
                         const headers = {};
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
@@ -481,11 +463,11 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 3. SIZE CALCULATION
+                        // 3. SIZE CALCULATION (Increased buffer for buttons)
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
-                        const maxWidth = winWidth * 0.90; 
-                        const maxHeight = winHeight * 0.80; // 80vh max
+                        const maxWidth = winWidth * 0.90; // 90% Width
+                        const maxHeight = winHeight - 250; // 250px Buffer
                         const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
@@ -503,7 +485,7 @@ case 'chess':
                             updateChessStyles();
                             updateCommentContent(-1); 
 
-                            // 4. OBSERVER (DOM INDEXING)
+                            // 4. OBSERVER (Fixed Indexing Logic)
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 
@@ -511,18 +493,23 @@ case 'chess':
                                     clearInterval(checkInterval);
                                     
                                     gameObserver = new MutationObserver(() => {
-                                        // 1. Find Active Move Element
-                                        const activeMove = movesPanel.querySelector('.active'); 
+                                        // Find ANY active element (could be move, san, or fig)
+                                        const activeEl = movesPanel.querySelector('.active');
                                         
-                                        if (activeMove) {
-                                            // 2. Find its numeric index among ALL moves
-                                            const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                            const index = allMoves.indexOf(activeMove);
+                                        if (activeEl) {
+                                            // Traverse up to find the <move> parent
+                                            const activeMove = activeEl.closest('move');
                                             
-                                            // 3. Lookup
-                                            console.log(`Active Move DOM Index: ${index}`);
-                                            updateCommentContent(index);
+                                            if (activeMove) {
+                                                // Get index relative to all moves
+                                                const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                                                const index = allMoves.indexOf(activeMove);
+                                                
+                                                console.log(`Active Move Found: Index ${index}`);
+                                                updateCommentContent(index);
+                                            }
                                         } else {
+                                            // No active move = Start of Game
                                             updateCommentContent(-1);
                                         }
                                     });
@@ -552,7 +539,6 @@ case 'chess':
             });
             break;
             
-
 
             
 
