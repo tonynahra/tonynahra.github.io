@@ -211,7 +211,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -254,7 +253,6 @@ case 'chess':
                             return result;
                         };
                         body = cleanPGN(body);
-
                         body = body.replace(/(\r\n|\n|\r)/gm, " ");
                         body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
@@ -309,6 +307,17 @@ case 'chess':
                             </div>
                         </div>
                     `);
+
+                    // --- DROPDOWN POPULATION (TYPO FIX) ---
+                    const $select = $('#chess-game-select');
+                    rawGames.forEach((gamePgn, idx) => {
+                        const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
+                        const black = (gamePgn.match(/\[Black "(.*?)"\]/) || [])[1] || '?';
+                        // TYPO FIXED: gameGpn changed to gamePgn
+                        const result = (gamePgn.match(/\[Result "(.*?)"\]/) || [])[1] || '*'; 
+                        $select.append(`<option value="${idx}">${idx + 1}. ${white} vs ${black} (${result})</option>`);
+                    });
+                    if (rawGames.length <= 1) $select.hide(); 
 
                     // --- DYNAMIC STYLES ---
                     const updateChessStyles = () => {
@@ -436,10 +445,10 @@ case 'chess':
                         } else if (moveIndex === -1) {
                             textContent = `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
                         } else {
+                            // This is the line that shows the placeholder when a move is active but has no comment
                             textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">No commentary.</div>`;
                         }
                         content += `<div class="comment-text-content">${textContent}</div>`;
-
 
                         // 2. BARS & COUNTER (BOTTOM FOOTER)
                         let footer = "";
@@ -452,7 +461,7 @@ case 'chess':
                         overlay.innerHTML = footer;
                     };
 
-                    document.getElementById('chess-comment-btn').onclick = (e) => {
+                    document.getElementById('chess-font-btn').onclick = (e) => {
                         e.preventDefault();
                         commentsEnabled = !commentsEnabled;
                         const btn = $('#chess-comment-btn');
@@ -470,7 +479,8 @@ case 'chess':
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
                         const black = (gamePgn.match(/\[Black "(.*?)"\]/) || [])[1] || '?';
-                        const result = (gameGpn.match(/\[Result "(.*?)"\]/) || [])[1] || '*';
+                        // TYPO FIX: Ensure gamePgn is used here
+                        const result = (gamePgn.match(/\[Result "(.*?)"\]/) || [])[1] || '*';
                         $select.append(`<option value="${idx}">${idx + 1}. ${white} vs ${black} (${result})</option>`);
                     });
                     if (rawGames.length <= 1) $select.hide(); 
@@ -483,6 +493,7 @@ case 'chess':
                         const selectedPgn = rawGames[index];
                         commentMap = parseCommentsMap(selectedPgn);
                         
+                        // Metadata
                         const headers = {};
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
@@ -495,7 +506,7 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // SIZE
+                        // Size
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
                         const maxWidth = winWidth * 0.90; 
@@ -566,10 +577,6 @@ case 'chess':
                 }
             });
             break;
-
-
-
-
 
 
 
