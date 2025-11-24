@@ -217,7 +217,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -233,10 +232,7 @@ case 'chess':
                 url: loadUrl, 
                 dataType: 'text',
                 success: function(pgnFileContent) {
-                    // Clean the PGN (remove newlines inside moves for easier parsing)
-                    const cleanPgn = pgnFileContent.replace(/(\r\n|\n|\r)/gm, " ");
-                    
-                    let rawGames = cleanPgn.split(/(?=\[Event ")/g).filter(g => g.trim().length > 0);
+                    let rawGames = pgnFileContent.split(/(?=\[Event ")/g).filter(g => g.trim().length > 0);
                     if (rawGames.length === 0) rawGames = [pgnFileContent]; 
 
                     const boardId = 'chess-board-' + Date.now();
@@ -244,9 +240,6 @@ case 'chess':
                     
                     let currentFontSize = 26; 
                     let commentsEnabled = true; 
-                    
-                    // Store parsed comments here: { "1w": "comment...", "1b": "comment..." }
-                    let commentMap = {};
 
                     // 2. INJECT HTML
                     $modalContent.html(`
@@ -314,9 +307,86 @@ case 'chess':
                         $(`#${styleId}`).text(css);
                     };
 
+                    // --- EVAL BAR HTML GENERATOR ---
+                    const generateEvalHtml = (rawText) => {
+                        const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+                        let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+                        cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim();
+                        
+                        let evalHtml = "";
+                        if (evalMatch) {
+                            const valStr = evalMatch[1];
+                            let widthPercent = 50; 
+                            let colorClass = "background-color: #95a5a6;"; 
+                            let displayVal = valStr;
+
+                            if (valStr.startsWith('#')) {
+                                widthPercent = valStr.includes('-') ? 5 : 95;
+                                colorClass = valStr.includes('-') ? "background-color: #e74c3c;" : "background-color: #2ecc71;";
+                            } else {
+                                const val = parseFloat(valStr);
+                                const capped = Math.max(-5, Math.min(5, val));
+                                widthPercent = ((capped + 5) / 10) * 100;
+                                if (val > 0.2) colorClass = "background-color: #2ecc71;";
+                                else if (val < -0.2) colorClass = "background-color: #e74c3c;";
+                            }
+
+                            evalHtml = `
+                                <div class="eval-bar-container">
+                                    <div class="eval-score">${displayVal}</div>
+                                    <div class="eval-track"><div class="eval-fill" style="width: ${widthPercent}%; ${colorClass}"></div></div>
+                                </div>
+                            `;
+                        }
+                        return { html: evalHtml, text: cleanText };
+                    };
+
+                    // --- HELPER: UPDATE CONTENT ---
+                    const updateOverlayContent = () => {
+                        const overlay = document.getElementById('chess-comment-overlay');
+                        const movesPanel = document.getElementById(boardId + 'Moves');
+                        
+                        if (!commentsEnabled) {
+                            $(overlay).fadeOut();
+                            return;
+                        }
+
+                        // Show box immediately (even if empty, it will show placeholder)
+                        $(overlay).fadeIn();
+
+                        if (!movesPanel) {
+                            overlay.innerHTML = '<div style="color:#888; font-style:italic;">Waiting for moves...</div>';
+                            return;
+                        }
+
+                        const activeMove = movesPanel.querySelector('move.active');
+                        if (!activeMove) {
+                            overlay.innerHTML = '<div style="color:#aaa; font-style:italic; font-size: 0.9em;">Start of game / No move selected</div>';
+                            return;
+                        }
+
+                        // FIND COMMENT TEXT
+                        let rawCommentText = "";
+                        let next = activeMove.nextSibling;
+                        while(next) {
+                            if (next.nodeType === 1 && (next.tagName === 'MOVE' || next.tagName === 'MOVE-NUMBER')) break;
+                            if (next.textContent) rawCommentText += next.textContent;
+                            next = next.nextSibling;
+                        }
+
+                        if (rawCommentText.trim().length > 0) {
+                            const parsed = generateEvalHtml(rawCommentText);
+                            overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
+                        } else {
+                            // PLACEHOLDER STATE
+                            overlay.innerHTML = '<div style="color:#777; font-style:italic; font-size: 0.9em;">No commentary for this move</div>';
+                        }
+                    };
+
                     // --- LISTENERS ---
                     document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
                     document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
+                    
                     document.getElementById('chess-close-btn').onclick = (e) => { 
                         e.preventDefault(); 
                         $modal.removeClass('chess-mode');
@@ -325,91 +395,17 @@ case 'chess':
                         $('.modal-close-btn').first().click(); 
                     };
 
-                    const updateCommentVisibility = () => {
-                        const overlay = $('#chess-comment-overlay');
-                        const btn = $('#chess-comment-btn');
-                        if (commentsEnabled) {
-                            btn.text('Comments: On').css({background: 'var(--text-accent)', color: '#000'});
-                            if (overlay.html().trim().length > 0) overlay.fadeIn();
-                        } else {
-                            btn.text('Comments: Off').css({background: '', color: '#fff'});
-                            overlay.fadeOut();
-                        }
-                    };
-
                     document.getElementById('chess-comment-btn').onclick = (e) => {
                         e.preventDefault();
                         commentsEnabled = !commentsEnabled;
-                        updateCommentVisibility();
-                    };
-
-                    // --- CUSTOM PGN PARSER (The Key Fix) ---
-                    const parsePgnComments = (pgnText) => {
-                        const map = {};
-                        // Remove headers
-                        const body = pgnText.replace(/\[.*?\]/g, "").trim();
+                        const btn = $('#chess-comment-btn');
                         
-                        // Regex to find moves and comments
-                        // Matches: "1. e4 { comment }" or "1... e5 { comment }"
-                        // We split by move numbers to create chunks
-                        const moveRegex = /(\d+)(\.+)\s+([^{]+?)(?=\d+\.|{|$)/g;
-                        const commentRegex = /\{([^}]+)\}/g;
-                        
-                        // Split raw text by move numbers
-                        // This is a basic parser; complex nested variations might need a stronger library
-                        // But for standard annotated games, this works.
-                        
-                        // Improved Strategy: Iterate through tokens
-                        const tokens = body.split(/\s+/);
-                        let currentMoveNum = 0;
-                        let isWhite = true;
-                        
-                        // We will reconstruct the game to map comments to ply (half-move)
-                        // Format key: "1w", "1b", "2w", etc.
-                        
-                        // A regex that captures: Move Number (1.), Move (e4), Comment ({...})
-                        const complexRegex = /(\d+)\.+|\{([^}]+)\}|([a-zA-Z0-9\-+=#]+)/g;
-                        let match;
-                        
-                        while ((match = complexRegex.exec(body)) !== null) {
-                            if (match[1]) { // Move Number (e.g. "1")
-                                currentMoveNum = parseInt(match[1]);
-                                isWhite = true; 
-                            } else if (match[2]) { // Comment (e.g. "Best by test")
-                                const comment = match[2].trim();
-                                const key = `${currentMoveNum}${isWhite ? 'w' : 'b'}`;
-                                // If we just processed white, the comment belongs to white's move.
-                                // BUT, if we haven't processed a move text yet, it's a pre-move comment (rare).
-                                // Usually comments follow the move.
-                                
-                                // Logic: Attach to the LAST processed move
-                                // If isWhite is true, we are expecting White to move next, 
-                                // so the previous move was Black's (currentMoveNum-1)b
-                                // UNLESS we just set isWhite=true from the number.
-                                
-                                // Let's try a simpler mapping: We attach comments to the move immediately preceding them.
-                                // We need to track the "last key".
-                            }
+                        if (commentsEnabled) {
+                            btn.text('Comments: On').css({background: 'var(--text-accent)', color: '#000'});
+                        } else {
+                            btn.text('Comments: Off').css({background: '', color: '#fff'});
                         }
-                        
-                        // --- SIMPLER PARSER ---
-                        // We will rely on the fact that the viewer highlights the move.
-                        // We just need to extract text "1. e4 { comment }"
-                        // We will let the observer find the move index in the DOM, 
-                        // and match it to our list of comments extracted in order.
-                        
-                        const commentsList = [];
-                        let runningIndex = 0;
-                        
-                        // Regex to find comments and associate them with the move immediately before
-                        // 1. e4 { comment }
-                        const fullRegex = /([0-9]+\.+)\s*([a-zA-Z0-9\-\+\=\#]+)\s*(\{[^}]+\})?/g;
-                        // This misses black moves. 
-                        
-                        // Let's use the DOM structure itself. The library puts comments in the DOM.
-                        // The issue is likely extracting them.
-                        // We will stick to the robust DOM Scraper from the last step 
-                        // BUT we will log what it finds to debug.
+                        updateOverlayContent();
                     };
 
                     // --- RENDER FUNCTION ---
@@ -445,7 +441,7 @@ case 'chess':
                         // 2. SIZE CALCULATION
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
-                        const maxWidth = winWidth * 0.60;
+                        const maxWidth = winWidth * 0.60; 
                         const maxHeight = winHeight - 200; 
                         const boardSize = Math.min(maxWidth, maxHeight);
 
@@ -463,84 +459,18 @@ case 'chess':
                             
                             updateChessStyles();
 
-                            // 3. EVAL BAR GENERATOR
-                            const generateEvalHtml = (rawText) => {
-                                const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                                let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
-                                
-                                let evalHtml = "";
-                                if (evalMatch) {
-                                    const valStr = evalMatch[1];
-                                    let widthPercent = 50; 
-                                    let colorClass = "background-color: #95a5a6;"; 
-                                    let displayVal = valStr;
-
-                                    if (valStr.startsWith('#')) {
-                                        widthPercent = valStr.includes('-') ? 5 : 95;
-                                        colorClass = valStr.includes('-') ? "background-color: #e74c3c;" : "background-color: #2ecc71;";
-                                    } else {
-                                        const val = parseFloat(valStr);
-                                        const capped = Math.max(-5, Math.min(5, val));
-                                        widthPercent = ((capped + 5) / 10) * 100;
-                                        if (val > 0.2) colorClass = "background-color: #2ecc71;";
-                                        else if (val < -0.2) colorClass = "background-color: #e74c3c;";
-                                    }
-
-                                    evalHtml = `
-                                        <div class="eval-bar-container">
-                                            <div class="eval-score">${displayVal}</div>
-                                            <div class="eval-track"><div class="eval-fill" style="width: ${widthPercent}%; ${colorClass}"></div></div>
-                                        </div>
-                                    `;
-                                }
-                                return { html: evalHtml, text: cleanText };
-                            };
-
-                            // 4. OBSERVER (Brute Force Search)
+                            // 3. OBSERVER
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
-                                const overlay = document.getElementById('chess-comment-overlay');
                                 
                                 if (movesPanel) {
                                     clearInterval(checkInterval);
                                     
+                                    // Initial Check
+                                    updateOverlayContent();
+
                                     gameObserver = new MutationObserver(() => {
-                                        const activeMove = movesPanel.querySelector('move.active'); 
-                                        if (activeMove) {
-                                            let rawCommentText = "";
-                                            
-                                            // Debug: See what we found
-                                            // console.log("Active move found", activeMove);
-
-                                            // 1. Check Immediate Siblings (Standard Case)
-                                            let next = activeMove.nextSibling;
-                                            while(next) {
-                                                if (next.nodeType === 1 && (next.tagName === 'MOVE' || next.tagName === 'MOVE-NUMBER')) break;
-                                                if (next.textContent) rawCommentText += next.textContent;
-                                                next = next.nextSibling;
-                                            }
-                                            
-                                            // 2. Check Internal 'comment' class (Some versions nest it)
-                                            // If we didn't find text in siblings, look INSIDE or NEARBY hidden divs
-                                            if (rawCommentText.trim().length === 0) {
-                                                // Sometimes comments are stored in a data-attribute or a separate array
-                                                // Let's check if the library put it in a 'title' or 'data-comment'
-                                                if (activeMove.getAttribute('data-comment')) {
-                                                    rawCommentText = activeMove.getAttribute('data-comment');
-                                                }
-                                            }
-
-                                            if (rawCommentText.trim().length > 0) {
-                                                console.log("Comment found:", rawCommentText); // DEBUG
-                                                const parsed = generateEvalHtml(rawCommentText);
-                                                overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
-                                                
-                                                if (commentsEnabled) $(overlay).fadeIn();
-                                            } else {
-                                                $(overlay).fadeOut();
-                                            }
-                                        }
+                                        updateOverlayContent();
                                     });
                                     
                                     gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
@@ -566,9 +496,7 @@ case 'chess':
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
-            break;
-
-            
+            break;            
 
 
 
