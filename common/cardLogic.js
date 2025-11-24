@@ -210,8 +210,7 @@ function loadModalContent(index) {
 
 
 
-
-            case 'chess':
+case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -360,90 +359,149 @@ function loadModalContent(index) {
                         $('.modal-close-btn').first().click(); 
                     };
 
-                    // --- DISPLAY LOGIC ---
-                    const renderBarsAndText = (evalStr, commentText, moveIndex, totalMoves) => {
+                    // --- HTML GENERATOR (NEW DUAL BARS) ---
+                    const generateEvalHtml = (rawText) => {
+                        const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+                        let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+                        cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
+                        
                         // Defaults (Neutral)
-                        let displayVal = "0.00";
-                        let widthPct = 0;
-                        let leftPct = 50;
-                        let color = "#888";
-                        let whiteWinPct = 50;
-                        let cleanComment = commentText || "No commentary";
-
-                        // 1. PARSE EVAL (If exists)
-                        if (evalStr) {
-                            if (evalStr.startsWith('#')) {
-                                // Mate
-                                if (evalStr.includes('-')) {
-                                    widthPct = 50; leftPct = 0; color = "#e74c3c"; whiteWinPct = 0;
-                                } else {
-                                    widthPct = 50; leftPct = 50; color = "#2ecc71"; whiteWinPct = 100;
-                                }
-                                displayVal = "Mate " + evalStr;
-                            } else {
-                                // CP
-                                const val = parseFloat(evalStr);
-                                const absVal = Math.min(Math.abs(val), 10);
-                                widthPct = (absVal / 10) * 50; 
-                                if (val > 0) { leftPct = 50; color = "#2ecc71"; } 
-                                else { leftPct = 50 - widthPct; color = "#e74c3c"; }
-                                displayVal = val > 0 ? `+${val}` : val;
-                                whiteWinPct = Math.max(5, Math.min(95, 50 + (val * 8)));
-                            }
-                        }
-
-                        // 2. GENERATE HTML
-                        const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1;
-                        const displayTotal = totalMoves || '?';
-
-                        return `
-                            <div>
-                                <div class="eval-label-small">Move Score</div>
-                                <div class="eval-bar-container">
-                                    <div class="eval-score-text">${displayVal}</div>
-                                    <div class="eval-track">
-                                        <div class="eval-fill" style="left: ${leftPct}%; width: ${widthPct}%; background-color: ${color};"></div>
-                                    </div>
+                        let evalHtml = `
+                            <div class="eval-row">
+                                <div class="eval-header">
+                                    <span>Move Score</span>
+                                    <span class="eval-value">0.00</span>
                                 </div>
-                                
-                                <div class="eval-label-small">Game Balance</div>
-                                <div class="win-rate-bar">
-                                    <div class="win-white" style="width: ${whiteWinPct}%;"></div>
-                                    <div class="win-black"></div>
+                                <div class="eval-track">
+                                    <div class="eval-center-line"></div>
+                                    <div class="eval-fill" style="left: 50%; width: 0%;"></div>
                                 </div>
-
-                                <div style="margin-top: 8px; margin-bottom: 5px; font-size: 1rem; min-height: 1.2em;">
-                                    ${cleanComment}
+                            </div>
+                            <div class="eval-row">
+                                <div class="eval-header">
+                                    <span>Game Balance</span>
+                                    <span class="eval-value">0</span>
                                 </div>
-
-                                <div class="move-counter">Move ${displayMove} / ${displayTotal}</div>
+                                <div class="eval-track">
+                                    <div class="eval-center-line"></div>
+                                    <div class="eval-fill" style="left: 50%; width: 0%;"></div>
+                                </div>
                             </div>
                         `;
+
+                        if (evalMatch) {
+                            const valStr = evalMatch[1];
+                            
+                            // --- DATA CALCULATIONS ---
+                            let moveScoreDisplay = valStr;
+                            let moveWidth = 0;
+                            let moveLeft = 50;
+                            let moveColor = "#888";
+                            
+                            let balanceScore = 0;
+                            let balanceWidth = 0;
+                            let balanceLeft = 50;
+                            let balanceColor = "#888";
+
+                            if (valStr.startsWith('#')) {
+                                // Mate
+                                const isBlackMate = valStr.includes('-');
+                                moveScoreDisplay = "Mate " + valStr;
+                                balanceScore = isBlackMate ? -100 : 100;
+                                
+                                moveWidth = 50; 
+                                moveLeft = isBlackMate ? 0 : 50;
+                                moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
+                                
+                                balanceWidth = 50;
+                                balanceLeft = isBlackMate ? 0 : 50;
+                                balanceColor = moveColor;
+                            } else {
+                                // Centipawns
+                                const val = parseFloat(valStr);
+                                
+                                // 1. Move Score (-10 to +10)
+                                moveScoreDisplay = val > 0 ? `+${val}` : val;
+                                const absMove = Math.min(Math.abs(val), 10);
+                                moveWidth = (absMove / 10) * 50;
+                                if (val > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
+                                else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
+                                
+                                // 2. Game Balance (-100 to +100)
+                                // Formula: val * 10, capped at 100
+                                balanceScore = Math.round(val * 10);
+                                balanceScore = Math.max(-100, Math.min(100, balanceScore));
+                                const displayBalance = balanceScore > 0 ? `+${balanceScore}` : balanceScore;
+                                
+                                const absBal = Math.abs(balanceScore);
+                                balanceWidth = (absBal / 100) * 50;
+                                if (balanceScore > 0) { balanceLeft = 50; balanceColor = "#2ecc71"; }
+                                else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
+                                
+                                // Update Display Text for balance
+                                balanceScore = displayBalance;
+                            }
+
+                            evalHtml = `
+                                <div class="eval-row">
+                                    <div class="eval-header">
+                                        <span>Move Score</span>
+                                        <span class="eval-value">${moveScoreDisplay}</span>
+                                    </div>
+                                    <div class="eval-track">
+                                        <div class="eval-center-line"></div>
+                                        <div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div>
+                                    </div>
+                                </div>
+                                <div class="eval-row">
+                                    <div class="eval-header">
+                                        <span>Game Balance</span>
+                                        <span class="eval-value">${balanceScore}</span>
+                                    </div>
+                                    <div class="eval-track">
+                                        <div class="eval-center-line"></div>
+                                        <div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        return { html: evalHtml, text: cleanText };
                     };
 
                     const updateCommentContent = (moveIndex, totalMoves) => {
                         const overlay = document.getElementById('chess-comment-overlay');
                         if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         
-                        // Always show box
+                        // Always Show
                         $(overlay).fadeIn();
 
-                        const rawComment = commentMap[moveIndex] || "";
-                        let evalStr = null;
-                        let cleanText = rawComment;
-
-                        // Extract Eval
-                        const evalMatch = rawComment.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                        if (evalMatch) {
-                            evalStr = evalMatch[1];
-                            cleanText = rawComment.replace(/\[%eval\s+[^\]]+\]/g, '').replace(/\[%[^\]]+\]/g, '').trim();
-                        }
+                        const commentText = commentMap[moveIndex] || "";
+                        let parsed = { html: "", text: "" };
                         
-                        // If empty and not start
-                        if (moveIndex !== -1 && cleanText === "") cleanText = "";
-                        if (moveIndex === -1) cleanText = "Start of Game";
+                        // Generate HTML (Will generate defaults if no eval found)
+                        // If no comment text, we pass dummy text to trigger default 0.00 bars
+                        if (commentText) {
+                            parsed = generateEvalHtml(commentText);
+                        } else {
+                            // Force generation of 0.00 bars
+                            parsed = generateEvalHtml("");
+                        }
 
-                        overlay.innerHTML = renderBarsAndText(evalStr, cleanText, moveIndex, totalMoves);
+                        let content = parsed.html;
+                        
+                        if (parsed.text && parsed.text.length > 0) {
+                            content += `<div style="margin-top: 8px; margin-bottom: 5px; font-size: 1rem;">${parsed.text}</div>`;
+                        } else if (moveIndex === -1) {
+                            content += `<div style="color:#78909c; margin-top: 8px;">Start of Game</div>`;
+                        } else {
+                            content += `<div style="color:#90a4ae; font-style:italic; margin-top: 8px;">...</div>`;
+                        }
+
+                        const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1; 
+                        const displayTotal = totalMoves || '?';
+                        content += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
+
+                        overlay.innerHTML = content;
                     };
 
                     document.getElementById('chess-comment-btn').onclick = (e) => {
@@ -509,25 +567,22 @@ function loadModalContent(index) {
                             });
                             
                             updateChessStyles();
-                            
                             // Initial Update
-                            const initialTotal = 0; // Will update via observer
-                            updateCommentContent(-1, initialTotal);
+                            const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
+                            updateCommentContent(-1, total);
 
-                            // OBSERVER
+                            // Observer
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 if (movesPanel) {
                                     clearInterval(checkInterval);
                                     
-                                    // Get initial total
-                                    const total = movesPanel.querySelectorAll('move').length;
-                                    updateCommentContent(-1, total);
+                                    const totalMoves = movesPanel.querySelectorAll('move').length;
+                                    updateCommentContent(-1, totalMoves);
 
                                     gameObserver = new MutationObserver(() => {
                                         let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow') || movesPanel.querySelector('.selected');
-                                        const totalMoves = movesPanel.querySelectorAll('move').length;
-
+                                        
                                         if (activeEl) {
                                             const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
                                             if (activeMove) {
@@ -539,6 +594,7 @@ function loadModalContent(index) {
                                         }
                                         updateCommentContent(-1, totalMoves);
                                     });
+                                    
                                     gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
                                 }
                             }, 200);
@@ -563,8 +619,7 @@ function loadModalContent(index) {
                 }
             });
             break;
-
-
+            
 
 
 
