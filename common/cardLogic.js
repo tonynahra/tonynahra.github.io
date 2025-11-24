@@ -38,7 +38,6 @@ function handleCardView($scope, initialLoadOverride, incrementOverride) {
                 'increment': increment, 
                 'total-items': totalItems
             });
-            // Note: The click listener for this button is delegated in mainPage.js or the bottom of this file
             $list.after($button);
         }
     });
@@ -609,10 +608,6 @@ function loadModalContent(index) {
     $('.modal-prev-btn').prop('disabled', index <= 0);
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
-
-
-
-
 
 
 
