@@ -215,7 +215,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -239,41 +238,49 @@ case 'chess':
                     
                     let currentFontSize = 26; 
                     let commentsEnabled = true; 
-                    let commentMap = {}; // Stores index -> comment
+                    let commentMap = {}; 
 
-                    // --- NEW: ROBUST PGN PARSER ---
-                    // This reads the raw text and maps comments to move indexes (0, 1, 2...)
+                    // --- NEW: ROBUST PGN PARSER (FIXED) ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
-                        // Remove headers
+                        // 1. Remove Headers
                         let body = pgnText.replace(/\[.*?\]/g, "").trim();
-                        // Remove move numbers (1. or 1...)
-                        body = body.replace(/\d+\.+/g, "");
                         
-                        // Regex to find Comments { ... } OR Moves
-                        // This splits the string into tokens: ["e4", "{%eval...}", "e5"]
-                        const regex = /\{[\s\S]*?\}|[A-Za-z0-9\+\#\=\-]+/g;
-                        const tokens = body.match(regex) || [];
+                        // 2. Tokenize: Split into "words" or "comments { ... }"
+                        // This regex captures:
+                        // Group 1: Comments { ... }
+                        // Group 2: Move Numbers (1. or 1...)
+                        // Group 3: Result (1-0, etc)
+                        // Group 4: Moves (e4, Nf3, etc)
                         
-                        let moveIndex = 0;
+                        // We iterate through matches
+                        const tokenRegex = /(\{[^}]+\})|(\d+\.+)|(1-0|0-1|1\/2-1\/2|\*)|([a-zA-Z0-9\+\#\=\-]+)/g;
                         
-                        tokens.forEach(token => {
-                            if (token.startsWith('{')) {
-                                // It's a comment for the PREVIOUS move
-                                if (moveIndex > 0) {
+                        let match;
+                        let plyIndex = 0; // Half-move count (0 = white 1st, 1 = black 1st)
+                        
+                        while ((match = tokenRegex.exec(body)) !== null) {
+                            if (match[1]) { 
+                                // It is a COMMENT { ... }
+                                // Associate it with the PREVIOUS move (plyIndex - 1)
+                                if (plyIndex > 0) {
                                     // Remove braces
-                                    const clean = token.substring(1, token.length - 1).trim();
-                                    // Save to map (Index is 0-based, so move 1 is index 0)
-                                    map[moveIndex - 1] = clean;
+                                    const clean = match[1].substring(1, match[1].length - 1).trim();
+                                    map[plyIndex - 1] = clean;
                                 }
-                            } else {
-                                // It's a move (or result 1-0)
-                                // Filter out results
-                                if (!['1-0', '0-1', '1/2-1/2', '*'].includes(token)) {
-                                    moveIndex++;
-                                }
+                            } else if (match[2]) { 
+                                // It is a Move Number (1. or 2...) -> IGNORE
+                                continue;
+                            } else if (match[3]) {
+                                // It is a Result -> IGNORE
+                                continue;
+                            } else if (match[4]) {
+                                // It is a MOVE (e4, Nf3)
+                                plyIndex++;
                             }
-                        });
+                        }
+                        
+                        console.log(`Parsed ${Object.keys(map).length} comments from PGN.`);
                         return map;
                     };
 
@@ -332,7 +339,6 @@ case 'chess':
                             ${movesId} move:hover { background-color: #e0e0e0 !important; }
                             ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
                             
-                            /* Layout */
                             #${boardId} .pgnvjs-wrapper {
                                 display: flex !important;
                                 flex-direction: row !important;
@@ -371,7 +377,7 @@ case 'chess':
                     document.getElementById('chess-comment-btn').onclick = (e) => {
                         e.preventDefault();
                         commentsEnabled = !commentsEnabled;
-                        updateCommentVisibility(true); // Force show to confirm location
+                        updateCommentVisibility(true); 
                     };
 
                     // --- RENDER FUNCTION ---
@@ -391,7 +397,7 @@ case 'chess':
 
                         const selectedPgn = rawGames[index];
                         
-                        // 1. PARSE COMMENTS
+                        // 1. PARSE COMMENTS (Using new Fixed Parser)
                         commentMap = parseCommentsMap(selectedPgn);
                         
                         // 2. METADATA
@@ -407,11 +413,11 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 3. SIZE CALCULATION (Fixed buffer for controls)
+                        // 3. SIZE CALCULATION
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
                         const maxWidth = winWidth * 0.60; 
-                        const maxHeight = winHeight - 200; // 200px Buffer for Nav Buttons
+                        const maxHeight = winHeight - 200; 
                         const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
@@ -462,7 +468,7 @@ case 'chess':
                                 return { html: evalHtml, text: cleanText };
                             };
 
-                            // 5. OBSERVER (Using Map Lookup)
+                            // 5. OBSERVER (Using Correct ID Indexing)
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 const overlay = document.getElementById('chess-comment-overlay');
@@ -473,22 +479,30 @@ case 'chess':
                                     gameObserver = new MutationObserver(() => {
                                         const activeMove = movesPanel.querySelector('move.active'); 
                                         if (activeMove) {
-                                            // Extract ID Index: "chess-board-123Moves15" -> 15
-                                            const rawId = activeMove.id;
-                                            const indexStr = rawId.replace(boardId + 'Moves', '');
-                                            const index = parseInt(indexStr);
+                                            // Extract Index from ID: "chess-board-123Moves15" -> 15
+                                            // The library ID format is [boardId]Moves[Index]
+                                            // Example: chess-board-173...Moves0
                                             
-                                            const commentText = commentMap[index];
-
-                                            if (commentText && commentText.trim().length > 0) {
-                                                const parsed = generateEvalHtml(commentText);
-                                                overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px; font-weight:bold;">${parsed.text}</div>` : '');
+                                            const prefix = boardId + 'Moves';
+                                            const rawId = activeMove.id;
+                                            
+                                            if (rawId && rawId.startsWith(prefix)) {
+                                                const indexStr = rawId.substring(prefix.length);
+                                                const index = parseInt(indexStr);
                                                 
-                                                if (commentsEnabled) $(overlay).fadeIn();
-                                            } else {
-                                                // Placeholder
-                                                overlay.innerHTML = '<div style="color:#aaa; font-style:italic; font-size: 0.9em;">...</div>';
-                                                if (!commentsEnabled) $(overlay).fadeOut();
+                                                console.log(`Active Move Index: ${index}`); // DEBUG
+                                                
+                                                const commentText = commentMap[index];
+
+                                                if (commentText && commentText.trim().length > 0) {
+                                                    const parsed = generateEvalHtml(commentText);
+                                                    overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
+                                                    
+                                                    if (commentsEnabled) $(overlay).fadeIn();
+                                                } else {
+                                                    overlay.innerHTML = '<div style="color:#aaa; font-style:italic; font-size: 0.9em;">...</div>';
+                                                    if (!commentsEnabled) $(overlay).fadeOut();
+                                                }
                                             }
                                         }
                                     });
@@ -517,8 +531,7 @@ case 'chess':
                 }
             });
             break;
-
-
+            
             
 
 
