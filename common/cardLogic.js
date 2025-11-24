@@ -210,7 +210,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -252,44 +251,51 @@ case 'chess':
                         </div>
                     `);
 
-                    // --- THE DIRECT FONT FIX ---
+                    // --- THE DIRECT FONT FIX (Updated for your HTML) ---
                     const applyDirectFont = () => {
-                        const boardEl = document.getElementById(boardId);
-                        if (!boardEl) return;
+                        // 1. Find the moves container using the specific ID pattern from your HTML
+                        const movesPanel = document.getElementById(boardId + 'Moves');
+                        
+                        if (!movesPanel) {
+                            console.log("Moves panel not found:", boardId + 'Moves');
+                            return;
+                        }
 
-                        const movesPanel = boardEl.querySelector('.pgnvjs-moves');
-                        if (!movesPanel) return;
-
-                        // 1. Fix Container Layout
-                        // Ensure it stays side-by-side and doesn't push right
+                        // 2. Force Container Styles
                         movesPanel.style.setProperty('background-color', '#ffffff', 'important');
                         movesPanel.style.setProperty('color', '#000000', 'important');
                         movesPanel.style.setProperty('width', '300px', 'important');
                         movesPanel.style.setProperty('min-width', '300px', 'important');
-                        movesPanel.style.setProperty('flex', '0 0 300px', 'important');
+                        movesPanel.style.setProperty('height', '100%', 'important');
+                        movesPanel.style.setProperty('overflow-y', 'auto', 'important');
                         movesPanel.style.setProperty('border-left', '4px solid #d2b48c', 'important');
                         movesPanel.style.setProperty('padding', '15px', 'important');
-                        movesPanel.style.setProperty('margin', '0', 'important');
+                        movesPanel.style.setProperty('display', 'block', 'important'); // Ensure it's not hidden
 
-                        // 2. Find ALL Move Elements (Links, Spans, Move Numbers)
-                        // We target everything that might contain text
-                        const allElements = movesPanel.querySelectorAll('.pgnvjs-move, a, span');
+                        // 3. Force Layout on the wrapper to keep them side-by-side
+                        const wrapper = document.querySelector(`#${boardId} .pgnvjs-wrapper`);
+                        if(wrapper) {
+                            wrapper.style.setProperty('display', 'flex', 'important');
+                            wrapper.style.setProperty('flex-direction', 'row', 'important');
+                        }
+
+                        // 4. Force Every Child Element (The specific custom tags)
+                        // Targeting <move>, <move-number>, <san>
+                        const allElements = movesPanel.querySelectorAll('move, move-number, san, span');
                         
-                        console.log(`Updating font to ${currentFontSize}px on ${allElements.length} elements`); // DEBUG LOG
-
                         allElements.forEach(el => {
-                            // Skip hidden elements if necessary, but forcing style is safer
                             el.style.setProperty('font-size', `${currentFontSize}px`, 'important');
                             el.style.setProperty('line-height', `${currentFontSize + 12}px`, 'important');
                             el.style.setProperty('color', '#000000', 'important');
                             el.style.setProperty('font-family', 'sans-serif', 'important');
                             el.style.setProperty('font-weight', '600', 'important');
                             
-                            // Specific fix for links to make them look like buttons
-                            if (el.tagName === 'A') {
+                            // Spacing for moves
+                            if (el.tagName === 'MOVE') {
                                 el.style.setProperty('display', 'inline-block', 'important');
-                                el.style.setProperty('text-decoration', 'none', 'important');
-                                el.style.setProperty('padding', '2px 4px', 'important');
+                                el.style.setProperty('margin-right', '5px', 'important');
+                                el.style.setProperty('margin-bottom', '5px', 'important');
+                                el.style.setProperty('cursor', 'pointer', 'important');
                             }
                             
                             // Active Highlight
@@ -297,10 +303,6 @@ case 'chess':
                                 el.style.setProperty('background-color', '#FFD700', 'important');
                             }
                         });
-                        
-                        // Also set the container itself (for raw text)
-                        movesPanel.style.fontSize = `${currentFontSize}px`;
-                        movesPanel.style.lineHeight = `${currentFontSize + 12}px`;
                     };
 
                     // --- BIND BUTTONS ---
@@ -394,9 +396,9 @@ case 'chess':
                             styleEnforcer = setInterval(applyDirectFont, 500);
 
                             // --- OBSERVER (Comments) ---
-                            // Wait for panel to exist
+                            // Wait for panel to exist using the ID
                             const checkInterval = setInterval(() => {
-                                const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
+                                const movesPanel = document.getElementById(boardId + 'Moves');
                                 const overlay = document.getElementById('chess-comment-overlay');
                                 
                                 if (movesPanel) {
@@ -406,12 +408,13 @@ case 'chess':
                                         // Trigger font update on any change
                                         applyDirectFont();
 
-                                        const activeMove = movesPanel.querySelector('.pgnvjs-move.active'); 
+                                        const activeMove = movesPanel.querySelector('move.active'); 
                                         if (activeMove) {
                                             let commentText = "";
                                             let next = activeMove.nextElementSibling;
-                                            while(next && !next.classList.contains('pgnvjs-move')) {
-                                                if (next.classList.contains('pgnvjs-comment')) {
+                                            // Traverse siblings to find comment span (checking for move tags)
+                                            while(next && next.tagName !== 'MOVE') {
+                                                if (next.classList.contains('comment') || next.tagName === 'SPAN') {
                                                     commentText += " " + next.textContent;
                                                 }
                                                 next = next.nextElementSibling;
@@ -451,8 +454,6 @@ case 'chess':
                 }
             });
             break;
-
-
 
 
 
