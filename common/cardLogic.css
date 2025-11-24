@@ -390,6 +390,7 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Chess Viewer Styles --- */
+
 /* --- CHESS MODE STRUCTURE --- */
 body.chess-mode-active .modal-content,
 #content-modal.chess-mode .modal-content {
@@ -403,40 +404,86 @@ body.chess-mode-active .modal-content,
     flex-direction: column !important;
     overflow: hidden !important; 
 }
-
 body.chess-mode-active .modal-header,
 #content-modal.chess-mode .modal-header { display: none !important; }
-
 .chess-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; background: #222; }
-
 .chess-main-area {
-    flex: 1;
-    width: 100%;
-    overflow: hidden;
-    position: relative;
-    background: #222;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; 
-    padding: 0 !important; 
+    flex: 1; width: 100%; overflow: hidden; position: relative; background: #222;
+    display: flex; justify-content: center; align-items: flex-start; padding: 0 !important; 
 }
-
-/* BOARD WRAPPER */
 .chess-white-box {
-    width: 100% !important;
-    height: 100% !important;
-    padding-left: 40px !important;
-    padding-top: 10px !important;
+    width: 100% !important; height: 100% !important;
+    padding-left: 40px !important; padding-top: 10px !important;
     padding-right: 10px !important;
     background-color: #ffffff !important;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    display: flex; justify-content: center; align-items: flex-start;
 }
-
 .pgnvjs-moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
 
-/* OVERLAYS */
+/* UPDATED COMMENT BOX (Pastel Blue) */
+.chess-comment-overlay {
+    font-size: 1.3rem !important;
+    padding: 15px !important;
+    background: #e3f2fd !important; 
+    border: 1px solid #90caf9;
+    border-radius: 8px;
+    color: #2c3e50 !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.5) inset;
+    position: absolute;
+    bottom: 20px;
+    right: 30px; 
+    width: 340px;
+    z-index: 6000 !important;
+    text-align: center;
+    display: flex; 
+    flex-direction: column; /* Ensure vertical stacking */
+    justify-content: space-between; /* Push content to top/bottom */
+    min-height: 140px; /* Increased min height */
+    pointer-events: none;
+}
+
+/* New Content Blocks */
+.comment-text-content { 
+    flex-grow: 1; /* Allow text block to grow upwards */
+    margin-bottom: 10px;
+    text-align: left;
+    overflow-y: auto; /* Scroll if text is huge */
+    max-height: 250px;
+}
+.comment-bar-footer {
+    flex-shrink: 0; /* Keep the bars fixed at the bottom */
+    border-top: 1px solid #90caf9;
+    padding-top: 8px;
+}
+
+/* BARS */
+.eval-row { margin-top: 10px; }
+.eval-header {
+    display: flex; justify-content: space-between; font-size: 0.85rem;
+    color: #546e7a; font-weight: bold; text-transform: uppercase; margin-bottom: 4px;
+}
+.eval-value { color: #2c3e50; font-size: 1rem; font-weight: 800; }
+.eval-track {
+    width: 100%; height: 10px; background: #cfd8dc;
+    border-radius: 3px; position: relative; overflow: hidden;
+    border: 1px solid #b0bec5;
+}
+.eval-center-line {
+    position: absolute; left: 50%; top: 0; bottom: 0;
+    width: 2px; background: #78909c; transform: translateX(-50%); z-index: 2;
+}
+.eval-fill {
+    height: 100%; position: absolute; top: 0;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
+}
+.move-counter {
+    margin-top: 5px;
+    color: #546e7a;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+/* METADATA OVERLAYS (Unchanged) */
 .chess-metadata-overlay {
     font-size: 1.1rem !important; 
     padding: 20px !important;
@@ -455,72 +502,3 @@ body.chess-mode-active .modal-header,
     border-radius: 8px;
 }
 .chess-metadata-overlay td { padding: 8px 12px !important; border-bottom: 1px solid #444; }
-
-/* UPDATED COMMENT BOX (Pastel Blue) */
-.chess-comment-overlay {
-    font-size: 1.3rem !important;
-    padding: 15px !important;
-    background: #e3f2fd !important; 
-    border: 1px solid #90caf9;
-    border-radius: 8px;
-    color: #2c3e50 !important;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.5) inset;
-    position: absolute;
-    bottom: 20px;
-    right: 30px; 
-    width: 340px;
-    z-index: 6000 !important;
-    text-align: center;
-    display: flex; /* Changed to flex column to align components */
-    flex-direction: column;
-    justify-content: flex-end;
-    min-height: 100px;
-    pointer-events: none;
-}
-
-/* --- DUAL BAR STYLES (100% Split) --- */
-.eval-row { margin-bottom: 12px; }
-
-/* Header Line: Title + Value */
-.eval-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    color: #546e7a;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-}
-.eval-value { 
-    color: #2c3e50; 
-    font-size: 1rem; 
-    font-weight: 800; 
-}
-
-/* Full Width Track Container */
-.eval-track {
-    width: 100%;
-    height: 10px;
-    display: flex;
-    border-radius: 3px;
-    overflow: hidden;
-    border: 1px solid #b0bec5;
-}
-
-/* Bar Fill */
-.eval-white-fill { 
-    height: 100%; 
-    background-color: #2ecc71; /* Green */
-    transition: width 0.3s ease; 
-}
-.eval-black-fill { 
-    height: 100%; 
-    background-color: #e74c3c; /* Red */
-    flex-grow: 1; /* Fills remaining space */
-    transition: width 0.3s ease;
-}
-
-.move-counter {
-    margin-top: 10px; padding-top: 8px; border-top: 1px solid #90caf9;
-    color: #546e7a; font-size: 0.9rem; font-weight: bold;
-}
