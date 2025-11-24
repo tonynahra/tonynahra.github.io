@@ -434,7 +434,8 @@ body.chess-mode-active .modal-header,
     align-items: flex-start;
 }
 
-.pgnvjs-moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
+/* FIX: Target generic .moves class */
+.chess-white-box .moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
 
 /* OVERLAYS */
 .chess-metadata-overlay {
@@ -456,7 +457,7 @@ body.chess-mode-active .modal-header,
 }
 .chess-metadata-overlay td { padding: 8px 12px !important; border-bottom: 1px solid #444; }
 
-/* COMMENT BOX (Bottom Right, Pastel Blue) */
+/* COMMENT BOX (Bottom Right) */
 .chess-comment-overlay {
     font-size: 1.3rem !important;
     padding: 15px !important;
@@ -465,7 +466,6 @@ body.chess-mode-active .modal-header,
     border-radius: 8px;
     color: #2c3e50 !important;
     
-    /* Shadow */
     box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.5) inset;
     
     position: absolute;
@@ -477,7 +477,6 @@ body.chess-mode-active .modal-header,
     display: none; 
     pointer-events: none;
     
-    /* Ensure flex layout for vertical stacking */
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
