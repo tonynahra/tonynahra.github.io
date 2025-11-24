@@ -390,7 +390,6 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Chess Viewer Styles --- */
-
 /* --- CHESS MODE STRUCTURE --- */
 body.chess-mode-active .modal-content,
 #content-modal.chess-mode .modal-content {
@@ -422,11 +421,12 @@ body.chess-mode-active .modal-header,
     padding: 0 !important; 
 }
 
+/* BOARD WRAPPER */
 .chess-white-box {
     width: 100% !important;
     height: 100% !important;
-    /* MARGIN FIX: */
-    padding-left: 30px !important;
+    /* LEFT MARGIN FIX */
+    padding-left: 40px !important;
     padding-top: 10px !important;
     padding-right: 10px !important;
     
@@ -438,7 +438,7 @@ body.chess-mode-active .modal-header,
 
 .pgnvjs-moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
 
-/* COMMENT OVERLAY */
+/* OVERLAYS */
 .chess-comment-overlay {
     font-size: 1.2rem !important;
     padding: 15px !important;
@@ -446,12 +446,9 @@ body.chess-mode-active .modal-header,
     border: 1px solid #777;
     border-radius: 6px;
     color: #fff !important;
-    
-    /* Bottom Right Position */
     position: absolute;
     bottom: 20px;
-    right: 30px; 
-    
+    right: 30px; /* Bottom Right */
     width: 320px;
     z-index: 6000 !important;
     text-align: center;
@@ -460,7 +457,6 @@ body.chess-mode-active .modal-header,
     box-shadow: -5px -5px 20px rgba(0,0,0,0.5);
 }
 
-/* METADATA OVERLAY */
 .chess-metadata-overlay {
     font-size: 1.1rem !important; 
     padding: 20px !important;
