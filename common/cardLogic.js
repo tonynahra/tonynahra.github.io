@@ -379,28 +379,36 @@ case 'chess':
                         const selectedPgn = rawGames[index];
                         
                         // 1. PARSE EXTENDED METADATA
-                        const headers = {};
-                        const headerRegex = /\[([A-Za-z0-9]+)\s+"(.*?)"\]/g;
-                        let match;
-                        while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
-                        
-                        let infoHtml = '<h4>Game Details</h4><table style="width:100%;">';
-                        
-                        // NEW: Extended List of Variables
-                        const headerKeys = [
-                            'Event', 'Site', 'Date', 'Round', 
-                            'White', 'Black', 'Result', 'ECO', 
-                            'WhiteElo', 'BlackElo', 'Annotator', 'PlyCount'
-                        ];
-                        
-                        headerKeys.forEach(key => {
-                            if (headers[key]) {
-                                infoHtml += `<tr><td>${key}</td><td>${headers[key]}</td></tr>`;
-                            }
-                        });
-                        infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()">Close</button>';
-                        $(`#chess-metadata-${boardId}`).html(infoHtml);
 
+                                // 1. PARSE ALL METADATA
+                                const headers = {};
+                                // The regex captures the [Key "Value"] format
+                                const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g; 
+                                let match;
+                                
+                                // Extract every header found in the raw PGN string
+                                while ((match = headerRegex.exec(selectedPgn)) !== null) { 
+                                    headers[match[1]] = match[2]; 
+                                }
+                                
+                                let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
+                                
+                                // DYNAMICALLY LOOP through all found headers
+                                for (const [key, val] of Object.entries(headers)) {
+                                    // Optional: Skip technical headers if you want (e.g. 'SetUp', 'FEN')
+                                    // if (key === 'SetUp' || key === 'FEN') continue;
+                                
+                                    infoHtml += `
+                                        <tr>
+                                            <td style="color: var(--text-accent); font-weight:bold; width: 40%;">${key}</td>
+                                            <td style="color: #fff;">${val}</td>
+                                        </tr>`;
+                                }
+                                
+                                infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()">Close</button>';
+                                $(`#chess-metadata-${boardId}`).html(infoHtml);
+
+                        
                         // 2. SIZE CALCULATION
                         const mainArea = $('.chess-main-area');
                         const availableHeight = mainArea.height() || 600;
