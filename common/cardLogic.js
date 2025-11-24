@@ -220,17 +220,16 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
 
-            // 1. ENTER CHESS MODE (Hide Header)
+            // 1. ENTER CHESS MODE
             $modal.addClass('chess-mode');
-            $('body').addClass('chess-mode-active'); // Global helper for CSS
-            $modal.find('.modal-header').hide(); // Inline hide just to be sure
+            $('body').addClass('chess-mode-active');
+            $modal.find('.modal-header').hide(); 
 
             $.ajax({
                 url: loadUrl, 
@@ -242,15 +241,14 @@ case 'chess':
                     const boardId = 'chess-board-' + Date.now();
                     const styleId = 'chess-style-' + Date.now(); 
                     
-                    // State Variables
                     let currentFontSize = 26; 
                     let commentsEnabled = true; 
 
                     // 2. INJECT HTML
                     $modalContent.html(`
                         <style id="${styleId}"></style>
-                        <div class="chess-container" style="height: 100%; display: flex; flex-direction: column; background: #222;">
-                            <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 5px 10px; background: #1a1a1a; gap: 10px; border-bottom: 1px solid #333;">
+                        <div class="chess-container">
+                            <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 8px; background: #1a1a1a; gap: 10px; border-bottom: 1px solid #333;">
                                 <select id="chess-game-select" style="flex: 1; max-width: 400px; padding: 5px; background:#000; color:#fff; border:1px solid #444;"></select>
                                 <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Info</button>
                                 <button id="chess-font-minus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">-</button>
@@ -260,11 +258,10 @@ case 'chess':
                                 <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
                             </div>
                             
-                            <div class="chess-main-area" style="flex: 1; width: 100%; overflow: hidden; position: relative; background: #222;">
-                                <div class="chess-white-box" style="width: 100%; height: 100%; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start;">
+                            <div class="chess-main-area">
+                                <div class="chess-white-box">
                                     <div id="${boardId}"></div>
                                 </div>
-                                
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
@@ -275,7 +272,6 @@ case 'chess':
                     const updateChessStyles = () => {
                         const movesId = `#${boardId}Moves`; 
                         const css = `
-                            /* MOVES CONTAINER */
                             ${movesId} {
                                 background-color: #ffffff !important;
                                 color: #000000 !important;
@@ -285,11 +281,10 @@ case 'chess':
                                 border-left: 4px solid #d2b48c !important;
                                 height: 100% !important;
                                 overflow-y: auto !important;
-                                width: 360px !important; /* Fixed width for panel */
+                                width: 360px !important; 
                                 min-width: 360px !important;
                                 display: block !important; 
                             }
-                            /* MOVES */
                             ${movesId} move {
                                 font-size: ${currentFontSize}px !important;
                                 line-height: ${currentFontSize + 10}px !important;
@@ -304,17 +299,13 @@ case 'chess':
                             ${movesId} move:hover { background-color: #e0e0e0 !important; }
                             ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
                             
-                            /* Force comments to be visible in DOM so we can read them (even if hidden visually) */
-                            ${movesId} .comment { display: inline !important; visibility: visible !important; opacity: 0; font-size: 1px; }
-
-                            /* LAYOUT */
+                            /* Force layout to stay side-by-side */
                             #${boardId} .pgnvjs-wrapper {
                                 display: flex !important;
                                 flex-direction: row !important;
                                 align-items: flex-start !important;
                                 width: 100% !important;
                                 justify-content: center !important;
-                                padding-top: 10px !important;
                             }
                         `;
                         $(`#${styleId}`).text(css);
@@ -323,13 +314,11 @@ case 'chess':
                     // --- BUTTON HANDLERS ---
                     document.getElementById('chess-font-minus').onclick = (e) => { e.preventDefault(); if(currentFontSize>14) {currentFontSize-=2; updateChessStyles();} };
                     document.getElementById('chess-font-plus').onclick = (e) => { e.preventDefault(); currentFontSize+=2; updateChessStyles(); };
-                    
-                    // Close Button: Clean up classes before closing
                     document.getElementById('chess-close-btn').onclick = (e) => { 
                         e.preventDefault(); 
                         $modal.removeClass('chess-mode');
                         $('body').removeClass('chess-mode-active');
-                        $modal.find('.modal-header').show(); // Restore header
+                        $modal.find('.modal-header').show();
                         $('.modal-close-btn').first().click(); 
                     };
 
@@ -373,7 +362,6 @@ case 'chess':
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
                         while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
-                        
                         let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
                         for (const [key, val] of Object.entries(headers)) {
                             infoHtml += `<tr><td style="color: var(--text-accent); font-weight:bold; width: 30%;">${key}</td><td style="color: #fff;">${val}</td></tr>`;
@@ -381,15 +369,18 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 2. SIZE CALCULATION (Larger Board)
-                        const mainArea = $('.chess-main-area');
-                        const availableHeight = mainArea.height() || 600;
-                        const availableWidth = mainArea.width() || 800;
+                        // 2. SIZE CALCULATION (FIXED)
+                        // We use Window dimensions to guarantee fit
+                        const winHeight = $(window).height();
+                        const winWidth = $(window).width();
                         
-                        // Increased Width Limit (65%) and Height Usage
-                        const maxWidth = availableWidth * 0.65; 
-                        const maxHeight = availableHeight - 50; // Minimal buffer
+                        // Board should be max 60% of width
+                        const maxWidth = winWidth * 0.60;
+                        // Board should leave 180px for toolbar + nav buttons
+                        const maxHeight = winHeight - 180; 
+                        
                         const boardSize = Math.min(maxWidth, maxHeight);
+                        console.log("Recalculated Board Size:", boardSize);
 
                         $(`#${boardId}`).empty();
 
@@ -405,13 +396,11 @@ case 'chess':
                             
                             updateChessStyles();
 
-                            // 3. GENERATE EVAL BAR
+                            // 3. EVAL BAR GEN
                             const generateEvalHtml = (rawText) => {
                                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                                
-                                // Clean out other tags like [%clk...]
-                                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim();
+                                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); // Remove other clocks
                                 
                                 let evalHtml = "";
                                 if (evalMatch) {
@@ -441,7 +430,7 @@ case 'chess':
                                 return { html: evalHtml, text: cleanText };
                             };
 
-                            // 4. OBSERVER (Text Scraper)
+                            // 4. OBSERVER (Fixed for Text Nodes)
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
                                 const overlay = document.getElementById('chess-comment-overlay');
@@ -454,14 +443,21 @@ case 'chess':
                                         if (activeMove) {
                                             let rawCommentText = "";
                                             
-                                            // Robust Sibling Check: Look until next MOVE tag
+                                            // Look at siblings
                                             let next = activeMove.nextSibling;
                                             while(next) {
-                                                // Stop at next move or move number
+                                                // Stop if we hit another move
                                                 if (next.nodeType === 1 && (next.tagName === 'MOVE' || next.tagName === 'MOVE-NUMBER')) break;
                                                 
-                                                // Grab text from TextNodes (Type 3) or Elements (Type 1)
-                                                if (next.textContent) rawCommentText += next.textContent;
+                                                // Capture TEXT nodes (Node.TEXT_NODE = 3)
+                                                if (next.nodeType === 3) {
+                                                    rawCommentText += next.textContent;
+                                                } 
+                                                // Capture Element nodes (like span)
+                                                else if (next.nodeType === 1) {
+                                                    rawCommentText += next.textContent;
+                                                }
+                                                
                                                 next = next.nextSibling;
                                             }
 
@@ -480,7 +476,6 @@ case 'chess':
                                 }
                             }, 200);
                         } else {
-                            // Cleanup if error
                             $modal.removeClass('chess-mode');
                             $('body').removeClass('chess-mode-active');
                             $modal.find('.modal-header').show();
@@ -503,6 +498,10 @@ case 'chess':
             break;
 
 
+
+
+
+            
 
 
 
