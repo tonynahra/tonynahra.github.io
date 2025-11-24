@@ -210,6 +210,7 @@ function loadModalContent(index) {
 
 
 
+
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -224,13 +225,16 @@ case 'chess':
                     if (rawGames.length === 0) rawGames = [pgnFileContent]; 
 
                     const boardId = 'chess-board-' + Date.now();
+                    const styleId = 'chess-dynamic-styles-' + Date.now();
                     
                     // State Variables
-                    let currentZoom = 1.0; 
+                    let currentFontSize = 26; 
                     let commentsEnabled = false;
 
                     // 1. INJECT HTML
+                    // We include the <style> tag here to hold our dynamic rules
                     $modalContent.html(`
+                        <style id="${styleId}"></style>
                         <div class="chess-container">
                             <div class="chess-toolbar">
                                 <select id="chess-game-select"></select>
@@ -242,8 +246,8 @@ case 'chess':
                                 <button id="chess-comment-btn" class="tab-button" style="border: 1px solid var(--text-light); padding: 5px 10px; cursor: pointer;">Comments: Off</button>
                             </div>
                             <div class="chess-main-area">
-                                <div class="chess-white-box" style="overflow: auto; position: relative; display: flex;">
-                                    <div id="${boardId}" style="width: 100%; display: flex;"></div>
+                                <div class="chess-white-box">
+                                    <div id="${boardId}"></div>
                                 </div>
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
@@ -251,65 +255,84 @@ case 'chess':
                         </div>
                     `);
 
-                    // --- THE ZOOM LOGIC ---
-                    const applyZoom = () => {
-                        // Look specifically inside our board container
-                        const boardContainer = document.getElementById(boardId);
-                        if (!boardContainer) return;
-
-                        const movesPanel = boardContainer.querySelector('.pgnvjs-moves');
+                    // --- THE FONT FIX ---
+                    // This function rewrites the CSS rules whenever the variable changes.
+                    // This persists even if the library re-renders the board.
+                    const updateFontSize = () => {
+                        console.log("Updating CSS to Font Size:", currentFontSize);
                         
-                        if (!movesPanel) {
-                            // Silent return if not ready yet
-                            return;
-                        }
-
-                        // 1. Force Basic Styles (White Background)
-                        movesPanel.style.setProperty('background-color', '#ffffff', 'important');
-                        movesPanel.style.setProperty('color', '#000000', 'important');
-                        movesPanel.style.setProperty('border-left', '4px solid #d2b48c', 'important');
-                        movesPanel.style.setProperty('padding', '10px', 'important');
-
-                        // 2. Apply ZOOM
-                        movesPanel.style.zoom = currentZoom;
-                        
-                        // Fallback for Firefox (Transform)
-                        if (typeof movesPanel.style.zoom === 'undefined' || movesPanel.style.zoom === '') {
-                             movesPanel.style.transform = `scale(${currentZoom})`;
-                             movesPanel.style.transformOrigin = 'top left';
-                             movesPanel.style.width = `${100 / currentZoom}%`; 
-                        }
-                        
-                        // 3. Force Text Colors & Fonts
-                        const allText = movesPanel.querySelectorAll('*');
-                        allText.forEach(el => {
-                            el.style.setProperty('color', '#000000', 'important');
-                            el.style.setProperty('font-family', 'sans-serif', 'important');
-                            if(el.tagName === 'A') {
-                                el.style.setProperty('text-decoration', 'none', 'important');
+                        const cssRules = `
+                            /* 1. Layout Fixes: Keep board and moves side-by-side */
+                            #${boardId} .pgnvjs-wrapper {
+                                display: flex !important;
+                                flex-direction: row !important;
+                                align-items: flex-start !important;
+                                gap: 0 !important;
                             }
-                        });
+                            
+                            /* 2. Moves Panel Container */
+                            #${boardId} .pgnvjs-moves {
+                                width: 300px !important;
+                                min-width: 300px !important;
+                                max-width: 300px !important;
+                                height: 100% !important;
+                                overflow-y: auto !important;
+                                background-color: #ffffff !important;
+                                color: #000000 !important;
+                                padding: 15px !important;
+                                box-sizing: border-box !important;
+                                border-left: 4px solid #d2b48c !important;
+                                margin: 0 !important; /* Prevent pushing to right */
+                            }
+
+                            /* 3. THE TEXT SIZE (Applies to all inner elements) */
+                            #${boardId} .pgnvjs-moves * {
+                                font-size: ${currentFontSize}px !important;
+                                line-height: ${currentFontSize + 10}px !important;
+                                color: #000000 !important;
+                                font-family: sans-serif !important;
+                                font-weight: 600 !important;
+                            }
+                            
+                            /* 4. Link Specifics */
+                            #${boardId} .pgnvjs-moves a {
+                                text-decoration: none !important;
+                                display: inline-block !important;
+                                padding: 2px 5px !important;
+                            }
+                            
+                            /* 5. Active Highlight */
+                            #${boardId} .pgnvjs-move.active, 
+                            #${boardId} .pgnvjs-move.active a {
+                                background-color: #FFD700 !important;
+                                color: #000 !important;
+                            }
+                        `;
                         
-                        console.log("Zoom Applied:", currentZoom);
+                        $(`#${styleId}`).text(cssRules);
                     };
 
-                    // --- BIND BUTTONS (Directly) ---
-                    $('#content-modal').off('click', '#chess-font-minus').on('click', '#chess-font-minus', function(e) {
+                    // --- BIND BUTTONS ---
+                    // We bind directly to the elements to avoid bubbling issues
+                    document.getElementById('chess-font-minus').onclick = function(e) {
                         e.preventDefault(); 
-                        if (currentZoom > 0.6) {
-                            currentZoom -= 0.1; 
-                            applyZoom();
+                        e.stopPropagation();
+                        if (currentFontSize > 14) {
+                            currentFontSize -= 2;
+                            updateFontSize();
                         }
-                    });
+                    };
 
-                    $('#content-modal').off('click', '#chess-font-plus').on('click', '#chess-font-plus', function(e) {
+                    document.getElementById('chess-font-plus').onclick = function(e) {
                         e.preventDefault();
-                        currentZoom += 0.1; 
-                        applyZoom();
-                    });
+                        e.stopPropagation();
+                        currentFontSize += 2;
+                        updateFontSize();
+                    };
 
-                    $('#content-modal').off('click', '#chess-comment-btn').on('click', '#chess-comment-btn', function(e) {
+                    document.getElementById('chess-comment-btn').onclick = function(e) {
                         e.preventDefault();
+                        e.stopPropagation();
                         commentsEnabled = !commentsEnabled;
                         const $btn = $(this);
                         const $overlay = $('#chess-comment-overlay');
@@ -323,7 +346,7 @@ case 'chess':
                             $btn.css('background', '').css('color', '');
                             $overlay.fadeOut();
                         }
-                    });
+                    };
 
                     // --- RENDER LOGIC ---
                     const $select = $('#chess-game-select');
@@ -336,11 +359,9 @@ case 'chess':
                     if (rawGames.length <= 1) $select.hide(); 
 
                     let gameObserver = null;
-                    let renderTimer = null;
 
                     function renderGame(index) {
                         if (gameObserver) gameObserver.disconnect();
-                        if (renderTimer) clearInterval(renderTimer);
 
                         const selectedPgn = rawGames[index];
                         
@@ -358,22 +379,13 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // Safe Size Calculation
-                        const availableHeight = $('.chess-main-area').height();
-                        const availableWidth = $('.chess-main-area').width();
-                        const movesPanelSpace = 300; 
+                        // Size Calculation
+                        const availableHeight = $('.chess-main-area').height() || 600;
+                        const availableWidth = $('.chess-main-area').width() || 800;
+                        const movesPanelSpace = 320; // 300px width + 20px gap
                         
-                        let calculatedBaseSize = 400; // Default fallback
-                        
-                        // Only calculate if container is visible
-                        if (availableHeight > 0 && availableWidth > 0) {
-                             calculatedBaseSize = Math.min(availableHeight - 60, availableWidth - movesPanelSpace - 40);
-                        }
-                        
-                        // Ensure board never crashes library with 0 or negative size
-                        const boardSize = Math.max(calculatedBaseSize * 0.95, 300);
-
-                        console.log("Calculated Board Size:", boardSize);
+                        let calculatedBaseSize = Math.min(availableHeight - 60, availableWidth - movesPanelSpace - 40);
+                        const boardSize = calculatedBaseSize * 0.95; 
 
                         $(`#${boardId}`).empty();
 
@@ -387,27 +399,22 @@ case 'chess':
                                 headers: false,
                             });
                             
-                            // --- SMART OBSERVER (The Fix) ---
-                            // Watch the board container for the moment the moves are added
-                            const boardContainer = document.getElementById(boardId);
-                            
-                            if (boardContainer) {
-                                // 1. Set up Observer
-                                gameObserver = new MutationObserver((mutations) => {
-                                    // Check if moves panel has appeared
-                                    const movesPanel = boardContainer.querySelector('.pgnvjs-moves');
+                            // APPLY STYLES IMMEDIATELY
+                            updateFontSize();
+
+                            // --- OBSERVER (Comments) ---
+                            // We use a broader selector interval to find the panel once it renders
+                            const findPanelInterval = setInterval(() => {
+                                const movesPanel = document.querySelector(`#${boardId} .pgnvjs-moves`);
+                                const overlay = document.getElementById('chess-comment-overlay');
+                                
+                                if (movesPanel) {
+                                    clearInterval(findPanelInterval);
                                     
-                                    if (movesPanel) {
-                                        // A. Apply Zoom immediately
-                                        if(movesPanel.style.zoom != currentZoom) {
-                                            applyZoom();
-                                        }
-                                        
-                                        // B. Check for Active Move (Comments Logic)
+                                    // Start observing for active moves
+                                    gameObserver = new MutationObserver(() => {
                                         const activeMove = movesPanel.querySelector('.pgnvjs-move.active'); 
-                                        const overlay = document.getElementById('chess-comment-overlay');
-                                        
-                                        if (activeMove && overlay) {
+                                        if (activeMove) {
                                             let commentText = "";
                                             let next = activeMove.nextElementSibling;
                                             while(next && !next.classList.contains('pgnvjs-move')) {
@@ -424,26 +431,15 @@ case 'chess':
                                                 $(overlay).hide();
                                             }
                                         }
-                                    }
-                                });
-                                
-                                // Start observing
-                                gameObserver.observe(boardContainer, { 
-                                    childList: true, 
-                                    subtree: true, 
-                                    attributes: true, 
-                                    attributeFilter: ['class', 'style']
-                                });
-                                
-                                // 2. Manual Backup Check (in case observer misses initial paint)
-                                let attempts = 0;
-                                renderTimer = setInterval(() => {
-                                    applyZoom();
-                                    attempts++;
-                                    if(attempts > 20) clearInterval(renderTimer); // Stop after 4 seconds
-                                }, 200);
-                            }
-
+                                    });
+                                    gameObserver.observe(movesPanel, { 
+                                        attributes: true, 
+                                        subtree: true, 
+                                        childList: true, 
+                                        attributeFilter: ['class'] 
+                                    });
+                                }
+                            }, 500);
                         } else {
                             $(`#${boardId}`).html('<div class="error-message">PGN Library not loaded.</div>');
                         }
@@ -462,11 +458,6 @@ case 'chess':
                 }
             });
             break;
-
-
-
-
-
 
 
 
