@@ -426,20 +426,21 @@ body.chess-mode-active .modal-header,
     width: 100% !important;
     height: 100% !important;
     
-    /* MARGIN FIX */
+    /* MARGIN FIX: 40px Left Padding */
     padding-left: 40px !important;
+    
     padding-top: 10px !important;
     padding-right: 10px !important;
-    
     background-color: #ffffff !important;
     display: flex;
     justify-content: center;
     align-items: flex-start;
 }
 
+/* Force comments to exist in DOM */
 .pgnvjs-moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
 
-/* COMMENT BOX */
+/* COMMENT BOX (Bottom Right) */
 .chess-comment-overlay {
     font-size: 1.2rem !important;
     padding: 15px !important;
@@ -448,12 +449,12 @@ body.chess-mode-active .modal-header,
     border-radius: 6px;
     color: #fff !important;
     
-    /* Bottom Right Position */
+    /* Position: Bottom Right */
     position: absolute;
     bottom: 20px;
     right: 30px; 
-    width: 320px;
     
+    width: 320px;
     z-index: 6000 !important;
     text-align: center;
     display: none; 
