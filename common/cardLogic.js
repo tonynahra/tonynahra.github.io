@@ -209,7 +209,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -240,9 +239,10 @@ case 'chess':
                         const map = {};
                         console.log("--- STARTING PGN PARSE ---");
                         
+                        // Clean Headers
                         let body = pgnText.replace(/\[.*?\]/g, "").trim();
 
-                        // Clean Variations
+                        // Remove Variations
                         const cleanPGN = (text) => {
                             let result = "";
                             let depth = 0;
@@ -272,7 +272,6 @@ case 'chess':
                             if (token === '}') { 
                                 insideComment = false; 
                                 // Assign to LAST move (moveIndex - 1)
-                                // Note: If a comment appears before any move (intro), it maps to -1
                                 const idx = moveIndex === 0 ? -1 : moveIndex - 1;
                                 map[idx] = currentComment.join(" ");
                                 continue; 
@@ -310,7 +309,7 @@ case 'chess':
                                 <div class="chess-white-box">
                                     <div id="${boardId}"></div>
                                 </div>
-                                <div id="chess-comment-overlay" class="chess-comment-overlay">...</div>
+                                <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
                                 <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
                             </div>
                         </div>
@@ -403,20 +402,28 @@ case 'chess':
                         return { html: evalHtml, text: cleanText };
                     };
 
-                    const updateCommentContent = (moveIndex) => {
+                    // --- UPDATE CONTENT LOGIC (With Move Counter) ---
+                    const updateCommentContent = (moveIndex, totalMoves) => {
                         const overlay = document.getElementById('chess-comment-overlay');
                         if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         $(overlay).fadeIn();
 
+                        // Start of Game
+                        if (moveIndex === -1) {
+                            overlay.innerHTML = '<div style="color:#ccc; font-size: 0.9em;">Start of Game</div>';
+                            return;
+                        }
+
                         const commentText = commentMap[moveIndex];
-                        
-                        // console.log(`[LOOKUP] Index: ${moveIndex}. Text:`, commentText); // Debug
+                        console.log(`[OBSERVER] Active Move Index: ${moveIndex}`);
 
                         if (commentText && commentText.trim().length > 0) {
                             const parsed = generateEvalHtml(commentText);
                             overlay.innerHTML = parsed.html + (parsed.text ? `<div style="margin-top:5px;">${parsed.text}</div>` : '');
                         } else {
-                            overlay.innerHTML = '<div style="color:#aaa; font-style:italic; font-size: 0.9em;">...</div>';
+                            // NEW: Show Move Counter if no comment
+                            const displayMove = moveIndex + 1; // 0-based to 1-based
+                            overlay.innerHTML = `<div style="color:#ccc; font-size: 1rem; font-weight:bold;">Move ${displayMove} / ${totalMoves}</div>`;
                         }
                     };
 
@@ -451,6 +458,7 @@ case 'chess':
                         const selectedPgn = rawGames[index];
                         commentMap = parseCommentsMap(selectedPgn);
                         
+                        // 1. METADATA
                         const headers = {};
                         const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
@@ -463,11 +471,11 @@ case 'chess':
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                         $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                        // 3. SIZE CALCULATION (Increased buffer for buttons)
+                        // 2. SIZE
                         const winHeight = $(window).height();
                         const winWidth = $(window).width();
-                        const maxWidth = winWidth * 0.90; // 90% Width
-                        const maxHeight = winHeight - 250; // 250px Buffer
+                        const maxWidth = winWidth * 0.90; 
+                        const maxHeight = winHeight - 250; 
                         const boardSize = Math.min(maxWidth, maxHeight);
 
                         $(`#${boardId}`).empty();
@@ -483,40 +491,45 @@ case 'chess':
                             });
                             
                             updateChessStyles();
-                            updateCommentContent(-1); 
+                            updateCommentContent(-1, 0); 
 
-                            // 4. OBSERVER (Fixed Indexing Logic)
-                            const checkInterval = setInterval(() => {
-                                const movesPanel = document.getElementById(boardId + 'Moves');
-                                
-                                if (movesPanel) {
-                                    clearInterval(checkInterval);
+                            // 4. SUBTREE OBSERVER (Alive Forever)
+                            // We attach to the CONTAINER (White Box), which is static.
+                            const whiteBox = $modalContent.find('.chess-white-box')[0];
+                            
+                            if (whiteBox) {
+                                gameObserver = new MutationObserver(() => {
+                                    // Look for moves panel dynamically
+                                    const movesPanel = document.getElementById(boardId + 'Moves');
+                                    if (!movesPanel) return;
+
+                                    // Find active element (closest('move') handles inner span highlights)
+                                    const activeEl = movesPanel.querySelector('.active');
                                     
-                                    gameObserver = new MutationObserver(() => {
-                                        // Find ANY active element (could be move, san, or fig)
-                                        const activeEl = movesPanel.querySelector('.active');
-                                        
-                                        if (activeEl) {
-                                            // Traverse up to find the <move> parent
-                                            const activeMove = activeEl.closest('move');
+                                    if (activeEl) {
+                                        const activeMove = activeEl.closest('move');
+                                        if (activeMove) {
+                                            const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                                            const index = allMoves.indexOf(activeMove);
+                                            const total = allMoves.length;
                                             
-                                            if (activeMove) {
-                                                // Get index relative to all moves
-                                                const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                                const index = allMoves.indexOf(activeMove);
-                                                
-                                                console.log(`Active Move Found: Index ${index}`);
-                                                updateCommentContent(index);
-                                            }
-                                        } else {
-                                            // No active move = Start of Game
-                                            updateCommentContent(-1);
+                                            updateCommentContent(index, total);
                                         }
-                                    });
-                                    
-                                    gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
-                                }
-                            }, 200);
+                                    } else {
+                                        // Start of game
+                                        const total = movesPanel.querySelectorAll('move').length;
+                                        updateCommentContent(-1, total);
+                                    }
+                                });
+                                
+                                // SUBTREE: TRUE catches everything inside the box, including re-renders
+                                gameObserver.observe(whiteBox, { 
+                                    subtree: true, 
+                                    attributes: true, 
+                                    childList: true, 
+                                    attributeFilter: ['class'] 
+                                });
+                            }
                         } else {
                             $modal.removeClass('chess-mode');
                             $('body').removeClass('chess-mode-active');
@@ -539,7 +552,6 @@ case 'chess':
             });
             break;
             
-
             
 
 
