@@ -209,7 +209,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -296,6 +295,7 @@ case 'chess':
                                 <div style="flex: 1;"></div>
                                 <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
                             </div>
+                            
                             <div class="chess-main-area">
                                 <div class="chess-white-box">
                                     <div id="${boardId}"></div>
@@ -359,144 +359,86 @@ case 'chess':
                         $('.modal-close-btn').first().click(); 
                     };
 
-                    // --- HTML GENERATOR (NEW DUAL BARS) ---
+                    // --- EVAL GENERATOR ---
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                         cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
                         
-                        // Defaults (Neutral)
-                        let evalHtml = `
-                            <div class="eval-row">
-                                <div class="eval-header">
-                                    <span>Move Score</span>
-                                    <span class="eval-value">0.00</span>
-                                </div>
-                                <div class="eval-track">
-                                    <div class="eval-center-line"></div>
-                                    <div class="eval-fill" style="left: 50%; width: 0%;"></div>
-                                </div>
-                            </div>
-                            <div class="eval-row">
-                                <div class="eval-header">
-                                    <span>Game Balance</span>
-                                    <span class="eval-value">0</span>
-                                </div>
-                                <div class="eval-track">
-                                    <div class="eval-center-line"></div>
-                                    <div class="eval-fill" style="left: 50%; width: 0%;"></div>
-                                </div>
-                            </div>
-                        `;
+                        // DEFAULT BARS (0.00)
+                        let displayVal = "0";
+                        let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
+                        let balanceScore = 0; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
 
                         if (evalMatch) {
                             const valStr = evalMatch[1];
-                            
-                            // --- DATA CALCULATIONS ---
-                            let moveScoreDisplay = valStr;
-                            let moveWidth = 0;
-                            let moveLeft = 50;
-                            let moveColor = "#888";
-                            
-                            let balanceScore = 0;
-                            let balanceWidth = 0;
-                            let balanceLeft = 50;
-                            let balanceColor = "#888";
-
                             if (valStr.startsWith('#')) {
                                 // Mate
                                 const isBlackMate = valStr.includes('-');
-                                moveScoreDisplay = "Mate " + valStr;
+                                moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
+                                displayVal = "Mate " + valStr;
+                                
                                 balanceScore = isBlackMate ? -100 : 100;
-                                
-                                moveWidth = 50; 
-                                moveLeft = isBlackMate ? 0 : 50;
-                                moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
-                                
-                                balanceWidth = 50;
-                                balanceLeft = isBlackMate ? 0 : 50;
-                                balanceColor = moveColor;
+                                balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
                             } else {
-                                // Centipawns
+                                // CP
                                 const val = parseFloat(valStr);
                                 
-                                // 1. Move Score (-10 to +10)
-                                moveScoreDisplay = val > 0 ? `+${val}` : val;
-                                const absMove = Math.min(Math.abs(val), 10);
-                                moveWidth = (absMove / 10) * 50;
+                                // Bar 1: Integer Score (-10 to +10)
+                                displayVal = Math.round(val) > 0 ? `+${Math.round(val)}` : Math.round(val);
+                                const absVal = Math.min(Math.abs(val), 10);
+                                moveWidth = (absVal / 10) * 50;
                                 if (val > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
                                 else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
-                                
-                                // 2. Game Balance (-100 to +100)
-                                // Formula: val * 10, capped at 100
-                                balanceScore = Math.round(val * 10);
+
+                                // Bar 2: Balance (-100 to +100)
+                                balanceScore = Math.round(val * 10); // roughly 1 pawn = 10 points of balance
                                 balanceScore = Math.max(-100, Math.min(100, balanceScore));
-                                const displayBalance = balanceScore > 0 ? `+${balanceScore}` : balanceScore;
                                 
                                 const absBal = Math.abs(balanceScore);
                                 balanceWidth = (absBal / 100) * 50;
                                 if (balanceScore > 0) { balanceLeft = 50; balanceColor = "#2ecc71"; }
                                 else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
                                 
-                                // Update Display Text for balance
-                                balanceScore = displayBalance;
+                                if (balanceScore > 0) balanceScore = `+${balanceScore}`;
                             }
-
-                            evalHtml = `
-                                <div class="eval-row">
-                                    <div class="eval-header">
-                                        <span>Move Score</span>
-                                        <span class="eval-value">${moveScoreDisplay}</span>
-                                    </div>
-                                    <div class="eval-track">
-                                        <div class="eval-center-line"></div>
-                                        <div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div>
-                                    </div>
-                                </div>
-                                <div class="eval-row">
-                                    <div class="eval-header">
-                                        <span>Game Balance</span>
-                                        <span class="eval-value">${balanceScore}</span>
-                                    </div>
-                                    <div class="eval-track">
-                                        <div class="eval-center-line"></div>
-                                        <div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div>
-                                    </div>
-                                </div>
-                            `;
                         }
+
+                        const evalHtml = `
+                            <div class="eval-row">
+                                <div class="eval-header"><span>Move Score</span><span class="eval-value">${displayVal}</span></div>
+                                <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
+                            </div>
+                            <div class="eval-row">
+                                <div class="eval-header"><span>Game Balance</span><span class="eval-value">${balanceScore}</span></div>
+                                <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
+                            </div>
+                        `;
                         return { html: evalHtml, text: cleanText };
                     };
 
                     const updateCommentContent = (moveIndex, totalMoves) => {
                         const overlay = document.getElementById('chess-comment-overlay');
-                        if (!commentsEnabled) { $(overlay).fadeOut(); return; }
-                        
-                        // Always Show
-                        $(overlay).fadeIn();
+                        // Always show if enabled (even if empty, to keep layout stable)
+                        if (commentsEnabled) $(overlay).fadeIn(); else $(overlay).fadeOut();
 
                         const commentText = commentMap[moveIndex] || "";
-                        let parsed = { html: "", text: "" };
+                        const parsed = generateEvalHtml(commentText);
                         
-                        // Generate HTML (Will generate defaults if no eval found)
-                        // If no comment text, we pass dummy text to trigger default 0.00 bars
-                        if (commentText) {
-                            parsed = generateEvalHtml(commentText);
+                        // TEXT TOP
+                        let content = "";
+                        if (moveIndex === -1) {
+                            content += `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
+                        } else if (parsed.text) {
+                            content += `<div style="margin-bottom:12px; font-size: 1rem;">${parsed.text}</div>`;
                         } else {
-                            // Force generation of 0.00 bars
-                            parsed = generateEvalHtml("");
+                            content += `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">...</div>`;
                         }
 
-                        let content = parsed.html;
-                        
-                        if (parsed.text && parsed.text.length > 0) {
-                            content += `<div style="margin-top: 8px; margin-bottom: 5px; font-size: 1rem;">${parsed.text}</div>`;
-                        } else if (moveIndex === -1) {
-                            content += `<div style="color:#78909c; margin-top: 8px;">Start of Game</div>`;
-                        } else {
-                            content += `<div style="color:#90a4ae; font-style:italic; margin-top: 8px;">...</div>`;
-                        }
+                        // BARS BOTTOM
+                        content += parsed.html;
 
+                        // COUNTER BOTTOM
                         const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1; 
                         const displayTotal = totalMoves || '?';
                         content += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
@@ -567,7 +509,6 @@ case 'chess':
                             });
                             
                             updateChessStyles();
-                            // Initial Update
                             const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                             updateCommentContent(-1, total);
 
@@ -582,7 +523,6 @@ case 'chess':
 
                                     gameObserver = new MutationObserver(() => {
                                         let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow') || movesPanel.querySelector('.selected');
-                                        
                                         if (activeEl) {
                                             const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
                                             if (activeMove) {
@@ -594,7 +534,6 @@ case 'chess':
                                         }
                                         updateCommentContent(-1, totalMoves);
                                     });
-                                    
                                     gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
                                 }
                             }, 200);
@@ -618,8 +557,7 @@ case 'chess':
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); 
                 }
             });
-            break;
-            
+            break;            
 
 
 
