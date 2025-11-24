@@ -1,0 +1,12 @@
+[Event "Sample Game"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Tester White"]
+[Black "Tester Black"]
+[Result "1-0"]
+[ECO "D31"]
+[WhiteElo "2000"]
+[BlackElo "2000"]
+
+1. d4 { [%eval +0.10] Developing a central pawn. } 1... d5 { [%eval +0.15] Symmetrical defense. } 2. c4 { [%eval +0.25] The Queen's Gambit. } 2... e6 { [%eval +0.30] Declined variation. } 3. Nc3 { [%eval +0.35] } 3... c6 { [%eval +0.30] Setting up a solid pawn chain. } 4. Nf3 { [%eval +0.40] } 4... dxc4 { [%eval +0.50] Black captures, temporarily gaining a pawn. } 5. a4 { [%eval +0.55] White immediately pressures Black's queenside. } 5... Bb4 { [%eval +0.50] Pinning the knight. } 6. e3 { [%eval +0.60] Simple development. } 6... b5 { [%eval -0.10] ?? A blunder. Black tries to hold the pawn but allows a crushing sacrifice. } 7. axb5 { [%eval +1.50] ! White takes the pawn, opening the a-file. } 7... cxb5 { [%eval +1.55] } 8. Bxc4 { [%eval +2.10] White wins the pawn back with a much better position. } 8... bxc4 { [%eval +2.20] } 9. Qa4+ { [%eval +3.50] ! A decisive check, picking up the bishop on b4. } 9... Bd7 { [%eval +3.60] } 10. Qxb4 { [%eval +4.50] White is up a clear piece and has a winning advantage. } 10... Nc6 { [%eval +4.70] } 11. Qxc4 { [%eval +5.10] } 11... Rc8 { [%eval +5.50] } 12. O-O { [%eval +6.00] } 12... Nf6 { [%eval +7.00] } 13. e4 { [%eval +8.00] } 1-0
