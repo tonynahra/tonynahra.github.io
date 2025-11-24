@@ -441,6 +441,54 @@ body.chess-mode-active .modal-header,
 }
 
 /* --- OVERLAYS --- */
+/* --- CHESS MODE STRUCTURE --- */
+body.chess-mode-active .modal-content,
+#content-modal.chess-mode .modal-content {
+    height: 98vh !important;
+    width: 98vw !important;
+    max-width: 100% !important;
+    margin: 1vh auto !important;
+    border: none !important;
+    background: #111 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important; 
+}
+
+/* Hide Header */
+body.chess-mode-active .modal-header,
+#content-modal.chess-mode .modal-header { display: none !important; }
+
+/* Main Layout */
+.chess-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; background: #222; }
+
+/* Align Board Top, Full Width */
+.chess-main-area {
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    background: #222;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; 
+    padding: 0 !important; /* MAXIMIZE SPACE */
+}
+
+.chess-white-box {
+    width: 100% !important;
+    height: 100% !important;
+    padding: 2px !important; /* Just 2px from edge */
+    background-color: #ffffff !important;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-y: auto; /* Scroll board if screen is tiny */
+}
+
+/* Force comments to exist in DOM */
+.pgnvjs-moves .comment { display: inline !important; font-size: 0px !important; opacity: 0; }
+
 /* --- OVERLAYS --- */
 .chess-metadata-overlay {
     font-size: 1.1rem !important; 
@@ -470,15 +518,14 @@ body.chess-mode-active .modal-header,
     border-radius: 6px;
     color: #fff !important;
     
-    /* Fixed Position Bottom Right */
+    /* Position: Bottom Right */
     position: absolute;
-    bottom: 10px;
-    right: 10px; 
+    bottom: 20px;
+    right: 30px; 
     
-    width: 320px; 
+    width: 300px;
     z-index: 6000 !important;
     text-align: center;
-    /* Let JS handle display toggling */
     display: none; 
     pointer-events: none;
     box-shadow: -5px -5px 20px rgba(0,0,0,0.5);
