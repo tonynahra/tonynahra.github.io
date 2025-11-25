@@ -1,5 +1,5 @@
 /* === MAIN PAGE CONTROLLER === */
-var lastContentPage = 'posts.html'; 
+var lastContentPage = 'tech-posts.html'; 
 
 $(document).ready(function () {
     
@@ -192,16 +192,15 @@ $(document).ready(function () {
         }
         $navLink.addClass('active-nav');
         
-        // Load with callback
+        // Load with Callback
         loadContent(deepLinkPage, null, function() {
             if (deepLinkTitle) {
-                // Use the helper from cardLogic.js
-                // Small delay to ensure DOM rendering/masonry layout is stable
+                // Wait slightly for DOM/masonry to settle, then click
                 setTimeout(() => {
                     if (typeof openCardByTitle === 'function') {
                         openCardByTitle(deepLinkTitle);
                     } else {
-                        console.error("openCardByTitle not found in cardLogic.js");
+                        console.warn("openCardByTitle function not found.");
                     }
                 }, 500); 
             }
