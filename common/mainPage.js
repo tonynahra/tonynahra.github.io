@@ -217,6 +217,8 @@ $(document).ready(function () {
 /* --- LOAD CONTENT (Updated with callback) --- */
 
 /* --- LOAD CONTENT (Updated with callback) --- */
+
+/* --- LOAD CONTENT (Updated with callback) --- */
 function loadContent(pageUrl, initialLoadOverride, onComplete) {
     const $contentArea = $('#content-area');
     $contentArea.empty();
