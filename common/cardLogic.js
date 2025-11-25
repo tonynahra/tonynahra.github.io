@@ -969,6 +969,32 @@ function openCardByTitle(titleToFind) {
 }
 
 
+function openCardByTitle(titleToFind) {
+    if (!titleToFind) return;
+    
+    // Decode and normalize the search title
+    const decodedTitle = decodeURIComponent(titleToFind).trim().toLowerCase();
+    
+    // Find the card with matching title
+    const $card = $('.card-item').filter(function() {
+        // We check both H3 (title) and image alt text (fallback)
+        const cardTitle = $(this).find('h3').text().trim().toLowerCase();
+        const imgAlt = $(this).find('img.card-image').attr('alt') || '';
+        
+        return cardTitle === decodedTitle || (imgAlt && imgAlt.toLowerCase() === decodedTitle);
+    });
+
+    if ($card.length) {
+        // Scroll to card
+        $('html, body').animate({
+            scrollTop: $card.offset().top - 100
+        }, 500);
+        // Click it
+        $card.click();
+    } else {
+        console.warn('Deep link card not found for title:', decodedTitle);
+    }
+}
 
 
 
@@ -1092,3 +1118,5 @@ $(document).ready(function () {
         loadModalTabContent(htmlUrl, '#research-tab-content-modal');
     });
 });
+
+
