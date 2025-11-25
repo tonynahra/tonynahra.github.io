@@ -859,6 +859,28 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
     });
 }
 
+// UPDATED: Added onComplete parameter and callback execution
+function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
+    $('#Grid').empty(); 
+    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
+    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
+    var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
+
+    $.getJSON(URL, options, function (data) {
+        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
+        if (data.items) {
+            resultsLoop(data, Category, BKcol);
+            handleCardView($('#content-area'), initialLoadOverride);
+            populateSmartKeywords('#Grid', '#youtube-keyword-filter');
+            populateCategoryFilter('#Grid', '#youtube-category-filter');
+            
+            // --- NEW: Call the callback if provided ---
+            if (typeof onComplete === 'function') {
+                onComplete();
+            }
+        }
+    });
+}
 
 
 function resultsLoop(data, Cat, BKcol) {
