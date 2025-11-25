@@ -809,7 +809,9 @@ function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResult
 
 /* === LOAD DATA FUNCTIONS === */
 
-function loadPhotoAlbum(jsonUrl, initialLoadOverride, incrementOverride) {
+
+// UPDATED: Added onComplete parameter and callback execution
+function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
     const $albumList = $('#photo-album-list');
     const $targetList = $albumList.length ? $albumList : $('#about-album-list');
     
@@ -844,81 +846,20 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, incrementOverride) {
         }
         
         const defaultIncrement = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
-        const increment = incrementOverride || defaultIncrement;
+        // Use 10 as default if incrementOverride is missing (undefined)
+        handleCardView($targetList.parent(), initialLoadOverride, defaultIncrement);
         
-        handleCardView($targetList.parent(), initialLoadOverride, increment);
+        // --- NEW: Call the callback if provided ---
+        if (typeof onComplete === 'function') {
+            onComplete();
+        }
         
     }).fail(function() { 
         if ($('#album-title').length) $('#album-title').text("Error Loading Album"); 
     });
 }
 
-function loadVids(PL, Category, BKcol, initialLoadOverride) {
-    $('#Grid').empty();
-    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; // Note: Ensure you restrict this key in Google Cloud Console
-    
-    // Step 1: Get the Playlist Items
-    var playlistURL = 'https://www.googleapis.com/youtube/v3/playlistItems';
-    var playlistOptions = { 
-        part: 'snippet,contentDetails', // Added contentDetails to get clean video IDs
-        key: key, 
-        maxResults: 50, 
-        playlistId: PL 
-    };
 
-    $.getJSON(playlistURL, playlistOptions, function (data) {
-        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
-
-        if (data.items && data.items.length > 0) {
-            
-            // Step 2: Extract Video IDs into a comma-separated string
-            // distinct from the playlist Item ID
-            var videoIds = data.items.map(function(item) {
-                return item.contentDetails.videoId; 
-            }).join(',');
-
-            // Step 3: Verify Status with Videos Endpoint
-            var videoURL = 'https://www.googleapis.com/youtube/v3/videos';
-            var videoOptions = {
-                part: 'status',
-                id: videoIds,
-                key: key
-            };
-
-            $.getJSON(videoURL, videoOptions, function(videoData) {
-                
-                // Create a Set of valid IDs for O(1) lookup
-                // We filter for existence AND public status
-                var validIds = new Set();
-                if (videoData.items) {
-                    videoData.items.forEach(function(vid) {
-                        if (vid.status.privacyStatus === 'public' && vid.status.embeddable) {
-                            validIds.add(vid.id);
-                        }
-                    });
-                }
-
-                // Step 4: Filter the original playlist items
-                // Only keep items that exist in our "validIds" set
-                var activeItems = data.items.filter(function(item) {
-                    return validIds.has(item.contentDetails.videoId);
-                });
-
-                // Update the data object with the filtered list
-                data.items = activeItems;
-
-                // Step 5: Resume original UI logic with clean data
-                resultsLoop(data, Category, BKcol);
-                handleCardView($('#content-area'), initialLoadOverride);
-                populateSmartKeywords('#Grid', '#youtube-keyword-filter');
-                populateCategoryFilter('#Grid', '#youtube-category-filter');
-            });
-        } else {
-            // Handle empty playlist case
-            console.log("No items found in playlist");
-        }
-    });
-}
 
 function resultsLoop(data, Cat, BKcol) {
     $.each(data.items, function (i, item) {
@@ -975,6 +916,39 @@ function filterYouTubeCards() {
         handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
     }
 }
+
+
+
+/* === DEEP LINK HELPER (NEW) === */
+function openCardByTitle(titleToFind) {
+    if (!titleToFind) return;
+    
+    // Decode and normalize the search title (e.g. "My%20Post" -> "my post")
+    const decodedTitle = decodeURIComponent(titleToFind).trim().toLowerCase();
+    
+    // Find the card with matching title (H3) or Alt Text
+    const $card = $('.card-item').filter(function() {
+        const cardTitle = $(this).find('h3').text().trim().toLowerCase();
+        const imgAlt = $(this).find('img.card-image').attr('alt') || '';
+        
+        return cardTitle === decodedTitle || (imgAlt && imgAlt.toLowerCase() === decodedTitle);
+    });
+
+    if ($card.length) {
+        // Scroll to card
+        $('html, body').animate({
+            scrollTop: $card.offset().top - 100
+        }, 500);
+        // Click it to open the modal
+        $card.click();
+    } else {
+        console.warn('Deep link card not found for title:', decodedTitle);
+    }
+}
+
+
+
+
 
 /* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
