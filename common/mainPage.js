@@ -216,6 +216,7 @@ $(document).ready(function () {
 
 /* --- LOAD CONTENT (Updated with callback) --- */
 
+
 /* --- LOAD CONTENT (Updated with callback) --- */
 function loadContent(pageUrl, initialLoadOverride, onComplete) {
     const $contentArea = $('#content-area');
@@ -266,7 +267,7 @@ function loadContent(pageUrl, initialLoadOverride, onComplete) {
                     initializeImageModal(); 
                 }
                 
-                // Trigger callback for synchronous loads
+                // Trigger callback for synchronous/instant loads
                 if (typeof onComplete === 'function') {
                     onComplete();
                 }
@@ -277,5 +278,3 @@ function loadContent(pageUrl, initialLoadOverride, onComplete) {
         }
     });
 }
-
-
