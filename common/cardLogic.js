@@ -994,6 +994,8 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
 
 
 
+
+/* === DEEP LINK HELPER (NEW) === */
 function openCardByTitle(titleToFind) {
     if (!titleToFind) return;
     
@@ -1033,6 +1035,7 @@ function openCardByTitle(titleToFind) {
 $(document).ready(function () {
      // Keep empty or add minimal local logic here
 });
+
 
 
 
