@@ -1,5 +1,5 @@
 /* === MAIN PAGE CONTROLLER === */
-var lastContentPage = 'tech-posts.html'; 
+var lastContentPage = 'posts.html'; 
 
 $(document).ready(function () {
     
