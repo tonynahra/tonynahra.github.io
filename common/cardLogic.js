@@ -210,6 +210,12 @@ function loadModalContent(index) {
 
 
 
+
+
+
+
+
+
 case 'chess':
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -455,7 +461,7 @@ case 'chess':
                         const displayTotal = totalMoves || '?';
                         footer += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
                         
-                        overlay.innerHTML = footer;
+                        overlay.innerHTML = content;
                     };
 
                     document.getElementById('chess-comment-btn').onclick = (e) => {
@@ -575,6 +581,69 @@ case 'chess':
             });
             break;
         
+        case 'html':
+            $.ajax({
+                url: loadUrl, type: 'GET',
+                success: function(data) { 
+                    $modalContent.html(data); 
+                    if (infoHtml) {
+                        $modalContent.append(infoHtml);
+                        $modalInfoBtn.show();
+                    }
+                },
+                error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
+            });
+            break;
+        case 'image':
+            $modalContent.html(`
+                <div class="image-wrapper">
+                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'iframe':
+            $modalContent.html(`
+                <div class="iframe-wrapper">
+                    <iframe src="${loadUrl}" class="loaded-iframe" style="height: ${customHeight};"></iframe>
+                    ${infoHtml}
+                </div>`);
+            if (infoHtml) { $modalInfoBtn.show(); }
+            break;
+        case 'blocked':
+            $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
+            break;
+        default: // newtab
+            $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
+            break;
+    }
+    
+    $('.modal-prev-btn').prop('disabled', index <= 0);
+    $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
         case 'html':
             $.ajax({
                 url: loadUrl, type: 'GET',
