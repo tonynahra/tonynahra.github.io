@@ -991,30 +991,8 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
     });
 }
 
-// UPDATED: Accepts onComplete callback
-function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
-    $('#Grid').empty(); 
-    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
-    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
-    var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
 
-    $.getJSON(URL, options, function (data) {
-        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
-        if (data.items) {
-            resultsLoop(data, Category, BKcol);
-            handleCardView($('#content-area'), initialLoadOverride);
-            populateSmartKeywords('#Grid', '#youtube-keyword-filter');
-            populateCategoryFilter('#Grid', '#youtube-category-filter');
-            
-            // Call callback when complete
-            if (typeof onComplete === 'function') {
-                onComplete();
-            }
-        }
-    });
-}
-    
-/* === DEEP LINK HELPER (NEW) === */
+
 
 function openCardByTitle(titleToFind) {
     if (!titleToFind) return;
@@ -1047,6 +1025,43 @@ function openCardByTitle(titleToFind) {
         console.warn('Deep link card not found for title:', decodedTitle);
     }
 }
+
+/* --- EVENT LISTENERS (DELEGATED) --- */
+// NOTE: Listeners are in mainPage.js (the controller), but we leave this block empty 
+// or minimal if specific logic is needed here. The bulk of listeners are in mainPage.js
+// to ensure coordination.
+$(document).ready(function () {
+     // Keep empty or add minimal local logic here
+});
+
+
+
+
+
+
+// UPDATED: Accepts onComplete callback
+function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
+    $('#Grid').empty(); 
+    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
+    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
+    var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
+
+    $.getJSON(URL, options, function (data) {
+        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
+        if (data.items) {
+            resultsLoop(data, Category, BKcol);
+            handleCardView($('#content-area'), initialLoadOverride);
+            populateSmartKeywords('#Grid', '#youtube-keyword-filter');
+            populateCategoryFilter('#Grid', '#youtube-category-filter');
+            
+            // Call callback when complete
+            if (typeof onComplete === 'function') {
+                onComplete();
+            }
+        }
+    });
+}
+    
 
 
 /* === --- EVENT LISTENERS (DELEGATED) --- === */
