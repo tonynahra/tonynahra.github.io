@@ -942,59 +942,78 @@ function filterYouTubeCards() {
 
 
 /* === DEEP LINK HELPER (NEW) === */
-function openCardByTitle(titleToFind) {
-    if (!titleToFind) return;
-    
-    // Decode and normalize the search title (e.g. "My%20Post" -> "my post")
-    const decodedTitle = decodeURIComponent(titleToFind).trim().toLowerCase();
-    
-    // Find the card with matching title (H3) or Alt Text
-    const $card = $('.card-item').filter(function() {
-        const cardTitle = $(this).find('h3').text().trim().toLowerCase();
-        const imgAlt = $(this).find('img.card-image').attr('alt') || '';
-        
-        return cardTitle === decodedTitle || (imgAlt && imgAlt.toLowerCase() === decodedTitle);
-    });
 
-    if ($card.length) {
-        // Scroll to card
-        $('html, body').animate({
-            scrollTop: $card.offset().top - 100
-        }, 500);
-        // Click it to open the modal
-        $card.click();
-    } else {
-        console.warn('Deep link card not found for title:', decodedTitle);
-    }
+function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
+    const $albumList = $('#photo-album-list');
+    const $targetList = $albumList.length ? $albumList : $('#about-album-list');
+    
+    $.getJSON(jsonUrl, function (albumData) {
+        if ($('#album-title').length) {
+            $('#album-title').text(decodeText(albumData.albumTitle));
+        }
+        
+        $targetList.empty(); 
+        
+        $.each(albumData.photos, function(index, photo) {
+            const title = decodeText(photo.title);
+            const category = decodeText(photo.category);
+            const description = decodeText(photo.description);
+            
+            const cardHtml = `
+                <div class="card-item" 
+                     data-category="${category}" 
+                     data-keywords="${title},${description}"
+                     data-title="${title}"
+                     data-desc="${description}">
+                    <a href="${photo.url}" data-load-type="image">
+                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
+                    </a>
+                </div>`;
+            $targetList.append(cardHtml);
+        });
+        
+        if ($('#album-category-filter').length) {
+            populateCategoryFilter('#photo-album-list', '#album-category-filter');
+            populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
+        }
+        
+        const defaultIncrement = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
+        
+        handleCardView($targetList.parent(), initialLoadOverride, defaultIncrement);
+        
+        // Call the callback if provided
+        if (typeof onComplete === 'function') {
+            onComplete();
+        }
+        
+    }).fail(function() { 
+        if ($('#album-title').length) $('#album-title').text("Error Loading Album"); 
+    });
 }
 
+// UPDATED: Accepts onComplete callback
+function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
+    $('#Grid').empty(); 
+    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
+    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
+    var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
 
-function openCardByTitle(titleToFind) {
-    if (!titleToFind) return;
-    
-    // Decode and normalize the search title
-    const decodedTitle = decodeURIComponent(titleToFind).trim().toLowerCase();
-    
-    // Find the card with matching title
-    const $card = $('.card-item').filter(function() {
-        // We check both H3 (title) and image alt text (fallback)
-        const cardTitle = $(this).find('h3').text().trim().toLowerCase();
-        const imgAlt = $(this).find('img.card-image').attr('alt') || '';
-        
-        return cardTitle === decodedTitle || (imgAlt && imgAlt.toLowerCase() === decodedTitle);
+    $.getJSON(URL, options, function (data) {
+        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
+        if (data.items) {
+            resultsLoop(data, Category, BKcol);
+            handleCardView($('#content-area'), initialLoadOverride);
+            populateSmartKeywords('#Grid', '#youtube-keyword-filter');
+            populateCategoryFilter('#Grid', '#youtube-category-filter');
+            
+            // Call callback when complete
+            if (typeof onComplete === 'function') {
+                onComplete();
+            }
+        }
     });
-
-    if ($card.length) {
-        // Scroll to card
-        $('html, body').animate({
-            scrollTop: $card.offset().top - 100
-        }, 500);
-        // Click it
-        $card.click();
-    } else {
-        console.warn('Deep link card not found for title:', decodedTitle);
-    }
 }
+    
 
 
 
