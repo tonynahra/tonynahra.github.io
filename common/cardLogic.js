@@ -997,42 +997,42 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
 
 /* === DEEP LINK HELPER (NEW) === */
 
-/* === NEW: Deep Link Helper === */
 function openCardByTitle(titleToFind) {
     if (!titleToFind) return;
     
-    // Decode and normalize
+    // Decode and normalize the search title
     const decodedTitle = decodeURIComponent(titleToFind).trim().toLowerCase();
     
     console.log(`DEBUG: searching for card with title: "${decodedTitle}"`);
 
-    // Find card
-    const $card = $('.card-item').filter(function() {
-        const cardTitle = $(this).find('h3').text().trim().toLowerCase();
-        const imgAlt = $(this).find('img.card-image').attr('alt') || '';
-        
-        return cardTitle === decodedTitle || (imgAlt && imgAlt.toLowerCase() === decodedTitle);
-    });
+    // Find the card by matching the 'id' attribute first (exact match)
+    let $card = $('#' + titleToFind);
+    
+    // If not found by ID, search for matching title (H3) or Alt Text
+    if ($card.length === 0) {
+        $card = $('.card-item').filter(function() {
+            const cardId = $(this).attr('id');
+            if (cardId && cardId.toLowerCase() === decodedTitle) return true;
+
+            const cardTitle = $(this).find('h3').text().trim().toLowerCase();
+            const imgAlt = $(this).find('img.card-image').attr('alt') || '';
+            
+            return cardTitle === decodedTitle || (imgAlt && imgAlt.toLowerCase() === decodedTitle);
+        });
+    }
 
     if ($card.length) {
         console.log("DEBUG: Card found! Clicking it.");
+        // Scroll to card
         $('html, body').animate({
             scrollTop: $card.offset().top - 100
         }, 500);
+        // Click it
         $card.click();
     } else {
-        console.warn('Deep link card not found for title:', decodedTitle);
+        console.warn('Deep link card not found for title/id:', decodedTitle);
     }
 }
-
-
-/* --- EVENT LISTENERS (DELEGATED) --- */
-// NOTE: Listeners are in mainPage.js (the controller), but we leave this block empty 
-// or minimal if specific logic is needed here. The bulk of listeners are in mainPage.js
-// to ensure coordination.
-$(document).ready(function () {
-     // Keep empty or add minimal local logic here
-});
 
 
 
