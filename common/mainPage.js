@@ -195,12 +195,12 @@ $(document).ready(function () {
         // Load with Callback
         loadContent(deepLinkPage, null, function() {
             if (deepLinkTitle) {
-                // Wait slightly for DOM/masonry to settle, then click
+                // Use openCardByTitle only after content is confirmed loaded
                 setTimeout(() => {
-                    if (typeof openCardByTitle === 'function') {
+                     if (typeof openCardByTitle === 'function') {
                         openCardByTitle(deepLinkTitle);
                     } else {
-                        console.warn("openCardByTitle function not found.");
+                        console.error("openCardByTitle not found in cardLogic.js");
                     }
                 }, 500); 
             }
@@ -213,9 +213,6 @@ $(document).ready(function () {
         }
     }
 });
-
-/* --- LOAD CONTENT (Updated with callback) --- */
-
 
 /* --- LOAD CONTENT (Updated with callback) --- */
 function loadContent(pageUrl, initialLoadOverride, onComplete) {
@@ -267,7 +264,7 @@ function loadContent(pageUrl, initialLoadOverride, onComplete) {
                     initializeImageModal(); 
                 }
                 
-                // Trigger callback for synchronous/instant loads
+                // Trigger callback for synchronous loads
                 if (typeof onComplete === 'function') {
                     onComplete();
                 }
