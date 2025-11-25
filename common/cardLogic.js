@@ -996,37 +996,35 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
 
 
 /* === DEEP LINK HELPER (NEW) === */
+
+/* === NEW: Deep Link Helper === */
 function openCardByTitle(titleToFind) {
     if (!titleToFind) return;
     
-    // Decode and normalize the search title
+    // Decode and normalize
     const decodedTitle = decodeURIComponent(titleToFind).trim().toLowerCase();
     
     console.log(`DEBUG: searching for card with title: "${decodedTitle}"`);
 
-    // Find the card with matching title
+    // Find card
     const $card = $('.card-item').filter(function() {
         const cardTitle = $(this).find('h3').text().trim().toLowerCase();
         const imgAlt = $(this).find('img.card-image').attr('alt') || '';
         
-        // Debugging each card
-        // console.log(`Checking card: "${cardTitle}" or "${imgAlt.toLowerCase()}"`);
-
         return cardTitle === decodedTitle || (imgAlt && imgAlt.toLowerCase() === decodedTitle);
     });
 
     if ($card.length) {
         console.log("DEBUG: Card found! Clicking it.");
-        // Scroll to card
         $('html, body').animate({
             scrollTop: $card.offset().top - 100
         }, 500);
-        // Click it
         $card.click();
     } else {
         console.warn('Deep link card not found for title:', decodedTitle);
     }
 }
+
 
 /* --- EVENT LISTENERS (DELEGATED) --- */
 // NOTE: Listeners are in mainPage.js (the controller), but we leave this block empty 
