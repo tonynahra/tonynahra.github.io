@@ -82,6 +82,7 @@
                     <button onclick="movePage(1)" id="btnNext" class="engine-btn primary">Next &rarr;</button>
                 </div>
             </div>
+            
             <audio id="Audio" src="" autoplay style="display: none;"></audio>
         </div>
         
@@ -98,6 +99,7 @@
     </div>
 
 <script>
+    // --- Engine Configuration ---
     var ServerPath = ""; 
     var TutorialManifest = [];
     var FeedbackNumber = 0;
@@ -115,6 +117,7 @@
     var AudioObj, bntNext, bntPrevious, PageObject;
     var x = new XMLHttpRequest();
 
+    // --- Helper Functions (Defined FIRST) ---
 
     function showError(msg) {
         document.getElementById("loadingState").style.display = "none";
@@ -125,23 +128,27 @@
     }
 
     function determineFetchUrl(url) {
-        // If it's a full URL (http/https) AND not on our domain, use proxy
-        // Otherwise (relative path or same domain), fetch directly
-        const isRemote = url.startsWith('http') && !url.includes(window.location.hostname);
+        // Only use proxy if it is a full URL (http) AND not on the current domain
+        const isFullUrl = url.startsWith('http://') || url.startsWith('https://');
+        const isRemote = isFullUrl && !url.includes(window.location.hostname);
         
         if (isRemote) {
+            // Use proxy for remote cross-origin requests
             return CORS_PROXY + encodeURIComponent(url);
         } else {
+            // Fetch directly for relative paths (data/album.json) or same-domain
             return url;
         }
     }
 
-    
+    // --- Initialization ---
+
     window.onload = function() {
         document.body.focus();
         const urlParams = new URLSearchParams(window.location.search);
         const manifestUrl = urlParams.get('manifest');
         const theme = urlParams.get('theme');
+        
         if(theme) document.body.classList.add(theme);
 
         if(!manifestUrl) {
@@ -149,30 +156,42 @@
             return;
         }
 
+        // Determine mode based on extension
         if (manifestUrl.toLowerCase().endsWith('.json')) {
             isJsonMode = true;
             fetchJsonManifest(manifestUrl);
         } else {
+            // XML Mode
             const lastSlashIndex = manifestUrl.lastIndexOf('/');
-            ServerPath = manifestUrl.substring(0, lastSlashIndex + 1); 
+            if (lastSlashIndex !== -1) {
+                ServerPath = manifestUrl.substring(0, lastSlashIndex + 1);
+            } else {
+                ServerPath = ""; 
+            }
             fetchXmlManifest(manifestUrl);
         }
     };
 
     function fetchXmlManifest(url) {
-        const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-        x.open("GET", proxyUrl, true);
+        const fetchUrl = determineFetchUrl(url);
+        
+        x.open("GET", fetchUrl, true);
         x.onreadystatechange = function () {
             if (x.readyState == 4) {
                 if(x.status == 200) {
                     try {
-                        const parser = new DOMParser();
-                        doc = parser.parseFromString(x.responseText, "text/xml");
+                        if (x.responseXML) {
+                             doc = x.responseXML;
+                        } else {
+                             const parser = new DOMParser();
+                             doc = parser.parseFromString(x.responseText, "text/xml");
+                        }
+
                         if(!doc || doc.getElementsByTagName("parsererror").length > 0) {
                              showError("Error parsing XML manifest.");
                              return;
                         }
-                        // Convert XML to internal array structure
+                        
                         const nodes = doc.getElementsByTagName("s");
                         TutorialManifest = Array.from(nodes); 
                         initPlayer();
@@ -180,7 +199,7 @@
                         showError("Error processing manifest: " + e.message);
                     }
                 } else {
-                    showError("Failed to load manifest: " + x.status);
+                    showError("Failed to load manifest: " + x.status + " from " + fetchUrl);
                 }
             }
         };
@@ -188,8 +207,10 @@
     }
 
     function fetchJsonManifest(url) {
-        const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-        x.open("GET", proxyUrl, true);
+        // Use smart fetch URL logic here too
+        const fetchUrl = determineFetchUrl(url);
+        
+        x.open("GET", fetchUrl, true);
         x.onreadystatechange = function () {
             if (x.readyState == 4) {
                 if(x.status == 200) {
@@ -201,7 +222,7 @@
                         showError("Error parsing JSON album: " + e.message);
                     }
                 } else {
-                    showError("Failed to load album: " + x.status);
+                    showError("Failed to load album: " + x.status + " from " + fetchUrl);
                 }
             }
         };
@@ -266,34 +287,43 @@
         
         if (currentPagePointer < totPages) {
             if (isJsonMode) {
-                // JSON Mode
                 const item = TutorialManifest[currentPagePointer];
                 PageType = item.type;
                 
                 if (PageType === "s") {
-                     // Generate Section Slide
                      const canvas = document.createElement('canvas');
                      canvas.width = 800; canvas.height = 600;
                      const ctx = canvas.getContext('2d');
-                     ctx.fillStyle = "#1f2833"; ctx.fillRect(0,0,800,600);
-                     ctx.fillStyle = "#66fcf1"; ctx.font = "bold 60px Arial"; ctx.textAlign = "center";
+                     ctx.fillStyle = "#1f2833"; 
+                     ctx.fillRect(0,0,800,600);
+                     ctx.fillStyle = "#66fcf1"; 
+                     ctx.font = "bold 60px monospace"; 
+                     ctx.textAlign = "center";
+                     ctx.textBaseline = "middle";
                      ctx.fillText(item.title, 400, 300);
                      document.getElementById("Main").src = canvas.toDataURL();
                 } else {
                      document.getElementById("Main").src = item.url;
                 }
-                
                 bntNext.disabled = (currentPagePointer >= totPages - 1);
             } else {
-                // XML Mode
                 PageType = TutorialManifest[currentPagePointer].getAttribute("p");
                 let fileExt = ".png";
                 if (TutorialManifest[currentPagePointer].getAttribute("a") == "1") fileExt = ".gif";
                 if (PageType == "s") fileExt = "_S.png";
 
                 const filename = TutorialManifest[currentPagePointer].getAttribute("f");
-                document.getElementById("Main").src = ServerPath + "slides/m_" + filename + fileExt;
-                AudioObj.src = ServerPath + "sound/m_s" + filename + ".mp3";
+                
+                let slideUrl = filename;
+                let audioUrl = filename;
+                
+                if (!filename.startsWith('http')) {
+                     slideUrl = ServerPath + "slides/m_" + filename + fileExt;
+                     audioUrl = ServerPath + "sound/m_s" + filename + ".mp3";
+                }
+
+                document.getElementById("Main").src = slideUrl;
+                AudioObj.src = audioUrl;
 
                 if (PageType == "q") {
                     bntNext.disabled = true;
@@ -307,7 +337,6 @@
                 if (playPromise !== undefined) { playPromise.catch(error => {}); }
             }
         } else {
-             // End of content
              bntNext.disabled = true;
         }
         
@@ -327,10 +356,13 @@
 
         if (PageType == "s") {
             if ( 20 < pcntX && pcntX < 80 ) JumpToSection(y, rect.height);
-        } else if (PageType == "c" || PageType == "g") {
+        } else if (PageType == "c") {
+            movePage(0);
+        } else if (PageType == "g" || PageType == "c") {
             movePage(1);
         } else {
-             if (!bntNext.disabled) movePage(1);
+            let BTN = 0;
+            if (!bntNext.disabled) movePage(1);
         }
     }
     
@@ -339,8 +371,7 @@
         SEC = parseInt((((absY * factor)) - 75) * totSections / 380) + 1;
         var SecFind = 0;
         for (let k = 0; k < totPages; k++) {
-             // Handle both XML and JSON structures if needed, focusing on XML for now
-            if (!isJsonMode && TutorialManifest[k].getAttribute("p") == "s") SecFind++;
+             if (!isJsonMode && TutorialManifest[k].getAttribute("p") == "s") SecFind++;
             if (SecFind == SEC) { currentPagePointer = k; movePage(0); break; }
         }
     }
@@ -355,31 +386,33 @@
         let totalPages = TutorialManifest.length;
         let currentSectionPages = 0;
         let sectionName = "Intro";
+        
+        let activeSectionIndex = -1; 
+        let tempSecCount = 0;
+        
+        for(let k=0; k<=currentPagePointer; k++) {
+             let type = isJsonMode ? TutorialManifest[k].type : TutorialManifest[k].getAttribute("p");
+             if (type === "s") tempSecCount++;
+        }
+        activeSectionIndex = tempSecCount; 
 
         for (let i = 0; i < TutorialManifest.length; i++) {
-            let type;
-            if (isJsonMode) {
-                type = TutorialManifest[i].type;
-                if (type === "s") {
-                    if (i > 0) addSummaryItem(sectionName, currentSectionPages);
-                    sectionName = TutorialManifest[i].title;
-                    sectionCount++;
-                    currentSectionPages = 0;
+            let type = isJsonMode ? TutorialManifest[i].type : TutorialManifest[i].getAttribute("p");
+            let title = isJsonMode ? TutorialManifest[i].title : (TutorialManifest[i].getAttribute("s") || `Section ${sectionCount + 1}`);
+            
+            if (type === "s") {
+                if (i > 0) {
+                    addSummaryItem(sectionName, currentSectionPages, sectionCount === activeSectionIndex);
                 }
-            } else {
-                type = TutorialManifest[i].getAttribute("p");
-                if (type === "s") {
-                    if (i > 0) addSummaryItem(sectionName, currentSectionPages);
-                    sectionName = TutorialManifest[i].getAttribute("s") || `Section ${sectionCount + 1}`;
-                    sectionCount++;
-                    currentSectionPages = 0;
-                }
+                sectionName = title;
+                sectionCount++;
+                currentSectionPages = 0;
             }
             
             if (type === "q") questionCount++;
             currentSectionPages++;
         }
-        addSummaryItem(sectionName, currentSectionPages);
+        addSummaryItem(sectionName, currentSectionPages, sectionCount === activeSectionIndex);
 
         summaryTotal.innerHTML = `
             <div>Total Sections: ${sectionCount}</div>
@@ -389,8 +422,14 @@
         document.getElementById('summaryOverlay').style.display = 'flex';
     }
 
-    function addSummaryItem(name, pageCount) {
+    function addSummaryItem(name, pageCount, isActive) {
         const li = document.createElement('li');
+        if(isActive) {
+            li.style.color = "#66fcf1";
+            li.style.borderLeft = "4px solid #66fcf1";
+            li.style.paddingLeft = "10px";
+            name = "▶ " + name;
+        }
         li.innerHTML = `<span>${name}</span> <span>${pageCount} slides</span>`;
         document.getElementById('summaryList').appendChild(li);
     }
