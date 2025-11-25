@@ -115,6 +115,28 @@
     var AudioObj, bntNext, bntPrevious, PageObject;
     var x = new XMLHttpRequest();
 
+
+    function showError(msg) {
+        document.getElementById("loadingState").style.display = "none";
+        const err = document.getElementById("errorState");
+        err.style.display = "block";
+        err.textContent = msg;
+        console.error(msg);
+    }
+
+    function determineFetchUrl(url) {
+        // If it's a full URL (http/https) AND not on our domain, use proxy
+        // Otherwise (relative path or same domain), fetch directly
+        const isRemote = url.startsWith('http') && !url.includes(window.location.hostname);
+        
+        if (isRemote) {
+            return CORS_PROXY + encodeURIComponent(url);
+        } else {
+            return url;
+        }
+    }
+
+    
     window.onload = function() {
         document.body.focus();
         const urlParams = new URLSearchParams(window.location.search);
