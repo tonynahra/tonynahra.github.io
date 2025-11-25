@@ -206,6 +206,7 @@ function loadModalContent(index) {
             break;
 
 
+
 case 'chess':
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -230,7 +231,7 @@ case 'chess':
                     let commentsEnabled = true; 
                     let commentMap = {}; 
 
-                    // --- PARSER ---
+                    // --- PARSER (Corrected and Stabilized) ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
                         
@@ -354,7 +355,7 @@ case 'chess':
                         $(`#${styleId}`).text(css);
                     };
 
-                    // --- EVAL GENERATOR ---
+                    // --- EVAL GENERATOR (Finalized) ---
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -570,7 +571,6 @@ case 'chess':
                 }
             });
             break;
-
         
         case 'html':
             $.ajax({
