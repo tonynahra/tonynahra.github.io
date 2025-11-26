@@ -215,7 +215,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -246,7 +245,6 @@ case 'chess':
                 const map = {};
                 
                 // CRITICAL FIX: Target PGN headers specifically to preserve [%eval X] tags.
-                // This is the fix needed for the bars and numbers to become dynamic.
                 let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
@@ -656,8 +654,6 @@ case 'chess':
         }
     });
     break;
-
-
             
 
 
