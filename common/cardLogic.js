@@ -218,7 +218,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -244,12 +243,13 @@ case 'chess':
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (Original Logic restored for stability) ---
+            // --- PARSER (FIXED PGN HEADER STRIPPING - ESSENTIAL FIX FOR EVAL) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // NOTE: Using the original PGN header stripping logic to maintain stability
-                let body = pgnText.replace(/\[.*?\]/g, "").trim(); 
+                // FIX: Use a more targeted regex to strip PGN headers, preserving [%eval X] tags.
+                // NOTE: This is the required fix for evaluation to work with PGN files.
+                let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
                     let result = "";
@@ -298,7 +298,6 @@ case 'chess':
             // NEW HELPER: Checks if the current move has any content (used for button color)
             const hasCommentary = (moveIndex) => {
                 const text = commentMap[moveIndex] || "";
-                // Since the parser is now the original, we use the original (flawed) parser logic here
                 const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                 return hasEval || cleanText.length > 0;
@@ -371,7 +370,6 @@ case 'chess':
 
             // --- EVAL GENERATOR (Updated with Color Fix, Debug, and Tooltips) ---
             const generateEvalHtml = (rawText) => {
-                // NOTE: The original parser may strip the eval tag, but we try to find it here anyway
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                 cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
@@ -661,7 +659,6 @@ case 'chess':
     });
     break;
             
-
 
 
 
