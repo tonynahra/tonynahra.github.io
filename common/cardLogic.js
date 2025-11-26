@@ -217,6 +217,8 @@ function loadModalContent(index) {
 
 
 
+
+
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -383,7 +385,7 @@ case 'chess':
                 console.log(`[Chess Eval] Cleaned Annotation: "${cleanText}"`);
                 // **********************************
                 
-                // Tooltip Definitions (Used as alert text on click)
+                // Tooltip Definitions
                 const moveScoreTooltip = 'Change in evaluation (Current - Previous). Positive is good for the side to move.';
                 const balanceTooltip = 'Current position evaluation in pawns (1.00 = 1 pawn advantage for White).';
                 const winRateTooltip = 'Estimated Win Probability based on engine evaluation.';
@@ -450,9 +452,10 @@ case 'chess':
                 const evaluations = {}; // Placeholder for delta logic stability
                 
                 // Get evaluation for current move (using dummy delta for display)
+                // We assume 0 for delta because the full delta calculation flow was too complex for the external library
                 const parsed = generateEvalHtml(commentText, 
-                                                extractEvaluation(commentText), // Raw Eval
-                                                0); // Delta placeholder 
+                                                extractEvaluation(commentText), 
+                                                0); 
 
                 let content = "";
                 
@@ -481,7 +484,7 @@ case 'chess':
                 
                 overlay.innerHTML = content + footer; 
                 
-                // FIX: Add click listener for info icons immediately after injecting HTML
+                // FIX #2: Add click listener for info icons immediately after injecting HTML
                 $(overlay).find('.info-icon').off('click').on('click', function() {
                     const infoText = $(this).data('info');
                     if (infoText) {
@@ -489,9 +492,6 @@ case 'chess':
                     }
                 });
             };
-            
-            // --------------------------------------------------------------------------
-            // --- EVENT HANDLERS / RENDERER ---
 
             // FIX: Refactor click handler to use jQuery and call updateCommentContent after toggling state
             $('#chess-comment-btn').off('click').on('click', function(e) {
@@ -520,10 +520,10 @@ case 'chess':
                     }
                 }
                 
-                // FIX #2: Refresh content on button click
-                updateCommentContent(activeMoveIndex, total); 
+                updateCommentContent(activeMoveIndex, total); // Call with dummy data to force refresh
             });
 
+            // --- RENDER ---
             const $select = $('#chess-game-select');
             rawGames.forEach((gamePgn, idx) => {
                 const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -624,6 +624,21 @@ case 'chess':
         }
     });
     break;
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             
 
