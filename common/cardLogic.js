@@ -214,6 +214,14 @@ function loadModalContent(index) {
 
 
 
+
+
+
+
+
+
+
+
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -561,46 +569,54 @@ case 'chess':
                 $(`#${boardId}`).empty();
 
                 if (typeof PGNV !== 'undefined') {
-                    PGNV.pgnView(boardId, { 
-                        pgn: selectedPgn, 
-                        theme: 'brown', 
-                        boardSize: boardSize, 
-                        layout: 'left',
-                        width: '100%', 
-                        headers: false,
-                    });
-                    
-                    updateChessStyles();
-                    const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
-                    updateCommentContent(-1, total, evaluations); // Pass evaluations map
+                    // FIX: Introduce a 50ms delay to resolve the PGNV race condition (TypeError)
+                    setTimeout(() => {
+                        const delayedTargetElement = document.getElementById(boardId);
+                        if (!delayedTargetElement) return;
 
-                    // Observer
-                    const checkInterval = setInterval(() => {
-                        const movesPanel = document.getElementById(boardId + 'Moves');
+                        PGNV.pgnView(boardId, { 
+                            pgn: selectedPgn, 
+                            theme: 'brown', 
+                            boardSize: boardSize, 
+                            layout: 'left',
+                            width: '100%', 
+                            headers: false,
+                        });
                         
-                        if (movesPanel) {
-                            clearInterval(checkInterval);
-                            
-                            const totalMoves = movesPanel.querySelectorAll('move').length;
+                        updateChessStyles();
+                        const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
+                        updateCommentContent(-1, total, evaluations); // Pass evaluations map
 
-                            gameObserver = new MutationObserver(() => {
-                                let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
-                                
-                                if (activeEl) {
-                                    const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
-                                    if (activeMove) {
-                                        const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                        const index = allMoves.indexOf(activeMove);
-                                        updateCommentContent(index, totalMoves, evaluations); // Pass evaluations map
-                                        return;
-                                    }
-                                }
-                                updateCommentContent(-1, totalMoves, evaluations); // Pass evaluations map
-                            });
+                        // Observer setup
+                        const checkInterval = setInterval(() => {
+                            const movesPanel = document.getElementById(boardId + 'Moves');
                             
-                            gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
-                        }
-                    }, 200);
+                            if (movesPanel) {
+                                clearInterval(checkInterval);
+                                
+                                const totalMoves = movesPanel.querySelectorAll('move').length;
+
+                                gameObserver = new MutationObserver(() => {
+                                    let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
+                                    
+                                    if (activeEl) {
+                                        const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
+                                        if (activeMove) {
+                                            const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                                            const index = allMoves.indexOf(activeMove);
+                                            updateCommentContent(index, totalMoves, evaluations); // Pass evaluations map
+                                            return;
+                                        }
+                                    }
+                                    updateCommentContent(-1, totalMoves, evaluations); // Pass evaluations map
+                                });
+                                
+                                gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
+                            }
+                        }, 200);
+
+                    }, 50); // 50 millisecond delay
+
                 } else {
                     $modal.removeClass('chess-mode');
                     $('body').removeClass('chess-mode-active');
@@ -633,8 +649,6 @@ case 'chess':
         }
     });
     break;
-
-
 
 
 
