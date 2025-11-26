@@ -215,7 +215,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -241,13 +240,12 @@ case 'chess':
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (FIXED PGN HEADER STRIPPING - ESSENTIAL FIX) ---
+            // --- PARSER (Original Logic restored for stability) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // FIX: Use a more targeted regex to strip PGN headers, preserving [%eval X] tags.
-                // NOTE: This is the required fix for evaluation to work with PGN files.
-                let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
+                // NOTE: Using the original PGN header stripping logic to maintain stability
+                let body = pgnText.replace(/\[.*?\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
                     let result = "";
@@ -292,7 +290,7 @@ case 'chess':
                 }
                 return map;
             };
-            
+
             // NEW HELPER: Checks if the current move has any content (used for button color)
             const hasCommentary = (moveIndex) => {
                 const text = commentMap[moveIndex] || "";
@@ -301,70 +299,6 @@ case 'chess':
                 return hasEval || cleanText.length > 0;
             };
 
-            // 2. INJECT HTML
-            $modalContent.html(`
-                <style id="${styleId}"></style>
-                <div class="chess-container">
-                    <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 8px; background: #1a1a1a; gap: 10px; border-bottom: 1px solid #333;">
-                        <select id="chess-game-select" style="flex: 1; max-width: 400px; padding: 5px; background:#000; color:#fff; border:1px solid #444;"></select>
-                        <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Info</button>
-                        <button id="chess-font-minus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">-</button>
-                        <button id="chess-font-plus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">+</button>
-                        <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 4px 10px;">Comments: On</button>
-                        <div style="flex: 1;"></div>
-                        <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
-                    </div>
-                    <div class="chess-main-area">
-                        <div class="chess-white-box">
-                            <div id="${boardId}"></div>
-                        </div>
-                        <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
-                        <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
-                    </div>
-                </div>
-            `);
-
-            // --- DYNAMIC STYLES (Unchanged) ---
-            const updateChessStyles = () => {
-                const movesId = `#${boardId}Moves`; 
-                const css = `
-                    ${movesId} {
-                        background-color: #ffffff !important;
-                        color: #000000 !important;
-                        font-size: ${currentFontSize}px !important;
-                        line-height: ${currentFontSize + 10}px !important;
-                        padding: 20px !important;
-                        border-left: 4px solid #d2b48c !important;
-                        height: 100% !important;
-                        overflow-y: auto !important;
-                        width: 360px !important; 
-                        min-width: 360px !important;
-                        display: block !important; 
-                    }
-                    ${movesId} move {
-                        font-size: ${currentFontSize}px !important;
-                        line-height: ${currentFontSize + 10}px !important;
-                        color: #000000 !important;
-                        cursor: pointer !important;
-                        display: inline-block !important;
-                        margin-right: 8px !important;
-                        margin-bottom: 5px !important;
-                        border-radius: 3px !important;
-                        padding: 2px 4px !important;
-                    }
-                    ${movesId} move:hover { background-color: #e0e0e0 !important; }
-                    ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
-                    
-                    #${boardId} .pgnvjs-wrapper {
-                        display: flex !important;
-                        flex-direction: row !important;
-                        align-items: flex-start !important;
-                        width: 100% !important;
-                        justify-content: center !important;
-                    }
-                `;
-                $(`#${styleId}`).text(css);
-            };
 
             // --- EVAL GENERATOR (Updated with Color Fix, Debug, and Tooltips) ---
             const generateEvalHtml = (rawText) => {
@@ -411,6 +345,7 @@ case 'chess':
                         else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
                         
                         if (balanceScore > 0) balanceScore = `+${balanceScore}`;
+                        
                         whiteWinPct = 50 + (rawVal * 8);
                         whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                     }
@@ -460,14 +395,6 @@ case 'chess':
                     </div>
                 `;
                 return { html: evalHtml, text: cleanText };
-            };
-
-            // NEW HELPER: Checks if the current move has any content (used for button color)
-            const hasCommentary = (moveIndex) => {
-                const text = commentMap[moveIndex] || "";
-                const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                return hasEval || cleanText.length > 0;
             };
 
             // --- COMMENT UPDATER (Updated for clearer comment display and button coloring) ---
@@ -624,7 +551,6 @@ case 'chess':
                                     if (activeMove) {
                                         const allMoves = Array.from(movesPanel.querySelectorAll('move'));
                                         const index = allMoves.indexOf(activeMove);
-                                        // FIX: Ensure updateContentContent is called with the current index
                                         updateCommentContent(index, totalMoves);
                                         return;
                                     }
@@ -657,7 +583,6 @@ case 'chess':
     });
     break;
             
-
 
 
 
