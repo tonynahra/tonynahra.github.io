@@ -217,7 +217,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -648,9 +647,7 @@ case 'chess':
         }
     });
     break;
-
-
-
+            
 
 
 
