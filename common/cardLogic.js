@@ -248,8 +248,7 @@ case 'chess':
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // FIX: Use a targeted regex to strip PGN headers, preserving [%eval X] tags.
-                // This is the CRITICAL FIX to make the numbers and bars dynamic.
+                // CRITICAL FIX: Target PGN headers specifically to prevent stripping [%eval X] tags.
                 let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
@@ -369,7 +368,7 @@ case 'chess':
                 $(`#${styleId}`).text(css);
             };
 
-            // --- EVAL GENERATOR (Updated with Color Fix, Debug, and Tooltips) ---
+            // --- EVAL GENERATOR (Updated with Color Fix, Dynamic Numbers, and Tooltips) ---
             const generateEvalHtml = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -399,6 +398,7 @@ case 'chess':
                     } else {
                         rawVal = parseFloat(valStr);
                         
+                        // FIX: Ensure bars and numbers are dynamic
                         moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
                         const absMove = Math.min(Math.abs(rawVal), 10);
                         moveWidth = (absMove / 10) * 50;
@@ -660,7 +660,6 @@ case 'chess':
     });
     break;
             
-
 
 
 
