@@ -218,7 +218,8 @@ function loadModalContent(index) {
 
 
 
-            case 'chess':
+
+case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
         loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -247,7 +248,8 @@ function loadModalContent(index) {
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // FIX: This is the critical change to correctly parse evaluation tags without breaking stability.
+                // FIX: Use a targeted regex to strip PGN headers, preserving [%eval X] tags.
+                // This is the CRITICAL FIX to make the numbers and bars dynamic.
                 let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
@@ -658,7 +660,6 @@ function loadModalContent(index) {
     });
     break;
             
-
 
 
 
