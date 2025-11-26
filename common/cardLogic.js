@@ -213,7 +213,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -239,13 +238,14 @@ case 'chess':
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (Original Logic, restored for stability) ---
+            // --- PARSER (Fixed to preserve [%eval] tags) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // NOTE: This line is the original line that was too broad for headers 
-                // but is required to keep the structure functional.
-                let body = pgnText.replace(/\[.*?\]/g, "").trim(); 
+                // FIX APPLIED HERE: 
+                // Changed regex from /\[.*?\]/g to /\[(?!%)[^\]]*\]/g
+                // This strips standard headers but PRESERVES [%eval] or [%clk] tags.
+                let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
                     let result = "";
@@ -637,6 +637,8 @@ case 'chess':
         }
     });
     break;
+
+
             
             
 
