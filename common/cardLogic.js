@@ -219,7 +219,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -234,6 +233,7 @@ case 'chess':
     $.ajax({
         url: loadUrl, 
         dataType: 'text',
+        timeout: 10000, // NEW: Enforce a 10-second timeout
         success: function(pgnFileContent) {
             let rawGames = pgnFileContent.split(/(?=\[Event ")/g).filter(g => g.trim().length > 0);
             if (rawGames.length === 0) rawGames = [pgnFileContent]; 
@@ -248,7 +248,6 @@ case 'chess':
             // --------------------------------------------------------------------------
             // --- CORE PARSING HELPERS ---
             
-            // FIX: Safely remove standard PGN headers [Key "Value"] only.
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
@@ -647,8 +646,6 @@ case 'chess':
         }
     });
     break;
-            
-
 
 
             
