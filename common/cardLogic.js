@@ -213,6 +213,11 @@ function loadModalContent(index) {
 
 
 
+
+
+
+
+
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -238,13 +243,9 @@ case 'chess':
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (Fixed to preserve [%eval] tags) ---
+            // --- PARSER (Preserving [%eval] tags) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
-                
-                // FIX APPLIED HERE: 
-                // Changed regex from /\[.*?\]/g to /\[(?!%)[^\]]*\]/g
-                // This strips standard headers but PRESERVES [%eval] or [%clk] tags.
                 let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
@@ -291,10 +292,9 @@ case 'chess':
                 return map;
             };
 
-            // NEW HELPER: Checks if the current move has any content (used for button color)
+            // NEW HELPER: Checks if the current move has any content
             const hasCommentary = (moveIndex) => {
                 const text = commentMap[moveIndex] || "";
-                // Check if text has content OR if it has an eval tag
                 const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                 return hasEval || cleanText.length > 0;
@@ -323,7 +323,7 @@ case 'chess':
                 </div>
             `);
 
-            // --- DYNAMIC STYLES (Unchanged) ---
+            // --- DYNAMIC STYLES ---
             const updateChessStyles = () => {
                 const movesId = `#${boardId}Moves`; 
                 const css = `
@@ -365,7 +365,7 @@ case 'chess':
                 $(`#${styleId}`).text(css);
             };
 
-            // --- EVAL GENERATOR (Updated with Tooltips and 1 Decimal Place Fix) ---
+            // --- EVAL GENERATOR (Updated: No Info Icons, White/Black Colors) ---
             const generateEvalHtml = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -375,14 +375,10 @@ case 'chess':
                 let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
                 let whiteWinPct = 50;
                 
-                let debugEvalValue = "N/A";
-
                 if (evalMatch) {
                     const valStr = evalMatch[1];
                     let rawVal = 0;
                     
-                    debugEvalValue = valStr;
-
                     if (valStr.startsWith('#')) {
                         const isBlackMate = valStr.includes('-');
                         moveDisplay = "Mate " + valStr;
@@ -415,16 +411,6 @@ case 'chess':
                     }
                 }
                 
-                // *** DEBUGGING: Log to console ***
-                console.log(`[Chess Eval] Raw PGN Text: "${rawText}"`);
-                console.log(`[Chess Eval] Parsed Value: ${debugEvalValue}`);
-                console.log(`[Chess Eval] Cleaned Comment: "${cleanText}"`);
-                // **********************************
-                
-                // Tooltip Definitions
-                const moveScoreTooltip = 'Current position evaluation in pawns (1.00 = 1 pawn advantage for White).';
-                const balanceTooltip = 'Current position evaluation scaled to centipawns (100 = 1 pawn advantage for White).';
-                
                 // 1 Decimal Place Formatting
                 const whiteWinPctFormatted = whiteWinPct.toFixed(1);
                 const blackWinPctFormatted = (100 - whiteWinPct).toFixed(1);
@@ -433,7 +419,6 @@ case 'chess':
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>Move Score</span>
-                            <i class="info-icon" title="${moveScoreTooltip}" style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${moveDisplay}</span>
                         </div>
                         <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
@@ -441,7 +426,6 @@ case 'chess':
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>Game Balance</span>
-                            <i class="info-icon" title="${balanceTooltip}" style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${balanceScore}</span>
                         </div>
                         <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
@@ -449,23 +433,23 @@ case 'chess':
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>White vs Black</span>
-                            <i class="info-icon" title="Estimated Win Probability based on engine evaluation." style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${whiteWinPctFormatted}% / ${blackWinPctFormatted}%</span>
                         </div>
-                        <div class="win-rate-bar" style="height: 10px; background: #e74c3c; overflow: hidden; border-radius: 3px;">
-                            <div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #2ecc71; float: left;"></div>
+                        <div class="win-rate-bar" style="height: 10px; background: #000000; overflow: hidden; border-radius: 3px; border: 1px solid #777;">
+                            <div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #ffffff; float: left;"></div>
                         </div>
                     </div>
                 `;
                 return { html: evalHtml, text: cleanText };
             };
 
-            // --- COMMENT UPDATER (Updated for clearer comment display and button coloring) ---
+            // --- COMMENT UPDATER (Updated: Indicator Logic & Styling) ---
             const updateCommentContent = (moveIndex, totalMoves) => {
                 const overlay = document.getElementById('chess-comment-overlay');
                 const btn = $('#chess-comment-btn');
                 
-                // FIX: Change button color based on comment existence
+                // 1. UPDATE BUTTON COLOR (Indicator)
+                // This runs BEFORE checking if comments are enabled, ensuring the notification works when Off.
                 const hasComment = hasCommentary(moveIndex);
                 if (hasComment) {
                     btn.css({ background: '#4CAF50', color: '#000', border: '1px solid #4CAF50' }); 
@@ -473,6 +457,7 @@ case 'chess':
                     btn.css({ background: '#1a1a1a', color: '#ccc', border: '1px solid #444' });
                 }
 
+                // 2. CHECK VISIBILITY
                 if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                 $(overlay).fadeIn();
 
@@ -480,7 +465,7 @@ case 'chess':
                 const parsed = generateEvalHtml(commentText); 
                 let content = "";
                 
-                // 1. TEXT (TOP BLOCK) - IMPROVED COMMENT DISPLAY
+                // 3. TEXT CONTENT
                 let textContent = "";
                 if (parsed.text) {
                     textContent = `
@@ -494,8 +479,7 @@ case 'chess':
                 }
                 content += `<div class="comment-text-content">${textContent}</div>`;
 
-
-                // 2. BARS & COUNTER (BOTTOM FOOTER)
+                // 4. BARS & COUNTER
                 let footer = "";
                 footer += parsed.html; 
                 
@@ -506,7 +490,7 @@ case 'chess':
                 overlay.innerHTML = content + footer; 
             };
 
-            // FIX: Refactor click handler to use jQuery and call updateCommentContent after toggling state
+            // CLICK HANDLER: FORCE REFRESH
             $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 commentsEnabled = !commentsEnabled;
@@ -518,15 +502,13 @@ case 'chess':
                     btn.text('Comments: Off');
                 }
                 
-                // Force refresh of content/color based on new state
+                // REFRESH DATA: Grab the active move from DOM immediately to avoid stale data
                 const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                 let activeMoveIndex = -1;
                 const movesPanel = document.getElementById(boardId + 'Moves');
                 
                 if (movesPanel) {
                     const activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
-                    
-                    // Determine current move index
                     if (activeEl) {
                         const allMoves = Array.from(movesPanel.querySelectorAll('move'));
                         activeMoveIndex = allMoves.indexOf(activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move'));
@@ -637,8 +619,7 @@ case 'chess':
         }
     });
     break;
-
-
+            
             
             
 
