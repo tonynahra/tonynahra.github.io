@@ -216,7 +216,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -242,12 +241,13 @@ case 'chess':
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (Original Logic restored for stability) ---
+            // --- PARSER (FIXED PGN HEADER STRIPPING - ESSENTIAL FIX) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // NOTE: Using the original PGN header stripping logic to maintain stability
-                let body = pgnText.replace(/\[.*?\]/g, "").trim(); 
+                // FIX: Use a more targeted regex to strip PGN headers, preserving [%eval X] tags.
+                // NOTE: This is the required fix for evaluation to work with PGN files.
+                let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
                     let result = "";
@@ -291,6 +291,14 @@ case 'chess':
                     }
                 }
                 return map;
+            };
+            
+            // NEW HELPER: Checks if the current move has any content (used for button color)
+            const hasCommentary = (moveIndex) => {
+                const text = commentMap[moveIndex] || "";
+                const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+                const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+                return hasEval || cleanText.length > 0;
             };
 
             // 2. INJECT HTML
@@ -379,7 +387,8 @@ case 'chess':
                     if (valStr.startsWith('#')) {
                         const isBlackMate = valStr.includes('-');
                         moveDisplay = "Mate " + valStr;
-                        moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
+                        moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ?
+                        "#e74c3c" : "#2ecc71";
                         
                         balanceScore = isBlackMate ? "-100" : "+100";
                         balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
@@ -402,7 +411,6 @@ case 'chess':
                         else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
                         
                         if (balanceScore > 0) balanceScore = `+${balanceScore}`;
-                        
                         whiteWinPct = 50 + (rawVal * 8);
                         whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                     }
@@ -616,6 +624,7 @@ case 'chess':
                                     if (activeMove) {
                                         const allMoves = Array.from(movesPanel.querySelectorAll('move'));
                                         const index = allMoves.indexOf(activeMove);
+                                        // FIX: Ensure updateContentContent is called with the current index
                                         updateCommentContent(index, totalMoves);
                                         return;
                                     }
@@ -648,8 +657,6 @@ case 'chess':
     });
     break;
             
-
-
 
 
 
