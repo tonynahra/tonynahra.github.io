@@ -218,8 +218,7 @@ function loadModalContent(index) {
 
 
 
-
-            case 'chess':
+case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
         loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -244,12 +243,13 @@ function loadModalContent(index) {
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (FIXED PGN HEADER STRIPPING - ESSENTIAL FIX FOR EVAL) ---
+            // --- PARSER (Original Logic, restored for stability) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // FIX: Use a more targeted regex to strip PGN headers, preserving [%eval X] tags.
-                let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
+                // NOTE: This line is the original line that was too broad for headers 
+                // but is required to keep the structure functional.
+                let body = pgnText.replace(/\[.*?\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
                     let result = "";
@@ -298,12 +298,78 @@ function loadModalContent(index) {
             // NEW HELPER: Checks if the current move has any content (used for button color)
             const hasCommentary = (moveIndex) => {
                 const text = commentMap[moveIndex] || "";
+                // Check if text has content OR if it has an eval tag
                 const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                 return hasEval || cleanText.length > 0;
             };
 
-            // --- EVAL GENERATOR (Updated with Color Fix, Debug, and Tooltips) ---
+            // 2. INJECT HTML
+            $modalContent.html(`
+                <style id="${styleId}"></style>
+                <div class="chess-container">
+                    <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 8px; background: #1a1a1a; gap: 10px; border-bottom: 1px solid #333;">
+                        <select id="chess-game-select" style="flex: 1; max-width: 400px; padding: 5px; background:#000; color:#fff; border:1px solid #444;"></select>
+                        <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Info</button>
+                        <button id="chess-font-minus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">-</button>
+                        <button id="chess-font-plus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">+</button>
+                        <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 4px 10px;">Comments: On</button>
+                        <div style="flex: 1;"></div>
+                        <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
+                    </div>
+                    <div class="chess-main-area">
+                        <div class="chess-white-box">
+                            <div id="${boardId}"></div>
+                        </div>
+                        <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
+                        <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
+                    </div>
+                </div>
+            `);
+
+            // --- DYNAMIC STYLES (Unchanged) ---
+            const updateChessStyles = () => {
+                const movesId = `#${boardId}Moves`; 
+                const css = `
+                    ${movesId} {
+                        background-color: #ffffff !important;
+                        color: #000000 !important;
+                        font-size: ${currentFontSize}px !important;
+                        line-height: ${currentFontSize + 10}px !important;
+                        padding: 20px !important;
+                        border-left: 4px solid #d2b48c !important;
+                        height: 100% !important;
+                        overflow-y: auto !important;
+                        width: 360px !important; 
+                        min-width: 360px !important;
+                        display: block !important; 
+                    }
+                    ${movesId} move {
+                        font-size: ${currentFontSize}px !important;
+                        line-height: ${currentFontSize + 10}px !important;
+                        color: #000000 !important;
+                        cursor: pointer !important;
+                        display: inline-block !important;
+                        margin-right: 8px !important;
+                        margin-bottom: 5px !important;
+                        border-radius: 3px !important;
+                        padding: 2px 4px !important;
+                    }
+                    ${movesId} move:hover { background-color: #e0e0e0 !important; }
+                    ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
+                    
+                    #${boardId} .pgnvjs-wrapper {
+                        display: flex !important;
+                        flex-direction: row !important;
+                        align-items: flex-start !important;
+                        width: 100% !important;
+                        justify-content: center !important;
+                    }
+                `;
+                $(`#${styleId}`).text(css);
+            };
+
+            // --- EVAL GENERATOR (Updated with Tooltips and 1 Decimal Place Fix) ---
             const generateEvalHtml = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -348,7 +414,6 @@ function loadModalContent(index) {
                         else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
                         
                         if (balanceScore > 0) balanceScore = `+${balanceScore}`;
-                        
                         whiteWinPct = 50 + (rawVal * 8);
                         whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                     }
@@ -363,7 +428,6 @@ function loadModalContent(index) {
                 // Tooltip Definitions
                 const moveScoreTooltip = 'Current position evaluation in pawns (1.00 = 1 pawn advantage for White).';
                 const balanceTooltip = 'Current position evaluation scaled to centipawns (100 = 1 pawn advantage for White).';
-                const winRateTooltip = 'Estimated Win Probability based on engine evaluation.';
                 
                 // 1 Decimal Place Formatting
                 const whiteWinPctFormatted = whiteWinPct.toFixed(1);
@@ -373,7 +437,7 @@ function loadModalContent(index) {
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>Move Score</span>
-                            <i class="info-icon" data-info="${moveScoreTooltip}" style="margin-left: 5px; cursor: pointer;">&#9432;</i>
+                            <i class="info-icon" title="${moveScoreTooltip}" style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${moveDisplay}</span>
                         </div>
                         <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
@@ -381,7 +445,7 @@ function loadModalContent(index) {
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>Game Balance</span>
-                            <i class="info-icon" data-info="${balanceTooltip}" style="margin-left: 5px; cursor: pointer;">&#9432;</i>
+                            <i class="info-icon" title="${balanceTooltip}" style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${balanceScore}</span>
                         </div>
                         <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
@@ -389,23 +453,15 @@ function loadModalContent(index) {
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>White vs Black</span>
-                            <i class="info-icon" data-info="${winRateTooltip}" style="margin-left: 5px; cursor: pointer;">&#9432;</i>
+                            <i class="info-icon" title="Estimated Win Probability based on engine evaluation." style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${whiteWinPctFormatted}% / ${blackWinPctFormatted}%</span>
                         </div>
-                        <div class="win-rate-bar" style="height: 10px; background: black; overflow: hidden; border-radius: 3px;">
-                            <div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: white; float: left;"></div>
+                        <div class="win-rate-bar" style="height: 10px; background: #e74c3c; overflow: hidden; border-radius: 3px;">
+                            <div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #2ecc71; float: left;"></div>
                         </div>
                     </div>
                 `;
                 return { html: evalHtml, text: cleanText };
-            };
-
-            // NEW HELPER: Checks if the current move has any content (used for button color)
-            const hasCommentary = (moveIndex) => {
-                const text = commentMap[moveIndex] || "";
-                const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                return hasEval || cleanText.length > 0;
             };
 
             // --- COMMENT UPDATER (Updated for clearer comment display and button coloring) ---
@@ -452,14 +508,6 @@ function loadModalContent(index) {
                 footer += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
                 
                 overlay.innerHTML = content + footer; 
-                
-                // FIX: Add click listener for info icons immediately after injecting HTML
-                $(overlay).find('.info-icon').off('click').on('click', function() {
-                    const infoText = $(this).data('info');
-                    if (infoText) {
-                        alert(infoText);
-                    }
-                });
             };
 
             // FIX: Refactor click handler to use jQuery and call updateCommentContent after toggling state
@@ -594,6 +642,7 @@ function loadModalContent(index) {
     });
     break;
             
+    
 
 
 
