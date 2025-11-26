@@ -239,13 +239,13 @@ case 'chess':
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (CRITICAL FIX APPLIED HERE) ---
+            // --- PARSER (Original Logic, restored for stability) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // CRITICAL FIX: Target PGN headers specifically to preserve [%eval X] tags.
-                // NOTE: The original line was `let body = pgnText.replace(/\[.*?\]/g, "").trim();`
-                let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
+                // NOTE: This line is the original line that was too broad for headers 
+                // but is required to keep the structure functional.
+                let body = pgnText.replace(/\[.*?\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
                     let result = "";
@@ -294,6 +294,7 @@ case 'chess':
             // NEW HELPER: Checks if the current move has any content (used for button color)
             const hasCommentary = (moveIndex) => {
                 const text = commentMap[moveIndex] || "";
+                // Check if text has content OR if it has an eval tag
                 const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                 return hasEval || cleanText.length > 0;
@@ -364,7 +365,7 @@ case 'chess':
                 $(`#${styleId}`).text(css);
             };
 
-            // --- EVAL GENERATOR (Updated with Color Fix, Dynamic Numbers, and Tooltips) ---
+            // --- EVAL GENERATOR (Updated with Tooltips and 1 Decimal Place Fix) ---
             const generateEvalHtml = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -409,7 +410,6 @@ case 'chess':
                         else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
                         
                         if (balanceScore > 0) balanceScore = `+${balanceScore}`;
-                        
                         whiteWinPct = 50 + (rawVal * 8);
                         whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                     }
@@ -424,7 +424,6 @@ case 'chess':
                 // Tooltip Definitions
                 const moveScoreTooltip = 'Current position evaluation in pawns (1.00 = 1 pawn advantage for White).';
                 const balanceTooltip = 'Current position evaluation scaled to centipawns (100 = 1 pawn advantage for White).';
-                const winRateTooltip = 'Estimated Win Probability based on engine evaluation.';
                 
                 // 1 Decimal Place Formatting
                 const whiteWinPctFormatted = whiteWinPct.toFixed(1);
@@ -434,7 +433,7 @@ case 'chess':
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>Move Score</span>
-                            <i class="info-icon" data-info="${moveScoreTooltip}" style="margin-left: 5px; cursor: pointer;">&#9432;</i>
+                            <i class="info-icon" title="${moveScoreTooltip}" style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${moveDisplay}</span>
                         </div>
                         <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
@@ -442,7 +441,7 @@ case 'chess':
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>Game Balance</span>
-                            <i class="info-icon" data-info="${balanceTooltip}" style="margin-left: 5px; cursor: pointer;">&#9432;</i>
+                            <i class="info-icon" title="${balanceTooltip}" style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${balanceScore}</span>
                         </div>
                         <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
@@ -450,23 +449,15 @@ case 'chess':
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>White vs Black</span>
-                            <i class="info-icon" data-info="${winRateTooltip}" style="margin-left: 5px; cursor: pointer;">&#9432;</i>
+                            <i class="info-icon" title="Estimated Win Probability based on engine evaluation." style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${whiteWinPctFormatted}% / ${blackWinPctFormatted}%</span>
                         </div>
-                        <div class="win-rate-bar" style="height: 10px; background: black; overflow: hidden; border-radius: 3px;">
-                            <div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: white; float: left;"></div>
+                        <div class="win-rate-bar" style="height: 10px; background: #e74c3c; overflow: hidden; border-radius: 3px;">
+                            <div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #2ecc71; float: left;"></div>
                         </div>
                     </div>
                 `;
                 return { html: evalHtml, text: cleanText };
-            };
-
-            // NEW HELPER: Checks if the current move has any content (used for button color)
-            const hasCommentary = (moveIndex) => {
-                const text = commentMap[moveIndex] || "";
-                const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                return hasEval || cleanText.length > 0;
             };
 
             // --- COMMENT UPDATER (Updated for clearer comment display and button coloring) ---
@@ -513,14 +504,6 @@ case 'chess':
                 footer += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
                 
                 overlay.innerHTML = content + footer; 
-                
-                // FIX: Add click listener for info icons immediately after injecting HTML
-                $(overlay).find('.info-icon').off('click').on('click', function() {
-                    const infoText = $(this).data('info');
-                    if (infoText) {
-                        alert(infoText);
-                    }
-                });
             };
 
             // FIX: Refactor click handler to use jQuery and call updateCommentContent after toggling state
@@ -654,6 +637,7 @@ case 'chess':
         }
     });
     break;
+            
             
 
 
