@@ -218,7 +218,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -244,11 +243,12 @@ case 'chess':
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (FIXED PGN HEADER STRIPPING - ESSENTIAL FIX FOR EVAL) ---
+            // --- PARSER (CRITICAL FIX APPLIED HERE) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // CRITICAL FIX: Target PGN headers specifically to prevent stripping [%eval X] tags.
+                // CRITICAL FIX: Use targeted regex to preserve [%eval X] tags, which are needed for bar calculation.
+                // NOTE: The original line, `let body = pgnText.replace(/\[.*?\]/g, "").trim();`, was the source of the broken evaluation.
                 let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
@@ -398,7 +398,6 @@ case 'chess':
                     } else {
                         rawVal = parseFloat(valStr);
                         
-                        // FIX: Ensure bars and numbers are dynamic
                         moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
                         const absMove = Math.min(Math.abs(rawVal), 10);
                         moveWidth = (absMove / 10) * 50;
@@ -660,7 +659,6 @@ case 'chess':
     });
     break;
             
-
 
 
 
