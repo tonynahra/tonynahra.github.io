@@ -218,6 +218,7 @@ function loadModalContent(index) {
 
 
 
+
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -243,7 +244,7 @@ case 'chess':
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (Preserving [%eval] tags) ---
+            // --- PARSER ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim(); 
@@ -292,7 +293,7 @@ case 'chess':
                 return map;
             };
 
-            // NEW HELPER: Checks if the current move has any content
+            // NEW HELPER: Checks if the SPECIFIC move has any content
             const hasCommentary = (moveIndex) => {
                 const text = commentMap[moveIndex] || "";
                 const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
@@ -365,7 +366,7 @@ case 'chess':
                 $(`#${styleId}`).text(css);
             };
 
-            // --- EVAL GENERATOR (Updated: No Info Icons, White/Black Colors) ---
+            // --- EVAL GENERATOR ---
             const generateEvalHtml = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -411,7 +412,6 @@ case 'chess':
                     }
                 }
                 
-                // 1 Decimal Place Formatting
                 const whiteWinPctFormatted = whiteWinPct.toFixed(1);
                 const blackWinPctFormatted = (100 - whiteWinPct).toFixed(1);
 
@@ -443,21 +443,23 @@ case 'chess':
                 return { html: evalHtml, text: cleanText };
             };
 
-            // --- COMMENT UPDATER (Updated: Indicator Logic & Styling) ---
+            // --- COMMENT UPDATER (Updated: Label Styles & Button Logic) ---
             const updateCommentContent = (moveIndex, totalMoves) => {
                 const overlay = document.getElementById('chess-comment-overlay');
                 const btn = $('#chess-comment-btn');
                 
-                // 1. UPDATE BUTTON COLOR (Indicator)
-                // This runs BEFORE checking if comments are enabled, ensuring the notification works when Off.
+                // 1. DYNAMIC BUTTON COLORING (Per Move)
+                // We check if THIS specific move index has commentary/eval.
                 const hasComment = hasCommentary(moveIndex);
                 if (hasComment) {
+                    // Green if annotation exists
                     btn.css({ background: '#4CAF50', color: '#000', border: '1px solid #4CAF50' }); 
                 } else {
+                    // Dark Grey if no annotation
                     btn.css({ background: '#1a1a1a', color: '#ccc', border: '1px solid #444' });
                 }
 
-                // 2. CHECK VISIBILITY
+                // 2. VISIBILITY CHECK
                 if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                 $(overlay).fadeIn();
 
@@ -465,11 +467,11 @@ case 'chess':
                 const parsed = generateEvalHtml(commentText); 
                 let content = "";
                 
-                // 3. TEXT CONTENT
+                // 3. TEXT CONTENT (Updated Label Style)
                 let textContent = "";
                 if (parsed.text) {
                     textContent = `
-                        <h5 style="margin: 0 0 5px; color: var(--text-accent); font-size: 1.1rem; font-weight: bold;">Game Commentary</h5>
+                        <h5 style="margin: 0 0 8px; color: navy; background: #e0e0e0; font-size: 0.85rem; padding: 4px 8px; border-radius: 3px; display: inline-block; font-weight: bold;">Game Commentary</h5>
                         <div style="margin-bottom:12px; font-size: 1rem; color: #2c3e50;">${parsed.text}</div>
                     `;
                 } else if (moveIndex === -1) {
@@ -490,7 +492,7 @@ case 'chess':
                 overlay.innerHTML = content + footer; 
             };
 
-            // CLICK HANDLER: FORCE REFRESH
+            // CLICK HANDLER
             $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 commentsEnabled = !commentsEnabled;
@@ -502,7 +504,7 @@ case 'chess':
                     btn.text('Comments: Off');
                 }
                 
-                // REFRESH DATA: Grab the active move from DOM immediately to avoid stale data
+                // IMMEDIATE REFRESH: Grab active move to update content and button color instantly
                 const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                 let activeMoveIndex = -1;
                 const movesPanel = document.getElementById(boardId + 'Moves');
@@ -514,7 +516,6 @@ case 'chess':
                         activeMoveIndex = allMoves.indexOf(activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move'));
                     }
                 }
-                
                 updateCommentContent(activeMoveIndex, total);
             });
 
@@ -619,7 +620,6 @@ case 'chess':
         }
     });
     break;
-            
             
             
 
