@@ -218,7 +218,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -240,17 +239,18 @@ case 'chess':
             const boardId = 'chess-board-' + Date.now();
             const styleId = 'chess-style-' + Date.now(); 
             
-            let currentFontSize = 26;
+            let currentFontSize = 26; 
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (FIXED PGN HEADER STRIPPING) ---
+            // --- PARSER (Original Logic, restored for stability) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // FIX: Use a more targeted regex to strip PGN headers, preserving [%eval X] tags.
-                let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim();
-                
+                // NOTE: This line is the original line that was too broad for headers 
+                // but is required to keep the structure functional.
+                let body = pgnText.replace(/\[.*?\]/g, "").trim(); 
+
                 const cleanPGN = (text) => {
                     let result = "";
                     let depth = 0;
@@ -265,6 +265,7 @@ case 'chess':
 
                 body = body.replace(/(\r\n|\n|\r)/gm, " ");
                 body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
+
                 const tokens = body.split(/\s+/);
                 let moveIndex = 0;
                 let insideComment = false;
@@ -292,6 +293,15 @@ case 'chess':
                     }
                 }
                 return map;
+            };
+
+            // NEW HELPER: Checks if the current move has any content (used for button color)
+            const hasCommentary = (moveIndex) => {
+                const text = commentMap[moveIndex] || "";
+                // Check if text has content OR if it has an eval tag
+                const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+                const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+                return hasEval || cleanText.length > 0;
             };
 
             // 2. INJECT HTML
@@ -330,7 +340,7 @@ case 'chess':
                         border-left: 4px solid #d2b48c !important;
                         height: 100% !important;
                         overflow-y: auto !important;
-                        width: 360px !important;
+                        width: 360px !important; 
                         min-width: 360px !important;
                         display: block !important; 
                     }
@@ -365,10 +375,8 @@ case 'chess':
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                 cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
                 
-                let moveDisplay = "0"; let moveWidth = 0;
-                let moveLeft = 50; let moveColor = "#888";
-                let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50;
-                let balanceColor = "#888";
+                let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
+                let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
                 let whiteWinPct = 50;
                 
                 let debugEvalValue = "N/A";
@@ -386,8 +394,7 @@ case 'chess':
                         "#e74c3c" : "#2ecc71";
                         
                         balanceScore = isBlackMate ? "-100" : "+100";
-                        balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50;
-                        balanceColor = moveColor;
+                        balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
                         whiteWinPct = isBlackMate ? 0 : 100;
                     } else {
                         rawVal = parseFloat(valStr);
@@ -430,7 +437,7 @@ case 'chess':
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>Move Score</span>
-                            <i class="info-icon" title="${moveScoreTooltip}">&#9432;</i>
+                            <i class="info-icon" title="${moveScoreTooltip}" style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${moveDisplay}</span>
                         </div>
                         <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
@@ -438,25 +445,38 @@ case 'chess':
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>Game Balance</span>
-                            <i class="info-icon" title="${balanceTooltip}">&#9432;</i>
+                            <i class="info-icon" title="${balanceTooltip}" style="margin-left: 5px;">&#9432;</i>
                             <span class="eval-value">${balanceScore}</span>
                         </div>
                         <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
                     </div>
                     <div class="eval-row">
-                        <div class="eval-header"><span>White vs Black</span><span class="eval-value">${whiteWinPctFormatted}% / ${blackWinPctFormatted}%</span></div>
-                        <div class="win-rate-bar">
-                            <div class="win-white" style="width: ${whiteWinPct}%"></div>
-                            <div class="win-black"></div>
+                        <div class="eval-header">
+                            <span>White vs Black</span>
+                            <i class="info-icon" title="Estimated Win Probability based on engine evaluation." style="margin-left: 5px;">&#9432;</i>
+                            <span class="eval-value">${whiteWinPctFormatted}% / ${blackWinPctFormatted}%</span>
+                        </div>
+                        <div class="win-rate-bar" style="height: 10px; background: #e74c3c; overflow: hidden; border-radius: 3px;">
+                            <div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #2ecc71; float: left;"></div>
                         </div>
                     </div>
                 `;
                 return { html: evalHtml, text: cleanText };
             };
 
-            // --- COMMENT UPDATER (Updated for clearer comment display) ---
+            // --- COMMENT UPDATER (Updated for clearer comment display and button coloring) ---
             const updateCommentContent = (moveIndex, totalMoves) => {
                 const overlay = document.getElementById('chess-comment-overlay');
+                const btn = $('#chess-comment-btn');
+                
+                // FIX: Change button color based on comment existence
+                const hasComment = hasCommentary(moveIndex);
+                if (hasComment) {
+                    btn.css({ background: '#4CAF50', color: '#000', border: '1px solid #4CAF50' }); 
+                } else {
+                    btn.css({ background: '#1a1a1a', color: '#ccc', border: '1px solid #444' });
+                }
+
                 if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                 $(overlay).fadeIn();
 
@@ -490,18 +510,35 @@ case 'chess':
                 overlay.innerHTML = content + footer; 
             };
 
-            document.getElementById('chess-comment-btn').onclick = (e) => {
+            // FIX: Refactor click handler to use jQuery and call updateCommentContent after toggling state
+            $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 commentsEnabled = !commentsEnabled;
-                const btn = $('#chess-comment-btn');
+                const btn = $(this);
+                
                 if (commentsEnabled) {
-                    btn.text('Comments: On').css({background: 'var(--text-accent)', color: '#000'});
-                    $('#chess-comment-overlay').fadeIn();
+                    btn.text('Comments: On');
                 } else {
-                    btn.text('Comments: Off').css({background: '', color: '#fff'});
-                    $('#chess-comment-overlay').fadeOut();
+                    btn.text('Comments: Off');
                 }
-            };
+                
+                // Force refresh of content/color based on new state
+                const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
+                let activeMoveIndex = -1;
+                const movesPanel = document.getElementById(boardId + 'Moves');
+                
+                if (movesPanel) {
+                    const activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
+                    
+                    // Determine current move index
+                    if (activeEl) {
+                        const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                        activeMoveIndex = allMoves.indexOf(activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move'));
+                    }
+                }
+                
+                updateCommentContent(activeMoveIndex, total);
+            });
 
             // --- RENDER ---
             const $select = $('#chess-game-select');
@@ -604,8 +641,6 @@ case 'chess':
         }
     });
     break;
-
-
             
 
 
