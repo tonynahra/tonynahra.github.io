@@ -212,6 +212,8 @@ function loadModalContent(index) {
 
 
 
+
+
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -301,6 +303,14 @@ case 'chess':
                 } else {
                     return parseFloat(valStr); // Pawn score (float)
                 }
+            };
+
+            // NEW HELPER: Checks if the current move has any content (used for button color)
+            const hasCommentary = (moveIndex) => {
+                const text = commentMap[moveIndex] || "";
+                const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+                const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+                return hasEval || cleanText.length > 0;
             };
             
             // --------------------------------------------------------------------------
@@ -412,19 +422,11 @@ case 'chess':
             // --------------------------------------------------------------------------
             // --- COMMENT UPDATER (Calculates Delta, updates button color/content) ---
             
-            // NEW HELPER: Checks if the current move has any content (used for button color)
-            const hasCommentary = (moveIndex) => {
-                const text = commentMap[moveIndex] || "";
-                const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                return hasEval || cleanText.length > 0;
-            };
-
             const updateCommentContent = (moveIndex, totalMoves, evaluations) => {
                 const overlay = document.getElementById('chess-comment-overlay');
                 const btn = $('#chess-comment-btn');
                 
-                // FIX #3: Change button color based on comment existence
+                // FIX: Change button color based on comment existence
                 const hasComment = hasCommentary(moveIndex);
                 if (hasComment) {
                     // Use a slightly darker accent for the button if there is content
@@ -483,7 +485,7 @@ case 'chess':
             // --------------------------------------------------------------------------
             // --- EVENT HANDLERS / RENDERER ---
 
-            // FIX #2: Refactor click handler to call updateCommentContent after toggling state
+            // FIX: Refactor click handler to use jQuery and call updateCommentContent after toggling state
             $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 commentsEnabled = !commentsEnabled;
@@ -631,7 +633,6 @@ case 'chess':
         }
     });
     break;
-
 
 
 
