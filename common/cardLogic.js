@@ -91,8 +91,10 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
         // Toggle based on current state
         if ($summaryOverlay.is(':visible')) {
             $summaryOverlay.fadeOut(200);
+            $('.modal-info-btn').removeClass('active');
         } else {
             $summaryOverlay.fadeIn(200);
+            $('.modal-info-btn').addClass('active');
         }
         return;
     }
@@ -119,7 +121,8 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
         
         summaryHtml += '</ol></div>';
         
-        $summaryOverlay.html(summaryHtml);
+        $summaryOverlay.html(summaryHtml).fadeIn(200); // Ensure it fades in after content load
+        $('.modal-info-btn').addClass('active');
         
         // Add click listener to the list items
         $summaryOverlay.find('.summary-item').on('click', function() {
@@ -141,7 +144,7 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
         });
 
     }).fail(function() {
-        $summaryOverlay.html('<div class="error-message">Error loading tutorial manifest for summary.</div>');
+        $summaryOverlay.html('<div class="error-message">Error loading tutorial manifest for summary.</div>').fadeIn(200);
     });
 }
 
@@ -160,11 +163,14 @@ function loadModalContent(index) {
     const $modalOpenLink = $modal.find('.open-new-window');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
 
-    // Reset tutorial mode state and info button data
+    // Reset general state and info button data
     isTutorialMode = false;
+    // CRITICAL: isModalInfoVisible state must NOT be reset here for Photo/Iframe cards, 
+    // it should only be reset when the modal closes.
     $modalInfoBtn.removeData('manifest-url').removeClass('active'); // Clear manifest data and active state
     $modalContent.removeClass('summary-view-active');
-    $modalContent.find('.tutorial-summary-overlay').remove();
+    // FIX: Only remove the specific tutorial overlay
+    $modalContent.find('.tutorial-summary-overlay').remove(); 
     
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
@@ -178,6 +184,9 @@ function loadModalContent(index) {
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', jsonUrl); 
+        // FIX: Remove photo info element when entering research mode
+        $modalContent.find('.modal-photo-info').remove();
+        $modalInfoBtn.hide(); 
         buildResearchModal(jsonUrl); 
         return; 
     } 
@@ -191,6 +200,9 @@ function loadModalContent(index) {
         $modal.addClass('research-mode'); // Keep research-mode class for styling consistency
         $modalOpenLink.attr('href', manifestUrl);
         
+        // FIX: Remove photo info element when entering tutorial mode
+        $modalContent.find('.modal-photo-info').remove();
+        
         const playerHtml = `
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
                 <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
@@ -202,11 +214,12 @@ function loadModalContent(index) {
         return;
     }
 
-    // 3. Standard Logic
+    // 3. Standard Logic (Includes Photos/Images/Iframes)
     $modal.removeClass('research-mode'); 
     // We keep the ORIGINAL link for the "Open in new window" button (user friendly)
     $modalOpenLink.attr('href', loadUrl); 
-    $modalContent.find('.modal-photo-info').remove();
+    // FIX: Remove existing photo info element *before* creating the new one
+    $modalContent.find('.modal-photo-info').remove(); 
     $modalInfoBtn.hide(); 
     
     // === AUTO DETECT TYPE ===
@@ -774,9 +787,11 @@ function loadModalContent(index) {
             $modalContent.html(`
                 <div class="image-wrapper">
                     <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
-                    ${infoHtml}
-                </div>`);
+                </div>
+            `);
             if (infoHtml) { 
+                // Ensure photo info element is added to modalContent
+                $modalContent.append(infoHtml);
                 $modalInfoBtn.show(); 
                 // Fix: Ensure the active state of the info button is set on image load
                 $modalInfoBtn.toggleClass('active', isModalInfoVisible);
@@ -794,9 +809,11 @@ function loadModalContent(index) {
             $modalContent.html(`
                 <div class="iframe-wrapper">
                     <iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe>
-                    ${infoHtml}
-                </div>`);
+                </div>
+            `);
             if (infoHtml) { 
+                // Ensure photo info element is added to modalContent
+                $modalContent.append(infoHtml);
                 $modalInfoBtn.show(); 
                 // Fix: Ensure the active state of the info button is set on iframe load
                 $modalInfoBtn.toggleClass('active', isModalInfoVisible); 
@@ -977,138 +994,6 @@ function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResult
 
 
 // UPDATED: Added onComplete parameter and callback execution
-function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
-    const $albumList = $('#photo-album-list');
-    const $targetList = $albumList.length ? $albumList : $('#about-album-list');
-    
-    $.getJSON(jsonUrl, function (albumData) {
-        if ($('#album-title').length) {
-            $('#album-title').text(decodeText(albumData.albumTitle));
-        }
-        
-        $targetList.empty(); 
-        
-        $.each(albumData.photos, function(index, photo) {
-            const title = decodeText(photo.title);
-            const category = decodeText(photo.category);
-            const description = decodeText(photo.description);
-            
-            const cardHtml = `
-                <div class="card-item" 
-                     data-category="${category}" 
-                     data-keywords="${title},${description}"
-                     data-title="${title}"
-                     data-desc="${description}">
-                    <a href="${photo.url}" data-load-type="image">
-                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
-                    </a>
-                </div>`;
-            $targetList.append(cardHtml);
-        });
-        
-        if ($('#album-category-filter').length) {
-            populateCategoryFilter('#photo-album-list', '#album-category-filter');
-            populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
-        }
-        
-        const defaultIncrement = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
-        // Use 10 as default if incrementOverride is missing (undefined)
-        handleCardView($targetList.parent(), initialLoadOverride, defaultIncrement);
-        
-        // --- NEW: Call the callback if provided ---
-        if (typeof onComplete === 'function') {
-            onComplete();
-        }
-        
-    }).fail(function() { 
-        if ($('#album-title').length) $('#album-title').text("Error Loading Album"); 
-    });
-}
-
-// UPDATED: Added onComplete parameter and callback execution
-function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
-    $('#Grid').empty(); 
-    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
-    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
-    var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
-
-    $.getJSON(URL, options, function (data) {
-        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
-        if (data.items) {
-            resultsLoop(data, Category, BKcol);
-            handleCardView($('#content-area'), initialLoadOverride);
-            populateSmartKeywords('#Grid', '#youtube-keyword-filter');
-            populateCategoryFilter('#Grid', '#youtube-category-filter');
-            
-            // --- NEW: Call the callback if provided ---
-            if (typeof onComplete === 'function') {
-                onComplete();
-            }
-        }
-    });
-}
-
-
-function resultsLoop(data, Cat, BKcol) {
-    $.each(data.items, function (i, item) {
-        if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) {
-            console.warn("Skipping playlist item, missing resourceId:", item);
-            return; // skip this item
-        }
-        
-        let thumb = item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '';
-        
-        const title = decodeText(item.snippet.title);
-        const desc = decodeText(item.snippet.description);
-        const vid = item.snippet.resourceId.videoId;
-
-        $('#Grid').append(`
-        <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
-            <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
-               <img class="YTi" src="${thumb}" alt="${title}" >
-               <h3>${title}</h3>
-               <p>${desc}</p>
-               <span class="card-category" style="display: none;">${Cat}</span>
-            </a>
-        </div>
-        `);
-    });
-}
-
-// Define filterYouTubeCards globally so mainPage.js can access it
-function filterYouTubeCards() {
-    const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
-    const selectedKeyword = $('#youtube-keyword-filter').val();
-    const $grid = $('#Grid');
-    const $allCards = $grid.children('.card-item');
-    const $showMoreButton = $grid.next('.toggle-card-button');
-    const $noResultsMessage = $('#youtube-no-results');
-    let visibleCount = 0;
-
-    if (searchTerm.length > 0 || selectedKeyword !== "all") {
-        $showMoreButton.hide();
-        $allCards.each(function() {
-            const $card = $(this);
-            const cardText = getCardSearchableText($card); 
-            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
-            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
-            if (searchMatch && keywordMatch) {
-                $card.removeClass('hidden-card-item').show();
-                visibleCount++;
-            } else { $card.hide(); }
-        });
-        if (visibleCount === 0) $noResultsMessage.show(); else $noResultsMessage.hide();
-    } else {
-        $noResultsMessage.hide();
-        $allCards.removeAttr('style'); 
-        handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
-    }
-}
-
-
-
-/* === DEEP LINK HELPER (NEW) === */
-
 function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
     const $albumList = $('#photo-album-list');
     const $targetList = $albumList.length ? $albumList : $('#about-album-list');
@@ -1331,7 +1216,7 @@ $(document).ready(function () {
             console.log("Tutorial Info button clicked. Manifest found, showing summary.");
             // buildTutorialSummary handles toggling visibility internally
             buildTutorialSummary(manifestUrl, $('#modal-content-area'));
-            $(this).toggleClass('active');
+            // The active class is toggled inside buildTutorialSummary for better state management
         } else {
             // PHOTO/STANDARD MODE: Show/hide Description
             isModalInfoVisible = !isModalInfoVisible;
