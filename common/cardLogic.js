@@ -101,8 +101,10 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
     
     // The overlay element must exist for delegation to work
     // We give it a specific ID for delegation
-    $modalContent.append('<div class="tutorial-summary-overlay" id="tutorial-summary-overlay-container" style="pointer-events: auto;"><div class="content-loader"><div class="spinner"></div></div></div>');
-    $summaryOverlay = $modalContent.find('#tutorial-summary-overlay-container');
+    const overlayId = 'tutorial-summary-overlay-container';
+    // NOTE: If the click is still blocked, check if CSS is making the list items transparent to clicks.
+    $modalContent.append(`<div class="tutorial-summary-overlay" id="${overlayId}" style="pointer-events: auto;"><div class="content-loader"><div class="spinner"></div></div></div>`);
+    $summaryOverlay = $modalContent.find(`#${overlayId}`);
 
     // === ROUTE MANIFEST FETCH THROUGH THE PROXY TO BYPASS CORS ===
     const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(manifestUrl)}`;
@@ -155,8 +157,40 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             $summaryOverlay.html(summaryHtml).fadeIn(200);
             $('.modal-info-btn').addClass('active');
             
-            // NOTE: The click logic is now handled by the aggressive event listener added at $(document).ready
-            // targeting the specific ID: #tutorial-summary-overlay-container
+            // 3. CRITICAL FIX: Attach native DOM listener to the static container
+            // This relies on event bubbling/delegation but uses native JS for reliability.
+            const overlayElement = document.getElementById(overlayId);
+            if (overlayElement) {
+                // Ensure no previous handlers are attached to this element directly
+                overlayElement.removeEventListener('click', null, false); 
+                
+                overlayElement.addEventListener('click', function(e) {
+                    const target = e.target.closest('.summary-item.clickable');
+                    if (target) {
+                        e.stopPropagation(); // Stop propagation immediately
+
+                        const stepIndex = target.getAttribute('data-step-index');
+                        const $iframe = $modalContent.find('.iframe-wrapper .loaded-iframe');
+                        
+                        if ($iframe.length) {
+                            console.log(`DEBUG: NATIVE CLICK HANDLER FIRED. Sending goToStep ${stepIndex} to iframe.`);
+                            
+                            $iframe[0].contentWindow.postMessage({ 
+                                command: 'goToStep', 
+                                index: parseInt(stepIndex) 
+                            }, '*');
+                            
+                            $summaryOverlay.fadeOut(200);
+                            $('.modal-info-btn').removeClass('active');
+                        } else {
+                            console.warn("ERROR: Native handler could not find loaded-iframe.");
+                        }
+                    }
+                }, false);
+                console.log("DEBUG: Native DOM click listener successfully attached to the summary overlay.");
+            } else {
+                console.error("ERROR: Could not find summary overlay element to attach native handler.");
+            }
             
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -190,6 +224,9 @@ function loadModalContent(index) {
     // FIX: Only remove the specific tutorial overlay and photo info element before setting new content
     $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
     
+    // REMOVE AGGRESSIVE JQUERY HANDLER
+    $('body').off('click.tutorialNav');
+
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
     // CHANGED: Use 'let' instead of 'const' so we can modify the URL if needed
@@ -1149,7 +1186,7 @@ function filterYouTubeCards() {
 
 
 
-/* === DEEP LINK HELPER (NEW) */
+/* === DEEP LINK HELPER (NEW) === */
 
 function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
     const $albumList = $('#photo-album-list');
@@ -1391,42 +1428,14 @@ $(document).ready(function () {
                 $infoBtn.toggleClass('active', isModalInfoVisible); 
             } else {
                 // FALLBACK: If we're not in tutorial mode and didn't find the photo div, 
-                // we probably loaded Markdown or Chess or something else that uses the main header
                 $infoBtn.removeClass('active');
                 isModalInfoVisible = false; // Reset state if click was ineffective
             }
         }
     });
-
-    // --- AGGRESSIVE TUTORIAL CLICK LISTENER FIX ---
-    // This handler captures clicks specifically on the summary overlay elements
-    // to bypass potential click blocking by other elements in the modal content area.
-    $('body').on('click.tutorialNav', '#tutorial-summary-overlay-container .summary-item.clickable', function(e) {
-        e.stopPropagation(); // Prevent the click from bubbling up and closing the modal/being eaten
-        
-        const $clickedItem = $(this);
-        const stepIndex = $clickedItem.data('step-index');
-        const $modalContent = $('#modal-content-area');
-
-        // Use the precise selector for the iframe inside the modal content area
-        const $iframe = $modalContent.find('.iframe-wrapper .loaded-iframe');
-        
-        if ($iframe.length) {
-            console.log(`DEBUG: Tutorial section clicked. Sending goToStep ${stepIndex} to iframe.`);
-            // Send command to the iframe player
-            $iframe[0].contentWindow.postMessage({ 
-                command: 'goToStep', 
-                index: stepIndex 
-            }, '*');
-            
-            // Hide the summary overlay immediately after clicking a section
-            $('#tutorial-summary-overlay-container').fadeOut(200);
-            $('.modal-info-btn').removeClass('active');
-        } else {
-            console.warn("ERROR: Could not find loaded-iframe to send message to.");
-        }
-    });
-    // --- END AGGRESSIVE TUTORIAL CLICK LISTENER FIX ---
+    
+    // REMOVE JQUERY AGGRESSIVE HANDLER TO RELY ON NATIVE HANDLER IN buildTutorialSummary
+    // $('body').off('click.tutorialNav'); // This was removed inside loadModalContent
 
     // Filter listeners
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
