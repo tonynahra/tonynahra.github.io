@@ -1353,6 +1353,7 @@ $(document).ready(function () {
         const $modalContent = $('#modal-content-area');
         
         // 1. Check for Tutorial Mode (manifest-url data must be present on the button)
+        // This is the source of truth for tutorials, as it's set in loadModalContent
         const manifestUrl = $infoBtn.data('manifest-url'); 
         
         if (manifestUrl) {
