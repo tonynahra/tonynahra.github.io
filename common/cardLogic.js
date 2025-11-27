@@ -100,8 +100,9 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
     }
     
     // The overlay element must exist for delegation to work
-    $modalContent.append('<div class="tutorial-summary-overlay"><div class="content-loader"><div class="spinner"></div></div></div>');
-    $summaryOverlay = $modalContent.find('.tutorial-summary-overlay');
+    // We give it a specific ID for the aggressive click handler below
+    $modalContent.append('<div class="tutorial-summary-overlay" id="tutorial-summary-overlay-container" style="pointer-events: auto;"><div class="content-loader"><div class="spinner"></div></div></div>');
+    $summaryOverlay = $modalContent.find('#tutorial-summary-overlay-container');
 
     // === ROUTE MANIFEST FETCH THROUGH THE PROXY TO BYPASS CORS ===
     const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(manifestUrl)}`;
@@ -154,31 +155,9 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             $summaryOverlay.html(summaryHtml).fadeIn(200);
             $('.modal-info-btn').addClass('active');
             
-            // 3. FIX: Attach Click Listener using Event Delegation on the summary overlay
-            // This is the most robust way to ensure dynamic elements receive clicks.
-            $summaryOverlay.off('click', '.summary-item.clickable').on('click', '.summary-item.clickable', function(e) {
-                e.stopPropagation(); // CRITICAL: Stop event from bubbling to parent handlers (like the modal content area)
-                
-                const stepIndex = $(this).data('step-index');
-                // Use the precise selector for the iframe inside the modal content area
-                const $iframe = $modalContent.find('.iframe-wrapper .loaded-iframe');
-                
-                if ($iframe.length) {
-                    console.log(`DEBUG: Tutorial section clicked. Sending goToStep ${stepIndex} to iframe.`); // <--- CONFIRM CLICK/SEND
-                    // Send command to the iframe player
-                    $iframe[0].contentWindow.postMessage({ 
-                        command: 'goToStep', 
-                        index: stepIndex 
-                    }, '*');
-                    
-                    // Hide the summary overlay immediately after clicking a section
-                    $summaryOverlay.fadeOut(200);
-                    $('.modal-info-btn').removeClass('active');
-                } else {
-                    console.warn("ERROR: Could not find loaded-iframe to send message to.");
-                }
-            });
-
+            // NOTE: The click logic is now handled by the aggressive event listener added outside this function,
+            // which listens for clicks on '#tutorial-summary-overlay-container .summary-item.clickable'.
+            
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.error("Error fetching proxied manifest (Check PHP logs):", textStatus, errorThrown);
@@ -654,9 +633,9 @@ function loadModalContent(index) {
                                 <div style="margin-bottom:12px; font-size: ${contentFontSize}px; color: #2c3e50;">${parsed.text}</div>
                             `;
                         } else if (moveIndex === -1) {
-                            textContent = `<div style="color:#546e7a; margin-bottom:12px; font-size: ${contentFontSize}px;">Start of Game</div>`;
+                            textContent = `<div style="color:#546e7a; margin-bottom:12px; font-size: ${contentFontSize}px; text-align: center;">Start of Game</div>`;
                         } else {
-                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px; font-size: ${contentFontSize}px;">No commentary.</div>`;
+                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px; font-size: ${contentFontSize}px; text-align: center;">No commentary.</div>`;
                         }
                         content += `<div class="comment-text-content">${textContent}</div>`;
 
@@ -1105,7 +1084,7 @@ function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
             populateSmartKeywords('#Grid', '#youtube-keyword-filter');
             populateCategoryFilter('#Grid', '#youtube-category-filter');
             
-            // --- NEW: Call the callback if provided ---
+            // Call callback when complete
             if (typeof onComplete === 'function') {
                 onComplete();
             }
