@@ -216,7 +216,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -399,6 +398,14 @@ case 'chess':
                         width: 100% !important;
                         justify-content: center !important;
                     }
+                    
+                    /* NEW: Dynamic styling for the comment overlay based on currentFontSize */
+                    #chess-comment-overlay {
+                        /* Base comment size is 250px wide for 26px font. Scale it up/down */
+                        width: ${250 + (currentFontSize - 26) * 6}px !important;
+                        min-width: 250px !important;
+                        padding: ${15 + (currentFontSize - 26) * 0.5}px !important;
+                    }
                 `;
                 $(`#${styleId}`).text(css);
             };
@@ -480,13 +487,12 @@ case 'chess':
                 return { html: evalHtml, text: cleanText };
             };
 
-            // --- COMMENT UPDATER (Updated: Apply Dynamic Font Size) ---
+            // --- COMMENT UPDATER (MODIFIED: Title Margins and increased scaling) ---
             const updateCommentContent = (moveIndex, totalMoves) => {
                 const overlay = document.getElementById('chess-comment-overlay');
                 const btn = $('#chess-comment-btn');
 
                 // 1. DYNAMIC BUTTON COLORING (Per Move)
-                // We check if THIS specific move index has commentary/eval.
                 const hasComment = hasCommentary(moveIndex);
                 if (hasComment) {
                     // Green if annotation exists
@@ -504,15 +510,23 @@ case 'chess':
                 const parsed = generateEvalHtml(commentText);
                 let content = "";
                 
-                // *** MODIFICATION 1: Apply currentFontSize to the h5 label and the main text div ***
-                const labelFontSize = Math.max(10, currentFontSize * 0.5); // Example scaling: 50% of currentFontSize, min 10px
-                const contentFontSize = Math.max(12, currentFontSize * 0.75); // Example scaling: 75% of currentFontSize, min 12px
+                // *** MODIFIED SCALING FACTORS (Larger effect for + and -) ***
+                // Base 26px font maps to 100% zoom. Calculate relative size increase.
+                const zoomFactor = currentFontSize / 26; 
+
+                const baseLabelSize = 14;
+                const baseContentSize = 18;
+                const baseCounterSize = 16;
+
+                const labelFontSize = Math.round(baseLabelSize * zoomFactor);
+                const contentFontSize = Math.round(baseContentSize * zoomFactor);
+                const counterFontSize = Math.round(baseCounterSize * zoomFactor);
                 
-                // 3. TEXT CONTENT (Updated Label Style)
+                // 3. TEXT CONTENT (Modified Title Style)
                 let textContent = "";
                 if (parsed.text) {
                     textContent = `
-                        <h5 style="margin: 0 0 8px; color: navy; background: #e0e0e0; font-size: ${labelFontSize}px; padding: 4px 8px; border-radius: 3px; display: inline-block; font-weight: bold;">Game Commentary</h5>
+                        <h5 style="margin: 0 0 8px 0; color: navy; background: #e0e0e0; font-size: ${labelFontSize}px; padding: 4px 8px; border-radius: 3px; display: inline-block; font-weight: bold;">Game Commentary</h5>
                         <div style="margin-bottom:12px; font-size: ${contentFontSize}px; color: #2c3e50;">${parsed.text}</div>
                     `;
                 } else if (moveIndex === -1) {
@@ -529,8 +543,6 @@ case 'chess':
                 const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1;
                 const displayTotal = totalMoves || '?';
                 
-                // *** MODIFICATION 2: Apply currentFontSize to the move counter ***
-                const counterFontSize = Math.max(12, currentFontSize * 0.6); // Example scaling
                 footer += `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
 
                 overlay.innerHTML = content + footer;
@@ -686,7 +698,6 @@ case 'chess':
     });
     break;
             
-
 
             
 
