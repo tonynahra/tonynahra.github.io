@@ -99,27 +99,24 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
         return;
     }
     
+    // The overlay element must exist for delegation to work
     $modalContent.append('<div class="tutorial-summary-overlay"><div class="content-loader"><div class="spinner"></div></div></div>');
     $summaryOverlay = $modalContent.find('.tutorial-summary-overlay');
 
-    // === FIX: ROUTE MANIFEST FETCH THROUGH THE PROXY TO BYPASS CORS ===
-    // Use the proxy for the XML/JSON fetch.
+    // === ROUTE MANIFEST FETCH THROUGH THE PROXY TO BYPASS CORS ===
     const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(manifestUrl)}`;
     console.log("Fetching manifest via proxy to bypass CORS:", proxyUrl);
 
     $.ajax({
         url: proxyUrl,
-        // Request the response as plain text so we can manually parse it later
         dataType: 'text', 
         success: function (xmlText) {
             
             let data = {};
             try {
-                // Since it's XML, use DOMParser to correctly interpret the structure
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                 const steps = [];
-                // Use jQuery selector on the parsed XML document to find steps and titles
                 $(xmlDoc).find('step').each(function() {
                     steps.push({
                         title: $(this).find('title').text() || $(this).attr('id')
@@ -132,7 +129,6 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                 return;
             }
 
-            // If no steps are found, handle the error gracefully
             if (!data.steps || data.steps.length === 0) {
                 $summaryOverlay.html('<div class="error-message">Tutorial manifest found but contained no steps.</div>').fadeIn(200);
                 return;
@@ -141,14 +137,13 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             // 2. Build Summary HTML
             let summaryHtml = '<div class="summary-box"><h2>Tutorial Summary</h2><ol class="summary-list">';
             
-            // Loop through steps and create clickable list items
             $.each(data.steps, function(index, step) {
                 const displayIndex = index + 1;
                 const stepTitle = decodeText(step.title || `Step ${displayIndex}`);
                 
-                // === FIX: Add class 'clickable' and data-step-index for navigation ===
+                // === FIX: Add class 'clickable' and INLINE STYLE for visual confirmation ===
                 summaryHtml += `
-                    <li class="summary-item clickable" data-step-index="${index}">
+                    <li class="summary-item clickable" data-step-index="${index}" style="cursor: pointer;">
                         <span class="step-number">${displayIndex}.</span>
                         <span class="step-title">${stepTitle}</span>
                     </li>`;
@@ -159,17 +154,20 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             $summaryOverlay.html(summaryHtml).fadeIn(200);
             $('.modal-info-btn').addClass('active');
             
-            // 3. Attach Click Listener to the new list items
-            $summaryOverlay.find('.summary-item.clickable').on('click', function() {
+            // 3. FIX: Attach Click Listener using Event Delegation on the summary overlay
+            // Use .off() before .on() to ensure we don't accidentally stack listeners if this function is called multiple times without a full modal clear.
+            $summaryOverlay.off('click', '.summary-item.clickable').on('click', '.summary-item.clickable', function(e) {
+                e.stopPropagation(); // CRITICAL: Stop event from bubbling to parent handlers (like the modal content area)
+                
                 const stepIndex = $(this).data('step-index');
                 const $iframe = $modalContent.find('.loaded-iframe');
                 
                 if ($iframe.length) {
-                    // Send a message to the iframe player to navigate to the clicked step
+                    // Send command to the iframe player
                     $iframe[0].contentWindow.postMessage({ 
                         command: 'goToStep', 
                         index: stepIndex 
-                    }, '*'); // Use '*' for cross-origin messaging security is difficult to manage here
+                    }, '*');
                     
                     // Hide the summary overlay immediately after clicking a section
                     $summaryOverlay.fadeOut(200);
