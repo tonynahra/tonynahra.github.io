@@ -219,6 +219,7 @@ function loadModalContent(index) {
 
 
 
+
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -323,14 +324,6 @@ case 'chess':
                     </div>
                 </div>
             `);
-
-            // 3. CLOSE BUTTON HANDLER (NEW CODE)
-            $('#chess-close-btn').off('click').on('click', function(e) {
-                e.preventDefault();
-                $modal.removeClass('chess-mode');
-                $('body').removeClass('chess-mode-active');
-                $modal.find('.modal-header').show();
-            });
 
             // --- DYNAMIC STYLES ---
             const updateChessStyles = () => {
@@ -526,6 +519,18 @@ case 'chess':
                 }
                 updateCommentContent(activeMoveIndex, total);
             });
+            
+            // 🛑 ADDED CODE STARTS HERE 🛑
+            // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
+            $('#chess-close-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                // This reverses the actions from the "ENTER CHESS MODE" block
+                $modal.removeClass('chess-mode');
+                $('body').removeClass('chess-mode-active');
+                $modal.find('.modal-header').show();
+            });
+            // 🛑 ADDED CODE ENDS HERE 🛑
+
 
             // --- RENDER ---
             const $select = $('#chess-game-select');
@@ -629,8 +634,6 @@ case 'chess':
     });
     break;
             
-
-
 
 
 
