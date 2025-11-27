@@ -217,7 +217,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -322,29 +321,45 @@ case 'chess':
                     </div>
                 </div>
             `);
-            
-            // --- FONT SIZE HANDLERS (NEW CODE ADDED HERE) ---
+
+            // --- FONT SIZE HANDLERS ---
             const minFontSize = 14;
             const maxFontSize = 40;
             const sizeStep = 2; // Change font size by 2 pixels per click
 
+            const applySizeChange = (newSize) => {
+                currentFontSize = newSize;
+                updateChessStyles(); // Update moves panel
+                
+                // Get current move index and total moves to re-render the comment box
+                const totalMoves = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
+                let activeMoveIndex = -1;
+                const movesPanel = document.getElementById(boardId + 'Moves');
+                
+                if (movesPanel) {
+                    const activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
+                    if (activeEl) {
+                        const allMoves = Array.from(movesPanel.querySelectorAll('move'));
+                        activeMoveIndex = allMoves.indexOf(activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move'));
+                    }
+                }
+                updateCommentContent(activeMoveIndex, totalMoves); // Force update comment box content
+            }
+
             $('#chess-font-minus').off('click').on('click', function(e) {
                 e.preventDefault();
                 if (currentFontSize > minFontSize) {
-                    currentFontSize -= sizeStep;
-                    updateChessStyles();
+                    applySizeChange(currentFontSize - sizeStep);
                 }
             });
 
             $('#chess-font-plus').off('click').on('click', function(e) {
                 e.preventDefault();
                 if (currentFontSize < maxFontSize) {
-                    currentFontSize += sizeStep;
-                    updateChessStyles();
+                    applySizeChange(currentFontSize + sizeStep);
                 }
             });
-            // --- END NEW CODE ---
-
+            // --- END FONT SIZE HANDLERS ---
 
             // --- DYNAMIC STYLES ---
             const updateChessStyles = () => {
@@ -465,7 +480,7 @@ case 'chess':
                 return { html: evalHtml, text: cleanText };
             };
 
-            // --- COMMENT UPDATER (Updated: Label Styles & Button Logic) ---
+            // --- COMMENT UPDATER (Updated: Apply Dynamic Font Size) ---
             const updateCommentContent = (moveIndex, totalMoves) => {
                 const overlay = document.getElementById('chess-comment-overlay');
                 const btn = $('#chess-comment-btn');
@@ -488,18 +503,22 @@ case 'chess':
                 const commentText = commentMap[moveIndex] || "";
                 const parsed = generateEvalHtml(commentText);
                 let content = "";
-
+                
+                // *** MODIFICATION 1: Apply currentFontSize to the h5 label and the main text div ***
+                const labelFontSize = Math.max(10, currentFontSize * 0.5); // Example scaling: 50% of currentFontSize, min 10px
+                const contentFontSize = Math.max(12, currentFontSize * 0.75); // Example scaling: 75% of currentFontSize, min 12px
+                
                 // 3. TEXT CONTENT (Updated Label Style)
                 let textContent = "";
                 if (parsed.text) {
                     textContent = `
-                        <h5 style="margin: 0 0 8px; color: navy; background: #e0e0e0; font-size: 0.85rem; padding: 4px 8px; border-radius: 3px; display: inline-block; font-weight: bold;">Game Commentary</h5>
-                        <div style="margin-bottom:12px; font-size: 1rem; color: #2c3e50;">${parsed.text}</div>
+                        <h5 style="margin: 0 0 8px; color: navy; background: #e0e0e0; font-size: ${labelFontSize}px; padding: 4px 8px; border-radius: 3px; display: inline-block; font-weight: bold;">Game Commentary</h5>
+                        <div style="margin-bottom:12px; font-size: ${contentFontSize}px; color: #2c3e50;">${parsed.text}</div>
                     `;
                 } else if (moveIndex === -1) {
-                    textContent = `<div style="color:#546e7a; margin-bottom:12px;">Start of Game</div>`;
+                    textContent = `<div style="color:#546e7a; margin-bottom:12px; font-size: ${contentFontSize}px;">Start of Game</div>`;
                 } else {
-                    textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px;">No commentary.</div>`;
+                    textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px; font-size: ${contentFontSize}px;">No commentary.</div>`;
                 }
                 content += `<div class="comment-text-content">${textContent}</div>`;
 
@@ -509,10 +528,14 @@ case 'chess':
 
                 const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1;
                 const displayTotal = totalMoves || '?';
-                footer += `<div class="move-counter">Move ${displayMove} / ${displayTotal}</div>`;
+                
+                // *** MODIFICATION 2: Apply currentFontSize to the move counter ***
+                const counterFontSize = Math.max(12, currentFontSize * 0.6); // Example scaling
+                footer += `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
 
                 overlay.innerHTML = content + footer;
             };
+            // --- END MODIFIED COMMENT UPDATER ---
 
             // CLICK HANDLER
             $('#chess-comment-btn').off('click').on('click', function(e) {
@@ -663,7 +686,6 @@ case 'chess':
     });
     break;
             
-
 
 
             
