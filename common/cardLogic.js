@@ -6,6 +6,7 @@ var isModalInfoVisible = false;
 /* === HELPER FUNCTIONS (Global Scope) === */
 
 function decodeText(text) {
+// ... [No changes in decodeText]
     if (!text) return "";
     try {
         var $textarea = $('<textarea></textarea>');
@@ -19,6 +20,7 @@ function decodeText(text) {
 /* === VIEW HELPERS (Global Scope) */
 
 function handleCardView($scope, initialLoadOverride, incrementOverride) {
+// ... [No changes in handleCardView]
     $scope.find('.card-list').each(function() {
         const $list = $(this);
         const $items = $list.children('.card-item');
@@ -45,6 +47,7 @@ function handleCardView($scope, initialLoadOverride, incrementOverride) {
 }
 
 function showMoreCards($button, $list) {
+// ... [No changes in showMoreCards]
     const $items = $list.children('.card-item');
     const totalItems = parseInt($button.data('total-items') || 0);
     const increment = parseInt($button.data('increment') || 10);
@@ -65,6 +68,7 @@ function showMoreCards($button, $list) {
 /* === MODAL LOGIC (Global Scope) === */
 
 function handleModalKeys(e) {
+// ... [No changes in handleModalKeys]
     if (!$('#content-modal').is(':visible')) {
         $(document).off('keydown.modalNav');
         return;
@@ -104,6 +108,7 @@ function loadModalContent(index) {
     const manifestUrl = $link.data('manifest-url');
     
     // 1. Research Logic
+// ... [No changes]
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', jsonUrl); 
@@ -112,6 +117,7 @@ function loadModalContent(index) {
     } 
     
     // 2. Tutorial Logic
+// ... [No changes]
     if (loadType === 'tutorial' && manifestUrl) {
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', manifestUrl);
@@ -181,6 +187,7 @@ function loadModalContent(index) {
 
     switch (loadType) {
         case 'markdown':
+// ... [No changes]
             $.ajax({
                 url: loadUrl, type: 'GET',
                 dataType: 'text',
@@ -204,6 +211,7 @@ function loadModalContent(index) {
             });
             break;
         case 'chess':
+// ... [No changes]
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -309,6 +317,7 @@ function loadModalContent(index) {
                     `);
 
                     // --- FONT SIZE HANDLERS ---
+// ... [No changes]
                     const minFontSize = 14;
                     const maxFontSize = 40;
                     const sizeStep = 2; // Change font size by 2 pixels per click
@@ -348,6 +357,7 @@ function loadModalContent(index) {
                     // --- END FONT SIZE HANDLERS ---
 
                     // --- DYNAMIC STYLES ---
+// ... [No changes]
                     const updateChessStyles = () => {
                         const movesId = `#${boardId}Moves`;
                         const css = `
@@ -398,6 +408,7 @@ function loadModalContent(index) {
                     };
 
                     // --- EVAL GENERATOR (MODIFIED: Returns empty string if no eval) ---
+// ... [No changes]
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -481,6 +492,7 @@ function loadModalContent(index) {
                     };
 
                     // --- COMMENT UPDATER ---
+// ... [No changes]
                     const updateCommentContent = (moveIndex, totalMoves) => {
                         const overlay = document.getElementById('chess-comment-overlay');
                         const btn = $('#chess-comment-btn');
@@ -541,6 +553,7 @@ function loadModalContent(index) {
                     };
 
                     // CLICK HANDLER
+// ... [No changes]
                     $('#chess-comment-btn').off('click').on('click', function(e) {
                         e.preventDefault();
                         commentsEnabled = !commentsEnabled;
@@ -568,6 +581,7 @@ function loadModalContent(index) {
                     });
 
                     // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
+// ... [No changes]
                     $('#chess-close-btn').off('click').on('click', function(e) {
                         e.preventDefault();
                         // 1. Remove custom classes to exit chess mode
@@ -588,6 +602,7 @@ function loadModalContent(index) {
 
 
                     // --- RENDER ---
+// ... [No changes]
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -689,6 +704,7 @@ function loadModalContent(index) {
             });
             break;
         case 'html':
+// ... [No changes]
             $.ajax({
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
@@ -699,6 +715,7 @@ function loadModalContent(index) {
             });
             break;
         case 'image':
+// ... [No changes]
             $modalContent.html(`
                 <div class="image-wrapper">
                     <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
@@ -711,11 +728,11 @@ function loadModalContent(index) {
             }
             break;
         case 'iframe':
-            // FIX 3: Apply the proxy solution for external iframe links
+            // FIX 3: Replaced client-side relative path proxy with a public CORS proxy service.
             let iframeSrc = loadUrl;
             if (loadUrl.startsWith('http')) {
-                // If it's an external link, prepend the proxy URL
-                iframeSrc = `/proxy?url=${encodeURIComponent(loadUrl)}`;
+                // Use a public CORS proxy to bypass cross-origin restrictions for the iframe content.
+                iframeSrc = `https://corsproxy.io/?${encodeURIComponent(loadUrl)}`;
             }
 
             $modalContent.html(`
@@ -730,9 +747,11 @@ function loadModalContent(index) {
             }
             break;
         case 'blocked':
+// ... [No changes]
             $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
             break;
         default: 
+// ... [No changes]
             $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
             break;
     }
@@ -743,6 +762,7 @@ function loadModalContent(index) {
 /* === RESEARCH BUILDER (Uses Main Header) === */
 
 function buildResearchModal(jsonUrl) {
+// ... [No changes]
     const $modalContent = $('#modal-content-area');
     
     // Only inject the TABS, not a new header
@@ -778,6 +798,7 @@ function buildResearchModal(jsonUrl) {
 }
 
 function loadModalTabContent(htmlUrl) {
+// ... [No changes]
     // Update the main "Open in new window" link to the current tab
     $('#content-modal .open-new-window').attr('href', htmlUrl);
 
@@ -788,6 +809,7 @@ function loadModalTabContent(htmlUrl) {
 /* === FILTER LOGIC (Standard) === */
 
 function populateCategoryFilter(listId, filterId) {
+// ... [No changes]
     const $filter = $(filterId);
     if (!$filter.length) return;
 
@@ -810,6 +832,7 @@ function populateCategoryFilter(listId, filterId) {
 }
 
 function populateSmartKeywords(listId, filterId) {
+// ... [No changes]
     const $filter = $(filterId);
     if (!$filter.length) return; 
     
@@ -847,6 +870,7 @@ function populateSmartKeywords(listId, filterId) {
 }
 
 function getCardSearchableText($card) {
+// ... [No changes]
     const textSources = [
         $card.find('h3').text(), $card.find('p').text(),
         $card.find('.card-category').text(), $card.find('img').attr('alt'),
@@ -856,6 +880,7 @@ function getCardSearchableText($card) {
 }
 
 function checkKeywordMatch(cardText, selectedKeyword) {
+// ... [No changes]
     if (selectedKeyword === "all") return true;
     const synonyms = (typeof SYNONYM_MAP !== 'undefined') ? (SYNONYM_MAP[selectedKeyword] || []) : [];
     const keywordsToMatch = [selectedKeyword, ...synonyms];
@@ -867,6 +892,7 @@ function checkKeywordMatch(cardText, selectedKeyword) {
 }
 
 function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResultsId, initialLoad) {
+// ... [No changes]
     const searchTerm = decodeText($(searchId).val().toLowerCase());
     const selectedCategory = $(catFilterId).val();
     const selectedKeyword = $(keyFilterId).val();
@@ -905,6 +931,7 @@ function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResult
 
 // UPDATED: Added onComplete parameter and callback execution
 function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
+// ... [No changes]
     const $albumList = $('#photo-album-list');
     const $targetList = $albumList.length ? $albumList : $('#about-album-list');
     
@@ -954,6 +981,7 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
 
 // UPDATED: Added onComplete parameter and callback execution
 function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
+// ... [No changes]
     $('#Grid').empty(); 
     var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
     var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
@@ -977,6 +1005,7 @@ function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
 
 
 function resultsLoop(data, Cat, BKcol) {
+// ... [No changes]
     $.each(data.items, function (i, item) {
         if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) {
             console.warn("Skipping playlist item, missing resourceId:", item);
@@ -1004,6 +1033,7 @@ function resultsLoop(data, Cat, BKcol) {
 
 // Define filterYouTubeCards globally so mainPage.js can access it
 function filterYouTubeCards() {
+// ... [No changes]
     const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
     const selectedKeyword = $('#youtube-keyword-filter').val();
     const $grid = $('#Grid');
@@ -1037,6 +1067,7 @@ function filterYouTubeCards() {
 /* === DEEP LINK HELPER (NEW) === */
 
 function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
+// ... [No changes]
     const $albumList = $('#photo-album-list');
     const $targetList = $albumList.length ? $albumList : $('#about-album-list');
     
@@ -1091,6 +1122,7 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
 /* === DEEP LINK HELPER (NEW) === */
 
 function openCardByTitle(titleToFind) {
+// ... [No changes]
     if (!titleToFind) return;
     
     // Decode and normalize the search title
@@ -1135,6 +1167,7 @@ function openCardByTitle(titleToFind) {
 
 // UPDATED: Accepts onComplete callback
 function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
+// ... [No changes]
     $('#Grid').empty(); 
     var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
     var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
@@ -1162,6 +1195,7 @@ function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
 $(document).ready(function () {
     
     // Inject modal
+// ... [No changes]
     $('body').append(`
         <div id="content-modal" class="modal-backdrop">
             <div class="modal-content">
@@ -1185,12 +1219,14 @@ $(document).ready(function () {
 
     // Listeners
     $('body').on('click', '.toggle-card-button', function() {
+// ... [No changes]
         const $button = $(this);
         const $list = $button.prev('.card-list');
         if ($list.length) { showMoreCards($button, $list); }
     });
 
     $('body').on('click', '.card-item, .item', function(e) {
+// ... [No changes]
         const $clickedCard = $(this);
         const $link = $clickedCard.find('a').first();
         if (!$link.length) { return; } 
@@ -1221,6 +1257,7 @@ $(document).ready(function () {
 
     // Generalized Close Button Logic
     $('body').on('click', '.modal-close-btn', function() {
+// ... [No changes]
         const $modal = $('#content-modal');
         $('body').removeClass('modal-open');
         $modal.fadeOut(200);
@@ -1233,21 +1270,25 @@ $(document).ready(function () {
     });
     
     $('body').on('click', '#content-modal', function(e) {
+// ... [No changes]
         if (e.target.id === 'content-modal') {
             $(this).find('.modal-close-btn').first().click();
         }
     });
     
     $('body').on('click', '.modal-prev-btn', function() {
+// ... [No changes]
         if (currentCardIndex > 0) loadModalContent(currentCardIndex - 1);
     });
     
     $('body').on('click', '.modal-next-btn', function() {
+// ... [No changes]
         if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1);
     });
 
     // FIX 1: Info button listener
     $('body').on('click', '.modal-info-btn', function() {
+// ... [No changes]
         // Toggle the global state
         isModalInfoVisible = !isModalInfoVisible;
         
@@ -1260,6 +1301,7 @@ $(document).ready(function () {
     });
 
     // Filter listeners
+// ... [No changes]
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
     $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
     $('body').on('input', '#post-search-box', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
@@ -1280,6 +1322,7 @@ $(document).ready(function () {
 
     // Research Tab listener
     $('#content-modal').on('click', '.tab-button', function() {
+// ... [No changes]
         $(this).siblings().removeClass('active');
         $(this).addClass('active');
         const htmlUrl = $(this).data('content-url');
