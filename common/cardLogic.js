@@ -237,18 +237,18 @@ case 'chess':
             if (rawGames.length === 0) rawGames = [pgnFileContent]; 
 
             const boardId = 'chess-board-' + Date.now();
-            const styleId = 'chess-style-' + DateId; 
+            const styleId = 'chess-style-' + Date.now(); 
             
             let currentFontSize = 26; 
             let commentsEnabled = true; 
             let commentMap = {}; 
 
-            // --- PARSER (CRITICAL FIX APPLIED HERE) ---
+            // --- PARSER (Original Logic restored for stability) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 
-                // CRITICAL FIX: Use targeted regex to preserve [%eval X] tags.
-                let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
+                // NOTE: This line is the original line that was too broad for headers 
+                let body = pgnText.replace(/\[.*?\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
                     let result = "";
@@ -374,7 +374,7 @@ case 'chess':
                 cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim(); 
                 
                 let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
-                // Game Balance elements removed
+                let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
                 let whiteWinPct = 50;
                 
                 let debugEvalValue = "N/A";
@@ -391,7 +391,8 @@ case 'chess':
                         moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ?
                         "#e74c3c" : "#2ecc71";
                         
-                        // Game Balance logic removed
+                        balanceScore = isBlackMate ? "-100" : "+100";
+                        balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
                         whiteWinPct = isBlackMate ? 0 : 100;
                     } else {
                         rawVal = parseFloat(valStr);
@@ -402,7 +403,15 @@ case 'chess':
                         if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
                         else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
 
-                        // Game Balance logic removed
+                        balanceScore = Math.round(rawVal * 10);
+                        balanceScore = Math.max(-100, Math.min(100, balanceScore));
+                        
+                        const absBal = Math.abs(balanceScore);
+                        balanceWidth = (absBal / 100) * 50;
+                        if (balanceScore > 0) { balanceLeft = 50; balanceColor = "#2ecc71"; }
+                        else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
+                        
+                        if (balanceScore > 0) balanceScore = `+${balanceScore}`;
                         
                         whiteWinPct = 50 + (rawVal * 8);
                         whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
@@ -417,6 +426,7 @@ case 'chess':
                 
                 // Tooltip Definitions
                 const moveScoreTooltip = 'Current position evaluation in pawns (1.00 = 1 pawn advantage for White).';
+                // Game Balance tooltip removed
                 const winRateTooltip = 'Estimated Win Probability based on engine evaluation.';
                 
                 // 1 Decimal Place Formatting
@@ -641,7 +651,6 @@ case 'chess':
     });
     break;
             
-
 
 
 
