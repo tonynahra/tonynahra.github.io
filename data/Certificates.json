@@ -1,0 +1,509 @@
+{
+  "albumTitle": "My Certifications Collection",
+  "photos": [
+    {
+      "id": 1,
+      "title": "Epic Certificate",
+      "description": "A photo of epic certificate.",
+      "category": "Healthcare",
+      "url": "/img/Epic_Certificate.jpg",
+      "thumbnailUrl": "/img/Epic_Certificate.jpg"
+    },
+    {
+      "id": 2,
+      "title": "DP-600",
+      "description": "A photo of dp-600.",
+      "category": "Data,SQL,BI",
+      "url": "/img/DP-600_noFrame.png",
+      "thumbnailUrl": "/img/DP-600_noFrame.png"
+    },
+    {
+      "id": 3,
+      "title": "Oracle DSP",
+      "description": "A photo of oracle dsp.",
+      "category": "Data,AI,SQL",
+      "url": "/img/Oracle_DSP.png",
+      "thumbnailUrl": "/img/Oracle_DSP.png"
+    },
+    {
+      "id": 4,
+      "title": "Oracle 23ai",
+      "description": "A photo of oracle 23ai.",
+      "category": "Data,AI,SQL",
+      "url": "/img/Oracle_23ai.png",
+      "thumbnailUrl": "/img/Oracle_23ai.png"
+    },
+    {
+      "id": 5,
+      "title": "Oracle APEX",
+      "description": "A photo of oracle apex.",
+      "category": "Data",
+      "url": "/img/OracleAPEX.png",
+      "thumbnailUrl": "/img/OracleAPEX.png"
+    },
+    {
+      "id": 6,
+      "title": "Data Analyst MS",
+      "description": "A photo of data analyst ms.",
+      "category": "Data",
+      "url": "/img/DA_MS.png",
+      "thumbnailUrl": "/img/DA_MS.png"
+    },
+    {
+      "id": 7,
+      "title": "Azure AI",
+      "description": "A photo of azure ai.",
+      "category": "AI",
+      "url": "/img/AzureAI.png",
+      "thumbnailUrl": "/img/AzureAI.png"
+    },
+    {
+      "id": 8,
+      "title": "Agile Atlassian",
+      "description": "A photo of agile atlassian.",
+      "category": "PM",
+      "url": "/img/Agile_Atlas.png",
+      "thumbnailUrl": "/img/Agile_Atlas.png"
+    },
+    {
+      "id": 9,
+      "title": "Agile Jira",
+      "description": "A photo of agile jira.",
+      "category": "Data",
+      "url": "/img/Agile_Jira.png",
+      "thumbnailUrl": "/img/Agile_Jira.png"
+    },
+    {
+      "id": 10,
+      "title": "ITIL",
+      "description": "A photo of itil.",
+      "category": "PM",
+      "url": "/img/ITIL.png",
+      "thumbnailUrl": "/img/ITIL.png"
+    },
+    {
+      "id": 11,
+      "title": "PM Skills",
+      "description": "A photo of pm skills.",
+      "category": "PM",
+      "url": "/img/PMskills.png",
+      "thumbnailUrl": "/img/PMskills.png"
+    },
+    {
+      "id": 12,
+      "title": "Stats Foundation",
+      "description": "A photo of stats foundation.",
+      "category": "Data,Stat",
+      "url": "/img/Stats_FDN.png",
+      "thumbnailUrl": "/img/Stats_FDN.png"
+    },
+    {
+      "id": 13,
+      "title": "Anaconda",
+      "description": "A photo of anaconda.",
+      "category": "Programming,Data,Stat",
+      "url": "/img/Anaconda.png",
+      "thumbnailUrl": "/img/Anaconda.png"
+    },
+    {
+      "id": 14,
+      "title": "Fabric MS",
+      "description": "A photo of fabric ms.",
+      "category": "Data,BI",
+      "url": "/img/Fabric_MS.png",
+      "thumbnailUrl": "/img/Fabric_MS.png"
+    },
+    {
+      "id": 15,
+      "title": "Fabric Advanced",
+      "description": "A photo of fabric advanced.",
+      "category": "Data",
+      "url": "/img/Fabric_Advanced.png",
+      "thumbnailUrl": "/img/Fabric_Advanced.png"
+    },
+    {
+      "id": 16,
+      "title": "Fabric Data",
+      "description": "A photo of fabric data.",
+      "category": "Data,BI",
+      "url": "/img/Fabric_Data.png",
+      "thumbnailUrl": "/img/Fabric_Data.png"
+    },
+    {
+      "id": 17,
+      "title": "PowerBI MS",
+      "description": "A photo of powerbi ms.",
+      "category": "Data,BI",
+      "url": "/img/PowerBI_MS.png",
+      "thumbnailUrl": "/img/PowerBI_MS.png"
+    },
+    {
+      "id": 18,
+      "title": "SSIS",
+      "description": "A photo of ssis.",
+      "category": "Data,BI,SQL",
+      "url": "/img/SSIS.png",
+      "thumbnailUrl": "/img/SSIS.png"
+    },
+    {
+      "id": 19,
+      "title": "GenAI MS",
+      "description": "A photo of genai ms.",
+      "category": "AI",
+      "url": "/img/GenAI_MS.png",
+      "thumbnailUrl": "/img/GenAI_MS.png"
+    },
+    {
+      "id": 20,
+      "title": "PowerBI D3",
+      "description": "A photo of powerbi d3.",
+      "category": "BI",
+      "url": "/img/PowerBI_D3.png",
+      "thumbnailUrl": "/img/PowerBI_D3.png"
+    },
+    {
+      "id": 21,
+      "title": "PowerQuery",
+      "description": "A photo of powerquery.",
+      "category": "Data,BI",
+      "url": "/img/PowerQuery.png",
+      "thumbnailUrl": "/img/PowerQuery.png"
+    },
+    {
+      "id": 22,
+      "title": "SQL WinFx",
+      "description": "A photo of sql winfx.",
+      "category": "Data,SQL",
+      "url": "/img/SQL_WinFx.png",
+      "thumbnailUrl": "/img/SQL_WinFx.png"
+    },
+    {
+      "id": 23,
+      "title": "SQL DS",
+      "description": "A photo of sql ds.",
+      "category": "Data,SQL",
+      "url": "/img/SQL_DS.png",
+      "thumbnailUrl": "/img/SQL_DS.png"
+    },
+    {
+      "id": 24,
+      "title": "Advanced Pandas",
+      "description": "A photo of advanced pandas.",
+      "category": "Data,Stat",
+      "url": "/img/AdvancedPandas.png",
+      "thumbnailUrl": "/img/AdvancedPandas.png"
+    },
+    {
+      "id": 25,
+      "title": "Advanced PowerBI",
+      "description": "A photo of advanced powerbi.",
+      "category": "Data,BI",
+      "url": "/img/AdvancedPowerBI.png",
+      "thumbnailUrl": "/img/AdvancedPowerBI.png"
+    },
+    {
+      "id": 26,
+      "title": "BigQuery Looker",
+      "description": "A photo of bigquery looker.",
+      "category": "Data,BI",
+      "url": "/img/BQ_Looker.png",
+      "thumbnailUrl": "/img/BQ_Looker.png"
+    },
+    {
+      "id": 27,
+      "title": "Snowflake",
+      "description": "A photo of snowflake.",
+      "category": "Data,BI",
+      "url": "/img/Snowflake.png",
+      "thumbnailUrl": "/img/Snowflake.png"
+    },
+    {
+      "id": 28,
+      "title": "PowerQuery",
+      "description": "A photo of powerquery.",
+      "category": "Data,SQL",
+      "url": "/img/PowerQuery.png",
+      "thumbnailUrl": "/img/PowerQuery.png"
+    },
+    {
+      "id": 29,
+      "title": "Spark",
+      "description": "A photo of spark.",
+      "category": "Data,SQL",
+      "url": "/img/Spark.png",
+      "thumbnailUrl": "/img/Spark.png"
+    },
+    {
+      "id": 30,
+      "title": "SQL Data Analysis",
+      "description": "A photo of sql data analysis.",
+      "category": "Data,SQL",
+      "url": "/img/SQL_DataAnalysis.png",
+      "thumbnailUrl": "/img/SQL_DataAnalysis.png"
+    },
+    {
+      "id": 31,
+      "title": "Python Data Analysis",
+      "description": "A photo of python data analysis.",
+      "category": "Programming,Data",
+      "url": "/img/Python_DataAnalysis.png",
+      "thumbnailUrl": "/img/Python_DataAnalysis.png"
+    },
+    {
+      "id": 32,
+      "title": "PowerBI",
+      "description": "A photo of powerbi.",
+      "category": "Data",
+      "url": "/img/PowerBI.png",
+      "thumbnailUrl": "/img/PowerBI.png"
+    },
+    {
+      "id": 33,
+      "title": "PowerBI DAX",
+      "description": "A photo of powerbi dax.",
+      "category": "Data,BI",
+      "url": "/img/PowerBI_DAX.png",
+      "thumbnailUrl": "/img/PowerBI_DAX.png"
+    },
+    {
+      "id": 34,
+      "title": "SQL Server DWH",
+      "description": "A photo of sql server dwh.",
+      "category": "SQL,Data",
+      "url": "/img/SS_DWH.png",
+      "thumbnailUrl": "/img/SS_DWH.png"
+    },
+    {
+      "id": 35,
+      "title": "Stats DS",
+      "description": "A photo of stats ds.",
+      "category": "Data,Stat",
+      "url": "/img/Stats_DS.png",
+      "thumbnailUrl": "/img/Stats_DS.png"
+    },
+    {
+      "id": 36,
+      "title": "Stats FN4",
+      "description": "A photo of stats fn4.",
+      "category": "Data,Stat",
+      "url": "/img/Stats_FN4.png",
+      "thumbnailUrl": "/img/Stats_FN4.png"
+    },
+    {
+      "id": 37,
+      "title": "CS Cert",
+      "description": "A photo of cs cert.",
+      "category": "Data",
+      "url": "/img/CS_cert.png",
+      "thumbnailUrl": "/img/CS_cert.png"
+    },
+    {
+      "id": 38,
+      "title": "Tableau",
+      "description": "A photo of tableau.",
+      "category": "Data,BI",
+      "url": "/img/DS_Tableau.png",
+      "thumbnailUrl": "/img/DS_Tableau.png"
+    },
+    {
+      "id": 39,
+      "title": "Python Xls",
+      "description": "A photo of python xls.",
+      "category": "Data",
+      "url": "/img/PyXls.png",
+      "thumbnailUrl": "/img/PyXls.png"
+    },
+    {
+      "id": 40,
+      "title": "BigQuery",
+      "description": "A photo of bigquery.",
+      "category": "Data,SQL",
+      "url": "/img/BigQuery.png",
+      "thumbnailUrl": "/img/BigQuery.png"
+    },
+    {
+      "id": 41,
+      "title": "Hadoop",
+      "description": "A photo of hadoop.",
+      "category": "Data",
+      "url": "/img/Hadoop.png",
+      "thumbnailUrl": "/img/Hadoop.png"
+    },
+    {
+      "id": 42,
+      "title": "Oracle Cloud",
+      "description": "A photo of oracle cloud.",
+      "category": "Data",
+      "url": "/img/OracleCloud.png",
+      "thumbnailUrl": "/img/OracleCloud.png"
+    },
+    {
+      "id": 43,
+      "title": "PLSQL",
+      "description": "A photo of plsql.",
+      "category": "SQL,Data",
+      "url": "/img/PLSQL.png",
+      "thumbnailUrl": "/img/PLSQL.png"
+    },
+    {
+      "id": 44,
+      "title": "PowerShell",
+      "description": "A photo of powershell.",
+      "category": "Programming",
+      "url": "/img/PowerShell.png",
+      "thumbnailUrl": "/img/PowerShell.png"
+    },
+    {
+      "id": 45,
+      "title": "Python Advanced",
+      "description": "A photo of python advanced.",
+      "category": "Data,Programming",
+      "url": "/img/PythonAdvanced.png",
+      "thumbnailUrl": "/img/PythonAdvanced.png"
+    },
+    {
+      "id": 46,
+      "title": "NodeJS",
+      "description": "A photo of nodejs.",
+      "category": "Programming",
+      "url": "/img/NodeJS.png",
+      "thumbnailUrl": "/img/NodeJS.png"
+    },
+    {
+      "id": 47,
+      "title": "Python DA",
+      "description": "A photo of python da.",
+      "category": "Programming",
+      "url": "/img/Python_DA.png",
+      "thumbnailUrl": "/img/Python_DA.png"
+    },
+    {
+      "id": 48,
+      "title": "JavaScript",
+      "description": "A photo of javascript.",
+      "category": "Programming",
+      "url": "/img/JS.png",
+      "thumbnailUrl": "/img/JS.png"
+    },
+    {
+      "id": 49,
+      "title": "GenAI LLM",
+      "description": "A photo of genai llm.",
+      "category": "AI",
+      "url": "/img/GenAI-LLM.png",
+      "thumbnailUrl": "/img/GenAI-LLM.png"
+    },
+    {
+      "id": 50,
+      "title": "GenAI Apps",
+      "description": "A photo of genai apps.",
+      "category": "AI",
+      "url": "/img/GenAI-Apps.png",
+      "thumbnailUrl": "/img/GenAI-Apps.png"
+    },
+    {
+      "id": 51,
+      "title": "Pytorch",
+      "description": "A photo of pytorch.",
+      "category": "AI",
+      "url": "/img/Pytorch.png",
+      "thumbnailUrl": "/img/Pytorch.png"
+    },
+    {
+      "id": 52,
+      "title": "LLM",
+      "description": "A photo of llm.",
+      "category": "AI",
+      "url": "/img/LLM.png",
+      "thumbnailUrl": "/img/LLM.png"
+    },
+    {
+      "id": 53,
+      "title": "Gemini Advanced",
+      "description": "A photo of gemini advanced.",
+      "category": "AI",
+      "url": "/img/GeminiAdvanced.png",
+      "thumbnailUrl": "/img/GeminiAdvanced.png"
+    },
+    {
+      "id": 54,
+      "title": "Algorithm Advanced",
+      "description": "A photo of algorithm advanced.",
+      "category": "Programming",
+      "url": "/img/AlgorithmAdvanced.png",
+      "thumbnailUrl": "/img/AlgorithmAdvanced.png"
+    },
+    {
+      "id": 55,
+      "title": "Design Patterns",
+      "description": "A photo of design patterns.",
+      "category": "Programming",
+      "url": "/img/DesignPatterns.png",
+      "thumbnailUrl": "/img/DesignPatterns.png"
+    },
+    {
+      "id": 56,
+      "title": "Splunk",
+      "description": "A photo of splunk.",
+      "category": "Data",
+      "url": "/img/Splunk.png",
+      "thumbnailUrl": "/img/Splunk.png"
+    },
+    {
+      "id": 57,
+      "title": "Software Design MS",
+      "description": "A photo of software design ms.",
+      "category": "Programming",
+      "url": "/img/SD_MS.png",
+      "thumbnailUrl": "/img/SD_MS.png"
+    },
+    {
+      "id": 58,
+      "title": "ITIL PMI",
+      "description": "A photo of itil pmi.",
+      "category": "PM",
+      "url": "/img/ITIL_PMI.png",
+      "thumbnailUrl": "/img/ITIL_PMI.png"
+    },
+    {
+      "id": 59,
+      "title": "ITIL CompTIA",
+      "description": "A photo of itil comptia.",
+      "category": "PM",
+      "url": "/img/ITIL_CompTIA.png",
+      "thumbnailUrl": "/img/ITIL_CompTIA.png"
+    },
+    {
+      "id": 60,
+      "title": "Testing CompTIA",
+      "description": "A photo of testing comptia.",
+      "category": "Programming,PM",
+      "url": "/img/Testing_CompTIA.png",
+      "thumbnailUrl": "/img/Testing_CompTIA.png"
+    },
+    {
+      "id": 61,
+      "title": "Google DSA",
+      "description": "A photo of google dsa.",
+      "category": "Data",
+      "url": "/img/G_DSA.png",
+      "thumbnailUrl": "/img/G_DSA.png"
+    },
+    {
+      "id": 62,
+      "title": "Google LookML",
+      "description": "A photo of google lookml.",
+      "category": "Data",
+      "url": "/img/GC_LookML.png",
+      "thumbnailUrl": "/img/GC_LookML.png"
+    },
+    {
+      "id": 63,
+      "title": "Data Analysis",
+      "description": "A photo of data analysis.",
+      "category": "Data",
+      "url": "/img/DA_sl.png",
+      "thumbnailUrl": "/img/DA_sl.png"
+    }
+  ]
+}
