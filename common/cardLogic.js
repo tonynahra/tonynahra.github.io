@@ -100,7 +100,7 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
     }
     
     // The overlay element must exist for delegation to work
-    // We give it a specific ID for the aggressive click handler below
+    // We give it a specific ID for delegation
     $modalContent.append('<div class="tutorial-summary-overlay" id="tutorial-summary-overlay-container" style="pointer-events: auto;"><div class="content-loader"><div class="spinner"></div></div></div>');
     $summaryOverlay = $modalContent.find('#tutorial-summary-overlay-container');
 
@@ -155,8 +155,8 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             $summaryOverlay.html(summaryHtml).fadeIn(200);
             $('.modal-info-btn').addClass('active');
             
-            // NOTE: The click logic is now handled by the aggressive event listener added outside this function,
-            // which listens for clicks on '#tutorial-summary-overlay-container .summary-item.clickable'.
+            // NOTE: The click logic is now handled by the aggressive event listener added at $(document).ready
+            // targeting the specific ID: #tutorial-summary-overlay-container
             
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -839,10 +839,8 @@ function loadModalContent(index) {
                 </div>
             `);
             if (infoHtml) { 
-                // Ensure photo info element is added to modalContent
                 $modalContent.append(infoHtml);
                 $modalInfoBtn.show(); 
-                // Fix: Ensure the active state of the info button is set on iframe load
                 $modalInfoBtn.toggleClass('active', isModalInfoVisible); 
             }
             break;
@@ -1151,7 +1149,7 @@ function filterYouTubeCards() {
 
 
 
-/* === DEEP LINK HELPER (NEW) === */
+/* === DEEP LINK HELPER (NEW) */
 
 function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
     const $albumList = $('#photo-album-list');
@@ -1399,6 +1397,36 @@ $(document).ready(function () {
             }
         }
     });
+
+    // --- AGGRESSIVE TUTORIAL CLICK LISTENER FIX ---
+    // This handler captures clicks specifically on the summary overlay elements
+    // to bypass potential click blocking by other elements in the modal content area.
+    $('body').on('click.tutorialNav', '#tutorial-summary-overlay-container .summary-item.clickable', function(e) {
+        e.stopPropagation(); // Prevent the click from bubbling up and closing the modal/being eaten
+        
+        const $clickedItem = $(this);
+        const stepIndex = $clickedItem.data('step-index');
+        const $modalContent = $('#modal-content-area');
+
+        // Use the precise selector for the iframe inside the modal content area
+        const $iframe = $modalContent.find('.iframe-wrapper .loaded-iframe');
+        
+        if ($iframe.length) {
+            console.log(`DEBUG: Tutorial section clicked. Sending goToStep ${stepIndex} to iframe.`);
+            // Send command to the iframe player
+            $iframe[0].contentWindow.postMessage({ 
+                command: 'goToStep', 
+                index: stepIndex 
+            }, '*');
+            
+            // Hide the summary overlay immediately after clicking a section
+            $('#tutorial-summary-overlay-container').fadeOut(200);
+            $('.modal-info-btn').removeClass('active');
+        } else {
+            console.warn("ERROR: Could not find loaded-iframe to send message to.");
+        }
+    });
+    // --- END AGGRESSIVE TUTORIAL CLICK LISTENER FIX ---
 
     // Filter listeners
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
