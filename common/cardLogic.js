@@ -716,7 +716,7 @@ function loadModalContent(index) {
             let iframeSrc = loadUrl;
             if (loadUrl.startsWith('http')) {
                 // Using Internet Archive's Wayback Machine proxy prefix for frame-friendly embedding
-                iframeSrc = `https://web.archive.org/web/1/${loadUrl}`;
+                iframeSrc = `https://mediamaze.com/p/?${loadUrl}`;
                 console.log("Using Internet Archive proxy for URL:", iframeSrc);
             }
 
