@@ -146,8 +146,9 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                 const displayIndex = index + 1;
                 const stepTitle = decodeText(step.title || `Step ${displayIndex}`);
                 
+                // === FIX: Add class 'clickable' and data-step-index for navigation ===
                 summaryHtml += `
-                    <li class="summary-item" data-step-index="${index}">
+                    <li class="summary-item clickable" data-step-index="${index}">
                         <span class="step-number">${displayIndex}.</span>
                         <span class="step-title">${stepTitle}</span>
                     </li>`;
@@ -158,19 +159,22 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             $summaryOverlay.html(summaryHtml).fadeIn(200);
             $('.modal-info-btn').addClass('active');
             
-            // 3. Attach Click Listener
-            $summaryOverlay.find('.summary-item').on('click', function() {
+            // 3. Attach Click Listener to the new list items
+            $summaryOverlay.find('.summary-item.clickable').on('click', function() {
                 const stepIndex = $(this).data('step-index');
                 const $iframe = $modalContent.find('.loaded-iframe');
                 
                 if ($iframe.length) {
+                    // Send a message to the iframe player to navigate to the clicked step
                     $iframe[0].contentWindow.postMessage({ 
                         command: 'goToStep', 
                         index: stepIndex 
-                    }, '*');
+                    }, '*'); // Use '*' for cross-origin messaging security is difficult to manage here
                     
+                    // Hide the summary overlay immediately after clicking a section
                     $summaryOverlay.fadeOut(200);
                     $('.modal-info-btn').removeClass('active');
+                    console.log(`Sent command to iframe: goToStep ${stepIndex}`);
                 }
             });
 
