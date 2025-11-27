@@ -155,14 +155,16 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             $('.modal-info-btn').addClass('active');
             
             // 3. FIX: Attach Click Listener using Event Delegation on the summary overlay
-            // Use .off() before .on() to ensure we don't accidentally stack listeners if this function is called multiple times without a full modal clear.
+            // This is the most robust way to ensure dynamic elements receive clicks.
             $summaryOverlay.off('click', '.summary-item.clickable').on('click', '.summary-item.clickable', function(e) {
                 e.stopPropagation(); // CRITICAL: Stop event from bubbling to parent handlers (like the modal content area)
                 
                 const stepIndex = $(this).data('step-index');
-                const $iframe = $modalContent.find('.loaded-iframe');
+                // Use the precise selector for the iframe inside the modal content area
+                const $iframe = $modalContent.find('.iframe-wrapper .loaded-iframe');
                 
                 if ($iframe.length) {
+                    console.log(`DEBUG: Tutorial section clicked. Sending goToStep ${stepIndex} to iframe.`); // <--- CONFIRM CLICK/SEND
                     // Send command to the iframe player
                     $iframe[0].contentWindow.postMessage({ 
                         command: 'goToStep', 
@@ -172,7 +174,8 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                     // Hide the summary overlay immediately after clicking a section
                     $summaryOverlay.fadeOut(200);
                     $('.modal-info-btn').removeClass('active');
-                    console.log(`Sent command to iframe: goToStep ${stepIndex}`);
+                } else {
+                    console.warn("ERROR: Could not find loaded-iframe to send message to.");
                 }
             });
 
