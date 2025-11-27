@@ -218,7 +218,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -323,6 +322,29 @@ case 'chess':
                     </div>
                 </div>
             `);
+            
+            // --- FONT SIZE HANDLERS (NEW CODE ADDED HERE) ---
+            const minFontSize = 14;
+            const maxFontSize = 40;
+            const sizeStep = 2; // Change font size by 2 pixels per click
+
+            $('#chess-font-minus').off('click').on('click', function(e) {
+                e.preventDefault();
+                if (currentFontSize > minFontSize) {
+                    currentFontSize -= sizeStep;
+                    updateChessStyles();
+                }
+            });
+
+            $('#chess-font-plus').off('click').on('click', function(e) {
+                e.preventDefault();
+                if (currentFontSize < maxFontSize) {
+                    currentFontSize += sizeStep;
+                    updateChessStyles();
+                }
+            });
+            // --- END NEW CODE ---
+
 
             // --- DYNAMIC STYLES ---
             const updateChessStyles = () => {
@@ -520,14 +542,13 @@ case 'chess':
             });
 
             // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
-            // --- MODIFIED CODE STARTS HERE ---
             $('#chess-close-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 // 1. Remove custom classes to exit chess mode
                 $modal.removeClass('chess-mode');
                 $('body').removeClass('chess-mode-active');
                 
-                // 2. Hide the custom header content (if this line was meant to be here)
+                // 2. Hide the custom header content
                 $modal.find('.modal-header').show(); 
 
                 // 3. Explicitly hide the modal popup (the core fix)
@@ -538,7 +559,6 @@ case 'chess':
                     $modal.hide();
                 }
             });
-            // --- MODIFIED CODE ENDS HERE ---
 
 
             // --- RENDER ---
@@ -642,9 +662,7 @@ case 'chess':
         }
     });
     break;
-
             
-
 
 
 
