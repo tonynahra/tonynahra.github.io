@@ -1259,11 +1259,26 @@ $(document).ready(function () {
         if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1);
     });
 
+/*    
     $('body').on('click', '.modal-info-btn', function() {
         isModalInfoVisible = !isModalInfoVisible;
         $('#modal-content-area').find('.modal-photo-info').toggleClass('info-visible', isModalInfoVisible);
     });
+*/
 
+$('body').on('click', '.modal-info-btn', function() {
+        isModalInfoVisible = !isModalInfoVisible;
+        const $infoDiv = $('#modal-content-area').find('.modal-photo-info');
+
+        // Toggle the class that controls visibility (from the CSS)
+        $infoDiv.toggleClass('info-visible', isModalInfoVisible);
+        
+        // Ensure the button itself is styled to reflect the state (optional but good practice)
+        $(this).toggleClass('active', isModalInfoVisible); 
+    });
+
+
+    
     // Filter listeners
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
     $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
