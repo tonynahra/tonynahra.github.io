@@ -216,7 +216,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -247,7 +246,7 @@ case 'chess':
                 const map = {};
                 
                 // CRITICAL FIX: Target PGN headers specifically to preserve [%eval X] tags.
-                // NOTE: The original line was `let body = pgnText.replace(/\[.*?\]/g, "").trim();`
+                // This is the fix needed for the bars and numbers to become dynamic.
                 let body = pgnText.replace(/\[[A-Za-z0-9_]+\s+"[^"]*"\]/g, "").trim(); 
 
                 const cleanPGN = (text) => {
@@ -426,7 +425,6 @@ case 'chess':
                 
                 // Tooltip Definitions
                 const moveScoreTooltip = 'Current position evaluation in pawns (1.00 = 1 pawn advantage for White).';
-                const balanceTooltip = 'Current position evaluation scaled to centipawns (100 = 1 pawn advantage for White).';
                 const winRateTooltip = 'Estimated Win Probability based on engine evaluation.';
                 
                 // 1 Decimal Place Formatting
@@ -650,9 +648,7 @@ case 'chess':
         }
     });
     break;
-
-
-
+            
             
 
 
