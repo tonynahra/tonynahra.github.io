@@ -215,7 +215,6 @@ function loadModalContent(index) {
 
 
 
-
 case 'chess':
     // Fix GitHub CORS
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -410,11 +409,17 @@ case 'chess':
                 $(`#${styleId}`).text(css);
             };
 
-            // --- EVAL GENERATOR ---
+            // --- EVAL GENERATOR (MODIFIED: Returns empty string if no eval) ---
             const generateEvalHtml = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                 cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim();
+
+                // 🛑 NEW LOGIC: Return empty string if no [%eval] tag found 🛑
+                if (!evalMatch) {
+                    return { html: "", text: cleanText };
+                }
+                // 🛑 END NEW LOGIC 🛑
 
                 let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
                 let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
@@ -487,7 +492,7 @@ case 'chess':
                 return { html: evalHtml, text: cleanText };
             };
 
-            // --- COMMENT UPDATER (MODIFIED: Title Margins and increased scaling) ---
+            // --- COMMENT UPDATER ---
             const updateCommentContent = (moveIndex, totalMoves) => {
                 const overlay = document.getElementById('chess-comment-overlay');
                 const btn = $('#chess-comment-btn');
@@ -507,10 +512,9 @@ case 'chess':
                 $(overlay).fadeIn();
 
                 const commentText = commentMap[moveIndex] || "";
-                const parsed = generateEvalHtml(commentText);
+                const parsed = generateEvalHtml(commentText); // parsed.html will now be empty if no eval is present
                 let content = "";
                 
-                // *** MODIFIED SCALING FACTORS (Larger effect for + and -) ***
                 // Base 26px font maps to 100% zoom. Calculate relative size increase.
                 const zoomFactor = currentFontSize / 26; 
 
@@ -538,7 +542,7 @@ case 'chess':
 
                 // 4. BARS & COUNTER
                 let footer = "";
-                footer += parsed.html;
+                footer += parsed.html; // This will be empty if no eval was found
 
                 const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1;
                 const displayTotal = totalMoves || '?';
@@ -547,7 +551,6 @@ case 'chess':
 
                 overlay.innerHTML = content + footer;
             };
-            // --- END MODIFIED COMMENT UPDATER ---
 
             // CLICK HANDLER
             $('#chess-comment-btn').off('click').on('click', function(e) {
@@ -697,8 +700,11 @@ case 'chess':
         }
     });
     break;
-            
 
+
+
+
+            
             
 
 
