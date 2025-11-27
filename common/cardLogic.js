@@ -169,8 +169,8 @@ function loadModalContent(index) {
     // it should only be reset when the modal closes.
     $modalInfoBtn.removeData('manifest-url').removeClass('active'); // Clear manifest data and active state
     $modalContent.removeClass('summary-view-active');
-    // FIX: Only remove the specific tutorial overlay
-    $modalContent.find('.tutorial-summary-overlay').remove(); 
+    // FIX: Only remove the specific tutorial overlay and photo info element before setting new content
+    $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
     
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
@@ -293,6 +293,10 @@ function loadModalContent(index) {
             });
             break;
         case 'chess':
+            // FIX: Hide the main modal info button in Chess mode to avoid conflict
+            $modalInfoBtn.hide(); 
+            $modal.find('.modal-header').hide(); // Chess has its own header/toolbar
+            
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -301,7 +305,7 @@ function loadModalContent(index) {
             // 1. ENTER CHESS MODE
             $modal.addClass('chess-mode');
             $('body').addClass('chess-mode-active');
-            $modal.find('.modal-header').hide();
+            
 
             $.ajax({
                 url: loadUrl,
@@ -388,7 +392,11 @@ function loadModalContent(index) {
                                 <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
                             </div>
                             <div class="chess-main-area">
-                                <div id="${boardId}"></div>
+                                <div class="chess-white-box">
+                                    <div id="${boardId}"></div>
+                                </div>
+                                <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
+                                <div id="chess-metadata-overlay" class="chess-metadata-overlay"></div> <!-- Unique ID for metadata overlay -->
                             </div>
                         </div>
                     `);
@@ -700,7 +708,7 @@ function loadModalContent(index) {
                             infoHtml += `<tr><td style="color: var(--text-accent); font-weight:bold; width: 30%;">${key}</td><td style="color: #fff;">${val}</td></tr>`;
                         }
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
-                        $(`#chess-metadata-${boardId}`).html(infoHtml);
+                        $(`#chess-metadata-overlay`).html(infoHtml); // Use the common ID
 
                         // SIZE
                         const winHeight = $(window).height();
@@ -762,7 +770,8 @@ function loadModalContent(index) {
 
                     renderGame(0);
                     $select.off('change').on('change', function() { renderGame($(this).val()); });
-                    $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
+                    // FIX: Re-attach click handler for the CHESS info button (which is separate)
+                    $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-overlay`).fadeToggle(); });
 
                 },
                 error: function() {
@@ -1029,6 +1038,138 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
         }
         
         const defaultIncrement = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
+        // Use 10 as default if incrementOverride is missing (undefined)
+        handleCardView($targetList.parent(), initialLoadOverride, defaultIncrement);
+        
+        // --- NEW: Call the callback if provided ---
+        if (typeof onComplete === 'function') {
+            onComplete();
+        }
+        
+    }).fail(function() { 
+        if ($('#album-title').length) $('#album-title').text("Error Loading Album"); 
+    });
+}
+
+// UPDATED: Added onComplete parameter and callback execution
+function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
+    $('#Grid').empty(); 
+    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
+    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
+    var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
+
+    $.getJSON(URL, options, function (data) {
+        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
+        if (data.items) {
+            resultsLoop(data, Category, BKcol);
+            handleCardView($('#content-area'), initialLoadOverride);
+            populateSmartKeywords('#Grid', '#youtube-keyword-filter');
+            populateCategoryFilter('#Grid', '#youtube-category-filter');
+            
+            // --- NEW: Call the callback if provided ---
+            if (typeof onComplete === 'function') {
+                onComplete();
+            }
+        }
+    });
+}
+
+
+function resultsLoop(data, Cat, BKcol) {
+    $.each(data.items, function (i, item) {
+        if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) {
+            console.warn("Skipping playlist item, missing resourceId:", item);
+            return; // skip this item
+        }
+        
+        let thumb = item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '';
+        
+        const title = decodeText(item.snippet.title);
+        const desc = decodeText(item.snippet.description);
+        const vid = item.snippet.resourceId.videoId;
+
+        $('#Grid').append(`
+        <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
+            <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
+               <img class="YTi" src="${thumb}" alt="${title}" >
+               <h3>${title}</h3>
+               <p>${desc}</p>
+               <span class="card-category" style="display: none;">${Cat}</span>
+            </a>
+        </div>
+        `);
+    });
+}
+
+// Define filterYouTubeCards globally so mainPage.js can access it
+function filterYouTubeCards() {
+    const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
+    const selectedKeyword = $('#youtube-keyword-filter').val();
+    const $grid = $('#Grid');
+    const $allCards = $grid.children('.card-item');
+    const $showMoreButton = $grid.next('.toggle-card-button');
+    const $noResultsMessage = $('#youtube-no-results');
+    let visibleCount = 0;
+
+    if (searchTerm.length > 0 || selectedKeyword !== "all") {
+        $showMoreButton.hide();
+        $allCards.each(function() {
+            const $card = $(this);
+            const cardText = getCardSearchableText($card); 
+            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
+            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
+            if (searchMatch && keywordMatch) {
+                $card.removeClass('hidden-card-item').show();
+                visibleCount++;
+            } else { $card.hide(); }
+        });
+        if (visibleCount === 0) $noResultsMessage.show(); else $noResultsMessage.hide();
+    } else {
+        $noResultsMessage.hide();
+        $allCards.removeAttr('style'); 
+        handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
+    }
+}
+
+
+
+/* === DEEP LINK HELPER (NEW) === */
+
+function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
+    const $albumList = $('#photo-album-list');
+    const $targetList = $albumList.length ? $albumList : $('#about-album-list');
+    
+    $.getJSON(jsonUrl, function (albumData) {
+        if ($('#album-title').length) {
+            $('#album-title').text(decodeText(albumData.albumTitle));
+        }
+        
+        $targetList.empty(); 
+        
+        $.each(albumData.photos, function(index, photo) {
+            const title = decodeText(photo.title);
+            const category = decodeText(photo.category);
+            const description = decodeText(photo.description);
+            
+            const cardHtml = `
+                <div class="card-item" 
+                     data-category="${category}" 
+                     data-keywords="${title},${description}"
+                     data-title="${title}"
+                     data-desc="${description}">
+                    <a href="${photo.url}" data-load-type="image">
+                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
+                    </a>
+                </div>`;
+            $targetList.append(cardHtml);
+        });
+        
+        if ($('#album-category-filter').length) {
+            populateCategoryFilter('#photo-album-list', '#album-category-filter');
+            populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
+        }
+        
+        const defaultIncrement = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
         
         handleCardView($targetList.parent(), initialLoadOverride, defaultIncrement);
         
@@ -1208,26 +1349,36 @@ $(document).ready(function () {
     // UPDATED FIX: Info button listener handles both Photo and Tutorial modes
     $('body').on('click', '.modal-info-btn', function() {
         
-        // **PRIMARY FIX: Use button data attribute to reliably check for tutorial mode**
-        const manifestUrl = $(this).data('manifest-url'); 
+        const $infoBtn = $(this);
+        const $modalContent = $('#modal-content-area');
+        
+        // 1. Check for Tutorial Mode (manifest-url data must be present on the button)
+        const manifestUrl = $infoBtn.data('manifest-url'); 
         
         if (manifestUrl) {
             // TUTORIAL MODE: Show/hide Summary (Table of Contents)
             console.log("Tutorial Info button clicked. Manifest found, showing summary.");
-            // buildTutorialSummary handles toggling visibility internally
-            buildTutorialSummary(manifestUrl, $('#modal-content-area'));
-            // The active class is toggled inside buildTutorialSummary for better state management
-        } else {
-            // PHOTO/STANDARD MODE: Show/hide Description
+            buildTutorialSummary(manifestUrl, $modalContent);
+        } 
+        
+        // 2. Check for Photo/Iframe Mode (modal-photo-info element must be present)
+        else {
             isModalInfoVisible = !isModalInfoVisible;
             
-            const $infoDiv = $('#modal-content-area').find('.modal-photo-info');
+            const $infoDiv = $modalContent.find('.modal-photo-info');
             
             // Console log the state for debugging (as requested by user)
             console.log("Photo Info button clicked. isModalInfoVisible:", isModalInfoVisible, "Info Div found:", $infoDiv.length > 0);
 
-            $infoDiv.toggleClass('info-visible', isModalInfoVisible);
-            $(this).toggleClass('active', isModalInfoVisible); 
+            if ($infoDiv.length > 0) {
+                $infoDiv.toggleClass('info-visible', isModalInfoVisible);
+                $infoBtn.toggleClass('active', isModalInfoVisible); 
+            } else {
+                // FALLBACK: If we're not in tutorial mode and didn't find the photo div, 
+                // we probably loaded Markdown or Chess or something else that uses the main header
+                $infoBtn.removeClass('active');
+                isModalInfoVisible = false; // Reset state if click was ineffective
+            }
         }
     });
 
