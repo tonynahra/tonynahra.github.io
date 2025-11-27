@@ -102,8 +102,8 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
     // The overlay element must exist for delegation to work
     // We give it a specific ID for delegation
     const overlayId = 'tutorial-summary-overlay-container';
-    // NOTE: If the click is still blocked, check if CSS is making the list items transparent to clicks.
-    $modalContent.append(`<div class="tutorial-summary-overlay" id="${overlayId}" style="pointer-events: auto;"><div class="content-loader"><div class="spinner"></div></div></div>`);
+    // CRITICAL FIX: Add z-index to ensure it is above all modal content
+    $modalContent.append(`<div class="tutorial-summary-overlay" id="${overlayId}" style="pointer-events: auto; z-index: 1000;"><div class="content-loader"><div class="spinner"></div></div></div>`);
     $summaryOverlay = $modalContent.find(`#${overlayId}`);
 
     // === ROUTE MANIFEST FETCH THROUGH THE PROXY TO BYPASS CORS ===
@@ -165,7 +165,9 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                 overlayElement.removeEventListener('click', null, false); 
                 
                 overlayElement.addEventListener('click', function(e) {
+                    // Check if the actual click target or any of its parents match the clickable selector
                     const target = e.target.closest('.summary-item.clickable');
+                    
                     if (target) {
                         e.stopPropagation(); // Stop propagation immediately
 
@@ -1434,9 +1436,6 @@ $(document).ready(function () {
         }
     });
     
-    // REMOVE JQUERY AGGRESSIVE HANDLER TO RELY ON NATIVE HANDLER IN buildTutorialSummary
-    // $('body').off('click.tutorialNav'); // This was removed inside loadModalContent
-
     // Filter listeners
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
     $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
