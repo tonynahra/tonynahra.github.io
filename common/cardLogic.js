@@ -2,6 +2,7 @@
 var currentCardList = []; 
 var currentCardIndex = 0; 
 var isModalInfoVisible = false; 
+var isTutorialMode = false; // NEW: State to manage Info button behavior for tutorials
 
 /* === HELPER FUNCTIONS (Global Scope) === */
 
@@ -80,6 +81,70 @@ function handleModalKeys(e) {
     }
 }
 
+// Function to generate and display the tutorial summary (Table of Contents)
+function buildTutorialSummary(manifestUrl, $modalContent) {
+    $modalContent.addClass('summary-view-active');
+    
+    // Check if summary content is already loaded/cached
+    let $summaryOverlay = $modalContent.find('.tutorial-summary-overlay');
+    if ($summaryOverlay.length) {
+        // Toggle based on current state
+        if ($summaryOverlay.is(':visible')) {
+            $summaryOverlay.fadeOut(200);
+        } else {
+            $summaryOverlay.fadeIn(200);
+        }
+        return;
+    }
+    
+    $modalContent.append('<div class="tutorial-summary-overlay"><div class="content-loader"><div class="spinner"></div></div></div>');
+    $summaryOverlay = $modalContent.find('.tutorial-summary-overlay');
+
+    $.getJSON(manifestUrl, function (data) {
+        let summaryHtml = '<div class="summary-box"><h2>Tutorial Summary</h2><ol class="summary-list">';
+        
+        // Loop through steps and create clickable list items
+        $.each(data.steps, function(index, step) {
+            // Use index + 1 for display purposes, but 0-based index for actual navigation
+            const displayIndex = index + 1;
+            const stepTitle = decodeText(step.title || `Step ${displayIndex}`);
+            
+            // data-step-index is used by the tutorial player (iframe) to navigate
+            summaryHtml += `
+                <li class="summary-item" data-step-index="${index}">
+                    <span class="step-number">${displayIndex}.</span>
+                    <span class="step-title">${stepTitle}</span>
+                </li>`;
+        });
+        
+        summaryHtml += '</ol></div>';
+        
+        $summaryOverlay.html(summaryHtml);
+        
+        // Add click listener to the list items
+        $summaryOverlay.find('.summary-item').on('click', function() {
+            const stepIndex = $(this).data('step-index');
+            const $iframe = $modalContent.find('.loaded-iframe');
+            
+            if ($iframe.length) {
+                // Send a message to the iframe player to navigate to the clicked step
+                $iframe[0].contentWindow.postMessage({ 
+                    command: 'goToStep', 
+                    index: stepIndex 
+                }, '*'); // Use '*' for cross-origin messaging security is difficult to manage here
+                
+                // Hide the summary overlay
+                $summaryOverlay.fadeOut(200);
+                // Also remove active state from info button
+                $('.modal-info-btn').removeClass('active');
+            }
+        });
+
+    }).fail(function() {
+        $summaryOverlay.html('<div class="error-message">Error loading tutorial manifest for summary.</div>');
+    });
+}
+
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) {
         return;
@@ -95,6 +160,12 @@ function loadModalContent(index) {
     const $modalOpenLink = $modal.find('.open-new-window');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
 
+    // Reset tutorial mode state and info button data
+    isTutorialMode = false;
+    $modalInfoBtn.removeData('manifest-url').removeClass('active'); // Clear manifest data and active state
+    $modalContent.removeClass('summary-view-active');
+    $modalContent.find('.tutorial-summary-overlay').remove();
+    
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
     // CHANGED: Use 'let' instead of 'const' so we can modify the URL if needed
@@ -113,7 +184,11 @@ function loadModalContent(index) {
     
     // 2. Tutorial Logic
     if (loadType === 'tutorial' && manifestUrl) {
-        $modal.addClass('research-mode'); 
+        isTutorialMode = true; // Set mode flag
+        $modalInfoBtn.show(); // Show Info button for tutorials
+        $modalInfoBtn.data('manifest-url', manifestUrl); // Store manifest URL
+        
+        $modal.addClass('research-mode'); // Keep research-mode class for styling consistency
         $modalOpenLink.attr('href', manifestUrl);
         
         const playerHtml = `
@@ -165,13 +240,13 @@ function loadModalContent(index) {
     const customHeight = $link.data('height') || '90vh';
     
     const $card = $link.closest('.card-item');
-    // FIX 2a: Ensure title/desc retrieval checks all possible sources, especially data attributes
+    // FIX: Ensure title/desc retrieval checks all possible sources, especially data attributes
     const title = $card.find('h3').text() || $card.find('img').attr('alt') || $card.data('title'); 
     const desc = $card.find('p').text() || $card.data('desc'); 
     let infoHtml = '';
 
     if (title || desc) { // Only create info HTML if there's content
-        // FIX 2b: Ensure the state of info visibility is applied when loading the card
+        // FIX: Ensure the state of info visibility is applied when loading the card
         const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
         infoHtml = `
             <div class="modal-photo-info ${infoVisibleClass}">
@@ -300,11 +375,7 @@ function loadModalContent(index) {
                                 <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
                             </div>
                             <div class="chess-main-area">
-                                <div class="chess-white-box">
-                                    <div id="${boardId}"></div>
-                                </div>
-                                <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
-                                <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
+                                <div id="${boardId}"></div>
                             </div>
                         </div>
                     `);
@@ -707,17 +778,17 @@ function loadModalContent(index) {
                 </div>`);
             if (infoHtml) { 
                 $modalInfoBtn.show(); 
-                // Fix 2c: Ensure the active state of the info button is set on image load
+                // Fix: Ensure the active state of the info button is set on image load
                 $modalInfoBtn.toggleClass('active', isModalInfoVisible);
             }
             break;
         case 'iframe':
-            // FIX 3: Replaced blocked corsproxy.io with a frame-friendly alternative (Internet Archive)
+            // FIX: Use the specified absolute server proxy path (https://mediamaze.com/p/?)
             let iframeSrc = loadUrl;
             if (loadUrl.startsWith('http')) {
-                // Using Internet Archive's Wayback Machine proxy prefix for frame-friendly embedding
-                iframeSrc = `https://mediamaze.com/p/?${loadUrl}`;
-                console.log("Using Internet Archive proxy for URL:", iframeSrc);
+                // Use the absolute PHP proxy endpoint
+                iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`;
+                console.log("Using absolute PHP proxy for URL:", iframeSrc);
             }
 
             $modalContent.html(`
@@ -727,7 +798,7 @@ function loadModalContent(index) {
                 </div>`);
             if (infoHtml) { 
                 $modalInfoBtn.show(); 
-                // Fix 2c: Ensure the active state of the info button is set on iframe load
+                // Fix: Ensure the active state of the info button is set on iframe load
                 $modalInfoBtn.toggleClass('active', isModalInfoVisible); 
             }
             break;
@@ -1230,6 +1301,7 @@ $(document).ready(function () {
         currentCardList = [];
         currentCardIndex = 0;
         isModalInfoVisible = false; // Reset info visibility state on close
+        isTutorialMode = false; // Reset tutorial mode
         $(document).off('keydown.modalNav');
         $modal.find('.modal-header').show();
     });
@@ -1248,20 +1320,30 @@ $(document).ready(function () {
         if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1);
     });
 
-    // FIX 2d: Info button listener with console logging for visibility state
+    // UPDATED FIX: Info button listener handles both Photo and Tutorial modes
     $('body').on('click', '.modal-info-btn', function() {
-        // Toggle the global state
-        isModalInfoVisible = !isModalInfoVisible;
         
-        // Find the photo info div and toggle the visibility class
-        const $infoDiv = $('#modal-content-area').find('.modal-photo-info');
-        $infoDiv.toggleClass('info-visible', isModalInfoVisible);
+        // **PRIMARY FIX: Use button data attribute to reliably check for tutorial mode**
+        const manifestUrl = $(this).data('manifest-url'); 
         
-        // Console log the state for debugging
-        console.log("Info button clicked. isModalInfoVisible:", isModalInfoVisible, "Info Div found:", $infoDiv.length > 0);
+        if (manifestUrl) {
+            // TUTORIAL MODE: Show/hide Summary (Table of Contents)
+            console.log("Tutorial Info button clicked. Manifest found, showing summary.");
+            // buildTutorialSummary handles toggling visibility internally
+            buildTutorialSummary(manifestUrl, $('#modal-content-area'));
+            $(this).toggleClass('active');
+        } else {
+            // PHOTO/STANDARD MODE: Show/hide Description
+            isModalInfoVisible = !isModalInfoVisible;
+            
+            const $infoDiv = $('#modal-content-area').find('.modal-photo-info');
+            
+            // Console log the state for debugging (as requested by user)
+            console.log("Photo Info button clicked. isModalInfoVisible:", isModalInfoVisible, "Info Div found:", $infoDiv.length > 0);
 
-        // Toggle the active class on the button itself (optional styling)
-        $(this).toggleClass('active', isModalInfoVisible); 
+            $infoDiv.toggleClass('info-visible', isModalInfoVisible);
+            $(this).toggleClass('active', isModalInfoVisible); 
+        }
     });
 
     // Filter listeners
