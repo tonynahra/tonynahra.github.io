@@ -252,7 +252,7 @@ function loadModalContent(index) {
 
     const customHeight = $link.data('height') || '90vh';
     
-    const $card = $link.closest('.card-item');
+    const $card = currentCardList[currentCardIndex].closest('.card-item');
     // FIX: Ensure title/desc retrieval checks all possible sources, especially data attributes
     const title = $card.find('h3').text() || $card.find('img').attr('alt') || $card.data('title'); 
     const desc = $card.find('p').text() || $card.data('desc'); 
@@ -1353,7 +1353,6 @@ $(document).ready(function () {
         const $modalContent = $('#modal-content-area');
         
         // 1. Check for Tutorial Mode (manifest-url data must be present on the button)
-        // This is the source of truth for tutorials, as it's set in loadModalContent
         const manifestUrl = $infoBtn.data('manifest-url'); 
         
         if (manifestUrl) {
