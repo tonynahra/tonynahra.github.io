@@ -275,9 +275,10 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Photo Info Overlay --- */
+/* --- Photo Info Overlay (FIXED FOR OVERRIDE) --- */
 
-/* --- Photo Info Overlay (FIXED) --- */
-.modal-photo-info {
+/* 1. Base Hidden State: Use Opacity/Visibility for smooth transitions and modern control */
+#modal-content-area .modal-photo-info {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -286,37 +287,28 @@ select:focus, input[type="search"]:focus {
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
     
-    /* Make the base state hidden with opacity/visibility */
-    opacity: 0; 
-    visibility: hidden; 
-    transform: translateY(100%); 
+    /* CRITICAL VISIBILITY CONTROL */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(100%); /* Start off-screen */
     transition: all 0.4s ease-out;
     pointer-events: none; 
-    
-    /* CRITICAL: Ensure the info overlay is above the image/iframe */
-    z-index: 500; 
+    z-index: 50; /* Needs to be higher than the image (z-index: 1 or no z-index) */
 }
 
-/* FIX: Increase the specificity for the visible state and use !important */
+/* 2. Visible State: Use high specificity (ID + classes) and !important to guarantee it wins */
 #modal-content-area .modal-photo-info.info-visible { 
-    opacity: 1 !important;        /* MUST override any other opacity: 0 */
-    visibility: visible !important; /* MUST override any other visibility: hidden */
-    transform: translateY(0) !important;
+    opacity: 1 !important;        
+    visibility: visible !important;
+    transform: translateY(0) !important; /* Slide into view */
     pointer-events: auto !important;
 }
 
+/* Keep the content styles as they are (no change needed here) */
+.modal-photo-info h3 { font-size: 1.2rem; color: #fff; margin-bottom: 5px; }
+.modal-photo-info p { font-size: 1rem; color: #eee; margin: 0; }
 
-/* Keep the content styles */
-.modal-photo-info h3 { 
-    font-size: 1.2rem; 
-    color: #fff; 
-    margin-bottom: 5px; 
-}
-.modal-photo-info p { 
-    font-size: 1rem; 
-    color: #eee; 
-    margin: 0; 
-}
+
 
 
 
