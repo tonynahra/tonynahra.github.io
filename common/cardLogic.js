@@ -4,7 +4,6 @@ var currentCardIndex = 0;
 var isModalInfoVisible = false; 
 
 /* === HELPER FUNCTIONS (Global Scope) === */
-// ... (decodeText, handleCardView, showMoreCards, handleModalKeys, loadModalContent, buildResearchModal, loadModalTabContent, populateCategoryFilter, populateSmartKeywords, getCardSearchableText, checkKeywordMatch, filterCardsGeneric, loadPhotoAlbum, loadVids, resultsLoop, filterYouTubeCards, openCardByTitle, loadVids) ... 
 
 function decodeText(text) {
     if (!text) return "";
@@ -416,11 +415,11 @@ case 'chess':
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                 cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim();
 
-                // 馃洃 NEW LOGIC: Return empty string if no [%eval] tag found 馃洃
+                // 🛑 NEW LOGIC: Return empty string if no [%eval] tag found 🛑
                 if (!evalMatch) {
                     return { html: "", text: cleanText };
                 }
-                // 馃洃 END NEW LOGIC 馃洃
+                // 🛑 END NEW LOGIC 🛑
 
                 let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
                 let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
@@ -1284,42 +1283,6 @@ $(document).ready(function () {
     $('body').on('change', '#tutorials-category-filter', () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
     $('body').on('change', '#tutorials-keyword-filter', () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
 
-    // === NEW: Tutorial Section Click Listener (Requires .tutorial-section-item and data-section-anchor on your HTML <li>) ===
-    $('body').on('click', '.tutorial-section-item', function(e) {
-        e.preventDefault();
-        
-        // 1. Debugging
-        const $item = $(this);
-        const sectionTitle = $item.find('span').first().text();
-        console.log(`DEBUG: Tutorial section clicked: "${sectionTitle}". Attempting to navigate iframe.`);
-        
-        // 2. Find the target section ID/anchor from the data attribute
-        const sectionAnchor = $item.data('section-anchor');
-        
-        if (!sectionAnchor) {
-            console.error("DEBUG: Tutorial section element is missing a 'data-section-anchor' attribute. Cannot navigate.");
-            return;
-        }
-
-        const $modal = $('#content-modal');
-        // Find the iframe loaded by the tutorial logic
-        const $iframe = $modal.find('.loaded-iframe');
-
-        if ($iframe.length && $iframe[0].contentWindow) {
-            // Use window.postMessage to communicate with the iframe.
-            // NOTE: The tutorial_player.html file MUST be updated to listen for this message.
-            $iframe[0].contentWindow.postMessage({ 
-                type: 'NAVIGATE_TO_SECTION', 
-                anchor: sectionAnchor 
-            }, '*'); // '*' means allow any origin (change to specific origin for security)
-            
-            console.log(`DEBUG: Sent postMessage to iframe: NAVIGATE_TO_SECTION, anchor: ${sectionAnchor}`);
-        } else {
-            console.warn("DEBUG: Could not find loaded-iframe inside the modal or contentWindow is blocked.");
-        }
-    });
-    // === END NEW LISTENER ===
-
     // Research Tab listener
     $('#content-modal').on('click', '.tab-button', function() {
         $(this).siblings().removeClass('active');
@@ -1328,3 +1291,5 @@ $(document).ready(function () {
         loadModalTabContent(htmlUrl, '#research-tab-content-modal');
     });
 });
+
+
