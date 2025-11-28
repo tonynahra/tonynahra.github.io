@@ -275,6 +275,8 @@ select:focus, input[type="search"]:focus {
 }
 
 /* --- Photo Info Overlay --- */
+
+/* --- Photo Info Overlay (FIXED) --- */
 .modal-photo-info {
     position: absolute;
     bottom: 0;
@@ -283,12 +285,47 @@ select:focus, input[type="search"]:focus {
     padding: 40px 20px 20px;
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
-    display: none; 
-    pointer-events: none; 
+    
+    /* === FIX STARTS HERE === */
+    opacity: 0; /* Start invisible */
+    visibility: hidden; /* Ensure it doesn't receive focus/clicks when hidden */
+    transform: translateY(100%); /* Start off-screen (optional slide-up effect) */
+    transition: all 0.4s ease-out;
+    pointer-events: none; /* Essential for making sure the overlay doesn't block image interaction */
+    /* === FIX ENDS HERE === */
 }
-.modal-photo-info.info-visible { display: block; }
-.modal-photo-info h3 { font-size: 1.2rem; color: #fff; margin-bottom: 5px; }
-.modal-photo-info p { font-size: 1rem; color: #eee; margin: 0; }
+
+/* New active state */
+.modal-photo-info.info-visible { 
+    opacity: 1; /* Fully visible */
+    visibility: visible; /* Make it available for screen readers/focus */
+    transform: translateY(0); /* Slide into place */
+    pointer-events: auto; /* Allow interaction if needed, though usually not for info overlay */
+}
+
+/* Keep the content styles */
+.modal-photo-info h3 { 
+    font-size: 1.2rem; 
+    color: #fff; 
+    margin-bottom: 5px; 
+}
+.modal-photo-info p { 
+    font-size: 1rem; 
+    color: #eee; 
+    margin: 0; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* --- Research Tab Styles --- */
 .tab-nav {
