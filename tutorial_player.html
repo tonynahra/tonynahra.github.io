@@ -376,6 +376,13 @@
         }
     }
 
+
+    function JumpToSectionByManifestIndex(index) {
+        currentPagePointer = index;
+        movePage(0);
+        HideSummary(); // Close the summary overlay after jumping
+    }
+
     function ShowSummary() {
         const summaryList = document.getElementById('summaryList');
         const summaryTotal = document.getElementById('summaryTotal');
@@ -386,6 +393,8 @@
         let totalPages = TutorialManifest.length;
         let currentSectionPages = 0;
         let sectionName = "Intro";
+        // NEW: Store the manifest index of the first slide of the section
+        let sectionStartIndex = 0; 
         
         let activeSectionIndex = -1; 
         let tempSecCount = 0;
@@ -402,17 +411,21 @@
             
             if (type === "s") {
                 if (i > 0) {
-                    addSummaryItem(sectionName, currentSectionPages, sectionCount === activeSectionIndex);
+                    // MODIFIED: Pass the section's starting index
+                    addSummaryItem(sectionName, currentSectionPages, sectionStartIndex, sectionCount === activeSectionIndex);
                 }
                 sectionName = title;
                 sectionCount++;
                 currentSectionPages = 0;
+                // NEW: Update the start index for the new section
+                sectionStartIndex = i; 
             }
             
             if (type === "q") questionCount++;
             currentSectionPages++;
         }
-        addSummaryItem(sectionName, currentSectionPages, sectionCount === activeSectionIndex);
+        // MODIFIED: Add the last section/intro item
+        addSummaryItem(sectionName, currentSectionPages, sectionStartIndex, sectionCount === activeSectionIndex);
 
         summaryTotal.innerHTML = `
             <div>Total Sections: ${sectionCount}</div>
@@ -422,8 +435,13 @@
         document.getElementById('summaryOverlay').style.display = 'flex';
     }
 
-    function addSummaryItem(name, pageCount, isActive) {
+    // MODIFIED: Added manifestIndex parameter
+    function addSummaryItem(name, pageCount, manifestIndex, isActive) {
         const li = document.createElement('li');
+        // NEW: Add click handler to the list item
+        li.setAttribute('onclick', `JumpToSectionByManifestIndex(${manifestIndex})`);
+        li.style.cursor = "pointer"; // Make it look clickable
+        
         if(isActive) {
             li.style.color = "#66fcf1";
             li.style.borderLeft = "4px solid #66fcf1";
@@ -433,6 +451,8 @@
         li.innerHTML = `<span>${name}</span> <span>${pageCount} slides</span>`;
         document.getElementById('summaryList').appendChild(li);
     }
+    
+
 
     function HideSummary() {
         document.getElementById('summaryOverlay').style.display = 'none';
