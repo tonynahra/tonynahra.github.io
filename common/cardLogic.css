@@ -278,30 +278,28 @@ select:focus, input[type="search"]:focus {
 /* --- Photo Info Overlay (FIXED FOR OVERRIDE) --- */
 
 /* 1. Base Hidden State: Use Opacity/Visibility for smooth transitions and modern control */
+/* --- Photo Info Overlay (Apply the visibility FIX again) --- */
 #modal-content-area .modal-photo-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 40px 20px 20px;
-    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-    color: #fff;
-    
-    /* CRITICAL VISIBILITY CONTROL */
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(100%); /* Start off-screen */
+    /* ... (Keep your existing opacity: 0 / visibility: hidden / transform styles) */
+    opacity: 0; 
+    visibility: hidden; 
+    transform: translateY(100%); 
     transition: all 0.4s ease-out;
     pointer-events: none; 
-    z-index: 50; /* Needs to be higher than the image (z-index: 1 or no z-index) */
+    z-index: 50; /* Ensure it is above the image/iframe */
+    display: block; /* NOTE: Set to block here to ensure it occupies space,
+                       and use opacity/visibility for the hidden effect */
 }
 
-/* 2. Visible State: Use high specificity (ID + classes) and !important to guarantee it wins */
+/* 2. Visible State: Ensure everything is on, and add the final display: block! */
 #modal-content-area .modal-photo-info.info-visible { 
     opacity: 1 !important;        
     visibility: visible !important;
-    transform: translateY(0) !important; /* Slide into view */
+    transform: translateY(0) !important;
     pointer-events: auto !important;
+    
+    /* CRITICAL ADDITION: This is a last resort to defeat any display: none override */
+    display: block !important; 
 }
 
 /* Keep the content styles as they are (no change needed here) */
