@@ -1338,6 +1338,32 @@ $(document).ready(function () {
     `);
 
     // Listeners
+
+    // --- PROPOSED ADDITION (Assuming the summary is rendered on the main page/modal area) ---
+$('body').on('click', '.tutorial-section-link', function(e) {
+    e.preventDefault();
+    const sectionAnchor = $(this).attr('href'); // e.g., #section-3
+
+    // 1. Get the iframe element
+    const $iframe = $('#modal-content-area').find('.loaded-iframe');
+
+    if ($iframe.length) {
+        // 2. Modify the iframe's source URL to include the anchor
+        // This causes the iframe to reload at the specific section if the internal page supports it.
+        const currentSrc = $iframe.attr('src').split('#')[0]; // Remove existing hash
+        const newSrc = currentSrc + sectionAnchor;
+        
+        // Option A: Reload the iframe (simple but slow)
+        $iframe.attr('src', newSrc);
+        
+        // Option B: Post a message to the iframe (modern, faster, requires listener in tutorial_player.html)
+        // $iframe[0].contentWindow.postMessage({ type: 'NAVIGATE_TO_SECTION', anchor: sectionAnchor }, '*');
+    }
+});
+
+
+    
+    
     $('body').on('click', '.toggle-card-button', function() {
         const $button = $(this);
         const $list = $button.prev('.card-list');
