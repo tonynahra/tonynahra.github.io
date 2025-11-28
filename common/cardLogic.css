@@ -285,6 +285,7 @@ select:focus, input[type="search"]:focus {
     padding: 40px 20px 20px;
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
+    z-index: 50; /* Add this line to ensure it sits on top of the image */
     
     /* === FIX STARTS HERE === */
     opacity: 0; /* Start invisible */
@@ -294,6 +295,7 @@ select:focus, input[type="search"]:focus {
     pointer-events: none; /* Essential for making sure the overlay doesn't block image interaction */
     /* === FIX ENDS HERE === */
 }
+
 
 /* New active state */
 
