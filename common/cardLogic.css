@@ -296,12 +296,14 @@ select:focus, input[type="search"]:focus {
 }
 
 /* New active state */
+
 .modal-photo-info.info-visible { 
-    opacity: 1; /* Fully visible */
-    visibility: visible; /* Make it available for screen readers/focus */
-    transform: translateY(0); /* Slide into place */
-    pointer-events: auto; /* Allow interaction if needed, though usually not for info overlay */
+    opacity: 1 !important;        /* Ensure content is opaque */
+    visibility: visible !important; /* Ensure content is visible */
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
 }
+
 
 /* Keep the content styles */
 .modal-photo-info h3 { 
