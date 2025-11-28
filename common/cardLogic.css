@@ -285,23 +285,22 @@ select:focus, input[type="search"]:focus {
     padding: 40px 20px 20px;
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
-    z-index: 50; /* Add this line to ensure it sits on top of the image */
     
-    /* === FIX STARTS HERE === */
-    opacity: 0; /* Start invisible */
-    visibility: hidden; /* Ensure it doesn't receive focus/clicks when hidden */
-    transform: translateY(100%); /* Start off-screen (optional slide-up effect) */
+    /* Make the base state hidden with opacity/visibility */
+    opacity: 0; 
+    visibility: hidden; 
+    transform: translateY(100%); 
     transition: all 0.4s ease-out;
-    pointer-events: none; /* Essential for making sure the overlay doesn't block image interaction */
-    /* === FIX ENDS HERE === */
+    pointer-events: none; 
+    
+    /* CRITICAL: Ensure the info overlay is above the image/iframe */
+    z-index: 500; 
 }
 
-
-/* New active state */
-
-.modal-photo-info.info-visible { 
-    opacity: 1 !important;        /* Ensure content is opaque */
-    visibility: visible !important; /* Ensure content is visible */
+/* FIX: Increase the specificity for the visible state and use !important */
+#modal-content-area .modal-photo-info.info-visible { 
+    opacity: 1 !important;        /* MUST override any other opacity: 0 */
+    visibility: visible !important; /* MUST override any other visibility: hidden */
     transform: translateY(0) !important;
     pointer-events: auto !important;
 }
