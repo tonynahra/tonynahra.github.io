@@ -282,38 +282,40 @@ select:focus, input[type="search"]:focus {
 /* --- Photo Info Overlay --- */
 
 /* Base Hidden State: Use high specificity + visibility/opacity for smooth transitions */
+/* --- Photo Info Overlay (FINAL FIX) --- */
+
+/* 1. Base Hidden State (using display: none for guaranteed hiding when closed) */
 #modal-content-area .modal-photo-info {
+    /* Position the element at the bottom with margin */
     position: absolute;
-    bottom: 0;
+    bottom: 20px; /* NEW: Added 20px margin from the bottom */
     left: 0;
     right: 0;
     padding: 40px 20px 20px;
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: #fff;
     
-    /* CRITICAL VISIBILITY CONTROL: Force it to display, but hide it with opacity/visibility */
-    display: block; 
-    opacity: 0;
-    visibility: hidden; 
-    transform: translateY(100%); 
-    transition: all 0.4s ease-out;
+    /* CRITICAL: Force it to be completely hidden in its default state */
+    display: none; 
     pointer-events: none; 
+    z-index: 50; /* Ensure it layers above the image */
+    
+    /* Using transition on opacity/transform is no longer needed since we use display: none */
+    transition: none; 
 }
 
-/* The Active (Visible) State: Force all properties to show it */
+/* 2. The Active (Visible) State */
 #modal-content-area .modal-photo-info.info-visible { 
-    /* Use !important here as a final measure against external overrides */
+    /* CRITICAL: Force it to display, overriding the base display: none; */
     display: block !important; 
-    opacity: 1 !important;        
-    visibility: visible !important;
-    transform: translateY(0) !important; 
+    
+    /* The visibility/opacity that was causing the issue is now removed here */
     pointer-events: auto !important;
 }
 
 /* Keep the content styles */
 .modal-photo-info h3 { font-size: 1.2rem; color: #fff; margin-bottom: 5px; }
 .modal-photo-info p { font-size: 1rem; color: #eee; margin: 0; }
-
 
 
 
