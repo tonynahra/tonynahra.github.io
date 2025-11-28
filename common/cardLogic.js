@@ -1309,6 +1309,59 @@ function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
 }
     
 
+function toggleModalInfo(button) {
+    // 1. Find the modal info panel within the modal-content-area
+    const modalContentArea = button.closest('.modal-content').querySelector('#modal-content-area');
+    const infoPanel = modalContentArea.querySelector('.modal-photo-info');
+    
+    // 2. Toggle the class on the info panel
+    const isVisible = infoPanel.classList.toggle('info-visible');
+    
+    // 3. Toggle the button text and update the state attribute
+    if (isVisible) {
+        button.textContent = 'Hide Info';
+        button.setAttribute('data-info-state', 'visible'); // Persist state
+    } else {
+        button.textContent = 'Info';
+        button.setAttribute('data-info-state', 'hidden'); // Persist state
+    }
+}
+
+// You will need to attach this function to the button in your main setup function:
+document.querySelector('.modal-info-btn').addEventListener('click', function(e) {
+     toggleModalInfo(e.currentTarget);
+});
+
+
+function initializeModalInfoState(modalElement) {
+    const infoButton = modalElement.querySelector('.modal-info-btn');
+    const infoPanel = modalElement.querySelector('.modal-photo-info');
+    
+    // Check for a saved state (e.g., from a previous session or a page load)
+    let savedState = infoButton.getAttribute('data-info-state');
+
+    // If no state is saved, default to 'visible' when opening the modal for the first time.
+    // NOTE: This assumes the data-info-state attribute is *only* set on click.
+    if (!savedState) {
+        savedState = 'visible';
+        infoButton.setAttribute('data-info-state', savedState); 
+    }
+
+    // Apply the saved state to the panel and button text
+    if (savedState === 'visible') {
+        infoPanel.classList.add('info-visible');
+        infoButton.textContent = 'Hide Info';
+    } else {
+        infoPanel.classList.remove('info-visible');
+        infoButton.textContent = 'Info';
+    }
+}
+
+// The flow when opening the modal (in your existing openModal function) should be:
+// 1. Load card details (title, image, etc.) into the modal.
+// 2. initializeModalInfoState(document.getElementById('content-modal'));
+// 3. Display the modal.
+
 
 /* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
