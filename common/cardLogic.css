@@ -296,7 +296,7 @@ select:focus, input[type="search"]:focus {
     color: #fff;
     
     /* CRITICAL: Force it to be completely hidden in its default state */
-    display: none; 
+    /* display: none; */
     pointer-events: none; 
     z-index: 50; /* Ensure it layers above the image */
     
