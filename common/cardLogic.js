@@ -1,18 +1,17 @@
 /* === GLOBAL VARIABLES === */
 var currentCardList = []; 
 var currentCardIndex = 0; 
-var isModalInfoVisible = false; // Master state for Info Box persistence
+var isModalInfoVisible = false; 
 var isTutorialMode = false; 
 var slideshowInterval = null; 
 
-/* === CSS INJECTION (Basic Check) === */
+/* === CSS INJECTION === */
 function injectModalStyles() {
     if ($('#dynamic-modal-styles').length) return; 
     $('head').append(`<style id="dynamic-modal-styles"></style>`);
 }
 
 /* === HELPER FUNCTIONS (GLOBAL SCOPE) === */
-
 function decodeText(text) {
     if (!text) return "";
     try {
@@ -39,27 +38,22 @@ function updateSocialMeta(title, desc, image) {
         if ($tag.length) $tag.attr('content', content);
         else $('head').append(`<meta property="${property}" content="${content}">`);
     };
-
     const cleanTitle = decodeText(title || "Content Viewer");
     const cleanDesc = decodeText(desc || "View this content.");
     const cleanImage = image && !image.startsWith('http') ? window.location.origin + '/' + image : (image || "");
-
     setMeta('og:title', cleanTitle);
     setMeta('og:description', cleanDesc);
     if (cleanImage) setMeta('og:image', cleanImage);
     setMeta('og:type', 'article');
     setMeta('og:url', window.location.href);
-
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', cleanTitle);
     setMeta('twitter:description', cleanDesc);
     if (cleanImage) setMeta('twitter:image', cleanImage);
-
     document.title = cleanTitle;
 }
 
-/* === VIEW HELPERS (GLOBAL SCOPE) === */
-
+/* === VIEW HELPERS (GLOBAL) === */
 function handleCardView($scope, initialLoadOverride, incrementOverride) {
     $scope.find('.card-list').each(function() {
         const $list = $(this);
@@ -67,14 +61,11 @@ function handleCardView($scope, initialLoadOverride, incrementOverride) {
         const totalItems = $items.length;
         const initialLimit = parseInt(initialLoadOverride) || 10;
         const increment = parseInt(incrementOverride) || 10; 
-        
         $list.next('.toggle-card-button').remove(); 
-        
         if (totalItems > initialLimit) {
             $items.slice(initialLimit).addClass('hidden-card-item');
             const remaining = totalItems - initialLimit;
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
-            
             $button.data({ 'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems });
             $list.after($button);
         }
@@ -87,24 +78,19 @@ function showMoreCards($button, $list) {
     const increment = parseInt($button.data('increment') || 10);
     const visibleCount = parseInt($button.data('visible-count') || 0);
     const newVisibleCount = visibleCount + increment;
-    
     $items.slice(visibleCount, newVisibleCount).removeClass('hidden-card-item');
     $button.data('visible-count', newVisibleCount);
-    
     const remaining = totalItems - newVisibleCount;
     if (remaining <= 0) { $button.hide(); } else { $button.text(`Show More (${remaining} more) \u25BC`); }
 }
 
 /* === ANIMATION HELPERS (GLOBAL) === */
-
 function animateModalOpen() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
-    
     $modal.removeClass('fading-out');
     $content.removeClass('modal-animate-leave');
     $modal.css('display', 'flex').css('opacity', '1'); 
-    
     requestAnimationFrame(() => {
         $content.addClass('modal-animate-enter');
         setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
@@ -115,10 +101,8 @@ function animateModalOpen() {
 function animateModalClose() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
-    
     $content.removeClass('modal-animate-enter').addClass('modal-animate-leave');
     $modal.addClass('fading-out'); 
-    
     setTimeout(function() {
         $modal.hide();
         $modal.removeClass('fading-out');
@@ -127,15 +111,26 @@ function animateModalClose() {
     }, 300); 
 }
 
-/* === MODAL LOGIC (GLOBAL) === */
-
-function handleModalKeys(e) {
-    if (!$('#content-modal').is(':visible')) {
-        $(document).off('keydown.modalNav');
-        return;
+/* === PERSISTENCE LOGIC (GLOBAL) === */
+function applyInfoState() {
+    const $modalContent = $('#modal-content-area');
+    const $infoBtn = $('.modal-info-btn');
+    const $infoDiv = $modalContent.find('.modal-photo-info');
+    if ($infoDiv.length === 0) { $infoBtn.hide(); return; }
+    $infoBtn.show();
+    if (isModalInfoVisible) {
+        $infoBtn.addClass('active');
+        $infoDiv.addClass('visible');
+    } else {
+        $infoBtn.removeClass('active');
+        $infoDiv.removeClass('visible');
     }
-    if ($(e.target).is('input, textarea, select')) return;
+}
 
+/* === MODAL KEY HANDLER (GLOBAL) === */
+function handleModalKeys(e) {
+    if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; }
+    if ($(e.target).is('input, textarea, select')) return;
     switch (e.key) {
         case "Escape": $('.modal-close-btn').first().click(); break;
         case "ArrowLeft": $('.modal-prev-btn').first().click(); break;
@@ -146,37 +141,13 @@ function handleModalKeys(e) {
     }
 }
 
-/* === CENTRAL INFO PERSISTENCE LOGIC (GLOBAL) === */
-function applyInfoState() {
-    const $modalContent = $('#modal-content-area');
-    const $infoBtn = $('.modal-info-btn');
-    const $infoDiv = $modalContent.find('.modal-photo-info');
-
-    if ($infoDiv.length === 0) {
-        $infoBtn.hide();
-        return;
-    }
-
-    $infoBtn.show();
-
-    if (isModalInfoVisible) {
-        $infoBtn.addClass('active');
-        $infoDiv.addClass('visible'); // Uses !important in CSS
-    } else {
-        $infoBtn.removeClass('active');
-        $infoDiv.removeClass('visible');
-    }
-}
-
 /* === MODAL CONTENT LOADER (GLOBAL) === */
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) return;
-
     const $link = currentCardList[index];
     if (!$link.length) return;
     
     currentCardIndex = index;
-    
     const $modal = $('#content-modal');
     const $modalContent = $('#modal-content-area');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
@@ -214,48 +185,27 @@ function loadModalContent(index) {
         } else loadType = 'newtab'; 
     }
 
-    if (loadType === 'image') {
-        $modalPlayControls.show();
-    } else {
-        $modalPlayControls.hide();
-        stopSlideshow(); 
-    }
+    if (loadType === 'image') { $modalPlayControls.show(); } else { $modalPlayControls.hide(); stopSlideshow(); }
+    if (loadType === 'image' || loadType === 'iframe' || loadType === 'markdown' || loadType === 'tutorial') { $modalFsBtn.show(); } else { $modalFsBtn.hide(); }
 
-    if (loadType === 'image' || loadType === 'iframe' || loadType === 'markdown' || loadType === 'tutorial') {
-        $modalFsBtn.show(); 
-    } else {
-        $modalFsBtn.hide();
-    }
-
-    // 1. Research
     if (loadType === 'research' && jsonUrl) {
-        $modal.addClass('research-mode'); 
-        $modalFsBtn.hide();
-        $modalInfoBtn.hide(); 
-        buildResearchModal(jsonUrl); 
-        return; 
+        $modal.addClass('research-mode'); $modalFsBtn.hide(); $modalInfoBtn.hide(); 
+        buildResearchModal(jsonUrl); return; 
     } 
     
-    // 2. Tutorial
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; 
-        $modalInfoBtn.show(); 
-        $modalInfoBtn.data('manifest-url', manifestUrl); 
-        $modalInfoBtn.removeClass('active'); 
-
+        $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); 
         $modal.addClass('research-mode'); 
         $('.tutorial-fs-toggle').show().css('display', 'flex'); 
         
-        // Inject with default visible nav bar (bottom: 0)
         const playerHtml = `
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
                 <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" 
-                    class="loaded-iframe" 
-                    style="border: none; width: 100%; height: 100%;"
+                    class="loaded-iframe" style="border: none; width: 100%; height: 100%;"
                     onload="try{
                         const d = this.contentDocument;
                         const s = d.createElement('style');
-                        /* Nav is ABSOLUTE at bottom, VISIBLE by default. */
                         s.innerHTML = '.nav-bar, .controls, footer, .navbar { position: absolute !important; bottom: 0 !important; left: 0 !important; width: 100% !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1; pointer-events: auto; } body.hide-nav .nav-bar, body.hide-nav .controls, body.hide-nav footer { opacity: 0 !important; pointer-events: none !important; }';
                         d.head.appendChild(s);
                     }catch(e){}">
@@ -265,20 +215,13 @@ function loadModalContent(index) {
         `;
         $modalContent.html(playerHtml);
         $modalContent.find('.tutorial-custom-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
-        
-        $modalContent.find('.iframe-wrapper').on('dblclick', function() { 
-            if (document.fullscreenElement) document.exitFullscreen(); 
-        });
-
+        $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); });
         const $card = currentCardList[currentCardIndex].closest('.card-item');
         updateSocialMeta($card.find('h3').text(), $card.find('p').text(), $card.find('img').attr('src'));
-        
         return;
     }
 
-    // 3. Standard
     $modalInfoBtn.show(); 
-
     if ((loadType === 'markdown' || loadType === 'chess') && loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
         loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
     }
@@ -294,11 +237,7 @@ function loadModalContent(index) {
     let infoHtml = '';
     if (title || desc) { 
         const initialClass = isModalInfoVisible ? 'visible' : '';
-        infoHtml = `
-            <div class="modal-photo-info raised-layer ${initialClass}">
-                <h3>${title}</h3>
-                <p>${desc}</p>
-            </div>`;
+        infoHtml = `<div class="modal-photo-info raised-layer ${initialClass}"><h3>${title}</h3><p>${desc}</p></div>`;
     }
 
     switch (loadType) {
@@ -314,18 +253,14 @@ function loadModalContent(index) {
                 error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
             });
             break;
-
         case 'chess':
             loadChessGame(loadUrl, $modal, $modalContent);
             break;
-            
         case 'html':
             $.ajax({
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
-                    $modalContent.html(data); 
-                    if (infoHtml) { $modalContent.append(infoHtml); }
-                    applyInfoState(); 
+                    $modalContent.html(data); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); 
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -334,14 +269,9 @@ function loadModalContent(index) {
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
             if (infoHtml) { $modalContent.append(infoHtml); }
             applyInfoState(); 
-            
             $modalContent.find('.image-wrapper').on('dblclick', function() { 
-                if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                } else {
-                    const el = this;
-                    if (el.requestFullscreen) el.requestFullscreen();
-                    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+                if (document.fullscreenElement) { document.exitFullscreen(); } else {
+                    const el = this; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
                 }
             });
             break;
@@ -361,25 +291,18 @@ function loadModalContent(index) {
             $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>');
             break;
     }
-    
     $('.modal-prev-btn').prop('disabled', index <= 0);
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
 
 /* === FILTERS & LOADERS (GLOBAL) === */
-
 function populateCategoryFilter(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return;
     const categoryCounts = {};
     $(`${listId} .card-item`).each(function() {
         const categories = $(this).data('category');
-        if (categories) {
-            String(categories).split(',').forEach(cat => {
-                const cleanCat = cat.trim();
-                if (cleanCat) categoryCounts[cleanCat] = (categoryCounts[cleanCat] || 0) + 1;
-            });
-        }
+        if (categories) { String(categories).split(',').forEach(cat => { const cleanCat = cat.trim(); if (cleanCat) categoryCounts[cleanCat] = (categoryCounts[cleanCat] || 0) + 1; }); }
     });
     const sortedCategories = Object.entries(categoryCounts).sort(([,a], [,b]) => b - a);
     $filter.children('option:not(:first)').remove(); 
@@ -393,16 +316,13 @@ function populateSmartKeywords(listId, filterId) {
     const replace = (typeof REPLACEMENT_MAP !== 'undefined') ? REPLACEMENT_MAP : {};
     const wordCounts = {}; 
     $(`${listId} .card-item`).each(function() {
-        const localKeywords = new Set();
-        const $card = $(this);
-        const text = [$card.find('h3').text(), $card.find('p').text(), $card.find('.card-category').text(), $card.find('img').attr('alt'), $card.data('category'), $card.data('keywords')].map(t => String(t||'')).join(' ');
+        const text = [$(this).find('h3').text(), $(this).find('p').text(), $(this).find('.card-category').text(), $(this).find('img').attr('alt'), $(this).data('category'), $(this).data('keywords')].map(t => String(t||'')).join(' ');
         const words = decodeText(text).split(/[^a-zA-Z0-9'-]+/);
         words.forEach(word => {
             let clean = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, '');
             if (replace[clean]) clean = replace[clean];
-            if (clean.length > 2 && clean.length <= 15 && !stop.has(clean) && isNaN(clean)) { localKeywords.add(clean); }
+            if (clean.length > 2 && clean.length <= 15 && !stop.has(clean) && isNaN(clean)) { wordCounts[clean] = (wordCounts[clean] || 0) + 1; }
         });
-        localKeywords.forEach(k => wordCounts[k] = (wordCounts[k] || 0) + 1);
     });
     const sorted = Object.entries(wordCounts).sort(([,a], [,b]) => b - a).slice(0, 30);
     $filter.children('option:not(:first)').remove();
@@ -438,10 +358,7 @@ function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResult
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
             const categoryMatch = (selectedCategory === "all" || ($card.data('category') && String($card.data('category')).includes(selectedCategory)));
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
-            if (categoryMatch && searchMatch && keywordMatch) {
-                $card.removeClass('hidden-card-item').show();
-                visibleCount++;
-            } else { $card.hide(); }
+            if (categoryMatch && searchMatch && keywordMatch) { $card.removeClass('hidden-card-item').show(); visibleCount++; } else { $card.hide(); }
         });
         if (visibleCount === 0) $noResultsMessage.show(); else $noResultsMessage.hide();
     } else {
@@ -464,16 +381,11 @@ function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
             const cardHtml = `<div class="card-item" data-category="${category}" data-keywords="${title},${description}" data-title="${title}" data-desc="${description}"><a href="${photo.url}" data-load-type="image"><img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}"></a></div>`;
             $targetList.append(cardHtml);
         });
-        if ($('#album-category-filter').length) {
-            populateCategoryFilter('#photo-album-list', '#album-category-filter');
-            populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
-        }
+        if ($('#album-category-filter').length) { populateCategoryFilter('#photo-album-list', '#album-category-filter'); populateSmartKeywords('#photo-album-list', '#album-keyword-filter'); }
         const defaultIncrement = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
         handleCardView($targetList.parent(), initialLoadOverride, defaultIncrement);
         if (typeof onComplete === 'function') onComplete();
-    }).fail(function() { 
-        if ($('#album-title').length) $('#album-title').text("Error Loading Album"); 
-    });
+    }).fail(function() { if ($('#album-title').length) $('#album-title').text("Error Loading Album"); });
 }
 
 function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
@@ -483,13 +395,7 @@ function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
     var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
     $.getJSON(URL, options, function (data) {
         $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
-        if (data.items) {
-            resultsLoop(data, Category, BKcol);
-            handleCardView($('#content-area'), initialLoadOverride);
-            populateSmartKeywords('#Grid', '#youtube-keyword-filter');
-            populateCategoryFilter('#Grid', '#youtube-category-filter');
-            if (typeof onComplete === 'function') onComplete();
-        }
+        if (data.items) { resultsLoop(data, Category, BKcol); handleCardView($('#content-area'), initialLoadOverride); populateSmartKeywords('#Grid', '#youtube-keyword-filter'); populateCategoryFilter('#Grid', '#youtube-category-filter'); if (typeof onComplete === 'function') onComplete(); }
     });
 }
 
@@ -519,10 +425,7 @@ function filterYouTubeCards() {
             const cardText = getCardSearchableText($card); 
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
-            if (searchMatch && keywordMatch) {
-                $card.removeClass('hidden-card-item').show();
-                visibleCount++;
-            } else { $card.hide(); }
+            if (searchMatch && keywordMatch) { $card.removeClass('hidden-card-item').show(); visibleCount++; } else { $card.hide(); }
         });
         if (visibleCount === 0) $noResultsMessage.show(); else $noResultsMessage.hide();
     } else {
@@ -545,90 +448,15 @@ function openCardByTitle(titleToFind) {
             return cardTitle === decodedTitle || (imgAlt && imgAlt.toLowerCase() === decodedTitle);
         });
     }
-    if ($card.length) {
-        $('html, body').animate({ scrollTop: $card.offset().top - 100 }, 500);
-        $card.click();
-    } else {
-        console.warn('Deep link card not found for title/id:', decodedTitle);
-    }
-}
-
-function buildTutorialSummary(manifestUrl, $modalContent) {
-    $modalContent.addClass('summary-view-active');
-    let $summaryOverlay = $modalContent.find('.tutorial-summary-overlay');
-    if ($summaryOverlay.length) {
-        if ($summaryOverlay.is(':visible')) {
-            $summaryOverlay.fadeOut(200); $('.modal-info-btn').removeClass('active');
-        } else {
-            $summaryOverlay.fadeIn(200); $('.modal-info-btn').addClass('active');
-        }
-        return;
-    }
-    const overlayId = 'tutorial-summary-overlay-container';
-    $modalContent.append(`<div class="tutorial-summary-overlay" id="${overlayId}" style="pointer-events: auto;"><div class="content-loader"><div class="spinner"></div></div></div>`);
-    $summaryOverlay = $modalContent.find(`#${overlayId}`);
-    const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(manifestUrl)}`;
-    $.ajax({
-        url: proxyUrl, dataType: 'text', 
-        success: function (xmlText) {
-            let data = {};
-            try {
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                const steps = [];
-                $(xmlDoc).find('step').each(function() {
-                    steps.push({ title: $(this).find('title').text() || $(this).attr('id') });
-                });
-                data.steps = steps;
-            } catch (e) {
-                $summaryOverlay.html('<div class="error-message">Error parsing tutorial manifest data.</div>').fadeIn(200);
-                return;
-            }
-            if (!data.steps || data.steps.length === 0) {
-                $summaryOverlay.html('<div class="error-message">Tutorial manifest found but contained no steps.</div>').fadeIn(200);
-                return;
-            }
-            let summaryHtml = '<div class="summary-box"><h2>Tutorial Summary</h2><ol class="summary-list">';
-            $.each(data.steps, function(index, step) {
-                const displayIndex = index + 1;
-                const stepTitle = decodeText(step.title || `Step ${displayIndex}`);
-                summaryHtml += `<li class="summary-item clickable" data-step-index="${index}" style="cursor: pointer;"><span class="step-number">${displayIndex}.</span><span class="step-title">${stepTitle}</span></li>`;
-            });
-            summaryHtml += '</ol></div>';
-            $summaryOverlay.html(summaryHtml).fadeIn(200);
-            $('.modal-info-btn').addClass('active');
-            const overlayElement = document.getElementById(overlayId);
-            if (overlayElement) {
-                overlayElement.removeEventListener('click', null, false); 
-                overlayElement.addEventListener('click', function(e) {
-                    const target = e.target.closest('.summary-item.clickable');
-                    if (target) {
-                        e.stopPropagation(); 
-                        const stepIndex = target.getAttribute('data-step-index');
-                        const $iframe = $modalContent.find('.iframe-wrapper .loaded-iframe');
-                        if ($iframe.length) {
-                            $iframe[0].contentWindow.postMessage({ command: 'goToStep', index: parseInt(stepIndex) }, '*');
-                            $summaryOverlay.fadeOut(200);
-                            $('.modal-info-btn').removeClass('active');
-                        }
-                    }
-                }, false);
-            }
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            $summaryOverlay.html('<div class="error-message">Error fetching tutorial manifest via proxy.</div>').fadeIn(200);
-        }
-    });
+    if ($card.length) { $('html, body').animate({ scrollTop: $card.offset().top - 100 }, 500); $card.click(); } else { console.warn('Deep link card not found:', decodedTitle); }
 }
 
 function buildResearchModal(jsonUrl) {
     const $modalContent = $('#modal-content-area');
     $modalContent.html(`<div class="tab-nav" id="research-tab-nav-modal"></div><div class="tab-content" id="research-tab-content-modal"><div class="content-loader"><div class="spinner"></div></div></div>`);
-    
     $.getJSON(jsonUrl, function (data) {
         $('#content-modal .open-new-window').attr('href', jsonUrl);
-        const $tabNav = $('#research-tab-nav-modal');
-        $tabNav.empty(); 
+        const $tabNav = $('#research-tab-nav-modal'); $tabNav.empty(); 
         $.each(data.tickers, function(index, ticker) {
             const $button = $(`<button class="tab-button"></button>`);
             $button.text(ticker.name);
@@ -636,9 +464,7 @@ function buildResearchModal(jsonUrl) {
             if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl); }
             $tabNav.append($button);
         });
-    }).fail(function() {
-        $modalContent.html('<div class="error-message">Error loading research data.</div>');
-    });
+    }).fail(function() { $modalContent.html('<div class="error-message">Error loading research data.</div>'); });
 }
 
 function loadModalTabContent(htmlUrl) {
@@ -646,24 +472,14 @@ function loadModalTabContent(htmlUrl) {
     $('#research-tab-content-modal').html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`);
 }
 
-// --- Helper for Chess ---
 function loadChessGame(loadUrl, $modal, $modalContent) {
-    if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
-        loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-    }
-    $modal.addClass('chess-mode');
-    $('body').addClass('chess-mode-active');
-    $modal.find('.modal-header').hide();
-    
+    if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) { loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/'); }
+    $modal.addClass('chess-mode'); $('body').addClass('chess-mode-active'); $modal.find('.modal-header').hide();
     $.ajax({
         url: loadUrl, dataType: 'text',
-        success: function(pgnContent) {
-            setupChessUI(pgnContent, $modalContent, $modal);
-        },
+        success: function(pgnContent) { setupChessUI(pgnContent, $modalContent, $modal); },
         error: function() {
-            $modal.removeClass('chess-mode');
-            $('body').removeClass('chess-mode-active');
-            $modal.find('.modal-header').show();
+            $modal.removeClass('chess-mode'); $('body').removeClass('chess-mode-active'); $modal.find('.modal-header').show();
             $modalContent.html('<div class="error-message">Could not load PGN file.</div>');
         }
     });
@@ -869,7 +685,7 @@ function setupChessUI(pgnFileContent, $modalContent, $modal) {
             updateChessStyles();
             const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
             updateCommentContent(-1, total);
-            // Critical Resize Trigger
+            
             setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 600);
 
             const checkInterval = setInterval(() => {
@@ -938,7 +754,6 @@ $(document).ready(function () {
         </div>
     `);
 
-    // Listeners
     $('body').on('click', '.toggle-card-button', function() {
         const $button = $(this);
         const $list = $button.prev('.card-list');
@@ -979,7 +794,6 @@ $(document).ready(function () {
         if (e.target.id === 'content-modal') { $(this).find('.modal-close-btn').first().click(); }
     });
     
-    // Play Button Listener
     $('body').on('click', '.modal-play-btn', function() {
         if (slideshowInterval) {
             stopSlideshow();
@@ -1000,7 +814,6 @@ $(document).ready(function () {
         }
     });
 
-    // Fullscreen Button Listener
     $('body').on('click', '.modal-fullscreen-btn', function() {
         const wrapper = document.querySelector('#modal-content-area .image-wrapper') || 
                         document.querySelector('#modal-content-area .iframe-wrapper') || 
@@ -1018,7 +831,6 @@ $(document).ready(function () {
         }
     });
     
-    // Tutorial FS Toggle Button Logic
     $('body').on('click', '.tutorial-fs-toggle', function() {
         const $iframe = $('#modal-content-area iframe');
         if($iframe.length) {
@@ -1043,7 +855,6 @@ $(document).ready(function () {
         else stopSlideshow(); 
     });
 
-    // INFO BUTTON (Strict Persistence)
     $('body').on('click', '.modal-info-btn', function() {
         const $infoBtn = $(this);
         const manifestUrl = $infoBtn.data('manifest-url'); 
@@ -1055,7 +866,6 @@ $(document).ready(function () {
         }
     });
 
-    // Bind Filters (Shortened for brevity but assumed functional)
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
     $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
     $('body').on('input', '#post-search-box', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
