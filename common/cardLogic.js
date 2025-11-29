@@ -14,7 +14,6 @@ function checkDeepLink() {
     const urlParams = new URLSearchParams(window.location.search);
     const postId = urlParams.get('post');
     if (postId) {
-        console.log('[DEBUG] Deep link found for:', postId);
         openCardByTitle(postId);
     }
 }
@@ -53,14 +52,13 @@ function animateModalClose() {
 
 /* === PERSISTENCE LOGIC (GLOBAL) === */
 function applyInfoState() {
-    console.log('[DEBUG] applyInfoState called. State:', window.cardGlobalState.infoVisible);
     const $infoBtn = $('.modal-info-btn'); 
     const $infoDiv = $('.modal-photo-info');
     
     // Button State
     if (window.cardGlobalState.infoVisible) $infoBtn.addClass('active'); else $infoBtn.removeClass('active');
     
-    // Div State - Force with CSS to override animations/inline styles
+    // Div State - Force with CSS
     if ($infoDiv.length) {
         if (window.cardGlobalState.infoVisible) {
             $infoDiv.css({ display: 'block', opacity: 1, pointerEvents: 'auto' });
@@ -98,6 +96,107 @@ function showKeyboardShortcuts() {
     $modalContent.append(helpHtml); $modalContent.find('.help-overlay').fadeIn(200);
 }
 
+/* === TABLE BUILDER FUNCTION === */
+function buildTableModal(jsonUrl) {
+    const $modalContent = $('#modal-content-area');
+    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
+
+    $.getJSON(jsonUrl, function(data) {
+        if (!data || !data.columns || !data.rows) {
+            $modalContent.html('<div class="error-message">Invalid table data format.</div>');
+            return;
+        }
+
+        let tableHtml = `
+            <div class="markdown-wrapper" style="padding: 30px; background: #fff; overflow: auto;">
+                <h2 style="margin-top:0; color:#333;">${data.title || 'Data Table'}</h2>
+                <p style="color:#666; margin-bottom:20px;">${data.description || ''}</p>
+                <table class="financial-table">
+                    <thead><tr>
+        `;
+
+        // Build Headers
+        data.columns.forEach(col => {
+            tableHtml += `<th>${col}</th>`;
+        });
+        tableHtml += '</tr></thead><tbody>';
+
+        // Build Rows
+        data.rows.forEach(row => {
+            tableHtml += '<tr>';
+            row.forEach(cell => {
+                let cellContent = cell;
+                
+                // Check for Deep Linking Syntax: "link:Type:ID:Label"
+                // Example: "link:chess:game1.pgn:View Game" or "link:tutorial:intro.json:Start Tutorial"
+                if (typeof cell === 'string' && cell.startsWith('link:')) {
+                    const parts = cell.split(':');
+                    const type = parts[1]; // chess, tutorial, etc.
+                    const id = parts[2];   // filename or url
+                    const label = parts[3] || 'Open';
+                    
+                    // We use a data attribute to trigger the main loader
+                    // Note: Ideally, deep links open in the same modal. We need a way to trigger loadModalContent.
+                    // For simplicity, we'll use a button that calls a global helper.
+                    cellContent = `<button class="table-action-btn" onclick="openFromTable('${type}', '${id}')">${label}</button>`;
+                }
+                
+                tableHtml += `<td>${cellContent}</td>`;
+            });
+            tableHtml += '</tr>';
+        });
+        tableHtml += '</tbody></table></div>';
+
+        $modalContent.html(tableHtml);
+    }).fail(function() {
+        $modalContent.html('<div class="error-message">Error loading table data.</div>');
+    });
+}
+
+// Global helper for table buttons
+window.openFromTable = function(type, id) {
+    // This is tricky because loadModalContent expects an index in currentCardList.
+    // We need to simulate a card object or handle it directly.
+    
+    // 1. Construct a temporary URL based on type
+    let fullUrl = id;
+    // If relative path needed, prepend it here based on type logic if necessary.
+    // For now assume 'id' is the full relative path or URL.
+
+    const $modal = $('#content-modal');
+    const $modalContent = $('#modal-content-area');
+    
+    // We hijack the modal content directly for this nested view
+    // Note: History/Prev/Next might break for nested items unless we manage a stack.
+    // For a simple "View", we just load it.
+    
+    if (type === 'chess') {
+        window.loadChessGame(fullUrl, $modal, $modalContent);
+    } else if (type === 'tutorial') {
+        // We need to set isTutorialMode manually
+        isTutorialMode = true;
+        $('.modal-prev-btn, .modal-next-btn').hide();
+        
+        let playerFile = "text_tutorial_player.html"; 
+        if (fullUrl.toLowerCase().endsWith('.xml') || fullUrl.includes('x-plain')) {
+            playerFile = "tutorial_player.html";
+        }
+        
+        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="${playerFile}?manifest=${encodeURIComponent(fullUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{const d=this.contentDocument;d.addEventListener('keydown',function(e){window.parent.handleModalKeys({key:e.key});});const s=d.createElement('style');s.innerHTML='body{overflow-x:hidden;margin:0;padding:0;width:100%;}.nav-bar,.controls,footer,.navbar{position:relative!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:0!important;left:0!important;right:0!important;z-index:1000!important;transition:opacity 0.3s!important;opacity:1!important;pointer-events:auto;}body.fs-mode .nav-bar,body.fs-mode .controls,body.fs-mode footer{position:absolute!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;opacity:0!important;pointer-events:none!important;}body.fs-mode.nav-visible .nav-bar,body.fs-mode.nav-visible .controls,body.fs-mode.nav-visible footer{opacity:1!important;pointer-events:auto!important;}';d.head.appendChild(s);}catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;" onclick="buildTableModal('${currentTableJsonUrl}')">&times;</button>`;
+        
+        // NOTE: The 'close' button above in playerHtml is hacked to 'buildTableModal'
+        // We need to remember the current table URL to "go back".
+        // Let's store it in a global var.
+        
+        $modalContent.html(playerHtml);
+        $('body').append('<button class="tutorial-fs-toggle" title="Toggle Controls" style="display:none;">&#9881;</button>');
+    }
+};
+
+// Store current table URL to allow "Back" functionality from nested items
+var currentTableJsonUrl = "";
+
+
 /* === MODAL CONTENT LOADER (GLOBAL) === */
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) return;
@@ -118,7 +217,12 @@ function loadModalContent(index) {
     let loadUrl = $link.attr('href'); let loadType = $link.data('load-type'); const jsonUrl = $link.data('json-url'); const manifestUrl = $link.data('manifest-url');
     
     if (!loadType) {
-        if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) loadType = 'image'; else if (/\.md$/i.test(loadUrl)) loadType = 'markdown'; else if (/\.pgn$/i.test(loadUrl)) loadType = 'chess'; else if (loadUrl.endsWith('.html')) loadType = 'html'; else if (loadUrl.startsWith('http')) { if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) loadType = 'blocked'; else loadType = 'iframe'; } else loadType = 'newtab'; 
+        if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) loadType = 'image'; 
+        else if (/\.md$/i.test(loadUrl)) loadType = 'markdown'; 
+        else if (/\.pgn$/i.test(loadUrl)) loadType = 'chess';
+        else if (/\.json$/i.test(loadUrl) && !manifestUrl) loadType = 'table'; // Auto-detect JSON as table if not tutorial
+        else if (loadUrl.endsWith('.html')) loadType = 'html'; 
+        else if (loadUrl.startsWith('http')) { if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) loadType = 'blocked'; else loadType = 'iframe'; } else loadType = 'newtab'; 
     }
 
     if (loadType === 'image') { $modalPlayControls.show(); } else { $modalPlayControls.hide(); stopSlideshow(); }
@@ -126,18 +230,20 @@ function loadModalContent(index) {
 
     if (loadType === 'research' && jsonUrl) { $modal.addClass('research-mode'); $modalFsBtn.hide(); $modalInfoBtn.hide(); buildResearchModal(jsonUrl); return; } 
     
+    // === TABLE LOGIC ===
+    if (loadType === 'table') {
+        $modalFsBtn.hide(); 
+        $modalInfoBtn.hide();
+        currentTableJsonUrl = loadUrl; // Store for back button
+        buildTableModal(loadUrl);
+        return;
+    }
+
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); $modal.addClass('research-mode'); 
         $('.modal-prev-btn, .modal-next-btn').hide();
 
-        // DETECT TYPE
-        let playerFile = "text_tutorial_player.html"; // Default JSON
-        if (manifestUrl.toLowerCase().endsWith('.xml') || manifestUrl.includes('x-plain')) {
-            playerFile = "tutorial_player.html"; // XML/Image
-        }
-
-        // FIXED TUTORIAL NAV: Toggle icon appended to BODY, CSS ensures correct state
-        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="${playerFile}?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; d.addEventListener('keydown', function(e) { window.parent.handleModalKeys({ key: e.key }); }); const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; margin: 0; padding: 0; width: 100%; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe></div>`;
+        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="${(manifestUrl.toLowerCase().endsWith('.xml')||manifestUrl.includes('x-plain'))?"tutorial_player.html":"text_tutorial_player.html"}?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; d.addEventListener('keydown', function(e) { window.parent.handleModalKeys({ key: e.key }); }); const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; margin: 0; padding: 0; width: 100%; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe></div>`;
         $modalContent.html(playerHtml);
         $('body').append('<button class="tutorial-fs-toggle" title="Toggle Controls" style="display:none;">&#9881;</button>');
         
@@ -154,27 +260,18 @@ function loadModalContent(index) {
     updateSocialMeta(title, desc, thumbUrl);
 
     let infoHtml = '';
-    // FIXED PERSISTENCE: Force styles inline
     if (title || desc) { 
         const visibleStyle = window.cardGlobalState.infoVisible ? 'display:block !important; opacity:1 !important; pointer-events:auto;' : 'display:none; opacity:0; pointer-events:none;';
         infoHtml = `<div class="modal-photo-info raised-layer" style="${visibleStyle}"><h3>${title}</h3><p>${desc}</p></div>`;
     }
     
-    // Sync Button Class Immediately
     if(window.cardGlobalState.infoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
     if (!title && !desc) $modalInfoBtn.hide();
 
-    // DYNAMIC LOADING: CHESS - Update path to be explicit if needed
     if (loadType === 'chess') {
-        if (typeof window.startChessGame === 'function') {
-            window.startChessGame(loadUrl, $modal, $modalContent);
-        } else {
-            $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-            // Assumes chess_logic.js is in the "common" folder relative to this script location
-            $.getScript('common/chess_logic.js').done(function() { window.startChessGame(loadUrl, $modal, $modalContent); })
-             .fail(function() { $modalContent.html('<div class="error-message">Failed to load chess logic.</div>'); });
-        }
-        return; // STOP HERE, CHESS HANDLES RENDERING
+        if (typeof window.startChessGame === 'function') { window.startChessGame(loadUrl, $modal, $modalContent); } 
+        else { $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>'); $.getScript('common/chess_logic.js').done(function() { window.startChessGame(loadUrl, $modal, $modalContent); }).fail(function() { $modalContent.html('<div class="error-message">Failed to load chess logic.</div>'); }); }
+        return; 
     }
 
     switch (loadType) {
@@ -190,7 +287,6 @@ function loadModalContent(index) {
         default: $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>'); break;
     }
     $('.modal-prev-btn').prop('disabled', index <= 0); $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
-    // Force focus to modal for keyboard
     $('#content-modal').focus();
 }
 
