@@ -220,8 +220,8 @@ function loadModalContent(index) {
     const $modalOpenLink = $modal.find('.open-new-window');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
 
-    $modal.find('.modal-header').show();
-    
+    $modal.find('.modal-header').show(); // <<< FIX: Ensure header is visible by default
+
     // Reset general state and info button data
     isTutorialMode = false;
     // CRITICAL: isModalInfoVisible state must NOT be reset here for Photo/Iframe cards, 
@@ -259,7 +259,7 @@ function loadModalContent(index) {
         $modalInfoBtn.show(); // Show Info button for tutorials
         $modalInfoBtn.data('manifest-url', manifestUrl); // Store manifest URL
 
-        $modal.find('.modal-header').hide();
+        $modal.find('.modal-header').hide(); // <<< Correctly hides header for custom UI
         
         $modal.addClass('research-mode'); // Keep research-mode class for styling consistency
         $modalOpenLink.attr('href', manifestUrl);
@@ -461,8 +461,7 @@ function loadModalContent(index) {
                                     <div id="${boardId}"></div>
                                 </div>
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
-                                <div id="chess-metadata-overlay" class="chess-metadata-overlay"></div> <!-- Unique ID for metadata overlay -->
-                            </div>
+                                <div id="chess-metadata-overlay" class="chess-metadata-overlay"></div> </div>
                         </div>
                     `);
 
@@ -733,11 +732,9 @@ $('#chess-close-btn').off('click').on('click', function(e) {
     // which now handles all cleanup (Step 2).
     $('.modal-close-btn').first().click(); 
 });
-
                     
                     // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
-/*                    
-                    $('#chess-close-btn').off('click').on('click', function(e) {
+/* $('#chess-close-btn').off('click').on('click', function(e) {
                         e.preventDefault();
                         // 1. Remove custom classes to exit chess mode
                         $modal.removeClass('chess-mode');
