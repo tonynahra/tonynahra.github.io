@@ -220,12 +220,12 @@ function loadModalContent(index) {
     const $modalOpenLink = $modal.find('.open-new-window');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
 
-    // FIX 1: Header is always shown by default at the start of loading ANY content.
-    $modal.find('.modal-header').show(); 
-    
+    // FIX 1: Ensure Header is Clean (Remove inline styles that break flex layout)
+    // Replaces .show() with .removeAttr('style') to prevent jQuery from adding "display: block"
+    $modal.find('.modal-header').removeAttr('style'); 
+
     // === CRITICAL FIX: Clean Slate Logic ===
     // Remove chess-mode and research-mode immediately to prevent sticky headers
-    // when navigating directly or if cleanup failed previously.
     $modal.removeClass('chess-mode research-mode'); 
     $('body').removeClass('chess-mode-active');
     
@@ -825,7 +825,7 @@ $('#chess-close-btn').off('click').on('click', function(e) {
                         } else {
                             $modal.removeClass('chess-mode');
                             $('body').removeClass('chess-mode-active');
-                            $modal.find('.modal-header').show();
+                            $modal.find('.modal-header').removeAttr('style'); // FIX: Restore flex
                             $modalContent.html('<div class="error-message">PGN Library not loaded.</div>');
                         }
                     }
@@ -839,7 +839,7 @@ $('#chess-close-btn').off('click').on('click', function(e) {
                 error: function() {
                     $modal.removeClass('chess-mode');
                     $('body').removeClass('chess-mode-active');
-                    $modal.find('.modal-header').show();
+                    $modal.find('.modal-header').removeAttr('style'); // FIX: Restore flex
                     $modalContent.html('<div class="error-message">Could not load PGN file.</div>');
                 }
             });
@@ -1357,8 +1357,9 @@ $('body').on('click', '.modal-close-btn', function() {
         isTutorialMode = false; // Reset tutorial mode
         $(document).off('keydown.modalNav');
         
-        // FIX 3: Ensure the header is always restored (though it should be visible after class removal)
-        $modal.find('.modal-header').show(); 
+        // FIX: Ensure header display property is cleared (reverts to flex from CSS)
+        // Do NOT use .show() here as it forces display:block
+        $modal.find('.modal-header').removeAttr('style'); 
     });
 
     
