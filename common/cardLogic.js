@@ -42,7 +42,6 @@ function animateModalClose() {
 
 /* === PERSISTENCE LOGIC (GLOBAL) === */
 function applyInfoState() {
-    console.log('[DEBUG] applyInfoState called. State:', window.cardGlobalState.infoVisible);
     const $infoBtn = $('.modal-info-btn'); 
     const $infoDiv = $('.modal-photo-info');
     
@@ -64,9 +63,20 @@ function applyInfoState() {
 /* === MODAL KEY HANDLER (GLOBAL) === */
 function handleModalKeys(e) {
     if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; } if ($(e.target).is('input, textarea, select')) return;
+    
+    // BLOCK CARD NAV IN TUTORIAL MODE
+    if (isTutorialMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) {
+        // Allow specific tutorial navigation logic here if needed, or just block main nav
+        return;
+    }
+    
     switch (e.key) { 
-        case "Escape": $('.modal-close-btn').first().click(); break; case "ArrowLeft": $('.modal-prev-btn').first().click(); break; case "ArrowRight": $('.modal-next-btn').first().click(); break; 
-        case " ": e.preventDefault(); $('.modal-next-btn').first().click(); break; case "i": e.preventDefault(); $('.modal-info-btn').first().click(); break; case "f": e.preventDefault(); $('.modal-fullscreen-btn').first().click(); break; 
+        case "Escape": $('.modal-close-btn').first().click(); break; 
+        case "ArrowLeft": $('.modal-prev-btn').first().click(); break; 
+        case "ArrowRight": $('.modal-next-btn').first().click(); break; 
+        case " ": e.preventDefault(); $('.modal-next-btn').first().click(); break; 
+        case "i": e.preventDefault(); $('.modal-info-btn').first().click(); break; 
+        case "f": e.preventDefault(); $('.modal-fullscreen-btn').first().click(); break; 
         case "ArrowUp": if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.add('nav-visible'); } catch(e){} } break;
         case "ArrowDown": if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.remove('nav-visible'); } catch(e){} } break;
     }
