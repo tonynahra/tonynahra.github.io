@@ -10,43 +10,47 @@ function injectModalStyles() {
 
     const styles = `
     <style id="dynamic-modal-styles">
-        /* ZOOM ANIMATIONS */
+        /* ZOOM ANIMATIONS - SLOWER & MORE NOTICEABLE */
         @keyframes modalZoomIn {
-            0% { opacity: 0; transform: scale(0.9); }
-            100% { opacity: 1; transform: scale(1); }
+            0% { opacity: 0; transform: scale(0.6); } /* Starts smaller for dramatic effect */
+            60% { opacity: 1; transform: scale(1.05); } /* Slight overshoot */
+            100% { opacity: 1; transform: scale(1); } /* Settle */
         }
         @keyframes modalZoomOut {
             0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 0; transform: scale(0.6); }
         }
         
         .modal-animate-enter {
-            animation: modalZoomIn 0.35s cubic-bezier(0.1, 0.9, 0.2, 1) forwards !important;
+            animation: modalZoomIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
             display: flex !important;
         }
         
         .modal-animate-leave {
-            animation: modalZoomOut 0.25s ease-in forwards !important;
+            animation: modalZoomOut 0.4s ease-in forwards !important;
         }
 
-        /* RAISED INFO BOX STYLES */
+        /* RAISED INFO BOX STYLES - LAYOUT FIXED */
         .modal-photo-info.raised-layer {
             position: absolute;
             bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
+            /* CENTER FIX: Use margins instead of transform to avoid animation conflicts */
+            left: 0; 
+            right: 0;
+            margin: 0 auto; 
             width: 85%;
             max-width: 800px;
+            
             padding: 20px 25px;
-            background: rgba(20, 20, 20, 0.50); /* 50% Opacity Black */
+            background: rgba(0, 0, 0, 0.5); /* 50% Opacity Black */
             backdrop-filter: blur(8px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             border-radius: 12px;
             border-top: 1px solid rgba(255, 255, 255, 0.15);
             color: #fff;
             z-index: 50;
-            opacity: 0; /* Hidden by default for fade in */
-            display: none; /* Controlled by JS */
+            
+            /* Logic handles display, but we ensure transitions work */
             transition: opacity 0.3s ease;
         }
         
@@ -138,13 +142,13 @@ function animateModalClose() {
     // Remove enter class, add leave class (Zoom Out)
     $content.removeClass('modal-animate-enter').addClass('modal-animate-leave');
     
-    // Wait for animation to finish before hiding wrapper
+    // Wait for animation to finish before hiding wrapper (matched to CSS duration 0.4s)
     setTimeout(function() {
         $modal.fadeOut(300, function() {
             $content.removeClass('modal-animate-leave'); // Cleanup
             $('#modal-content-area').html(''); 
         });
-    }, 250); // Slightly less than 0.3s to prevent flash
+    }, 380); // Slightly less than 0.4s to prevent flash
 }
 
 /* === MODAL LOGIC (Global Scope) === */
@@ -261,7 +265,8 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            $summaryOverlay.html('<div class="error-message">Error fetching tutorial manifest.</div>').fadeIn(200);
+            console.error("Error fetching proxied manifest (Check PHP logs):", textStatus, errorThrown);
+            $summaryOverlay.html('<div class="error-message">Error fetching tutorial manifest via proxy. (Check proxy setup)</div>').fadeIn(200);
         }
     });
 }
@@ -382,7 +387,8 @@ function loadModalContent(index) {
         $modalInfoBtn.toggleClass('active', isModalInfoVisible);
         
         // Explicitly set inline styles based on global state
-        const displayStyle = isModalInfoVisible ? 'block' : 'none';
+        // Use !important to override any specific CSS sheet rules if conflicting
+        const displayStyle = isModalInfoVisible ? 'block !important' : 'none !important';
         const opacityStyle = isModalInfoVisible ? '1' : '0';
         
         // Added class 'raised-layer' for the new styling
