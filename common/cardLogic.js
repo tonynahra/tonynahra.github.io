@@ -57,8 +57,6 @@ function injectModalStyles() {
             z-index: 50;
             transition: opacity 0.3s ease;
             pointer-events: none;
-            display: none; /* Default hidden, managed by JS */
-            opacity: 0;
         }
         
         .modal-photo-info.raised-layer h3, 
@@ -120,6 +118,28 @@ function injectModalStyles() {
             cursor: pointer;
             height: 28px;
         }
+
+        /* TUTORIAL FULLSCREEN OVERLAY CONTROLS */
+        .tutorial-fs-toggle {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 2147483647;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .tutorial-fs-toggle:hover {
+            background: rgba(0,0,0,0.8);
+        }
     </style>
     `;
     $('head').append(styles);
@@ -146,18 +166,15 @@ function stopSlideshow() {
 
 // === SEO & META TAG INJECTION ===
 function updateSocialMeta(title, desc, image) {
-    // 1. Helper to create or update a tag
     const setMeta = (property, content) => {
         if (!content) return;
         let $tag = $(`meta[property="${property}"]`);
         if ($tag.length === 0) {
-            $tag = $(`meta[name="${property}"]`); // Try name attribute if property fails
+            $tag = $(`meta[name="${property}"]`); 
         }
-        
         if ($tag.length) {
             $tag.attr('content', content);
         } else {
-            // Append new tag if not found
             $('head').append(`<meta property="${property}" content="${content}">`);
         }
     };
@@ -166,20 +183,17 @@ function updateSocialMeta(title, desc, image) {
     const cleanDesc = decodeText(desc || "View this content.");
     const cleanImage = image && !image.startsWith('http') ? window.location.origin + '/' + image : (image || "");
 
-    // 2. Open Graph (Facebook, LinkedIn, etc.)
     setMeta('og:title', cleanTitle);
     setMeta('og:description', cleanDesc);
     if (cleanImage) setMeta('og:image', cleanImage);
     setMeta('og:type', 'article');
     setMeta('og:url', window.location.href);
 
-    // 3. Twitter Cards
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', cleanTitle);
     setMeta('twitter:description', cleanDesc);
     if (cleanImage) setMeta('twitter:image', cleanImage);
 
-    // 4. Standard Title
     document.title = cleanTitle;
 }
 
@@ -226,23 +240,14 @@ function animateModalOpen() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
     
-    // Reset any leaving state
     $modal.removeClass('fading-out');
     $content.removeClass('modal-animate-leave');
-    
-    // Ensure display is flex BEFORE adding animation class to center it
     $modal.css('display', 'flex').css('opacity', '1'); 
     
-    // Use requestAnimationFrame to ensure the class addition triggers the CSS animation
     requestAnimationFrame(() => {
         $content.addClass('modal-animate-enter');
-        
-        // FIX FOR DEEP LINKING LAYOUT ISSUES:
-        // Trigger a window resize event once the modal is visible.
-        // This forces layout recalculations (Chess board, Grid, etc).
-        setTimeout(() => {
-            window.dispatchEvent(new Event('resize'));
-        }, 50);
+        // Generic resize trigger for layout stability
+        setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
     });
 }
 
@@ -250,11 +255,9 @@ function animateModalClose() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
     
-    // 1. Trigger Animations
     $content.removeClass('modal-animate-enter').addClass('modal-animate-leave');
-    $modal.addClass('fading-out'); // Adds opacity transition to background
+    $modal.addClass('fading-out'); 
     
-    // 2. Wait for animation to finish (300ms matches CSS) before hiding display
     setTimeout(function() {
         $modal.hide();
         $modal.removeClass('fading-out');
@@ -381,7 +384,8 @@ function loadModalContent(index) {
     $modal.find('.modal-header').removeAttr('style'); 
     $modal.removeClass('chess-mode research-mode'); 
     $('body').removeClass('chess-mode-active');
-    $modalOpenLink.hide(); // Force hide in all cases (per request)
+    $modalOpenLink.hide(); 
+    $('.tutorial-fs-toggle').hide(); // Reset tutorial FS toggle
     
     isTutorialMode = false;
     $modalInfoBtn.removeData('manifest-url'); 
@@ -408,7 +412,6 @@ function loadModalContent(index) {
         } else loadType = 'newtab'; 
     }
 
-    // BUTTON VISIBILITY LOGIC
     if (loadType === 'image') {
         $modalPlayControls.show();
     } else {
@@ -416,7 +419,6 @@ function loadModalContent(index) {
         stopSlideshow(); 
     }
 
-    // Fullscreen Button logic
     if (loadType === 'image' || loadType === 'iframe' || loadType === 'markdown' || loadType === 'tutorial') {
         $modalFsBtn.show(); 
     } else {
@@ -450,6 +452,11 @@ function loadModalContent(index) {
         $modalContent.html(playerHtml);
         $modalContent.find('.tutorial-custom-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
         
+        // Double Click to Exit Fullscreen
+        $modalContent.find('.iframe-wrapper').on('dblclick', function() { 
+            if (document.fullscreenElement) document.exitFullscreen(); 
+        });
+
         // Meta Update for Tutorial
         const $card = currentCardList[currentCardIndex].closest('.card-item');
         updateSocialMeta($card.find('h3').text(), $card.find('p').text(), $card.find('img').attr('src'));
@@ -475,37 +482,31 @@ function loadModalContent(index) {
 
     let infoHtml = '';
 
-    // === INFO HTML GENERATION ===
-    // Note: We create it hidden by default, and let enforcePersistence() handle showing it.
+    // === INFO HTML GENERATION (STRICT PERSISTENCE) ===
+    // We generate the HTML with the correct styles INLINE based on global variable.
     if (title || desc) { 
+        const displayStyle = isModalInfoVisible ? 'block' : 'none';
+        const opacityStyle = isModalInfoVisible ? '1' : '0';
+        
         infoHtml = `
-            <div class="modal-photo-info raised-layer">
+            <div class="modal-photo-info raised-layer" style="display: ${displayStyle}; opacity: ${opacityStyle};">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
     }
 
-    // === PERSISTENCE ENFORCER FUNCTION ===
-    // This function is called immediately after content load.
-    // It checks the GLOBAL variable and forces the UI to match.
-    const enforcePersistence = () => {
-        const $infoDiv = $modalContent.find('.modal-photo-info');
-        
-        if ($infoDiv.length > 0) {
-            $modalInfoBtn.show();
-            
-            // STRICT PERSISTENCE CHECK
-            if (isModalInfoVisible) {
-                $modalInfoBtn.addClass('active');
-                $infoDiv.show().css('opacity', 1); // FORCE SHOW
-            } else {
-                $modalInfoBtn.removeClass('active');
-                $infoDiv.hide().css('opacity', 0); // FORCE HIDE
-            }
-        } else {
-            $modalInfoBtn.hide();
-        }
-    };
+    // === BUTTON STATE ENFORCER ===
+    if (isModalInfoVisible) {
+        $modalInfoBtn.addClass('active');
+    } else {
+        $modalInfoBtn.removeClass('active');
+    }
+    // If no info, hide button
+    if (!title && !desc) {
+        $modalInfoBtn.hide();
+    } else {
+        $modalInfoBtn.show();
+    }
 
     switch (loadType) {
         case 'markdown':
@@ -515,7 +516,6 @@ function loadModalContent(index) {
                     const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
                     $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`);
                     if (infoHtml) { $modalContent.append(infoHtml); }
-                    enforcePersistence(); 
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
             });
@@ -942,10 +942,11 @@ function loadModalContent(index) {
                             const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                             updateCommentContent(-1, total);
 
-                            // Trigger resize after a delay to ensure proper rendering
+                            // Trigger resize after a significant delay (600ms) to ensure Modal Transition is fully complete
+                            // This fixes the "Deep Linking" misplaced pieces issue.
                             setTimeout(function() {
                                 window.dispatchEvent(new Event('resize'));
-                            }, 500);
+                            }, 600);
 
                             // Observer
                             const checkInterval = setInterval(() => {
@@ -1002,17 +1003,18 @@ function loadModalContent(index) {
                 success: function(data) { 
                     $modalContent.html(data); 
                     if (infoHtml) { $modalContent.append(infoHtml); }
-                    enforcePersistence(); 
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
             break;
         case 'image':
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
-            if (infoHtml) { 
-                $modalContent.append(infoHtml);
-            }
-            enforcePersistence(); 
+            if (infoHtml) { $modalContent.append(infoHtml); }
+            
+            // Double Click to Exit Fullscreen
+            $modalContent.find('.image-wrapper').on('dblclick', function() { 
+                if (document.fullscreenElement) document.exitFullscreen(); 
+            });
             break;
         case 'iframe':
             let iframeSrc = loadUrl;
@@ -1020,10 +1022,7 @@ function loadModalContent(index) {
                 iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; 
             }
             $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`);
-            if (infoHtml) { 
-                $modalContent.append(infoHtml);
-            }
-            enforcePersistence();
+            if (infoHtml) { $modalContent.append(infoHtml); }
             break;
         case 'blocked':
             $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
@@ -1259,7 +1258,7 @@ $(document).ready(function () {
     // Inject custom styles
     injectModalStyles();
 
-    // Inject modal (UPDATED STRUCTURE: Removed Open New Window link entirely)
+    // Inject modal (UPDATED STRUCTURE: Added Tutorial Toggle)
     $('body').append(`
         <div id="content-modal" class="modal-backdrop">
             <div class="modal-content">
@@ -1286,6 +1285,7 @@ $(document).ready(function () {
                     </div>
                 </div>
                 <div id="modal-content-area"></div>
+                <button class="tutorial-fs-toggle" title="Toggle Controls">&#9881;</button>
             </div>
         </div>
     `);
@@ -1379,10 +1379,50 @@ $(document).ready(function () {
             document.exitFullscreen();
         } else {
             if (target && target.requestFullscreen) {
-                target.requestFullscreen().catch(err => {
+                target.requestFullscreen().then(() => {
+                    // If tutorial, attempt to inject overlay script and show toggle
+                    if(isTutorialMode) {
+                        $('.tutorial-fs-toggle').fadeIn();
+                        const $iframe = $(target).find('iframe');
+                        if($iframe.length) {
+                             // Try to overlay controls if same domain
+                             try {
+                                 const css = `footer, .nav, .controls, .navbar { position: absolute; bottom: 0; left:0; width: 100%; background: rgba(0,0,0,0.7); z-index: 9999; transition: opacity 0.3s; }`;
+                                 const head = $iframe[0].contentDocument.head;
+                                 const style = $iframe[0].contentDocument.createElement('style');
+                                 style.type = 'text/css';
+                                 style.appendChild(document.createTextNode(css));
+                                 head.appendChild(style);
+                             } catch(e) { console.log('Cross-origin tutorial: cannot inject styles.'); }
+                        }
+                    }
+                }).catch(err => {
                     console.log(`Error attempting to enable full-screen mode: ${err.message}`);
                 });
             }
+        }
+    });
+    
+    // Tutorial FS Toggle Button Logic
+    $('body').on('click', '.tutorial-fs-toggle', function() {
+        // Toggle visibility of potential bottom bars in iframe
+        const $iframe = $('#modal-content-area iframe');
+        if($iframe.length) {
+             try {
+                 const doc = $iframe[0].contentDocument;
+                 const bars = doc.querySelectorAll('footer, .nav, .controls, .navbar');
+                 bars.forEach(b => {
+                     b.style.opacity = (b.style.opacity === '0' ? '1' : '0');
+                     b.style.pointerEvents = (b.style.opacity === '0' ? 'none' : 'auto');
+                 });
+             } catch(e) {}
+        }
+    });
+    
+    // Exit FS event listener to hide toggle
+    document.addEventListener('fullscreenchange', (event) => {
+        if (!document.fullscreenElement) {
+            $('.tutorial-fs-toggle').hide();
         }
     });
 
