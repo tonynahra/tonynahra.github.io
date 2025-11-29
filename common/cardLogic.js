@@ -1,11 +1,11 @@
 /* === GLOBAL VARIABLES === */
 var currentCardList = []; 
 var currentCardIndex = 0; 
-var isModalInfoVisible = false; // Preserves state across navigation
+var isModalInfoVisible = false; // Master state for Info Box
 var isTutorialMode = false; 
-var slideshowInterval = null; // Tracks slideshow timer
+var slideshowInterval = null; 
 
-/* === CSS INJECTION FOR TRANSITIONS & STYLING === */
+/* === CSS INJECTION === */
 function injectModalStyles() {
     if ($('#dynamic-modal-styles').length) return; 
 
@@ -35,45 +35,46 @@ function injectModalStyles() {
         .modal-photo-info.raised-layer {
             position: absolute;
             bottom: 30px;
-            left: 0;
-            right: 0;
-            margin: 0 auto;
-            width: 85%;
-            max-width: 800px;
+            left: 0; right: 0; margin: 0 auto;
+            width: 85%; max-width: 800px;
             padding: 20px 25px;
-            background: rgba(0, 0, 0, 0.5); /* 50% Opacity Black */
+            background: rgba(0, 0, 0, 0.5); 
             backdrop-filter: blur(8px);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             border-radius: 12px;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff;
             z-index: 50;
-            transition: opacity 0.3s ease;
+            display: none; /* Default hidden, managed by JS */
         }
         
         .modal-photo-info.raised-layer h3 { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
         .modal-photo-info.raised-layer p { color: #ddd; margin-bottom: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 
-        /* Fullscreen Helper */
+        /* FULLSCREEN MAXIMIZATION */
         .image-wrapper:fullscreen {
             background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
         }
         .image-wrapper:fullscreen img {
-            max-height: 100%;
-            max-width: 100%;
-            object-fit: contain;
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            max-height: none;
+            object-fit: contain; /* Maximizes while keeping aspect ratio */
         }
     </style>
     `;
     $('head').append(styles);
 }
 
-/* === HELPER FUNCTIONS (Global Scope) === */
+/* === HELPER FUNCTIONS === */
 
 function decodeText(text) {
     if (!text) return "";
@@ -81,20 +82,18 @@ function decodeText(text) {
         var $textarea = $('<textarea></textarea>');
         $textarea.html(text);
         return $textarea.val();
-    } catch (e) {
-        return text;
-    }
+    } catch (e) { return text; }
 }
 
 function stopSlideshow() {
     if (slideshowInterval) {
         clearInterval(slideshowInterval);
         slideshowInterval = null;
-        $('.modal-play-btn').html('&#9658; Play'); // Reset text to Play
+        $('.modal-play-btn').html('&#9658; Play'); 
     }
 }
 
-/* === VIEW HELPERS (Global Scope) */
+/* === VIEW HELPERS === */
 
 function handleCardView($scope, initialLoadOverride, incrementOverride) {
     $scope.find('.card-list').each(function() {
@@ -111,11 +110,7 @@ function handleCardView($scope, initialLoadOverride, incrementOverride) {
             const remaining = totalItems - initialLimit;
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
             
-            $button.data({
-                'visible-count': initialLimit, 
-                'increment': increment, 
-                'total-items': totalItems
-            });
+            $button.data({ 'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems });
             $list.after($button);
         }
     });
@@ -132,14 +127,10 @@ function showMoreCards($button, $list) {
     $button.data('visible-count', newVisibleCount);
     
     const remaining = totalItems - newVisibleCount;
-    if (remaining <= 0) { 
-        $button.hide(); 
-    } else { 
-        $button.text(`Show More (${remaining} more) \u25BC`); 
-    }
+    if (remaining <= 0) { $button.hide(); } else { $button.text(`Show More (${remaining} more) \u25BC`); }
 }
 
-/* === MODAL ANIMATION HELPERS === */
+/* === ANIMATION HELPERS === */
 
 function animateModalOpen() {
     const $modal = $('#content-modal');
@@ -161,7 +152,7 @@ function animateModalClose() {
     }, 450); 
 }
 
-/* === MODAL LOGIC (Global Scope) === */
+/* === MODAL LOGIC === */
 
 function handleModalKeys(e) {
     if (!$('#content-modal').is(':visible')) {
@@ -201,8 +192,7 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
     const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(manifestUrl)}`;
 
     $.ajax({
-        url: proxyUrl,
-        dataType: 'text', 
+        url: proxyUrl, dataType: 'text', 
         success: function (xmlText) {
             let data = {};
             try {
@@ -210,9 +200,7 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                 const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                 const steps = [];
                 $(xmlDoc).find('step').each(function() {
-                    steps.push({
-                        title: $(this).find('title').text() || $(this).attr('id')
-                    });
+                    steps.push({ title: $(this).find('title').text() || $(this).attr('id') });
                 });
                 data.steps = steps;
             } catch (e) {
@@ -229,11 +217,7 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             $.each(data.steps, function(index, step) {
                 const displayIndex = index + 1;
                 const stepTitle = decodeText(step.title || `Step ${displayIndex}`);
-                summaryHtml += `
-                    <li class="summary-item clickable" data-step-index="${index}" style="cursor: pointer;">
-                        <span class="step-number">${displayIndex}.</span>
-                        <span class="step-title">${stepTitle}</span>
-                    </li>`;
+                summaryHtml += `<li class="summary-item clickable" data-step-index="${index}" style="cursor: pointer;"><span class="step-number">${displayIndex}.</span><span class="step-title">${stepTitle}</span></li>`;
             });
             summaryHtml += '</ol></div>';
             
@@ -258,16 +242,14 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                 }, false);
             }
         },
-        error: function(jqXHR, textStatus, errorThrown) {
+        error: function() {
             $summaryOverlay.html('<div class="error-message">Error fetching tutorial manifest via proxy.</div>').fadeIn(200);
         }
     });
 }
 
 function loadModalContent(index) {
-    if (index < 0 || index >= currentCardList.length) {
-        return;
-    }
+    if (index < 0 || index >= currentCardList.length) return;
 
     const $link = currentCardList[index];
     if (!$link.length) return;
@@ -281,10 +263,8 @@ function loadModalContent(index) {
     const $modalPlayBtn = $modal.find('.modal-play-btn');
     const $modalFsBtn = $modal.find('.modal-fullscreen-btn');
 
-    // FIX 1: Ensure Header is Clean
+    // === RESET UI ===
     $modal.find('.modal-header').removeAttr('style'); 
-
-    // === CLEAN SLATE ===
     $modal.removeClass('chess-mode research-mode'); 
     $('body').removeClass('chess-mode-active');
     
@@ -294,7 +274,6 @@ function loadModalContent(index) {
     $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
     
     $('body').off('click.tutorialNav');
-
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
     let loadUrl = $link.attr('href');
@@ -302,30 +281,38 @@ function loadModalContent(index) {
     const jsonUrl = $link.data('json-url');
     const manifestUrl = $link.data('manifest-url');
     
-    // === BUTTON VISIBILITY MANAGEMENT ===
-    // Play and Fullscreen buttons are ONLY for images
-    if (!loadType && /\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) { loadType = 'image'; }
-    
+    // === AUTO DETECT ===
+    if (!loadType) {
+        if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) loadType = 'image';
+        else if (/\.md$/i.test(loadUrl)) loadType = 'markdown';
+        else if (/\.pgn$/i.test(loadUrl)) loadType = 'chess';
+        else if (loadUrl.endsWith('.html')) loadType = 'html';
+        else if (loadUrl.startsWith('http')) {
+            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) loadType = 'blocked'; 
+            else loadType = 'iframe';
+        } else loadType = 'newtab'; 
+    }
+
+    // === BUTTONS & SLIDESHOW ===
     if (loadType === 'image') {
         $modalPlayBtn.show();
         $modalFsBtn.show();
     } else {
         $modalPlayBtn.hide();
         $modalFsBtn.hide();
-        stopSlideshow(); // Ensure slideshow stops if we switch to non-image
+        stopSlideshow(); 
     }
 
-    // 1. Research Logic
+    // 1. Research
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', jsonUrl); 
-        $modalContent.find('.modal-photo-info').remove();
         $modalInfoBtn.hide(); 
         buildResearchModal(jsonUrl); 
         return; 
     } 
     
-    // 2. Tutorial Logic
+    // 2. Tutorial
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; 
         $modalInfoBtn.show(); 
@@ -334,7 +321,6 @@ function loadModalContent(index) {
 
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', manifestUrl);
-        $modalContent.find('.modal-photo-info').remove();
         
         const playerHtml = `
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
@@ -347,22 +333,9 @@ function loadModalContent(index) {
         return;
     }
 
-    // 3. Standard Logic
+    // 3. Standard / Image
     $modalOpenLink.attr('href', loadUrl); 
-    $modalContent.find('.modal-photo-info').remove(); 
     $modalInfoBtn.hide(); 
-    
-    if (!loadType) {
-        // Auto-detect fallbacks if not caught above
-        if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) loadType = 'image';
-        else if (/\.md$/i.test(loadUrl)) loadType = 'markdown';
-        else if (/\.pgn$/i.test(loadUrl)) loadType = 'chess';
-        else if (loadUrl.endsWith('.html')) loadType = 'html';
-        else if (loadUrl.startsWith('http')) {
-            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) loadType = 'blocked'; 
-            else loadType = 'iframe';
-        } else loadType = 'newtab'; 
-    }
 
     if ((loadType === 'markdown' || loadType === 'chess') && loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
         loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
@@ -375,20 +348,28 @@ function loadModalContent(index) {
     let infoHtml = '';
 
     if (title || desc) { 
-        // === PERSISTENCE LOGIC ===
-        // Apply 'active' class to button if global state is true
-        $modalInfoBtn.toggleClass('active', isModalInfoVisible);
-        
-        // Explicitly set inline styles based on global state
-        const displayStyle = isModalInfoVisible ? 'block' : 'none';
-        const opacityStyle = isModalInfoVisible ? '1' : '0';
-        
         infoHtml = `
-            <div class="modal-photo-info raised-layer" style="display: ${displayStyle}; opacity: ${opacityStyle};">
+            <div class="modal-photo-info raised-layer">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
     }
+
+    // === PERSISTENCE HELPER ===
+    const applyInfoPersistence = () => {
+        const $infoDiv = $modalContent.find('.modal-photo-info');
+        if (!$infoDiv.length) return;
+        
+        $modalInfoBtn.show();
+        
+        if (isModalInfoVisible) {
+            $modalInfoBtn.addClass('active');
+            $infoDiv.show().css('opacity', 1); // Force show
+        } else {
+            $modalInfoBtn.removeClass('active');
+            $infoDiv.hide().css('opacity', 0); // Force hide
+        }
+    };
 
     switch (loadType) {
         case 'markdown':
@@ -397,14 +378,13 @@ function loadModalContent(index) {
                 success: function(markdownText) { 
                     const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
                     $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`);
-                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
+                    if (infoHtml) { $modalContent.append(infoHtml); applyInfoPersistence(); }
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
             });
             break;
         case 'chess':
             $modalInfoBtn.hide(); 
-            // Enter Chess Mode
             $modal.addClass('chess-mode');
             $('body').addClass('chess-mode-active');
             
@@ -424,7 +404,6 @@ function loadModalContent(index) {
                     let commentsEnabled = true;
                     let commentMap = {};
 
-                    // --- CHESS PARSER ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
                         let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim();
@@ -462,7 +441,6 @@ function loadModalContent(index) {
                         return hasEval || cleanText.length > 0;
                     };
 
-                    // CHESS HTML
                     $modalContent.html(`
                         <style id="${styleId}"></style>
                         <div class="chess-container">
@@ -483,7 +461,6 @@ function loadModalContent(index) {
                         </div>
                     `);
 
-                    // FONT HANDLERS
                     const applySizeChange = (newSize) => {
                         currentFontSize = newSize;
                         updateChessStyles(); 
@@ -503,7 +480,6 @@ function loadModalContent(index) {
                     $('#chess-font-minus').on('click', function(e) { e.preventDefault(); if (currentFontSize > 14) applySizeChange(currentFontSize - 2); });
                     $('#chess-font-plus').on('click', function(e) { e.preventDefault(); if (currentFontSize < 40) applySizeChange(currentFontSize + 2); });
 
-                    // STYLES
                     const updateChessStyles = () => {
                         const movesId = `#${boardId}Moves`;
                         const css = `
@@ -517,7 +493,6 @@ function loadModalContent(index) {
                         $(`#${styleId}`).text(css);
                     };
 
-                    // EVAL
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim().replace(/\[%[^\]]+\]/g, '').trim();
@@ -674,7 +649,7 @@ function loadModalContent(index) {
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
                     $modalContent.html(data); 
-                    if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
+                    if (infoHtml) { $modalContent.append(infoHtml); applyInfoPersistence(); }
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -683,9 +658,7 @@ function loadModalContent(index) {
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
             if (infoHtml) { 
                 $modalContent.append(infoHtml);
-                $modalInfoBtn.show(); 
-                // Ensure persistence class is set
-                $modalInfoBtn.toggleClass('active', isModalInfoVisible);
+                applyInfoPersistence(); // Force persistence state
             }
             break;
         case 'iframe':
@@ -694,8 +667,7 @@ function loadModalContent(index) {
             $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`);
             if (infoHtml) { 
                 $modalContent.append(infoHtml);
-                $modalInfoBtn.show(); 
-                $modalInfoBtn.toggleClass('active', isModalInfoVisible);
+                applyInfoPersistence();
             }
             break;
         case 'blocked':
@@ -1062,6 +1034,7 @@ $(document).ready(function () {
                 $infoBtn.toggleClass('active', isModalInfoVisible); 
                 // ANIMATE TOGGLE (with stop to prevent queue buildup)
                 if (isModalInfoVisible) {
+                     // Ensure display block is set before fading in (just in case)
                      $infoDiv.stop(true, true).css('display', 'block').animate({opacity: 1}, 300);
                 } else {
                      $infoDiv.stop(true, true).animate({opacity: 0}, 300, function() { $(this).hide(); });
