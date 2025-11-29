@@ -220,7 +220,8 @@ function loadModalContent(index) {
     const $modalOpenLink = $modal.find('.open-new-window');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
 
-    $modal.find('.modal-header').show(); // <<< FIX: Ensure header is visible by default
+    // FIX 1: Header is shown on load. It will be hidden later ONLY for chess/tutorials.
+    $modal.find('.modal-header').show(); 
     
     // Reset general state and info button data
     isTutorialMode = false;
@@ -259,7 +260,7 @@ function loadModalContent(index) {
         $modalInfoBtn.show(); // Show Info button for tutorials
         $modalInfoBtn.data('manifest-url', manifestUrl); // Store manifest URL
 
-        $modal.find('.modal-header').hide(); // Correctly hides header for custom UI
+        $modal.find('.modal-header').hide(); // CORRECT: Hide header for custom tutorial UI
         
         $modal.addClass('research-mode'); // Keep research-mode class for styling consistency
         $modalOpenLink.attr('href', manifestUrl);
@@ -361,7 +362,7 @@ function loadModalContent(index) {
         case 'chess':
             // FIX: Hide the main modal info button in Chess mode to avoid conflict
             $modalInfoBtn.hide(); 
-            $modal.find('.modal-header').hide(); // Chess has its own header/toolbar
+            $modal.find('.modal-header').hide(); // Correctly hides header for custom chess UI
             
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
