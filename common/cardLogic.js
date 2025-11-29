@@ -1,11 +1,11 @@
 /* === GLOBAL VARIABLES === */
 var currentCardList = []; 
 var currentCardIndex = 0; 
-var isModalInfoVisible = false; // Master state for Info Box
+var isModalInfoVisible = false; // Master state for Info Box (Persistence)
 var isTutorialMode = false; 
 var slideshowInterval = null; 
 
-/* === CSS INJECTION === */
+/* === CSS INJECTION FOR TRANSITIONS & STYLING === */
 function injectModalStyles() {
     if ($('#dynamic-modal-styles').length) return; 
 
@@ -35,17 +35,21 @@ function injectModalStyles() {
         .modal-photo-info.raised-layer {
             position: absolute;
             bottom: 30px;
-            left: 0; right: 0; margin: 0 auto;
-            width: 85%; max-width: 800px;
+            left: 0;
+            right: 0;
+            margin: 0 auto; /* Center horizontally */
+            width: 85%;
+            max-width: 800px;
             padding: 20px 25px;
-            background: rgba(0, 0, 0, 0.5); 
+            background: rgba(0, 0, 0, 0.5); /* 50% Opacity Black */
             backdrop-filter: blur(8px);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             border-radius: 12px;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff;
             z-index: 50;
-            display: none; /* Default hidden, managed by JS */
+            /* Display controlled by JS, transitions for opacity */
+            transition: opacity 0.3s ease;
         }
         
         .modal-photo-info.raised-layer h3 { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
@@ -63,18 +67,18 @@ function injectModalStyles() {
             padding: 0;
         }
         .image-wrapper:fullscreen img {
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             max-width: none;
             max-height: none;
-            object-fit: contain; /* Maximizes while keeping aspect ratio */
+            object-fit: contain; /* Ensures full image is visible maximized */
         }
     </style>
     `;
     $('head').append(styles);
 }
 
-/* === HELPER FUNCTIONS === */
+/* === HELPER FUNCTIONS (Global Scope) === */
 
 function decodeText(text) {
     if (!text) return "";
@@ -82,7 +86,9 @@ function decodeText(text) {
         var $textarea = $('<textarea></textarea>');
         $textarea.html(text);
         return $textarea.val();
-    } catch (e) { return text; }
+    } catch (e) {
+        return text;
+    }
 }
 
 function stopSlideshow() {
@@ -93,7 +99,7 @@ function stopSlideshow() {
     }
 }
 
-/* === VIEW HELPERS === */
+/* === VIEW HELPERS (Global Scope) */
 
 function handleCardView($scope, initialLoadOverride, incrementOverride) {
     $scope.find('.card-list').each(function() {
@@ -110,7 +116,11 @@ function handleCardView($scope, initialLoadOverride, incrementOverride) {
             const remaining = totalItems - initialLimit;
             const $button = $(`<button class="toggle-card-button">Show More (${remaining} more) \u25BC</button>`);
             
-            $button.data({ 'visible-count': initialLimit, 'increment': increment, 'total-items': totalItems });
+            $button.data({
+                'visible-count': initialLimit, 
+                'increment': increment, 
+                'total-items': totalItems
+            });
             $list.after($button);
         }
     });
@@ -127,10 +137,14 @@ function showMoreCards($button, $list) {
     $button.data('visible-count', newVisibleCount);
     
     const remaining = totalItems - newVisibleCount;
-    if (remaining <= 0) { $button.hide(); } else { $button.text(`Show More (${remaining} more) \u25BC`); }
+    if (remaining <= 0) { 
+        $button.hide(); 
+    } else { 
+        $button.text(`Show More (${remaining} more) \u25BC`); 
+    }
 }
 
-/* === ANIMATION HELPERS === */
+/* === MODAL ANIMATION HELPERS === */
 
 function animateModalOpen() {
     const $modal = $('#content-modal');
@@ -152,7 +166,7 @@ function animateModalClose() {
     }, 450); 
 }
 
-/* === MODAL LOGIC === */
+/* === MODAL LOGIC (Global Scope) === */
 
 function handleModalKeys(e) {
     if (!$('#content-modal').is(':visible')) {
@@ -192,7 +206,8 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
     const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(manifestUrl)}`;
 
     $.ajax({
-        url: proxyUrl, dataType: 'text', 
+        url: proxyUrl,
+        dataType: 'text', 
         success: function (xmlText) {
             let data = {};
             try {
@@ -200,7 +215,9 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                 const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                 const steps = [];
                 $(xmlDoc).find('step').each(function() {
-                    steps.push({ title: $(this).find('title').text() || $(this).attr('id') });
+                    steps.push({
+                        title: $(this).find('title').text() || $(this).attr('id')
+                    });
                 });
                 data.steps = steps;
             } catch (e) {
@@ -217,7 +234,11 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             $.each(data.steps, function(index, step) {
                 const displayIndex = index + 1;
                 const stepTitle = decodeText(step.title || `Step ${displayIndex}`);
-                summaryHtml += `<li class="summary-item clickable" data-step-index="${index}" style="cursor: pointer;"><span class="step-number">${displayIndex}.</span><span class="step-title">${stepTitle}</span></li>`;
+                summaryHtml += `
+                    <li class="summary-item clickable" data-step-index="${index}" style="cursor: pointer;">
+                        <span class="step-number">${displayIndex}.</span>
+                        <span class="step-title">${stepTitle}</span>
+                    </li>`;
             });
             summaryHtml += '</ol></div>';
             
@@ -242,14 +263,16 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                 }, false);
             }
         },
-        error: function() {
+        error: function(jqXHR, textStatus, errorThrown) {
             $summaryOverlay.html('<div class="error-message">Error fetching tutorial manifest via proxy.</div>').fadeIn(200);
         }
     });
 }
 
 function loadModalContent(index) {
-    if (index < 0 || index >= currentCardList.length) return;
+    if (index < 0 || index >= currentCardList.length) {
+        return;
+    }
 
     const $link = currentCardList[index];
     if (!$link.length) return;
@@ -274,6 +297,7 @@ function loadModalContent(index) {
     $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
     
     $('body').off('click.tutorialNav');
+
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
     let loadUrl = $link.attr('href');
@@ -281,7 +305,7 @@ function loadModalContent(index) {
     const jsonUrl = $link.data('json-url');
     const manifestUrl = $link.data('manifest-url');
     
-    // === AUTO DETECT ===
+    // === AUTO DETECT & BUTTONS ===
     if (!loadType) {
         if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) loadType = 'image';
         else if (/\.md$/i.test(loadUrl)) loadType = 'markdown';
@@ -293,7 +317,7 @@ function loadModalContent(index) {
         } else loadType = 'newtab'; 
     }
 
-    // === BUTTONS & SLIDESHOW ===
+    // Play and Fullscreen are only for images
     if (loadType === 'image') {
         $modalPlayBtn.show();
         $modalFsBtn.show();
@@ -303,7 +327,7 @@ function loadModalContent(index) {
         stopSlideshow(); 
     }
 
-    // 1. Research
+    // 1. Research Logic
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', jsonUrl); 
@@ -312,7 +336,7 @@ function loadModalContent(index) {
         return; 
     } 
     
-    // 2. Tutorial
+    // 2. Tutorial Logic
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; 
         $modalInfoBtn.show(); 
@@ -333,7 +357,7 @@ function loadModalContent(index) {
         return;
     }
 
-    // 3. Standard / Image
+    // 3. Standard Logic
     $modalOpenLink.attr('href', loadUrl); 
     $modalInfoBtn.hide(); 
 
@@ -347,16 +371,22 @@ function loadModalContent(index) {
     const desc = $card.find('p').text() || $card.data('desc'); 
     let infoHtml = '';
 
+    // === INFO HTML GENERATION ===
     if (title || desc) { 
+        // We set inline style based on PERSISTENT GLOBAL STATE
+        const displayStyle = isModalInfoVisible ? 'block' : 'none';
+        const opacityStyle = isModalInfoVisible ? '1' : '0';
+        
         infoHtml = `
-            <div class="modal-photo-info raised-layer">
+            <div class="modal-photo-info raised-layer" style="display: ${displayStyle}; opacity: ${opacityStyle};">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
     }
 
-    // === PERSISTENCE HELPER ===
-    const applyInfoPersistence = () => {
+    // === PERSISTENCE ENFORCER FUNCTION ===
+    // This runs after content load to ensure the button and box match the global variable
+    const enforcePersistence = () => {
         const $infoDiv = $modalContent.find('.modal-photo-info');
         if (!$infoDiv.length) return;
         
@@ -364,10 +394,10 @@ function loadModalContent(index) {
         
         if (isModalInfoVisible) {
             $modalInfoBtn.addClass('active');
-            $infoDiv.show().css('opacity', 1); // Force show
+            $infoDiv.show().css('opacity', 1);
         } else {
             $modalInfoBtn.removeClass('active');
-            $infoDiv.hide().css('opacity', 0); // Force hide
+            $infoDiv.hide().css('opacity', 0);
         }
     };
 
@@ -378,11 +408,22 @@ function loadModalContent(index) {
                 success: function(markdownText) { 
                     const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
                     $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`);
-                    if (infoHtml) { $modalContent.append(infoHtml); applyInfoPersistence(); }
+                    if (infoHtml) { $modalContent.append(infoHtml); enforcePersistence(); }
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
             });
             break;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -883,20 +924,7 @@ case 'chess':
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            
 
 
 
@@ -907,7 +935,7 @@ case 'chess':
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
                     $modalContent.html(data); 
-                    if (infoHtml) { $modalContent.append(infoHtml); applyInfoPersistence(); }
+                    if (infoHtml) { $modalContent.append(infoHtml); enforcePersistence(); }
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -916,7 +944,7 @@ case 'chess':
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
             if (infoHtml) { 
                 $modalContent.append(infoHtml);
-                applyInfoPersistence(); // Force persistence state
+                enforcePersistence(); // Force persistence state
             }
             break;
         case 'iframe':
@@ -925,7 +953,7 @@ case 'chess':
             $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`);
             if (infoHtml) { 
                 $modalContent.append(infoHtml);
-                applyInfoPersistence();
+                enforcePersistence();
             }
             break;
         case 'blocked':
