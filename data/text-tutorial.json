@@ -1,0 +1,46 @@
+{
+  "title": "Introduction to Web Components",
+  "slides": [
+    {
+      "type": "text",
+      "title": "Welcome to the Tutorial",
+      "body": "<p>This is an <strong>HTML-based tutorial</strong> system. Unlike images, this text is selectable, accessible, and responsive.</p><p>You can use standard HTML tags here:</p><ul><li>Lists</li><li><strong>Bold</strong> and <em>Italic</em> text</li><li>Code snippets like <code>&lt;div&gt;</code></li></ul><p>Click <strong>Next</strong> to see a quiz.</p>"
+    },
+    {
+      "type": "quiz",
+      "question": "Which HTML tag is used to create a hyperlink?",
+      "options": [
+        "&lt;link&gt;",
+        "&lt;a&gt;",
+        "&lt;href&gt;",
+        "&lt;connect&gt;"
+      ],
+      "correctIndex": 1,
+      "feedback": "The &lt;a&gt; tag (anchor) defines a hyperlink, which is used to link from one page to another.",
+      "explanationUrl": "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a"
+    },
+    {
+      "type": "text",
+      "title": "Code Examples",
+      "body": "<p>We can also display code blocks effectively.</p><pre>function helloWorld() {\n  console.log('Hello, Tutorial!');\n}</pre><p>This is useful for technical walkthroughs.</p>"
+    },
+    {
+      "type": "quiz",
+      "question": "What does CSS stand for?",
+      "options": [
+        "Computer Style Sheets",
+        "Creative Style System",
+        "Cascading Style Sheets",
+        "Colorful Style Sheets"
+      ],
+      "correctIndex": 2,
+      "feedback": "CSS stands for <strong>Cascading Style Sheets</strong>. It describes how HTML elements are to be displayed on screen.",
+      "explanationUrl": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+    },
+    {
+      "type": "text",
+      "title": "Conclusion",
+      "body": "<p>You have reached the end of this sample tutorial. <br><br>You can now close this modal or press <strong>Esc</strong>.</p>"
+    }
+  ]
+}
