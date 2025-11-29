@@ -2,7 +2,60 @@
 var currentCardList = []; 
 var currentCardIndex = 0; 
 var isModalInfoVisible = false; 
-var isTutorialMode = false; // NEW: State to manage Info button behavior for tutorials
+var isTutorialMode = false; // State to manage Info button behavior for tutorials
+
+/* === CSS INJECTION FOR TRANSITIONS & STYLING === */
+function injectModalStyles() {
+    if ($('#dynamic-modal-styles').length) return; 
+
+    const styles = `
+    <style id="dynamic-modal-styles">
+        /* ZOOM ANIMATIONS */
+        @keyframes modalZoomIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes modalZoomOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.9); }
+        }
+        
+        .modal-animate-enter {
+            animation: modalZoomIn 0.35s cubic-bezier(0.1, 0.9, 0.2, 1) forwards !important;
+            display: flex !important;
+        }
+        
+        .modal-animate-leave {
+            animation: modalZoomOut 0.25s ease-in forwards !important;
+        }
+
+        /* RAISED INFO BOX STYLES */
+        .modal-photo-info.raised-layer {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85%;
+            max-width: 800px;
+            padding: 20px 25px;
+            background: rgba(20, 20, 20, 0.50); /* 50% Opacity Black */
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            z-index: 50;
+            opacity: 0; /* Hidden by default for fade in */
+            display: none; /* Controlled by JS */
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-photo-info.raised-layer h3 { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+        .modal-photo-info.raised-layer p { color: #ddd; margin-bottom: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+    </style>
+    `;
+    $('head').append(styles);
+}
 
 /* === HELPER FUNCTIONS (Global Scope) === */
 
@@ -18,11 +71,6 @@ function decodeText(text) {
 }
 
 /* === VIEW HELPERS (Global Scope) */
-/**
- * Global cleanup function for closing the modal.
- * This removes all chess-specific and modal-related classes 
- * that interfere with main page scrolling.
- */
 
 function handleCardView($scope, initialLoadOverride, incrementOverride) {
     $scope.find('.card-list').each(function() {
@@ -44,7 +92,6 @@ function handleCardView($scope, initialLoadOverride, incrementOverride) {
                 'increment': increment, 
                 'total-items': totalItems
             });
-            // Note: The click listener for this button is delegated in mainPage.js or the bottom of this file
             $list.after($button);
         }
     });
@@ -66,6 +113,38 @@ function showMoreCards($button, $list) {
     } else { 
         $button.text(`Show More (${remaining} more) \u25BC`); 
     }
+}
+
+/* === MODAL ANIMATION HELPERS === */
+
+function animateModalOpen() {
+    const $modal = $('#content-modal');
+    const $content = $modal.find('.modal-content');
+    
+    // Reset classes and ensure standard display
+    $content.removeClass('modal-animate-leave');
+    
+    // Show wrapper (fade in bg)
+    $modal.fadeIn(300);
+    
+    // Animate content (Zoom In)
+    $content.addClass('modal-animate-enter');
+}
+
+function animateModalClose() {
+    const $modal = $('#content-modal');
+    const $content = $modal.find('.modal-content');
+    
+    // Remove enter class, add leave class (Zoom Out)
+    $content.removeClass('modal-animate-enter').addClass('modal-animate-leave');
+    
+    // Wait for animation to finish before hiding wrapper
+    setTimeout(function() {
+        $modal.fadeOut(300, function() {
+            $content.removeClass('modal-animate-leave'); // Cleanup
+            $('#modal-content-area').html(''); 
+        });
+    }, 250); // Slightly less than 0.3s to prevent flash
 }
 
 /* === MODAL LOGIC (Global Scope) === */
@@ -104,16 +183,12 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
         return;
     }
     
-    // The overlay element must exist for delegation to work
-    // We give it a specific ID for delegation
     const overlayId = 'tutorial-summary-overlay-container';
-    // NOTE: If the click is still blocked, check if CSS is making the list items transparent to clicks.
     $modalContent.append(`<div class="tutorial-summary-overlay" id="${overlayId}" style="pointer-events: auto;"><div class="content-loader"><div class="spinner"></div></div></div>`);
     $summaryOverlay = $modalContent.find(`#${overlayId}`);
 
-    // === ROUTE MANIFEST FETCH THROUGH THE PROXY TO BYPASS CORS ===
     const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(manifestUrl)}`;
-    console.log("Fetching manifest via proxy to bypass CORS:", proxyUrl);
+    console.log("Fetching manifest via proxy:", proxyUrl);
 
     $.ajax({
         url: proxyUrl,
@@ -149,7 +224,6 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                 const displayIndex = index + 1;
                 const stepTitle = decodeText(step.title || `Step ${displayIndex}`);
                 
-                // === FIX: Add class 'clickable' and INLINE STYLE for visual confirmation ===
                 summaryHtml += `
                     <li class="summary-item clickable" data-step-index="${index}" style="cursor: pointer;">
                         <span class="step-number">${displayIndex}.</span>
@@ -162,24 +236,18 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             $summaryOverlay.html(summaryHtml).fadeIn(200);
             $('.modal-info-btn').addClass('active');
             
-            // 3. CRITICAL FIX: Attach native DOM listener to the static container
-            // This relies on event bubbling/delegation but uses native JS for reliability.
             const overlayElement = document.getElementById(overlayId);
             if (overlayElement) {
-                // Ensure no previous handlers are attached to this element directly
                 overlayElement.removeEventListener('click', null, false); 
-                
                 overlayElement.addEventListener('click', function(e) {
                     const target = e.target.closest('.summary-item.clickable');
                     if (target) {
-                        e.stopPropagation(); // Stop propagation immediately
+                        e.stopPropagation(); 
 
                         const stepIndex = target.getAttribute('data-step-index');
                         const $iframe = $modalContent.find('.iframe-wrapper .loaded-iframe');
                         
                         if ($iframe.length) {
-                            console.log(`DEBUG: NATIVE CLICK HANDLER FIRED. Sending goToStep ${stepIndex} to iframe.`);
-                            
                             $iframe[0].contentWindow.postMessage({ 
                                 command: 'goToStep', 
                                 index: parseInt(stepIndex) 
@@ -187,20 +255,13 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                             
                             $summaryOverlay.fadeOut(200);
                             $('.modal-info-btn').removeClass('active');
-                        } else {
-                            console.warn("ERROR: Native handler could not find loaded-iframe.");
                         }
                     }
                 }, false);
-                console.log("DEBUG: Native DOM click listener successfully attached to the summary overlay.");
-            } else {
-                console.error("ERROR: Could not find summary overlay element to attach native handler.");
             }
-            
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.error("Error fetching proxied manifest (Check PHP logs):", textStatus, errorThrown);
-            $summaryOverlay.html('<div class="error-message">Error fetching tutorial manifest via proxy. (Check proxy setup)</div>').fadeIn(200);
+            $summaryOverlay.html('<div class="error-message">Error fetching tutorial manifest.</div>').fadeIn(200);
         }
     });
 }
@@ -221,7 +282,6 @@ function loadModalContent(index) {
     const $modalInfoBtn = $modal.find('.modal-info-btn');
 
     // FIX 1: Ensure Header is Clean (Remove inline styles that break flex layout)
-    // Replaces .show() with .removeAttr('style') to prevent jQuery from adding "display: block"
     $modal.find('.modal-header').removeAttr('style'); 
 
     // === CRITICAL FIX: Clean Slate Logic ===
@@ -229,21 +289,16 @@ function loadModalContent(index) {
     $modal.removeClass('chess-mode research-mode'); 
     $('body').removeClass('chess-mode-active');
     
-    // Reset general state and info button data
+    // Reset specific logic states (BUT NOT global info persistence)
     isTutorialMode = false;
-    // CRITICAL: isModalInfoVisible state must NOT be reset here for Photo/Iframe cards, 
-    // it should only be reset when the modal closes.
-    $modalInfoBtn.removeData('manifest-url').removeClass('active'); // Clear manifest data and active state
+    $modalInfoBtn.removeData('manifest-url'); 
     $modalContent.removeClass('summary-view-active');
-    // FIX: Only remove the specific tutorial overlay and photo info element before setting new content
     $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
     
-    // REMOVE AGGRESSIVE JQUERY HANDLER
     $('body').off('click.tutorialNav');
 
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
-    // CHANGED: Use 'let' instead of 'const' so we can modify the URL if needed
     let loadUrl = $link.attr('href');
     let loadType = $link.data('load-type');
     const jsonUrl = $link.data('json-url');
@@ -253,7 +308,6 @@ function loadModalContent(index) {
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', jsonUrl); 
-        // FIX: Remove photo info element when entering research mode
         $modalContent.find('.modal-photo-info').remove();
         $modalInfoBtn.hide(); 
         buildResearchModal(jsonUrl); 
@@ -262,16 +316,14 @@ function loadModalContent(index) {
     
     // 2. Tutorial Logic
     if (loadType === 'tutorial' && manifestUrl) {
-        isTutorialMode = true; // Set mode flag
-        $modalInfoBtn.show(); // Show Info button for tutorials
-        $modalInfoBtn.data('manifest-url', manifestUrl); // Store manifest URL
+        isTutorialMode = true; 
+        $modalInfoBtn.show(); 
+        $modalInfoBtn.data('manifest-url', manifestUrl); 
+        // Tutorial contents start closed regardless of photo setting
+        $modalInfoBtn.removeClass('active'); 
 
-        // $modal.find('.modal-header').hide(); // REMOVED: Rely on Chess Mode CSS to hide/style the header
-        
-        $modal.addClass('research-mode'); // Keep research-mode class for styling consistency
+        $modal.addClass('research-mode'); 
         $modalOpenLink.attr('href', manifestUrl);
-        
-        // FIX: Remove photo info element when entering tutorial mode
         $modalContent.find('.modal-photo-info').remove();
         
         const playerHtml = `
@@ -281,16 +333,12 @@ function loadModalContent(index) {
             <button class="tutorial-custom-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2rem;">&times;</button>
         `;
         $modalContent.html(playerHtml);
-        // FIX: Attach listener to the unique button to trigger the main close button
         $modalContent.find('.tutorial-custom-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
         return;
     }
 
     // 3. Standard Logic (Includes Photos/Images/Iframes)
-    $modal.removeClass('research-mode'); 
-    // We keep the ORIGINAL link for the "Open in new window" button (user friendly)
     $modalOpenLink.attr('href', loadUrl); 
-    // FIX: Remove existing photo info element *before* creating the new one
     $modalContent.find('.modal-photo-info').remove(); 
     
     $modalInfoBtn.hide(); 
@@ -317,8 +365,6 @@ function loadModalContent(index) {
     }
 
     // === NEW: GitHub Link Fixer ===
-    // If we are fetching data (Markdown or Chess) from GitHub, 
-    // we must use the "raw" domain to avoid CORS errors.
     if ((loadType === 'markdown' || loadType === 'chess') && loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
         loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
     }
@@ -326,24 +372,22 @@ function loadModalContent(index) {
     const customHeight = $link.data('height') || '90vh';
     
     const $card = currentCardList[currentCardIndex].closest('.card-item');
-    // FIX: Ensure title/desc retrieval checks all possible sources, especially data attributes
     const title = $card.find('h3').text() || $card.find('img').attr('alt') || $card.data('title'); 
     const desc = $card.find('p').text() || $card.data('desc'); 
     let infoHtml = '';
 
-    if (title || desc) { // Only create info HTML if there's content
-        // FIX: Ensure the state of info visibility is applied when loading the card
-        const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
-        // FIX: Set button active state based on persistent variable
+    if (title || desc) { 
+        // === PERSISTENCE LOGIC ===
+        // Apply 'active' class to button if global state is true
         $modalInfoBtn.toggleClass('active', isModalInfoVisible);
-
-        // NEW FIX: FORCE INLINE DISPLAY EXPLICITLY BASED ON STATE
-        // If state is false, we MUST set display: none because you removed it from CSS.
-        // We also apply the 50% opacity black background here.
-        const displayStyle = isModalInfoVisible ? 'block' : 'none';
         
+        // Explicitly set inline styles based on global state
+        const displayStyle = isModalInfoVisible ? 'block' : 'none';
+        const opacityStyle = isModalInfoVisible ? '1' : '0';
+        
+        // Added class 'raised-layer' for the new styling
         infoHtml = `
-            <div class="modal-photo-info ${infoVisibleClass}" style="display: ${displayStyle}; background: rgba(0, 0, 0, 0.5);">
+            <div class="modal-photo-info raised-layer" style="display: ${displayStyle}; opacity: ${opacityStyle};">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
@@ -359,7 +403,6 @@ function loadModalContent(index) {
                         ? marked.parse(markdownText) 
                         : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
                     
-                    // CHANGED: Wrapped in .markdown-wrapper
                     $modalContent.html(`
                         <div class="markdown-wrapper">
                             <div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">
@@ -376,7 +419,6 @@ function loadModalContent(index) {
         case 'chess':
             // FIX: Hide the main modal info button in Chess mode to avoid conflict
             $modalInfoBtn.hide(); 
-            // $modal.find('.modal-header').hide(); // REMOVED: Rely on CSS to hide the header when custom UI is present.
             
             // Fix GitHub CORS
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -742,12 +784,12 @@ function loadModalContent(index) {
 
 
                     // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
-$('#chess-close-btn').off('click').on('click', function(e) {
-    e.preventDefault();
-    // Simply trigger the universal close button click, 
-    // which now handles all cleanup (Step 2).
-    $('.modal-close-btn').first().click(); 
-});
+                    $('#chess-close-btn').off('click').on('click', function(e) {
+                        e.preventDefault();
+                        // Simply trigger the universal close button click, 
+                        // which now handles all cleanup (Step 2).
+                        $('.modal-close-btn').first().click(); 
+                    });
                     
 
                     // --- RENDER ---
@@ -1287,7 +1329,10 @@ function initializeModalInfoState(modalElement) {
 /* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
     
-    // Inject modal
+    // Inject Custom Styles for Transitions and Info Box
+    injectModalStyles();
+
+    // Inject modal HTML
     $('body').append(`
         <div id="content-modal" class="modal-backdrop">
             <div class="modal-content">
@@ -1340,8 +1385,8 @@ $(document).ready(function () {
         if (currentCardList.length > 0) {
             loadModalContent(currentCardIndex);
             $('body').addClass('modal-open');
-            // UPDATED: Slower fade in (400ms) for better visual effect
-            $('#content-modal').fadeIn(400);
+            // UPDATED: Use custom animation helper
+            animateModalOpen();
             $(document).on('keydown.modalNav', handleModalKeys);
         }
     });
@@ -1355,15 +1400,12 @@ $('body').on('click', '.modal-close-btn', function() {
         $modal.removeClass('chess-mode'); 
         // --- END CENTRALIZED CLEANUP ---
 
-        // Main modal hide logic
-        // UPDATED: Slower fade out (400ms) for better visual effect
-        $modal.fadeOut(400);
-        $('#modal-content-area').html(''); 
+        // Main modal hide logic with animation helper
+        animateModalClose();
         
-        // Reset global states
+        // Reset global states BUT NOT isModalInfoVisible
         currentCardList = [];
         currentCardIndex = 0;
-        // REMOVED RESET TO PERSIST STATE: isModalInfoVisible = false; 
         isTutorialMode = false; // Reset tutorial mode
         $(document).off('keydown.modalNav');
         
@@ -1411,7 +1453,8 @@ $('body').on('click', '.modal-close-btn', function() {
             console.log("Photo Info button clicked. Info Div found:", $infoDiv.length > 0);
 
             if ($infoDiv.length > 0) {
-                isModalInfoVisible = !isModalInfoVisible; // Toggle global state
+                // TOGGLE GLOBAL STATE
+                isModalInfoVisible = !isModalInfoVisible; 
 
                 // UPDATE BUTTON
                 $infoBtn.toggleClass('active', isModalInfoVisible); 
@@ -1421,9 +1464,11 @@ $('body').on('click', '.modal-close-btn', function() {
                 // We use .stop(true, true) to clear animation queue and prevent "bouncing"
                 if (isModalInfoVisible) {
                      // Ensure display block is set before fading in (just in case)
-                     $infoDiv.stop(true, true).fadeIn(400);
+                     $infoDiv.stop(true, true).css('display', 'block').animate({opacity: 1}, 300);
                 } else {
-                     $infoDiv.stop(true, true).fadeOut(400);
+                     $infoDiv.stop(true, true).animate({opacity: 0}, 300, function() {
+                         $(this).hide();
+                     });
                 }
 
             } else {
