@@ -1,0 +1,12 @@
+{
+  "title": "Chess Games Database",
+  "description": "A collection of famous chess games and tutorials. Click 'View' to open them directly in the player.",
+  "columns": ["Game / Tutorial", "Type", "Date", "Action"],
+  "rows": [
+    ["Kasparov vs Topalov", "Chess", "1999", "link:chess:https://raw.githubusercontent.com/username/repo/main/kasparov.pgn:Analyze"],
+    ["Intro to Chess", "Tutorial", "2023", "link:tutorial:data/chess_intro.json:Start Learning"],
+    ["Fischer vs Spassky", "Chess", "1972", "link:chess:data/games/fischer_spassky.pgn:View Game"],
+    ["Carlsen vs Anand", "Chess", "1972", "link:chess:games/Annotated.pgn:View Game"],
+    ["Advanced Tactics", "Tutorial", "2024", "link:tutorial:data/tactics.json:Read Guide"]
+  ]
+}
