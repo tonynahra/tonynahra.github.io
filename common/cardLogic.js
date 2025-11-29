@@ -335,13 +335,12 @@ function loadModalContent(index) {
         // FIX: Ensure the state of info visibility is applied when loading the card
         const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
         
-        // NEW FIX: FORCE INLINE DISPLAY IF VISIBLE
-        // This ensures that if the user kept the info open, it opens immediately with display: block
-        // overriding any default css 'display: none'.
-        const infoStyle = isModalInfoVisible ? 'style="display: block;"' : ''; 
+        // NEW FIX: FORCE INLINE DISPLAY EXPLICITLY
+        // This ensures that we override CSS "display: none" immediately based on state.
+        const infoStyle = isModalInfoVisible ? 'display: block;' : 'display: none;';
         
         infoHtml = `
-            <div class="modal-photo-info ${infoVisibleClass}" ${infoStyle}>
+            <div class="modal-photo-info ${infoVisibleClass}" style="${infoStyle}">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
@@ -1402,24 +1401,26 @@ $('body').on('click', '.modal-close-btn', function() {
         
         // 2. Check for Photo/Iframe Mode (modal-photo-info element must be present)
         else {
-            isModalInfoVisible = !isModalInfoVisible;
             
             const $infoDiv = $modalContent.find('.modal-photo-info');
             
             // Console log the state for debugging (as requested by user)
-            console.log("Photo Info button clicked. isModalInfoVisible:", isModalInfoVisible, "Info Div found:", $infoDiv.length > 0);
+            console.log("Photo Info button clicked. Info Div found:", $infoDiv.length > 0);
 
             if ($infoDiv.length > 0) {
+                isModalInfoVisible = !isModalInfoVisible; // Toggle global state
+
                 // UPDATE BUTTON
                 $infoBtn.toggleClass('active', isModalInfoVisible); 
                 $infoDiv.toggleClass('info-visible', isModalInfoVisible);
 
                 // VISUAL FIX: Use jQuery Fade Toggle to override any "display: none" from CSS
-                // This ensures smooth animation and guarantees visibility
+                // We use .stop(true, true) to clear animation queue and prevent "bouncing"
                 if (isModalInfoVisible) {
-                     $infoDiv.stop().fadeIn(300);
+                     // Ensure display block is set before fading in (just in case)
+                     $infoDiv.css('display', 'block').hide().stop(true, true).fadeIn(400);
                 } else {
-                     $infoDiv.stop().fadeOut(300);
+                     $infoDiv.stop(true, true).fadeOut(400);
                 }
 
             } else {
