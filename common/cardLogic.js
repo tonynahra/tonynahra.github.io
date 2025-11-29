@@ -23,21 +23,6 @@ function decodeText(text) {
  * This removes all chess-specific and modal-related classes 
  * that interfere with main page scrolling.
  */
-function closeModalCleanup() {
-    const modal = document.getElementById('content-modal');
-    
-    // 1. Remove the active modal classes
-    document.body.classList.remove('modal-open');
-    document.body.classList.remove('chess-mode-active');
-    modal.classList.remove('chess-mode'); 
-    
-    // 2. Hide the modal container
-    modal.style.display = 'none';
-    
-    // 3. Clear any dynamically loaded content
-    const contentArea = document.getElementById('modal-content-area');
-    contentArea.innerHTML = '';
-}
 
 function handleCardView($scope, initialLoadOverride, incrementOverride) {
     $scope.find('.card-list').each(function() {
@@ -571,11 +556,11 @@ function loadModalContent(index) {
                         let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                         cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim();
 
-                        // 馃洃 NEW LOGIC: Return empty string if no [%eval] tag found 馃洃
+                
                         if (!evalMatch) {
                             return { html: "", text: cleanText };
                         }
-                        // 馃洃 END NEW LOGIC 馃洃
+                
 
                         let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
                         let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
@@ -735,7 +720,18 @@ function loadModalContent(index) {
                         updateCommentContent(activeMoveIndex, total);
                     });
 
+
                     // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
+$('#chess-close-btn').off('click').on('click', function(e) {
+    e.preventDefault();
+    // Simply trigger the universal close button click, 
+    // which now handles all cleanup (Step 2).
+    $('.modal-close-btn').first().click(); 
+});
+
+                    
+                    // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
+/*                    
                     $('#chess-close-btn').off('click').on('click', function(e) {
                         e.preventDefault();
                         // 1. Remove custom classes to exit chess mode
@@ -753,7 +749,7 @@ function loadModalContent(index) {
                             $modal.hide();
                         }
                     });
-
+*/
 
                     // --- RENDER ---
                     const $select = $('#chess-game-select');
@@ -1444,13 +1440,20 @@ $(document).ready(function () {
         }
     });
 
-    // Generalized Close Button Logic
-    $('body').on('click', '.modal-close-btn', function() {
-        closeModalCleanup();
+$('body').on('click', '.modal-close-btn', function() {
         const $modal = $('#content-modal');
-        $('body').removeClass('modal-open');
+        
+        // --- CENTRALIZED CLEANUP: REMOVE ALL POTENTIALLY STICKY CLASSES ---
+        document.body.classList.remove('modal-open');
+        document.body.classList.remove('chess-mode-active');
+        $modal.removeClass('chess-mode'); 
+        // --- END CENTRALIZED CLEANUP ---
+
+        // Main modal hide logic
         $modal.fadeOut(200);
         $('#modal-content-area').html(''); 
+        
+        // Reset global states
         currentCardList = [];
         currentCardIndex = 0;
         isModalInfoVisible = false; // Reset info visibility state on close
@@ -1458,6 +1461,15 @@ $(document).ready(function () {
         $(document).off('keydown.modalNav');
         $modal.find('.modal-header').show();
     });
+
+
+
+
+
+
+
+
+
     
     $('body').on('click', '#content-modal', function(e) {
         if (e.target.id === 'content-modal') {
