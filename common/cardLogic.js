@@ -13,18 +13,18 @@ function injectModalStyles() {
     <style id="dynamic-modal-styles">
         /* POPUP TRANSITION (Spring/Pop Effect) */
         @keyframes modalPopUp {
-            0% { opacity: 0; transform: scale(0.7); }
-            50% { opacity: 1; transform: scale(1.05); }
-            100% { opacity: 1; transform: scale(1); }
+            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
+            60% { opacity: 1; transform: scale(1.05) translateY(-5px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes modalPopDown {
             0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 0; transform: scale(0.9); }
         }
         
         .modal-animate-enter {
             display: flex !important;
-            animation: modalPopUp 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards !important;
+            animation: modalPopUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
         }
         
         .modal-animate-leave {
@@ -98,7 +98,7 @@ function injectModalStyles() {
         }
         .modal-play-btn {
             white-space: nowrap;
-            min-width: 100px; /* Prevent wrapping */
+            min-width: 100px;
             text-align: center;
         }
         select.slideshow-speed {
@@ -133,6 +133,45 @@ function stopSlideshow() {
         slideshowInterval = null;
         $('.modal-play-btn').html('&#9658; Play'); 
     }
+}
+
+// === SEO & META TAG INJECTION ===
+function updateSocialMeta(title, desc, image) {
+    // 1. Helper to create or update a tag
+    const setMeta = (property, content) => {
+        if (!content) return;
+        let $tag = $(`meta[property="${property}"]`);
+        if ($tag.length === 0) {
+            $tag = $(`meta[name="${property}"]`); // Try name attribute if property fails
+        }
+        
+        if ($tag.length) {
+            $tag.attr('content', content);
+        } else {
+            // Append new tag if not found
+            $('head').append(`<meta property="${property}" content="${content}">`);
+        }
+    };
+
+    const cleanTitle = decodeText(title || "Content Viewer");
+    const cleanDesc = decodeText(desc || "View this content.");
+    const cleanImage = image && !image.startsWith('http') ? window.location.origin + '/' + image : (image || "");
+
+    // 2. Open Graph (Facebook, LinkedIn, etc.)
+    setMeta('og:title', cleanTitle);
+    setMeta('og:description', cleanDesc);
+    if (cleanImage) setMeta('og:image', cleanImage);
+    setMeta('og:type', 'article');
+    setMeta('og:url', window.location.href);
+
+    // 3. Twitter Cards
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', cleanTitle);
+    setMeta('twitter:description', cleanDesc);
+    if (cleanImage) setMeta('twitter:image', cleanImage);
+
+    // 4. Standard Title
+    document.title = cleanTitle;
 }
 
 /* === VIEW HELPERS === */
@@ -180,9 +219,12 @@ function animateModalOpen() {
     
     $content.removeClass('modal-animate-leave');
     
-    // Explicitly set flex to ensure centering, remove jQuery fadeIn
-    $modal.css('display', 'flex'); 
-    $content.addClass('modal-animate-enter');
+    $modal.css('display', 'flex'); // Ensure layout before animating
+    
+    // Use requestAnimationFrame to ensure the class addition triggers the CSS animation
+    requestAnimationFrame(() => {
+        $content.addClass('modal-animate-enter');
+    });
 }
 
 function animateModalClose() {
@@ -352,8 +394,6 @@ function loadModalContent(index) {
     }
 
     // 2. Fullscreen Button logic
-    // Enabled for Image, Iframe, Markdown, Tutorial. 
-    // Hidden for Blocked/Newtab/Chess(custom)
     if (loadType === 'image' || loadType === 'iframe' || loadType === 'markdown' || loadType === 'tutorial') {
         $modalFsBtn.show(); 
     } else {
@@ -386,6 +426,11 @@ function loadModalContent(index) {
         `;
         $modalContent.html(playerHtml);
         $modalContent.find('.tutorial-custom-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
+        
+        // Meta Update for Tutorial
+        const $card = currentCardList[currentCardIndex].closest('.card-item');
+        updateSocialMeta($card.find('h3').text(), $card.find('p').text(), $card.find('img').attr('src'));
+        
         return;
     }
 
@@ -400,20 +445,28 @@ function loadModalContent(index) {
     const $card = currentCardList[currentCardIndex].closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt') || $card.data('title'); 
     const desc = $card.find('p').text() || $card.data('desc'); 
+    const thumbUrl = $card.find('img').attr('src');
+    
+    // === UPDATE META TAGS ===
+    updateSocialMeta(title, desc, thumbUrl);
+
     let infoHtml = '';
 
-    // === INFO HTML GENERATION ===
+    // === INFO HTML GENERATION (STRICT PERSISTENCE) ===
     if (title || desc) { 
-        // Note: Content is generated but visibility is controlled by enforcePersistence
+        // We set inline style based on PERSISTENT GLOBAL STATE directly in the HTML string.
+        // This avoids race conditions where JS tries to show() it after it's already rendered hidden.
+        const displayStyle = isModalInfoVisible ? 'block' : 'none';
+        const opacityStyle = isModalInfoVisible ? '1' : '0';
+        
         infoHtml = `
-            <div class="modal-photo-info raised-layer" style="display: none; opacity: 0;">
+            <div class="modal-photo-info raised-layer" style="display: ${displayStyle}; opacity: ${opacityStyle};">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
     }
 
     // === PERSISTENCE ENFORCER FUNCTION ===
-    // This logic ensures the button and content match the global variable
     const enforcePersistence = () => {
         const $infoDiv = $modalContent.find('.modal-photo-info');
         
@@ -424,17 +477,11 @@ function loadModalContent(index) {
             $modalInfoBtn.removeClass('active');
         }
 
-        // 2. Force Content State
-        if ($infoDiv.length > 0) {
-            $modalInfoBtn.show(); 
-            if (isModalInfoVisible) {
-                $infoDiv.show().css('opacity', 1);
-            } else {
-                $infoDiv.hide().css('opacity', 0);
-            }
-        } else {
-            // If this specific card has no info, hide the button, but DO NOT change global state
+        // 2. Hide button if no info available
+        if ($infoDiv.length === 0) {
             $modalInfoBtn.hide();
+        } else {
+            $modalInfoBtn.show();
         }
     };
 
@@ -1269,7 +1316,7 @@ $(document).ready(function () {
         if (e.target.id === 'content-modal') { $(this).find('.modal-close-btn').first().click(); }
     });
     
-    // Play Button Listener (UPDATED to use select value)
+    // Play Button Listener
     $('body').on('click', '.modal-play-btn', function() {
         if (slideshowInterval) {
             stopSlideshow();
@@ -1277,15 +1324,14 @@ $(document).ready(function () {
             $(this).html('&#10074;&#10074; Pause'); 
             const speed = parseInt($('.slideshow-speed').val()) || 5000;
             
-            // Advance immediately
             if (currentCardIndex < currentCardList.length - 1) $('.modal-next-btn').click();
-            else currentCardIndex = -1; // Loop back if starting at end? Or just stop.
+            else currentCardIndex = -1;
 
             slideshowInterval = setInterval(function() {
                  if (currentCardIndex < currentCardList.length - 1) {
                      $('.modal-next-btn').click();
                  } else {
-                     stopSlideshow(); // Stop at end
+                     stopSlideshow(); 
                  }
             }, speed);
         }
@@ -1299,9 +1345,8 @@ $(document).ready(function () {
         }
     });
 
-    // Fullscreen Button Listener (Generic)
+    // Fullscreen Button Listener
     $('body').on('click', '.modal-fullscreen-btn', function() {
-        // Try to fullscreen the specific wrapper first
         const wrapper = document.querySelector('#modal-content-area .image-wrapper') || 
                         document.querySelector('#modal-content-area .iframe-wrapper') || 
                         document.querySelector('#modal-content-area .markdown-wrapper');
@@ -1325,12 +1370,11 @@ $(document).ready(function () {
     });
     
     $('body').on('click', '.modal-next-btn', function() {
-        // NOTE: We don't stop slideshow here because the slideshow interval actually triggers this click!
         if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1);
         else stopSlideshow(); 
     });
 
-    // INFO BUTTON (Modified for Persistence)
+    // INFO BUTTON (Strict Persistence Toggle)
     $('body').on('click', '.modal-info-btn', function() {
         const $infoBtn = $(this);
         const $modalContent = $('#modal-content-area');
