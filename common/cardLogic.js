@@ -40,16 +40,13 @@ function animateModalClose() {
 
 /* === PERSISTENCE LOGIC (GLOBAL) === */
 function applyInfoState() {
-    console.log('[DEBUG] applyInfoState called. Global Flag:', isModalInfoVisible);
     const $infoBtn = $('.modal-info-btn'); 
-    const $infoDiv = $('.modal-photo-info');
-    
     if (isModalInfoVisible) { 
         $infoBtn.addClass('active'); 
-        $infoDiv.addClass('visible');
+        $('.modal-photo-info').addClass('visible'); // Adds display: block !important
     } else { 
         $infoBtn.removeClass('active'); 
-        $infoDiv.removeClass('visible');
+        $('.modal-photo-info').removeClass('visible');
     }
 }
 
@@ -104,16 +101,17 @@ function loadModalContent(index) {
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); $modal.addClass('research-mode'); 
         
-        // FIXED NAV INJECTION: width: 100%, box-sizing: border-box, max-width: 100vw to prevent overflow
-        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100vw !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;">&times;</button>`;
+        // FIXED TUTORIAL NAV: Toggle icon appended to BODY, CSS ensures correct state
+        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; margin: 0; padding: 0; width: 100%; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe></div>`;
         $modalContent.html(playerHtml);
-        $modalContent.find('.tutorial-custom-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
+        
+        // Ensure toggle is only present in DOM
+        $('.tutorial-fs-toggle').remove(); 
+        $('body').append('<button class="tutorial-fs-toggle" title="Toggle Controls" style="display:none;">&#9881;</button>');
+
         $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); });
         const $card = currentCardList[currentCardIndex].closest('.card-item');
         updateSocialMeta($card.find('h3').text(), $card.find('p').text(), $card.find('img').attr('src'));
-        
-        // Ensure Toggle is IN DOM but Hidden initially
-        $('.tutorial-fs-toggle').hide().appendTo('body'); 
         return;
     }
 
@@ -126,23 +124,23 @@ function loadModalContent(index) {
     let infoHtml = '';
     // FIXED PERSISTENCE: Inline styles control initial visibility based on global flag
     if (title || desc) { 
-        const initialClass = isModalInfoVisible ? 'visible' : '';
-        infoHtml = `<div class="modal-photo-info raised-layer ${initialClass}"><h3>${title}</h3><p>${desc}</p></div>`;
+        // We force inline style: "display: block" if true. 
+        const visibleStyle = isModalInfoVisible ? 'display:block !important; opacity:1 !important;' : 'display:none; opacity:0;';
+        infoHtml = `<div class="modal-photo-info raised-layer" style="${visibleStyle}"><h3>${title}</h3><p>${desc}</p></div>`;
     }
     // Sync Button immediately
     if(isModalInfoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
     if (!title && !desc) $modalInfoBtn.hide();
 
     switch (loadType) {
-        case 'markdown': $.ajax({ url: loadUrl, type: 'GET', dataType: 'text', success: function(markdownText) { const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText; $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); }, error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); } }); break;
+        case 'markdown': $.ajax({ url: loadUrl, type: 'GET', dataType: 'text', success: function(markdownText) { const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText; $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`); if (infoHtml) { $modalContent.append(infoHtml); } }, error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); } }); break;
         case 'chess': loadChessGame(loadUrl, $modal, $modalContent); break;
-        case 'html': $.ajax({ url: loadUrl, type: 'GET', success: function(data) { $modalContent.html(data); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); }, error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); } }); break;
+        case 'html': $.ajax({ url: loadUrl, type: 'GET', success: function(data) { $modalContent.html(data); if (infoHtml) { $modalContent.append(infoHtml); } }, error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); } }); break;
         case 'image':
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`); if (infoHtml) { $modalContent.append(infoHtml); }
-            applyInfoState(); // FORCE STATE APPLY
             $modalContent.find('.image-wrapper').on('dblclick', function() { if (document.fullscreenElement) { document.exitFullscreen(); } else { const el = this; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } });
             break;
-        case 'iframe': let iframeSrc = loadUrl; if (loadUrl.startsWith('http') && !loadUrl.includes('youtube.com') && !loadUrl.includes('youtu.be')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; } $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); break;
+        case 'iframe': let iframeSrc = loadUrl; if (loadUrl.startsWith('http') && !loadUrl.includes('youtube.com') && !loadUrl.includes('youtu.be')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; } $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`); if (infoHtml) { $modalContent.append(infoHtml); } break;
         case 'blocked': $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>'); break;
         default: $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>'); break;
     }
