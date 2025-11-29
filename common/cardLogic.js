@@ -2,7 +2,21 @@
 var currentCardList = []; var currentCardIndex = 0; var isModalInfoVisible = false; var isTutorialMode = false; var slideshowInterval = null; 
 window.cardGlobalState = { infoVisible: false };
 
-function injectModalStyles() { if ($('#dynamic-modal-styles').length) return; $('head').append(`<style id="dynamic-modal-styles"></style>`); }
+function injectModalStyles() { 
+    if ($('#dynamic-modal-styles').length) return; 
+    // Add Tabulator & ChartJS CSS dependencies
+    $('head').append(`
+        <style id="dynamic-modal-styles"></style>
+        <link href="https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css" rel="stylesheet">
+        <style>
+            .tabulator { font-size: 14px; border: none; background-color: #fff; }
+            .tabulator-header { background-color: #f8f9fa; color: #333; font-weight: bold; }
+            .tabulator-row.tabulator-row-even { background-color: #fcfcfc; }
+            .tabulator-row:hover { background-color: #e9ecef; }
+            .chart-container { position: relative; height: 60vh; width: 100%; padding: 20px; box-sizing: border-box; }
+        </style>
+    `); 
+}
 
 /* === HELPER FUNCTIONS (GLOBAL) === */
 function decodeText(text) { if (!text) return ""; try { var $textarea = $('<textarea></textarea>'); $textarea.html(text); return $textarea.val(); } catch (e) { return text; } }
@@ -15,6 +29,19 @@ function checkDeepLink() {
     if (postId) {
         openCardByTitle(postId);
     }
+}
+
+// === DYNAMIC LIBRARY LOADER ===
+function loadLibrary(url, type, checkObj) {
+    return new Promise((resolve, reject) => {
+        if (window[checkObj]) { resolve(); return; }
+        if (type === 'js') {
+            $.getScript(url).done(resolve).fail(reject);
+        } else if (type === 'css') {
+            $('<link>').appendTo('head').attr({type: 'text/css', rel: 'stylesheet', href: url});
+            resolve();
+        }
+    });
 }
 
 // === SEO & META TAG INJECTION ===
@@ -83,37 +110,112 @@ function showKeyboardShortcuts() {
     $modalContent.append(helpHtml); $modalContent.find('.help-overlay').fadeIn(200);
 }
 
-/* === TABLE BUILDER (GLOBAL) === */
+/* === ADVANCED TABLE BUILDER (TABULATOR) === */
 window.buildTableModal = function(jsonUrl) {
     const $modalContent = $('#modal-content-area');
     $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
 
-    $.getJSON(jsonUrl, function(data) {
-        if (!data || !data.columns || !data.rows) { $modalContent.html('<div class="error-message">Invalid table data format.</div>'); return; }
-        let tableHtml = `<div class="markdown-wrapper" style="padding: 30px; background: #fff; overflow: auto;"><h2 style="margin-top:0; color:#333;">${data.title || 'Data Table'}</h2><p style="color:#666; margin-bottom:20px;">${data.description || ''}</p><table class="financial-table"><thead><tr>`;
-        data.columns.forEach(col => { tableHtml += `<th>${col}</th>`; });
-        tableHtml += '</tr></thead><tbody>';
-        data.rows.forEach(row => {
-            tableHtml += '<tr>';
-            row.forEach(cell => {
-                let cellContent = cell;
-                if (typeof cell === 'string' && cell.startsWith('link:')) {
-                    const parts = cell.split(':');
-                    const type = parts[1]; 
-                    const id = parts[2];   
-                    const label = parts[3] || 'Open';
-                    cellContent = `<button class="table-action-btn" onclick="window.openFromTable('${type}', '${id}')" style="padding:6px 12px; background:var(--text-accent); color:black; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">${label}</button>`;
-                }
-                tableHtml += `<td>${cellContent}</td>`;
-            });
-            tableHtml += '</tr>';
-        });
-        tableHtml += '</tbody></table></div>';
-        $modalContent.html(tableHtml);
-    }).fail(function() { $modalContent.html('<div class="error-message">Error loading table data.</div>'); });
+    loadLibrary('https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js', 'js', 'Tabulator')
+        .then(() => {
+            $.getJSON(jsonUrl, function(data) {
+                if (!data || !data.data) { $modalContent.html('<div class="error-message">Invalid table data format. Expected "data" array.</div>'); return; }
+                
+                const tableId = 'tabulator-table-' + Date.now();
+                const tableHtml = `
+                    <div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;">
+                        <h2 style="margin-top:0; color:#333;">${data.title || 'Data Table'}</h2>
+                        <p style="color:#666; margin-bottom:15px;">${data.description || ''}</p>
+                        <div id="${tableId}" style="flex:1;"></div>
+                    </div>`;
+                $modalContent.html(tableHtml);
+
+                // Initialize Tabulator
+                new Tabulator("#" + tableId, {
+                    data: data.data,
+                    layout: "fitColumns",
+                    responsiveLayout: "collapse",
+                    pagination: "local",
+                    paginationSize: 15,
+                    movableColumns: true,
+                    columns: data.columns.map(col => {
+                        // Custom formatter for deep link buttons
+                        if (col.formatter === "linkButton") {
+                            col.formatter = function(cell, formatterParams, onRendered){
+                                const val = cell.getValue();
+                                if(!val) return "";
+                                const parts = val.split(':'); // link:type:id:label
+                                if(parts[0] !== 'link') return val;
+                                return `<button class="table-action-btn" style="padding:4px 10px; background:var(--text-accent); border:none; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="window.openFromTable('${parts[1]}', '${parts[2]}')">${parts[3] || 'Open'}</button>`;
+                            };
+                        }
+                        return col;
+                    }),
+                });
+            }).fail(() => $modalContent.html('<div class="error-message">Error loading JSON data.</div>'));
+        })
+        .catch(() => $modalContent.html('<div class="error-message">Failed to load Tabulator library.</div>'));
 };
 
-// Global helper for table buttons - THIS WAS MISSING 'window' SCOPE PREVIOUSLY
+/* === ADVANCED CHART BUILDER (CHART.JS) === */
+window.buildChartModal = function(jsonUrl) {
+    const $modalContent = $('#modal-content-area');
+    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
+
+    loadLibrary('https://cdn.jsdelivr.net/npm/chart.js', 'js', 'Chart')
+        .then(() => {
+            $.getJSON(jsonUrl, function(data) {
+                const chartId = 'chart-canvas-' + Date.now();
+                $modalContent.html(`
+                    <div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;">
+                        <h2 style="margin-top:0;">${data.title || 'Financial Chart'}</h2>
+                        <div class="chart-container" style="flex:1; position:relative;">
+                            <canvas id="${chartId}"></canvas>
+                        </div>
+                    </div>
+                `);
+
+                const ctx = document.getElementById(chartId).getContext('2d');
+                
+                // Basic Financial Chart Configuration
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: data.datasets.map(ds => {
+                            // Auto-style common technical indicators
+                            if (ds.label.includes('Bollinger')) {
+                                ds.borderColor = 'rgba(100, 100, 100, 0.3)';
+                                ds.backgroundColor = 'rgba(100, 100, 100, 0.05)';
+                                ds.fill = ds.label.includes('Lower') ? '-1' : false; // Fill between bands
+                                ds.pointRadius = 0;
+                                ds.borderWidth = 1;
+                            } else if (ds.label.includes('SMA') || ds.label.includes('EMA')) {
+                                ds.borderWidth = 2;
+                                ds.pointRadius = 0;
+                            } else if (ds.type === 'bar') {
+                                // Volume bars
+                                ds.yAxisID = 'y-volume';
+                                ds.backgroundColor = 'rgba(52, 152, 219, 0.5)';
+                            }
+                            return ds;
+                        })
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            y: { type: 'linear', display: true, position: 'right', title: { display:true, text:'Price' } },
+                            'y-volume': { type: 'linear', display: false, position: 'left', min: 0, max: Math.max(...data.datasets.find(d=>d.type==='bar')?.data || [100]) * 4 } // Push volume down
+                        }
+                    }
+                });
+            }).fail(() => $modalContent.html('<div class="error-message">Error loading chart data.</div>'));
+        })
+        .catch(() => $modalContent.html('<div class="error-message">Failed to load Chart.js.</div>'));
+};
+
+// Global helper for table buttons
 window.openFromTable = function(type, id) {
     const $modal = $('#content-modal');
     const $modalContent = $('#modal-content-area');
@@ -141,8 +243,6 @@ var currentTableJsonUrl = "";
 window.loadChessGame = function(loadUrl, $modal, $modalContent) { 
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) { loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/'); } 
     $modal.addClass('chess-mode'); $('body').addClass('chess-mode-active'); $modal.find('.modal-header').hide(); 
-    
-    // Use the dynamic loader
     if (typeof window.startChessGame === 'function') {
         window.startChessGame(loadUrl, $modal, $modalContent);
     } else {
@@ -179,7 +279,7 @@ function loadModalContent(index) {
         if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) loadType = 'image'; 
         else if (/\.md$/i.test(loadUrl)) loadType = 'markdown'; 
         else if (/\.pgn$/i.test(loadUrl)) loadType = 'chess';
-        else if (/\.json$/i.test(loadUrl) && !manifestUrl) loadType = 'table'; 
+        else if (/\.json$/i.test(loadUrl) && !manifestUrl) loadType = 'table'; // Simple JSON is table by default if no manifest
         else if (loadUrl.endsWith('.html')) loadType = 'html'; 
         else if (loadUrl.startsWith('http')) { if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) loadType = 'blocked'; else loadType = 'iframe'; } else loadType = 'newtab'; 
     }
@@ -189,12 +289,15 @@ function loadModalContent(index) {
 
     if (loadType === 'research' && jsonUrl) { $modal.addClass('research-mode'); $modalFsBtn.hide(); $modalInfoBtn.hide(); window.buildResearchModal(jsonUrl); return; } 
     
-    // === TABLE LOGIC ===
     if (loadType === 'table') {
-        $modalFsBtn.hide(); 
-        $modalInfoBtn.hide();
-        currentTableJsonUrl = loadUrl;
+        $modalFsBtn.hide(); $modalInfoBtn.hide(); currentTableJsonUrl = loadUrl; 
         window.buildTableModal(loadUrl);
+        return;
+    }
+
+    if (loadType === 'chart') {
+        $modalFsBtn.hide(); $modalInfoBtn.hide();
+        window.buildChartModal(jsonUrl || loadUrl);
         return;
     }
 
