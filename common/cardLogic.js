@@ -10,47 +10,48 @@ function injectModalStyles() {
 
     const styles = `
     <style id="dynamic-modal-styles">
-        /* ZOOM ANIMATIONS - SLOWER & MORE NOTICEABLE */
+        /* ZOOM ANIMATIONS - DRAMATIC & NOTICEABLE */
         @keyframes modalZoomIn {
-            0% { opacity: 0; transform: scale(0.6); } /* Starts smaller for dramatic effect */
-            60% { opacity: 1; transform: scale(1.05); } /* Slight overshoot */
-            100% { opacity: 1; transform: scale(1); } /* Settle */
+            0% { opacity: 0; transform: scale(0.5); } /* Starts at 50% size */
+            70% { opacity: 1; transform: scale(1.02); } /* Small bounce */
+            100% { opacity: 1; transform: scale(1); }
         }
         @keyframes modalZoomOut {
             0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.6); }
+            100% { opacity: 0; transform: scale(0.5); }
         }
         
+        /* Apply animation to the content wrapper */
         .modal-animate-enter {
-            animation: modalZoomIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+            animation: modalZoomIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
             display: flex !important;
         }
         
         .modal-animate-leave {
-            animation: modalZoomOut 0.4s ease-in forwards !important;
+            animation: modalZoomOut 0.5s ease-in forwards !important;
         }
 
-        /* RAISED INFO BOX STYLES - LAYOUT FIXED */
+        /* RAISED INFO BOX STYLES */
         .modal-photo-info.raised-layer {
             position: absolute;
             bottom: 30px;
-            /* CENTER FIX: Use margins instead of transform to avoid animation conflicts */
-            left: 0; 
+            /* CENTERING FIX: Left/Right 0 + Margin Auto */
+            left: 0;
             right: 0;
-            margin: 0 auto; 
+            margin: 0 auto;
+            
             width: 85%;
             max-width: 800px;
-            
             padding: 20px 25px;
             background: rgba(0, 0, 0, 0.5); /* 50% Opacity Black */
             backdrop-filter: blur(8px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             border-radius: 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff;
             z-index: 50;
             
-            /* Logic handles display, but we ensure transitions work */
+            /* Transitions managed by JS, but standard CSS transition for hover effects if added */
             transition: opacity 0.3s ease;
         }
         
@@ -125,13 +126,13 @@ function animateModalOpen() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
     
-    // Reset classes and ensure standard display
+    // Reset classes
     $content.removeClass('modal-animate-leave');
     
-    // Show wrapper (fade in bg)
+    // Fade in the background overlay
     $modal.fadeIn(300);
     
-    // Animate content (Zoom In)
+    // Trigger CSS Zoom Animation on content
     $content.addClass('modal-animate-enter');
 }
 
@@ -139,16 +140,16 @@ function animateModalClose() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
     
-    // Remove enter class, add leave class (Zoom Out)
+    // Swap animation classes for Zoom Out
     $content.removeClass('modal-animate-enter').addClass('modal-animate-leave');
     
-    // Wait for animation to finish before hiding wrapper (matched to CSS duration 0.4s)
+    // Wait for CSS animation (0.5s) to mostly finish before hiding container
     setTimeout(function() {
         $modal.fadeOut(300, function() {
-            $content.removeClass('modal-animate-leave'); // Cleanup
+            $content.removeClass('modal-animate-leave'); 
             $('#modal-content-area').html(''); 
         });
-    }, 380); // Slightly less than 0.4s to prevent flash
+    }, 450); 
 }
 
 /* === MODAL LOGIC (Global Scope) === */
@@ -173,10 +174,8 @@ function handleModalKeys(e) {
 function buildTutorialSummary(manifestUrl, $modalContent) {
     $modalContent.addClass('summary-view-active');
     
-    // Check if summary content is already loaded/cached
     let $summaryOverlay = $modalContent.find('.tutorial-summary-overlay');
     if ($summaryOverlay.length) {
-        // Toggle based on current state
         if ($summaryOverlay.is(':visible')) {
             $summaryOverlay.fadeOut(200);
             $('.modal-info-btn').removeClass('active');
@@ -221,7 +220,6 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                 return;
             }
 
-            // 2. Build Summary HTML
             let summaryHtml = '<div class="summary-box"><h2>Tutorial Summary</h2><ol class="summary-list">';
             
             $.each(data.steps, function(index, step) {
@@ -290,7 +288,6 @@ function loadModalContent(index) {
     $modal.find('.modal-header').removeAttr('style'); 
 
     // === CRITICAL FIX: Clean Slate Logic ===
-    // Remove chess-mode and research-mode immediately to prevent sticky headers
     $modal.removeClass('chess-mode research-mode'); 
     $('body').removeClass('chess-mode-active');
     
@@ -387,8 +384,8 @@ function loadModalContent(index) {
         $modalInfoBtn.toggleClass('active', isModalInfoVisible);
         
         // Explicitly set inline styles based on global state
-        // Use !important to override any specific CSS sheet rules if conflicting
-        const displayStyle = isModalInfoVisible ? 'block !important' : 'none !important';
+        // CRITICAL FIX: Do NOT use !important here, it prevents jQuery from toggling display later
+        const displayStyle = isModalInfoVisible ? 'block' : 'none';
         const opacityStyle = isModalInfoVisible ? '1' : '0';
         
         // Added class 'raised-layer' for the new styling
