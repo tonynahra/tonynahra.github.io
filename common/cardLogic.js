@@ -13,19 +13,18 @@ function injectModalStyles() {
     <style id="dynamic-modal-styles">
         /* POPUP TRANSITION (Spring/Pop Effect) */
         @keyframes modalPopUp {
-            0% { opacity: 0; transform: scale(0.6) translateY(20px); }
-            50% { opacity: 1; transform: scale(1.05) translateY(-5px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+            0% { opacity: 0; transform: scale(0.7); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
         }
         @keyframes modalPopDown {
             0% { opacity: 1; transform: scale(1); }
             100% { opacity: 0; transform: scale(0.8); }
         }
         
-        /* Force display flex to ensure centering during animation */
         .modal-animate-enter {
-            display: flex !important; 
-            animation: modalPopUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+            display: flex !important;
+            animation: modalPopUp 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards !important;
         }
         
         .modal-animate-leave {
@@ -50,12 +49,12 @@ function injectModalStyles() {
             color: #fff;
             z-index: 50;
             transition: opacity 0.3s ease;
-            pointer-events: none; /* Let clicks pass through to image */
+            pointer-events: none;
         }
         
         .modal-photo-info.raised-layer h3, 
         .modal-photo-info.raised-layer p { 
-            pointer-events: auto; /* Re-enable clicks on text */
+            pointer-events: auto;
         }
         
         .modal-photo-info.raised-layer h3 { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
@@ -99,7 +98,7 @@ function injectModalStyles() {
         }
         .modal-play-btn {
             white-space: nowrap;
-            min-width: 90px; /* Prevent wrapping */
+            min-width: 100px; /* Prevent wrapping */
             text-align: center;
         }
         select.slideshow-speed {
@@ -181,8 +180,8 @@ function animateModalOpen() {
     
     $content.removeClass('modal-animate-leave');
     
-    // We use show() to make it visible, but add the class for the CSS animation logic
-    $modal.show(); 
+    // Explicitly set flex to ensure centering, remove jQuery fadeIn
+    $modal.css('display', 'flex'); 
     $content.addClass('modal-animate-enter');
 }
 
@@ -192,11 +191,12 @@ function animateModalClose() {
     
     $content.removeClass('modal-animate-enter').addClass('modal-animate-leave');
     
+    // Wait for CSS animation to finish
     setTimeout(function() {
         $modal.hide();
         $content.removeClass('modal-animate-leave'); 
         $('#modal-content-area').html(''); 
-    }, 300); // Matches CSS animation duration
+    }, 300); 
 }
 
 /* === MODAL LOGIC === */
@@ -308,7 +308,6 @@ function loadModalContent(index) {
     const $modalContent = $('#modal-content-area');
     
     // UI Elements
-    const $modalOpenLink = $modal.find('.open-new-window');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
     const $modalPlayControls = $modal.find('.slideshow-controls'); 
     const $modalFsBtn = $modal.find('.modal-fullscreen-btn');
@@ -352,24 +351,18 @@ function loadModalContent(index) {
         stopSlideshow(); 
     }
 
-    // 2. Fullscreen vs New Window logic
-    // Enabled FS for Tutorial as requested
+    // 2. Fullscreen Button logic
+    // Enabled for Image, Iframe, Markdown, Tutorial. 
+    // Hidden for Blocked/Newtab/Chess(custom)
     if (loadType === 'image' || loadType === 'iframe' || loadType === 'markdown' || loadType === 'tutorial') {
         $modalFsBtn.show(); 
-        $modalOpenLink.hide(); 
-    } else if (loadType === 'blocked' || loadType === 'newtab') {
-        $modalFsBtn.hide();
-        $modalOpenLink.show();
     } else {
-        // Default (e.g. HTML, Chess)
         $modalFsBtn.hide();
-        $modalOpenLink.show(); 
     }
 
     // 1. Research Logic
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
-        $modalOpenLink.attr('href', jsonUrl).show(); 
         $modalFsBtn.hide();
         $modalInfoBtn.hide(); 
         buildResearchModal(jsonUrl); 
@@ -384,7 +377,6 @@ function loadModalContent(index) {
         $modalInfoBtn.removeClass('active'); 
 
         $modal.addClass('research-mode'); 
-        $modalOpenLink.attr('href', manifestUrl).show(); 
         
         const playerHtml = `
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
@@ -398,7 +390,6 @@ function loadModalContent(index) {
     }
 
     // 3. Standard Logic
-    $modalOpenLink.attr('href', loadUrl); 
     $modalInfoBtn.show(); 
 
     if ((loadType === 'markdown' || loadType === 'chess') && loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -413,30 +404,27 @@ function loadModalContent(index) {
 
     // === INFO HTML GENERATION ===
     if (title || desc) { 
-        // Note: We use global 'isModalInfoVisible' to set initial display/opacity
-        const displayStyle = isModalInfoVisible ? 'block' : 'none';
-        const opacityStyle = isModalInfoVisible ? '1' : '0';
-        
+        // Note: Content is generated but visibility is controlled by enforcePersistence
         infoHtml = `
-            <div class="modal-photo-info raised-layer" style="display: ${displayStyle}; opacity: ${opacityStyle};">
+            <div class="modal-photo-info raised-layer" style="display: none; opacity: 0;">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
     }
 
-    // === PERSISTENCE HELPER ===
-    // We execute this AFTER content injection to ensure the persistence matches user intent
+    // === PERSISTENCE ENFORCER FUNCTION ===
+    // This logic ensures the button and content match the global variable
     const enforcePersistence = () => {
         const $infoDiv = $modalContent.find('.modal-photo-info');
         
-        // 1. Button State (Always reflects global choice)
+        // 1. Force Button State
         if (isModalInfoVisible) {
             $modalInfoBtn.addClass('active');
         } else {
             $modalInfoBtn.removeClass('active');
         }
 
-        // 2. Content Visibility
+        // 2. Force Content State
         if ($infoDiv.length > 0) {
             $modalInfoBtn.show(); 
             if (isModalInfoVisible) {
@@ -445,7 +433,7 @@ function loadModalContent(index) {
                 $infoDiv.hide().css('opacity', 0);
             }
         } else {
-            // No info for this card, hide button but DO NOT reset global 'isModalInfoVisible'
+            // If this specific card has no info, hide the button, but DO NOT change global state
             $modalInfoBtn.hide();
         }
     };
@@ -827,7 +815,7 @@ function loadModalContent(index) {
                     // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
                     $('#chess-close-btn').off('click').on('click', function(e) {
                         e.preventDefault();
-                        // Call the MAIN close handler to ensure global cleanup (overflow hidden removal etc)
+                        // Call the MAIN close handler to ensure global cleanup
                         $('.modal-close-btn').first().click();
                     });
 
@@ -884,6 +872,11 @@ function loadModalContent(index) {
                             updateChessStyles();
                             const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                             updateCommentContent(-1, total);
+
+                            // Trigger resize after a delay to ensure proper rendering
+                            setTimeout(function() {
+                                window.dispatchEvent(new Event('resize'));
+                            }, 500);
 
                             // Observer
                             const checkInterval = setInterval(() => {
@@ -1197,7 +1190,7 @@ $(document).ready(function () {
     // Inject custom styles
     injectModalStyles();
 
-    // Inject modal (UPDATED STRUCTURE: Fullscreen moved right, Slideshow Speed added)
+    // Inject modal (UPDATED STRUCTURE: Removed Open New Window link entirely)
     $('body').append(`
         <div id="content-modal" class="modal-backdrop">
             <div class="modal-content">
@@ -1219,9 +1212,7 @@ $(document).ready(function () {
                     </div>
                     <div class="modal-nav-right">
                         <button class="modal-fullscreen-btn" title="Full Screen" style="display:none; font-size:1.1rem; margin-right:10px;">&#x26F6; Full Screen</button>
-                        <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
-                            Open in new window &nearr;
-                        </a>
+                        <a href="#" class="open-new-window" style="display:none;" target="_blank" rel="noopener noreferrer"></a>
                         <button class="modal-close-btn" title="Close (Esc)">&times; Close</button>
                     </div>
                 </div>
