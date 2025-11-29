@@ -127,6 +127,25 @@ function animateModalClose() {
     }, 300); 
 }
 
+/* === MODAL LOGIC (GLOBAL) === */
+
+function handleModalKeys(e) {
+    if (!$('#content-modal').is(':visible')) {
+        $(document).off('keydown.modalNav');
+        return;
+    }
+    if ($(e.target).is('input, textarea, select')) return;
+
+    switch (e.key) {
+        case "Escape": $('.modal-close-btn').first().click(); break;
+        case "ArrowLeft": $('.modal-prev-btn').first().click(); break;
+        case "ArrowRight": $('.modal-next-btn').first().click(); break;
+        case " ": e.preventDefault(); $('.modal-next-btn').first().click(); break;
+        case "i": e.preventDefault(); $('.modal-info-btn').first().click(); break;
+        case "f": e.preventDefault(); $('.modal-fullscreen-btn').first().click(); break;
+    }
+}
+
 /* === CENTRAL INFO PERSISTENCE LOGIC (GLOBAL) === */
 function applyInfoState() {
     const $modalContent = $('#modal-content-area');
@@ -227,6 +246,7 @@ function loadModalContent(index) {
         $modal.addClass('research-mode'); 
         $('.tutorial-fs-toggle').show().css('display', 'flex'); 
         
+        // Inject with default visible nav bar (bottom: 0)
         const playerHtml = `
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
                 <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" 
@@ -273,7 +293,6 @@ function loadModalContent(index) {
 
     let infoHtml = '';
     if (title || desc) { 
-        // Initial rendering uses CSS class to toggle
         const initialClass = isModalInfoVisible ? 'visible' : '';
         infoHtml = `
             <div class="modal-photo-info raised-layer ${initialClass}">
@@ -316,7 +335,6 @@ function loadModalContent(index) {
             if (infoHtml) { $modalContent.append(infoHtml); }
             applyInfoState(); 
             
-            // Double Click Toggle Fullscreen
             $modalContent.find('.image-wrapper').on('dblclick', function() { 
                 if (document.fullscreenElement) {
                     document.exitFullscreen();
@@ -533,6 +551,74 @@ function openCardByTitle(titleToFind) {
     } else {
         console.warn('Deep link card not found for title/id:', decodedTitle);
     }
+}
+
+function buildTutorialSummary(manifestUrl, $modalContent) {
+    $modalContent.addClass('summary-view-active');
+    let $summaryOverlay = $modalContent.find('.tutorial-summary-overlay');
+    if ($summaryOverlay.length) {
+        if ($summaryOverlay.is(':visible')) {
+            $summaryOverlay.fadeOut(200); $('.modal-info-btn').removeClass('active');
+        } else {
+            $summaryOverlay.fadeIn(200); $('.modal-info-btn').addClass('active');
+        }
+        return;
+    }
+    const overlayId = 'tutorial-summary-overlay-container';
+    $modalContent.append(`<div class="tutorial-summary-overlay" id="${overlayId}" style="pointer-events: auto;"><div class="content-loader"><div class="spinner"></div></div></div>`);
+    $summaryOverlay = $modalContent.find(`#${overlayId}`);
+    const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(manifestUrl)}`;
+    $.ajax({
+        url: proxyUrl, dataType: 'text', 
+        success: function (xmlText) {
+            let data = {};
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+                const steps = [];
+                $(xmlDoc).find('step').each(function() {
+                    steps.push({ title: $(this).find('title').text() || $(this).attr('id') });
+                });
+                data.steps = steps;
+            } catch (e) {
+                $summaryOverlay.html('<div class="error-message">Error parsing tutorial manifest data.</div>').fadeIn(200);
+                return;
+            }
+            if (!data.steps || data.steps.length === 0) {
+                $summaryOverlay.html('<div class="error-message">Tutorial manifest found but contained no steps.</div>').fadeIn(200);
+                return;
+            }
+            let summaryHtml = '<div class="summary-box"><h2>Tutorial Summary</h2><ol class="summary-list">';
+            $.each(data.steps, function(index, step) {
+                const displayIndex = index + 1;
+                const stepTitle = decodeText(step.title || `Step ${displayIndex}`);
+                summaryHtml += `<li class="summary-item clickable" data-step-index="${index}" style="cursor: pointer;"><span class="step-number">${displayIndex}.</span><span class="step-title">${stepTitle}</span></li>`;
+            });
+            summaryHtml += '</ol></div>';
+            $summaryOverlay.html(summaryHtml).fadeIn(200);
+            $('.modal-info-btn').addClass('active');
+            const overlayElement = document.getElementById(overlayId);
+            if (overlayElement) {
+                overlayElement.removeEventListener('click', null, false); 
+                overlayElement.addEventListener('click', function(e) {
+                    const target = e.target.closest('.summary-item.clickable');
+                    if (target) {
+                        e.stopPropagation(); 
+                        const stepIndex = target.getAttribute('data-step-index');
+                        const $iframe = $modalContent.find('.iframe-wrapper .loaded-iframe');
+                        if ($iframe.length) {
+                            $iframe[0].contentWindow.postMessage({ command: 'goToStep', index: parseInt(stepIndex) }, '*');
+                            $summaryOverlay.fadeOut(200);
+                            $('.modal-info-btn').removeClass('active');
+                        }
+                    }
+                }, false);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            $summaryOverlay.html('<div class="error-message">Error fetching tutorial manifest via proxy.</div>').fadeIn(200);
+        }
+    });
 }
 
 function buildResearchModal(jsonUrl) {
