@@ -1,5 +1,7 @@
 /* === GLOBAL VARIABLES === */
-var currentCardList = []; var currentCardIndex = 0; var isModalInfoVisible = false; var isTutorialMode = false; var slideshowInterval = null; 
+var currentCardList = []; var currentCardIndex = 0; var isTutorialMode = false; var slideshowInterval = null; 
+// USE WINDOW OBJECT FOR RELIABLE PERSISTENCE
+window.cardGlobalState = { infoVisible: false };
 
 function injectModalStyles() { if ($('#dynamic-modal-styles').length) return; $('head').append(`<style id="dynamic-modal-styles"></style>`); }
 
@@ -38,19 +40,24 @@ function animateModalClose() {
     setTimeout(function() { $modal.hide(); $modal.removeClass('fading-out'); $content.removeClass('modal-animate-leave'); $('#modal-content-area').html(''); }, 300); 
 }
 
-/* === PERSISTENCE LOGIC (FIXED) === */
+/* === PERSISTENCE LOGIC (GLOBAL) === */
 function applyInfoState() {
-    console.log('[DEBUG] applying Info State via JS. Visible:', isModalInfoVisible);
+    console.log('[DEBUG] applyInfoState called. State:', window.cardGlobalState.infoVisible);
     const $infoBtn = $('.modal-info-btn'); 
     const $infoDiv = $('.modal-photo-info');
     
-    if (isModalInfoVisible) { 
-        $infoBtn.addClass('active'); 
-        // Force via direct CSS to overwrite any inline styles or missing classes
-        $infoDiv.css({ display: 'block', opacity: 1, 'pointer-events': 'auto' });
-    } else { 
-        $infoBtn.removeClass('active'); 
-        $infoDiv.css({ display: 'none', opacity: 0, 'pointer-events': 'none' });
+    // Button State
+    if (window.cardGlobalState.infoVisible) $infoBtn.addClass('active'); else $infoBtn.removeClass('active');
+    
+    // Div State - Force with CSS to override animations/inline styles
+    if ($infoDiv.length) {
+        if (window.cardGlobalState.infoVisible) {
+            $infoDiv.css({ display: 'block', opacity: 1, pointerEvents: 'auto' });
+            $infoDiv.addClass('visible');
+        } else {
+            $infoDiv.css({ display: 'none', opacity: 0, pointerEvents: 'none' });
+            $infoDiv.removeClass('visible');
+        }
     }
 }
 
@@ -58,23 +65,16 @@ function applyInfoState() {
 function handleModalKeys(e) {
     if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; } if ($(e.target).is('input, textarea, select')) return;
     switch (e.key) { 
-        case "Escape": $('.modal-close-btn').first().click(); break; 
-        case "ArrowLeft": $('.modal-prev-btn').first().click(); break; 
-        case "ArrowRight": $('.modal-next-btn').first().click(); break; 
-        case " ": e.preventDefault(); $('.modal-next-btn').first().click(); break; 
-        case "i": e.preventDefault(); $('.modal-info-btn').first().click(); break; 
-        case "f": e.preventDefault(); $('.modal-fullscreen-btn').first().click(); break; 
-        case "ArrowUp": // Show Tutorial Nav
-            if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.add('nav-visible'); } catch(e){} } break;
-        case "ArrowDown": // Hide Tutorial Nav
-            if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.remove('nav-visible'); } catch(e){} } break;
+        case "Escape": $('.modal-close-btn').first().click(); break; case "ArrowLeft": $('.modal-prev-btn').first().click(); break; case "ArrowRight": $('.modal-next-btn').first().click(); break; 
+        case " ": e.preventDefault(); $('.modal-next-btn').first().click(); break; case "i": e.preventDefault(); $('.modal-info-btn').first().click(); break; case "f": e.preventDefault(); $('.modal-fullscreen-btn').first().click(); break; 
+        case "ArrowUp": if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.add('nav-visible'); } catch(e){} } break;
+        case "ArrowDown": if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.remove('nav-visible'); } catch(e){} } break;
     }
 }
 
 /* === HELP OVERLAY === */
 function showKeyboardShortcuts() {
-    const $modalContent = $('#modal-content-area');
-    if ($modalContent.find('.help-overlay').length) { $modalContent.find('.help-overlay').remove(); return; }
+    const $modalContent = $('#modal-content-area'); if ($modalContent.find('.help-overlay').length) { $modalContent.find('.help-overlay').remove(); return; }
     const helpHtml = `<div class="help-overlay" onclick="$(this).remove()"><div class="help-box" onclick="event.stopPropagation()"><h2>Keyboard Shortcuts</h2><ul class="help-list"><li><span class="help-desc">Next Slide</span> <span class="help-key">Right Arrow / Space</span></li><li><span class="help-desc">Previous Slide</span> <span class="help-key">Left Arrow</span></li><li><span class="help-desc">Toggle Info</span> <span class="help-key">I</span></li><li><span class="help-desc">Full Screen</span> <span class="help-key">F</span></li><li><span class="help-desc">Close Modal</span> <span class="help-key">Esc</span></li><li><span class="help-desc">Tutorial Nav Show</span> <span class="help-key">Up Arrow</span></li><li><span class="help-desc">Tutorial Nav Hide</span> <span class="help-key">Down Arrow</span></li></ul><button onclick="$(this).closest('.help-overlay').remove()" style="margin-top:20px; width:100%; padding:10px; background:rgba(255,255,255,0.2); border:none; color:#fff; cursor:pointer;">Close</button></div></div>`;
     $modalContent.append(helpHtml); $modalContent.find('.help-overlay').fadeIn(200);
 }
@@ -91,9 +91,6 @@ function loadModalContent(index) {
     isTutorialMode = false; $modalInfoBtn.removeData('manifest-url'); $modalContent.removeClass('summary-view-active'); $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
     $('body').off('click.tutorialNav'); $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
-    // Ensure toggle is removed from DOM when navigating
-    $('.tutorial-fs-toggle').remove();
-    
     let loadUrl = $link.attr('href'); let loadType = $link.data('load-type'); const jsonUrl = $link.data('json-url'); const manifestUrl = $link.data('manifest-url');
     
     if (!loadType) {
@@ -107,18 +104,16 @@ function loadModalContent(index) {
     
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); $modal.addClass('research-mode'); 
-        
-        // FIXED TUTORIAL NAV: Injected styles ensure body/nav fits perfectly.
-        // Toggle icon is appended to BODY later to float over fullscreen.
-        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe></div>`;
+        // FIXED TUTORIAL NAV: Button inside wrapper, CSS ensures width fits
+        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; margin: 0; padding: 0; width: 100%; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe><button class="tutorial-fs-toggle" title="Toggle Controls">&#9881;</button></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;">&times;</button>`;
         $modalContent.html(playerHtml);
         $modalContent.find('.tutorial-custom-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
         $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); });
         const $card = currentCardList[currentCardIndex].closest('.card-item');
         updateSocialMeta($card.find('h3').text(), $card.find('p').text(), $card.find('img').attr('src'));
         
-        // Append Toggle Icon to BODY (initially hidden)
-        $('body').append('<button class="tutorial-fs-toggle" title="Toggle Controls" style="display:none;">&#9881;</button>');
+        // Ensure toggle is hidden initially
+        $('.tutorial-fs-toggle').hide();
         return;
     }
 
@@ -129,26 +124,25 @@ function loadModalContent(index) {
     updateSocialMeta(title, desc, thumbUrl);
 
     let infoHtml = '';
-    // FIXED PERSISTENCE: Hardcode inline styles based on Global Flag
+    // FIXED PERSISTENCE: Force styles inline
     if (title || desc) { 
-        const visibleStyle = isModalInfoVisible ? 'display:block; opacity:1; pointer-events:auto;' : 'display:none; opacity:0; pointer-events:none;';
+        const visibleStyle = window.cardGlobalState.infoVisible ? 'display:block !important; opacity:1 !important; pointer-events:auto;' : 'display:none; opacity:0; pointer-events:none;';
         infoHtml = `<div class="modal-photo-info raised-layer" style="${visibleStyle}"><h3>${title}</h3><p>${desc}</p></div>`;
     }
     
-    // Sync Button Class Immediately
-    if(isModalInfoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
-    if (!title && !desc) $modalInfoBtn.hide();
+    if (!title && !desc) $modalInfoBtn.hide(); else $modalInfoBtn.show();
+    // Force Button Class
+    if(window.cardGlobalState.infoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
 
     switch (loadType) {
-        case 'markdown': $.ajax({ url: loadUrl, type: 'GET', dataType: 'text', success: function(markdownText) { const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText; $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); }, error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); } }); break;
+        case 'markdown': $.ajax({ url: loadUrl, type: 'GET', dataType: 'text', success: function(markdownText) { const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText; $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`); if (infoHtml) { $modalContent.append(infoHtml); } }, error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); } }); break;
         case 'chess': loadChessGame(loadUrl, $modal, $modalContent); break;
-        case 'html': $.ajax({ url: loadUrl, type: 'GET', success: function(data) { $modalContent.html(data); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); }, error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); } }); break;
+        case 'html': $.ajax({ url: loadUrl, type: 'GET', success: function(data) { $modalContent.html(data); if (infoHtml) { $modalContent.append(infoHtml); } }, error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); } }); break;
         case 'image':
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`); if (infoHtml) { $modalContent.append(infoHtml); }
-            applyInfoState(); // Re-apply to be safe
             $modalContent.find('.image-wrapper').on('dblclick', function() { if (document.fullscreenElement) { document.exitFullscreen(); } else { const el = this; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } });
             break;
-        case 'iframe': let iframeSrc = loadUrl; if (loadUrl.startsWith('http') && !loadUrl.includes('youtube.com') && !loadUrl.includes('youtu.be')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; } $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); break;
+        case 'iframe': let iframeSrc = loadUrl; if (loadUrl.startsWith('http') && !loadUrl.includes('youtube.com') && !loadUrl.includes('youtu.be')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; } $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`); if (infoHtml) { $modalContent.append(infoHtml); } break;
         case 'blocked': $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>'); break;
         default: $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>'); break;
     }
@@ -211,12 +205,15 @@ $(document).ready(function () {
     $('body').on('click', '.modal-prev-btn', function() { stopSlideshow(); if (currentCardIndex > 0) loadModalContent(currentCardIndex - 1); });
     $('body').on('click', '.modal-next-btn', function() { if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1); else stopSlideshow(); });
     
-    // INFO BUTTON (FIXED PERSISTENCE WITH DEBUG)
+    // INFO BUTTON (FIXED PERSISTENCE & TOGGLING)
     $('body').on('click', '.modal-info-btn', function() { 
         console.log('[DEBUG] Info Button Clicked');
         const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); 
         if (manifestUrl) { buildTutorialSummary(manifestUrl, $('#modal-content-area')); } 
-        else { isModalInfoVisible = !isModalInfoVisible; applyInfoState(); } 
+        else { 
+            window.cardGlobalState.infoVisible = !window.cardGlobalState.infoVisible; 
+            applyInfoState(); 
+        } 
     });
 
     $('body').on('input', '#youtube-search-box', filterYouTubeCards); $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
