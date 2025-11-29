@@ -221,7 +221,7 @@ function loadModalContent(index) {
     const $modalInfoBtn = $modal.find('.modal-info-btn');
 
     $modal.find('.modal-header').show(); // <<< FIX: Ensure header is visible by default
-
+    
     // Reset general state and info button data
     isTutorialMode = false;
     // CRITICAL: isModalInfoVisible state must NOT be reset here for Photo/Iframe cards, 
@@ -259,7 +259,7 @@ function loadModalContent(index) {
         $modalInfoBtn.show(); // Show Info button for tutorials
         $modalInfoBtn.data('manifest-url', manifestUrl); // Store manifest URL
 
-        $modal.find('.modal-header').hide(); // <<< Correctly hides header for custom UI
+        $modal.find('.modal-header').hide(); // Correctly hides header for custom UI
         
         $modal.addClass('research-mode'); // Keep research-mode class for styling consistency
         $modalOpenLink.attr('href', manifestUrl);
@@ -271,10 +271,11 @@ function loadModalContent(index) {
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
                 <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border: none; width: 100%; height: 100%;"></iframe>
             </div>
-            <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2rem;">&times;</button>
+            <button class="tutorial-custom-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2rem;">&times;</button>
         `;
         $modalContent.html(playerHtml);
-        $modalContent.find('.modal-close-btn').on('click', function() { $('.modal-close-btn').first().click();  closeModalCleanup();  });
+        // FIX: Attach listener to the unique button to trigger the main close button
+        $modalContent.find('.tutorial-custom-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
         return;
     }
 
