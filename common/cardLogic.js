@@ -18,6 +18,26 @@ function decodeText(text) {
 }
 
 /* === VIEW HELPERS (Global Scope) */
+/**
+ * Global cleanup function for closing the modal.
+ * This removes all chess-specific and modal-related classes 
+ * that interfere with main page scrolling.
+ */
+function closeModalCleanup() {
+    const modal = document.getElementById('content-modal');
+    
+    // 1. Remove the active modal classes
+    document.body.classList.remove('modal-open');
+    document.body.classList.remove('chess-mode-active');
+    modal.classList.remove('chess-mode'); 
+    
+    // 2. Hide the modal container
+    modal.style.display = 'none';
+    
+    // 3. Clear any dynamically loaded content
+    const contentArea = document.getElementById('modal-content-area');
+    contentArea.innerHTML = '';
+}
 
 function handleCardView($scope, initialLoadOverride, incrementOverride) {
     $scope.find('.card-list').each(function() {
@@ -1426,6 +1446,7 @@ $(document).ready(function () {
 
     // Generalized Close Button Logic
     $('body').on('click', '.modal-close-btn', function() {
+        closeModalCleanup();
         const $modal = $('#content-modal');
         $('body').removeClass('modal-open');
         $modal.fadeOut(200);
