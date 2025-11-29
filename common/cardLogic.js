@@ -258,6 +258,8 @@ function loadModalContent(index) {
         isTutorialMode = true; // Set mode flag
         $modalInfoBtn.show(); // Show Info button for tutorials
         $modalInfoBtn.data('manifest-url', manifestUrl); // Store manifest URL
+
+        $modal.find('.modal-header').hide();
         
         $modal.addClass('research-mode'); // Keep research-mode class for styling consistency
         $modalOpenLink.attr('href', manifestUrl);
@@ -282,6 +284,7 @@ function loadModalContent(index) {
     $modalOpenLink.attr('href', loadUrl); 
     // FIX: Remove existing photo info element *before* creating the new one
     $modalContent.find('.modal-photo-info').remove(); 
+    
     $modalInfoBtn.hide(); 
     
     // === AUTO DETECT TYPE ===
