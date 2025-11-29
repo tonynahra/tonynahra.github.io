@@ -11,24 +11,25 @@ function injectModalStyles() {
 
     const styles = `
     <style id="dynamic-modal-styles">
-        /* POPUP TRANSITION (Spring Effect) */
+        /* POPUP TRANSITION (Spring/Pop Effect) */
         @keyframes modalPopUp {
-            0% { opacity: 0; transform: scale(0.8) translateY(10px); }
-            40% { transform: scale(1.02) translateY(-2px); }
+            0% { opacity: 0; transform: scale(0.6) translateY(20px); }
+            50% { opacity: 1; transform: scale(1.05) translateY(-5px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes modalPopDown {
             0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 0; transform: scale(0.8); }
         }
         
+        /* Force display flex to ensure centering during animation */
         .modal-animate-enter {
-            animation: modalPopUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
-            display: flex !important;
+            display: flex !important; 
+            animation: modalPopUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
         }
         
         .modal-animate-leave {
-            animation: modalPopDown 0.25s ease-in forwards !important;
+            animation: modalPopDown 0.3s ease-in forwards !important;
         }
 
         /* RAISED INFO BOX STYLES */
@@ -95,6 +96,11 @@ function injectModalStyles() {
             align-items: center;
             gap: 5px;
             margin-right: 5px;
+        }
+        .modal-play-btn {
+            white-space: nowrap;
+            min-width: 90px; /* Prevent wrapping */
+            text-align: center;
         }
         select.slideshow-speed {
             background: #333;
@@ -172,21 +178,25 @@ function showMoreCards($button, $list) {
 function animateModalOpen() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
+    
     $content.removeClass('modal-animate-leave');
-    $modal.fadeIn(200);
+    
+    // We use show() to make it visible, but add the class for the CSS animation logic
+    $modal.show(); 
     $content.addClass('modal-animate-enter');
 }
 
 function animateModalClose() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
+    
     $content.removeClass('modal-animate-enter').addClass('modal-animate-leave');
+    
     setTimeout(function() {
-        $modal.fadeOut(200, function() {
-            $content.removeClass('modal-animate-leave'); 
-            $('#modal-content-area').html(''); 
-        });
-    }, 250); 
+        $modal.hide();
+        $content.removeClass('modal-animate-leave'); 
+        $('#modal-content-area').html(''); 
+    }, 300); // Matches CSS animation duration
 }
 
 /* === MODAL LOGIC === */
@@ -300,7 +310,7 @@ function loadModalContent(index) {
     // UI Elements
     const $modalOpenLink = $modal.find('.open-new-window');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
-    const $modalPlayControls = $modal.find('.slideshow-controls'); // Wrapper for Play + Speed
+    const $modalPlayControls = $modal.find('.slideshow-controls'); 
     const $modalFsBtn = $modal.find('.modal-fullscreen-btn');
 
     // === RESET UI ===
@@ -343,7 +353,8 @@ function loadModalContent(index) {
     }
 
     // 2. Fullscreen vs New Window logic
-    if (loadType === 'image' || loadType === 'iframe' || loadType === 'markdown') {
+    // Enabled FS for Tutorial as requested
+    if (loadType === 'image' || loadType === 'iframe' || loadType === 'markdown' || loadType === 'tutorial') {
         $modalFsBtn.show(); 
         $modalOpenLink.hide(); 
     } else if (loadType === 'blocked' || loadType === 'newtab') {
@@ -373,8 +384,7 @@ function loadModalContent(index) {
         $modalInfoBtn.removeClass('active'); 
 
         $modal.addClass('research-mode'); 
-        $modalOpenLink.attr('href', manifestUrl).show();
-        $modalFsBtn.hide();
+        $modalOpenLink.attr('href', manifestUrl).show(); 
         
         const playerHtml = `
             <div class="iframe-wrapper" style="height: 100%; width: 100%;">
@@ -401,9 +411,9 @@ function loadModalContent(index) {
     const desc = $card.find('p').text() || $card.data('desc'); 
     let infoHtml = '';
 
-    // === INFO HTML GENERATION (With Persistence) ===
+    // === INFO HTML GENERATION ===
     if (title || desc) { 
-        // We set inline style based on PERSISTENT GLOBAL STATE
+        // Note: We use global 'isModalInfoVisible' to set initial display/opacity
         const displayStyle = isModalInfoVisible ? 'block' : 'none';
         const opacityStyle = isModalInfoVisible ? '1' : '0';
         
@@ -414,21 +424,28 @@ function loadModalContent(index) {
             </div>`;
     }
 
-    // === PERSISTENCE ENFORCER FUNCTION ===
-    if (isModalInfoVisible) {
-        $modalInfoBtn.addClass('active');
-    } else {
-        $modalInfoBtn.removeClass('active');
-    }
-
+    // === PERSISTENCE HELPER ===
+    // We execute this AFTER content injection to ensure the persistence matches user intent
     const enforcePersistence = () => {
         const $infoDiv = $modalContent.find('.modal-photo-info');
+        
+        // 1. Button State (Always reflects global choice)
+        if (isModalInfoVisible) {
+            $modalInfoBtn.addClass('active');
+        } else {
+            $modalInfoBtn.removeClass('active');
+        }
+
+        // 2. Content Visibility
         if ($infoDiv.length > 0) {
             $modalInfoBtn.show(); 
             if (isModalInfoVisible) {
                 $infoDiv.show().css('opacity', 1);
+            } else {
+                $infoDiv.hide().css('opacity', 0);
             }
         } else {
+            // No info for this card, hide button but DO NOT reset global 'isModalInfoVisible'
             $modalInfoBtn.hide();
         }
     };
@@ -440,7 +457,8 @@ function loadModalContent(index) {
                 success: function(markdownText) { 
                     const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
                     $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`);
-                    if (infoHtml) { $modalContent.append(infoHtml); enforcePersistence(); }
+                    if (infoHtml) { $modalContent.append(infoHtml); }
+                    enforcePersistence(); 
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
             });
@@ -809,20 +827,8 @@ function loadModalContent(index) {
                     // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
                     $('#chess-close-btn').off('click').on('click', function(e) {
                         e.preventDefault();
-                        // 1. Remove custom classes to exit chess mode
-                        $modal.removeClass('chess-mode');
-                        $('body').removeClass('chess-mode-active');
-                        
-                        // 2. Hide the custom header content
-                        $modal.find('.modal-header').show(); 
-
-                        // 3. Explicitly hide the modal popup (the core fix)
-                        if (typeof $modal.modal === 'function') {
-                            $modal.modal('hide');
-                        } else {
-                            // Fallback hide if it's a simple hidden container
-                            $modal.hide();
-                        }
+                        // Call the MAIN close handler to ensure global cleanup (overflow hidden removal etc)
+                        $('.modal-close-btn').first().click();
                     });
 
 
@@ -933,7 +939,8 @@ function loadModalContent(index) {
                 url: loadUrl, type: 'GET',
                 success: function(data) { 
                     $modalContent.html(data); 
-                    if (infoHtml) { $modalContent.append(infoHtml); enforcePersistence(); }
+                    if (infoHtml) { $modalContent.append(infoHtml); }
+                    enforcePersistence(); 
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -942,8 +949,8 @@ function loadModalContent(index) {
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
             if (infoHtml) { 
                 $modalContent.append(infoHtml);
-                enforcePersistence(); 
             }
+            enforcePersistence(); 
             break;
         case 'iframe':
             let iframeSrc = loadUrl;
@@ -953,8 +960,8 @@ function loadModalContent(index) {
             $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`);
             if (infoHtml) { 
                 $modalContent.append(infoHtml);
-                enforcePersistence();
             }
+            enforcePersistence();
             break;
         case 'blocked':
             $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
