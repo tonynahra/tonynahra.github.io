@@ -40,10 +40,8 @@ function animateModalClose() {
 
 /* === PERSISTENCE LOGIC (GLOBAL) === */
 function applyInfoState() {
-    const $infoBtn = $('.modal-info-btn'); const $infoDiv = $('.modal-photo-info');
-    if ($infoDiv.length === 0) { $infoBtn.hide(); return; }
-    $infoBtn.show();
-    if (isModalInfoVisible) { $infoBtn.addClass('active'); $infoDiv.addClass('visible'); } else { $infoBtn.removeClass('active'); $infoDiv.removeClass('visible'); }
+    const $infoBtn = $('.modal-info-btn'); 
+    if (isModalInfoVisible) { $infoBtn.addClass('active'); } else { $infoBtn.removeClass('active'); }
 }
 
 /* === MODAL KEY HANDLER (GLOBAL) === */
@@ -60,7 +58,7 @@ function loadModalContent(index) {
     currentCardIndex = index;
     const $modal = $('#content-modal'); const $modalContent = $('#modal-content-area'); const $modalInfoBtn = $modal.find('.modal-info-btn'); const $modalPlayControls = $modal.find('.slideshow-controls'); const $modalFsBtn = $modal.find('.modal-fullscreen-btn'); const $modalOpenLink = $modal.find('.open-new-window');
 
-    $modal.find('.modal-header').removeAttr('style'); $modal.removeClass('chess-mode research-mode'); $('body').removeClass('chess-mode-active'); $modalOpenLink.hide(); $('.tutorial-fs-toggle').hide(); 
+    $modal.find('.modal-header').removeAttr('style'); $modal.removeClass('chess-mode research-mode'); $('body').removeClass('chess-mode-active'); $modalOpenLink.hide(); 
     isTutorialMode = false; $modalInfoBtn.removeData('manifest-url'); $modalContent.removeClass('summary-view-active'); $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
     $('body').off('click.tutorialNav'); $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
@@ -77,8 +75,15 @@ function loadModalContent(index) {
     
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); $modal.addClass('research-mode'); 
-        // Note: Toggle icon is HIDDEN by default, shown only in Full Screen via event listener
-        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%;"><iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = '.nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;">&times;</button>`;
+        
+        // FIXED TUTORIAL NAV: Toggle icon INSIDE wrapper, CSS modified for width/position
+        const playerHtml = `
+            <div class="iframe-wrapper" style="height:100%; width:100%; position:relative;">
+                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; } .nav-bar, .controls, footer, .navbar { position: relative !important; left: auto !important; right: auto !important; width: 100% !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe>
+                <button class="tutorial-fs-toggle" title="Toggle Controls">&#9881;</button>
+            </div>
+            <button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;">&times;</button>
+        `;
         $modalContent.html(playerHtml);
         $modalContent.find('.tutorial-custom-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
         $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); });
@@ -94,21 +99,25 @@ function loadModalContent(index) {
     updateSocialMeta(title, desc, thumbUrl);
 
     let infoHtml = '';
-    // FIXED: Strict persistence logic
+    // FIXED PERSISTENCE: Inline styles control initial visibility based on global flag
     if (title || desc) { 
-        const initialClass = isModalInfoVisible ? 'visible' : '';
-        infoHtml = `<div class="modal-photo-info raised-layer ${initialClass}"><h3>${title}</h3><p>${desc}</p></div>`;
+        // We use !important in the inline style to ensure it overrides the CSS 'display:none'
+        const visibleStyle = isModalInfoVisible ? 'display:block !important; opacity:1 !important;' : 'display:none; opacity:0;';
+        infoHtml = `<div class="modal-photo-info raised-layer" style="${visibleStyle}"><h3>${title}</h3><p>${desc}</p></div>`;
     }
+    // Sync Button
+    if(isModalInfoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
+    if (!title && !desc) $modalInfoBtn.hide();
 
     switch (loadType) {
-        case 'markdown': $.ajax({ url: loadUrl, type: 'GET', dataType: 'text', success: function(markdownText) { const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText; $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); }, error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); } }); break;
+        case 'markdown': $.ajax({ url: loadUrl, type: 'GET', dataType: 'text', success: function(markdownText) { const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText; $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`); if (infoHtml) { $modalContent.append(infoHtml); } }, error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); } }); break;
         case 'chess': loadChessGame(loadUrl, $modal, $modalContent); break;
-        case 'html': $.ajax({ url: loadUrl, type: 'GET', success: function(data) { $modalContent.html(data); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); }, error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); } }); break;
+        case 'html': $.ajax({ url: loadUrl, type: 'GET', success: function(data) { $modalContent.html(data); if (infoHtml) { $modalContent.append(infoHtml); } }, error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); } }); break;
         case 'image':
-            $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); 
+            $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`); if (infoHtml) { $modalContent.append(infoHtml); }
             $modalContent.find('.image-wrapper').on('dblclick', function() { if (document.fullscreenElement) { document.exitFullscreen(); } else { const el = this; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } });
             break;
-        case 'iframe': let iframeSrc = loadUrl; if (loadUrl.startsWith('http') && !loadUrl.includes('youtube.com') && !loadUrl.includes('youtu.be')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; } $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); break;
+        case 'iframe': let iframeSrc = loadUrl; if (loadUrl.startsWith('http') && !loadUrl.includes('youtube.com') && !loadUrl.includes('youtu.be')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; } $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`); if (infoHtml) { $modalContent.append(infoHtml); } break;
         case 'blocked': $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>'); break;
         default: $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>'); break;
     }
@@ -151,7 +160,7 @@ function setupChessUI(pgnFileContent, $modalContent, $modal) {
 /* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
     injectModalStyles();
-    $('body').append(`<div id="content-modal" class="modal-backdrop"><div class="modal-content"><div class="modal-header"><div class="modal-nav-left"><button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button><button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button><button class="modal-info-btn" title="Toggle Info (I)">Info</button><div class="slideshow-controls" style="display:none; margin-right:10px;"><button class="modal-play-btn" title="Start Slideshow">&#9658; Play</button><select class="slideshow-speed" title="Slideshow Speed"><option value="3000">3s</option><option value="5000" selected>5s</option><option value="10000">10s</option><option value="20000">20s</option></select></div></div><div class="modal-nav-right"><button class="modal-fullscreen-btn" title="Full Screen" style="display:none; font-size:1.1rem; margin-right:10px;">&#x26F6; Full Screen</button><a href="#" class="open-new-window" style="display:none;" target="_blank" rel="noopener noreferrer"></a><button class="modal-close-btn" title="Close (Esc)">&times; Close</button></div></div><div id="modal-content-area"></div><button class="tutorial-fs-toggle" title="Toggle Controls">&#9881;</button></div></div>`);
+    $('body').append(`<div id="content-modal" class="modal-backdrop"><div class="modal-content"><div class="modal-header"><div class="modal-nav-left"><button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button><button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button><button class="modal-info-btn" title="Toggle Info (I)">Info</button><div class="slideshow-controls" style="display:none; margin-right:10px;"><button class="modal-play-btn" title="Start Slideshow">&#9658; Play</button><select class="slideshow-speed" title="Slideshow Speed"><option value="3000">3s</option><option value="5000" selected>5s</option><option value="10000">10s</option><option value="20000">20s</option></select></div></div><div class="modal-nav-right"><button class="modal-fullscreen-btn" title="Full Screen" style="display:none; font-size:1.1rem; margin-right:10px;">&#x26F6; Full Screen</button><a href="#" class="open-new-window" style="display:none;" target="_blank" rel="noopener noreferrer"></a><button class="modal-close-btn" title="Close (Esc)">&times; Close</button></div></div><div id="modal-content-area"></div></div></div>`);
 
     $('body').on('click', '.toggle-card-button', function() { const $button = $(this); const $list = $button.prev('.card-list'); if ($list.length) { showMoreCards($button, $list); } });
     $('body').on('click', '.card-item, .item', function(e) { const $clickedCard = $(this); const $link = $clickedCard.find('a').first(); if (!$link.length) return; const $clickedLink = $(e.target).closest('a'); if ($clickedLink.length > 0 && !$clickedLink.is($link)) return; e.preventDefault(); e.stopPropagation(); const $cardList = $clickedCard.closest('.card-list'); const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible'); currentCardList = []; $allVisibleCards.each(function() { currentCardList.push($(this).find('a').first()); }); currentCardIndex = $allVisibleCards.index($clickedCard); if (currentCardList.length > 0) { loadModalContent(currentCardIndex); animateModalOpen(); $(document).on('keydown.modalNav', handleModalKeys); } });
@@ -163,14 +172,17 @@ $(document).ready(function () {
     // FULLSCREEN & TUTORIAL NAV LOGIC
     $('body').on('click', '.modal-fullscreen-btn', function() {
         const wrapper = document.querySelector('#modal-content-area .image-wrapper') || document.querySelector('#modal-content-area .iframe-wrapper') || document.querySelector('#modal-content-area .markdown-wrapper'); const target = wrapper || document.getElementById('modal-content-area');
-        if (document.fullscreenElement) { document.exitFullscreen(); } else { if (target && target.requestFullscreen) { target.requestFullscreen().then(() => { if(isTutorialMode) { $('.tutorial-fs-toggle').fadeIn(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); } catch(e){} } } }).catch(err => console.log(err)); } }
+        if (document.fullscreenElement) { document.exitFullscreen(); } else { if (target && target.requestFullscreen) { target.requestFullscreen().then(() => { if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); $('.tutorial-fs-toggle').fadeIn(); } catch(e){} } } }).catch(err => console.log(err)); } }
     });
     $('body').on('click', '.tutorial-fs-toggle', function() { const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.toggle('nav-visible'); } catch(e) {} } });
     document.addEventListener('fullscreenchange', (event) => { if (!document.fullscreenElement) { $('.tutorial-fs-toggle').hide(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.remove('fs-mode', 'nav-visible'); } catch(e){} } } });
 
     $('body').on('click', '.modal-prev-btn', function() { stopSlideshow(); if (currentCardIndex > 0) loadModalContent(currentCardIndex - 1); });
     $('body').on('click', '.modal-next-btn', function() { if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1); else stopSlideshow(); });
-    $('body').on('click', '.modal-info-btn', function() { const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); if (manifestUrl) { buildTutorialSummary(manifestUrl, $('#modal-content-area')); } else { isModalInfoVisible = !isModalInfoVisible; applyInfoState(); } });
+    
+    // INFO BUTTON (FIXED PERSISTENCE)
+    $('body').on('click', '.modal-info-btn', function() { const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); if (manifestUrl) { buildTutorialSummary(manifestUrl, $('#modal-content-area')); } else { isModalInfoVisible = !isModalInfoVisible; const $infoDiv = $('.modal-photo-info'); if (isModalInfoVisible) { $infoBtn.addClass('active'); $infoDiv.stop(true,true).css('display','block').animate({opacity:1},200); } else { $infoBtn.removeClass('active'); $infoDiv.stop(true,true).animate({opacity:0},200,function(){ $(this).hide(); }); } } });
+
     $('body').on('input', '#youtube-search-box', filterYouTubeCards); $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
     $('body').on('input', '#post-search-box', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').on('change', '#post-category-filter', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').on('change', '#post-keyword-filter', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
     $('body').on('input', '#album-search-box', () => filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20)); $('body').on('change', '#album-category-filter', () => filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20)); $('body').on('change', '#album-keyword-filter', () => filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20));
