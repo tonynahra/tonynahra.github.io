@@ -1,7 +1,7 @@
 /* === GLOBAL VARIABLES === */
 var currentCardList = []; 
 var currentCardIndex = 0; 
-var isModalInfoVisible = false; 
+var isModalInfoVisible = false; // Preserves state across navigation
 var isTutorialMode = false; 
 var slideshowInterval = null; // Tracks slideshow timer
 
@@ -402,11 +402,6 @@ function loadModalContent(index) {
                 error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
             });
             break;
-
-
-
-
-            
         case 'chess':
             $modalInfoBtn.hide(); 
             // Enter Chess Mode
@@ -674,15 +669,6 @@ function loadModalContent(index) {
                 }
             });
             break;
-
-
-
-
-
-
-
-
-            
         case 'html':
             $.ajax({
                 url: loadUrl, type: 'GET',
@@ -698,6 +684,8 @@ function loadModalContent(index) {
             if (infoHtml) { 
                 $modalContent.append(infoHtml);
                 $modalInfoBtn.show(); 
+                // Ensure persistence class is set
+                $modalInfoBtn.toggleClass('active', isModalInfoVisible);
             }
             break;
         case 'iframe':
@@ -707,6 +695,7 @@ function loadModalContent(index) {
             if (infoHtml) { 
                 $modalContent.append(infoHtml);
                 $modalInfoBtn.show(); 
+                $modalInfoBtn.toggleClass('active', isModalInfoVisible);
             }
             break;
         case 'blocked':
