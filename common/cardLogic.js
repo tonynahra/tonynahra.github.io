@@ -5,147 +5,6 @@ var isModalInfoVisible = false; // Master state for Info Box persistence
 var isTutorialMode = false; 
 var slideshowInterval = null; 
 
-/* === CSS INJECTION === */
-function injectModalStyles() {
-    if ($('#dynamic-modal-styles').length) return; 
-
-    const styles = `
-    <style id="dynamic-modal-styles">
-        /* POPUP TRANSITION (Spring/Pop Effect) */
-        @keyframes modalPopUp {
-            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
-            60% { opacity: 1; transform: scale(1.05) translateY(-5px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes modalPopDown {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.9) translateY(10px); }
-        }
-        
-        .modal-animate-enter {
-            display: flex !important;
-            animation: modalPopUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
-        }
-        
-        .modal-animate-leave {
-            animation: modalPopDown 0.3s ease-in forwards !important;
-        }
-        
-        /* Backdrop Fade Transition */
-        .modal-backdrop.fading-out {
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            opacity: 0;
-        }
-
-        /* RAISED INFO BOX STYLES */
-        .modal-photo-info.raised-layer {
-            position: absolute;
-            bottom: 30px;
-            left: 0;
-            right: 0;
-            margin: 0 auto;
-            width: 85%;
-            max-width: 800px;
-            padding: 20px 25px;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(8px);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-            border-radius: 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff;
-            z-index: 50;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-            display: none; /* Controlled by JS */
-        }
-        
-        .modal-photo-info.raised-layer h3, 
-        .modal-photo-info.raised-layer p { 
-            pointer-events: auto;
-        }
-        
-        .modal-photo-info.raised-layer h3 { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
-        .modal-photo-info.raised-layer p { color: #ddd; margin-bottom: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
-
-        /* FULLSCREEN MAXIMIZATION */
-        .image-wrapper:fullscreen, .iframe-wrapper:fullscreen, .markdown-wrapper:fullscreen {
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100vw;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-            overflow: auto;
-        }
-        .image-wrapper:fullscreen img {
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-            max-height: none;
-            object-fit: contain; 
-        }
-        .iframe-wrapper:fullscreen iframe {
-            width: 100vw !important;
-            height: 100vh !important;
-        }
-        .markdown-wrapper:fullscreen {
-            background: #fff;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        /* SLIDESHOW CONTROLS */
-        .slideshow-controls {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-right: 5px;
-        }
-        .modal-play-btn {
-            white-space: nowrap;
-            min-width: 100px;
-            text-align: center;
-        }
-        select.slideshow-speed {
-            background: #333;
-            color: #fff;
-            border: 1px solid #555;
-            border-radius: 4px;
-            padding: 4px 5px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            height: 28px;
-        }
-
-        /* TUTORIAL FULLSCREEN OVERLAY CONTROLS */
-        .tutorial-fs-toggle {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 2147483647;
-            background: rgba(0,0,0,0.5);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            display: none; /* Hidden by default */
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-        .tutorial-fs-toggle:hover {
-            background: rgba(0,0,0,0.8);
-        }
-    </style>
-    `;
-    $('head').append(styles);
-}
-
 /* === HELPER FUNCTIONS === */
 
 function decodeText(text) {
@@ -247,9 +106,9 @@ function animateModalOpen() {
     
     requestAnimationFrame(() => {
         $content.addClass('modal-animate-enter');
-        // Generic resize trigger for layout stability (Chess/Grid)
+        // Generic resize trigger for layout stability
         setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
-        setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 600); // Double check for slow render
+        setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 600); 
     });
 }
 
@@ -365,30 +224,6 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
     });
 }
 
-// === CENTRAL INFO PERSISTENCE LOGIC ===
-function applyInfoState() {
-    const $modalContent = $('#modal-content-area');
-    const $infoBtn = $('.modal-info-btn');
-    const $infoDiv = $modalContent.find('.modal-photo-info');
-
-    // 1. If no info div exists, hide button regardless of state
-    if ($infoDiv.length === 0) {
-        $infoBtn.hide();
-        return;
-    }
-
-    $infoBtn.show();
-
-    // 2. Apply strict state
-    if (isModalInfoVisible) {
-        $infoBtn.addClass('active');
-        $infoDiv.stop(true, true).show().animate({opacity: 1}, 200);
-    } else {
-        $infoBtn.removeClass('active');
-        $infoDiv.stop(true, true).animate({opacity: 0}, 200, function() { $(this).hide(); });
-    }
-}
-
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) return;
 
@@ -468,6 +303,7 @@ function loadModalContent(index) {
         $modalInfoBtn.removeClass('active'); 
 
         $modal.addClass('research-mode'); 
+        $('.tutorial-fs-toggle').show().css('display', 'flex'); // Show toggle button
         
         // Iframe with onload injection for Nav Bar
         const playerHtml = `
@@ -478,7 +314,8 @@ function loadModalContent(index) {
                     onload="try{
                         const d = this.contentDocument;
                         const s = d.createElement('style');
-                        s.innerHTML = '.nav-bar { position: absolute !important; bottom: 0 !important; left: 0 !important; width: 100% !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 0; }';
+                        /* Force nav to bottom and default hidden */
+                        s.innerHTML = '.nav-bar, .controls, footer, .navbar { position: absolute !important; bottom: 0 !important; left: 0 !important; width: 100% !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 0; pointer-events: none; } .show-nav .nav-bar, .show-nav .controls, .show-nav footer { opacity: 1 !important; pointer-events: auto !important; }';
                         d.head.appendChild(s);
                     }catch(e){}">
                 </iframe>
@@ -515,13 +352,22 @@ function loadModalContent(index) {
     updateSocialMeta(title, desc, thumbUrl);
 
     let infoHtml = '';
+    // === PERSISTENCE LOGIC: Add 'visible' class based on global variable ===
     if (title || desc) { 
+        const visibilityClass = isModalInfoVisible ? 'visible' : '';
         infoHtml = `
-            <div class="modal-photo-info raised-layer">
+            <div class="modal-photo-info raised-layer ${visibilityClass}">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
     }
+
+    // Ensure button state matches global var
+    if(isModalInfoVisible) $modalInfoBtn.addClass('active');
+    else $modalInfoBtn.removeClass('active');
+
+    // Hide button if no info at all
+    if (!title && !desc) $modalInfoBtn.hide();
 
     switch (loadType) {
         case 'markdown':
@@ -531,7 +377,6 @@ function loadModalContent(index) {
                     const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
                     $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`);
                     if (infoHtml) { $modalContent.append(infoHtml); }
-                    applyInfoState(); 
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
             });
@@ -1019,7 +864,6 @@ function loadModalContent(index) {
                 success: function(data) { 
                     $modalContent.html(data); 
                     if (infoHtml) { $modalContent.append(infoHtml); }
-                    applyInfoState(); 
                 },
                 error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); }
             });
@@ -1027,14 +871,16 @@ function loadModalContent(index) {
         case 'image':
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
             if (infoHtml) { $modalContent.append(infoHtml); }
-            applyInfoState(); 
             
-            // Double Click Toggle Fullscreen (Photo Only)
+            // Double Click Toggle Fullscreen (Photo Only) - FIXED LOGIC
             $modalContent.find('.image-wrapper').on('dblclick', function() { 
                 if (document.fullscreenElement) {
                     document.exitFullscreen();
                 } else {
-                    this.requestFullscreen().catch(err => console.log(err));
+                    const wrapper = this;
+                    if(wrapper.requestFullscreen) wrapper.requestFullscreen();
+                    else if(wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen(); // Safari
+                    else if(wrapper.msRequestFullscreen) wrapper.msRequestFullscreen(); // IE/Edge
                 }
             });
             break;
@@ -1045,7 +891,6 @@ function loadModalContent(index) {
             }
             $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`);
             if (infoHtml) { $modalContent.append(infoHtml); }
-            applyInfoState();
             break;
         case 'blocked':
             $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>');
@@ -1059,228 +904,9 @@ function loadModalContent(index) {
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
 
-/* === RESEARCH BUILDER === */
-
-function buildResearchModal(jsonUrl) {
-    const $modalContent = $('#modal-content-area');
-    $modalContent.html(`<div class="tab-nav" id="research-tab-nav-modal"></div><div class="tab-content" id="research-tab-content-modal"><div class="content-loader"><div class="spinner"></div></div></div>`);
-    
-    $.getJSON(jsonUrl, function (data) {
-        $('#content-modal .open-new-window').attr('href', jsonUrl);
-        const $tabNav = $('#research-tab-nav-modal');
-        $tabNav.empty(); 
-        $.each(data.tickers, function(index, ticker) {
-            const $button = $(`<button class="tab-button"></button>`);
-            $button.text(ticker.name);
-            $button.attr('data-content-url', ticker.contentUrl);
-            if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl); }
-            $tabNav.append($button);
-        });
-    }).fail(function() {
-        $modalContent.html('<div class="error-message">Error loading research data.</div>');
-    });
-}
-
-function loadModalTabContent(htmlUrl) {
-    $('#content-modal .open-new-window').attr('href', htmlUrl);
-    $('#research-tab-content-modal').html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`);
-}
-
-/* === FILTER LOGIC === */
-
-function populateCategoryFilter(listId, filterId) {
-    const $filter = $(filterId);
-    if (!$filter.length) return;
-    const categoryCounts = {};
-    $(`${listId} .card-item`).each(function() {
-        const categories = $(this).data('category');
-        if (categories) {
-            String(categories).split(',').forEach(cat => {
-                const cleanCat = cat.trim();
-                if (cleanCat) categoryCounts[cleanCat] = (categoryCounts[cleanCat] || 0) + 1;
-            });
-        }
-    });
-    const sortedCategories = Object.entries(categoryCounts).sort(([,a], [,b]) => b - a);
-    $filter.children('option:not(:first)').remove(); 
-    sortedCategories.forEach(([key, count]) => { $filter.append($('<option>', { value: key, text: `${key} (${count})` })); });
-}
-
-function populateSmartKeywords(listId, filterId) {
-    const $filter = $(filterId);
-    if (!$filter.length) return; 
-    const stop = (typeof STOP_WORDS !== 'undefined') ? STOP_WORDS : new Set(['a', 'the']);
-    const replace = (typeof REPLACEMENT_MAP !== 'undefined') ? REPLACEMENT_MAP : {};
-    const wordCounts = {}; 
-    $(`${listId} .card-item`).each(function() {
-        const localKeywords = new Set();
-        const $card = $(this);
-        const text = [$card.find('h3').text(), $card.find('p').text(), $card.find('.card-category').text(), $card.find('img').attr('alt'), $card.data('category'), $card.data('keywords')].map(t => String(t||'')).join(' ');
-        const words = decodeText(text).split(/[^a-zA-Z0-9'-]+/);
-        words.forEach(word => {
-            let clean = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, '');
-            if (replace[clean]) clean = replace[clean];
-            if (clean.length > 2 && clean.length <= 15 && !stop.has(clean) && isNaN(clean)) { localKeywords.add(clean); }
-        });
-        localKeywords.forEach(k => wordCounts[k] = (wordCounts[k] || 0) + 1);
-    });
-    const sorted = Object.entries(wordCounts).sort(([,a], [,b]) => b - a).slice(0, 30);
-    $filter.children('option:not(:first)').remove();
-    sorted.forEach(([key, count]) => { $filter.append($('<option>', { value: key, text: `${key} (${count})` })); });
-}
-
-function getCardSearchableText($card) {
-    const textSources = [$card.find('h3').text(), $card.find('p').text(), $card.find('.card-category').text(), $card.find('img').attr('alt'), $card.data('category'), $card.data('keywords')];
-    return decodeText(textSources.map(text => String(text || '')).join(' ').toLowerCase());
-}
-
-function checkKeywordMatch(cardText, selectedKeyword) {
-    if (selectedKeyword === "all") return true;
-    const synonyms = (typeof SYNONYM_MAP !== 'undefined') ? (SYNONYM_MAP[selectedKeyword] || []) : [];
-    const keywordsToMatch = [selectedKeyword, ...synonyms];
-    return keywordsToMatch.some(key => { return new RegExp(`\\b${key}\\b`, 'i').test(cardText); });
-}
-
-function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResultsId, initialLoad) {
-    const searchTerm = decodeText($(searchId).val().toLowerCase());
-    const selectedCategory = $(catFilterId).val();
-    const selectedKeyword = $(keyFilterId).val();
-    const $grid = $(listId);
-    const $allCards = $grid.children('.card-item');
-    const $showMoreButton = $grid.next('.toggle-card-button');
-    const $noResultsMessage = $(noResultsId);
-    let visibleCount = 0;
-    if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
-        $showMoreButton.hide();
-        $allCards.each(function() {
-            const $card = $(this);
-            const cardText = getCardSearchableText($card); 
-            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
-            const categoryMatch = (selectedCategory === "all" || ($card.data('category') && String($card.data('category')).includes(selectedCategory)));
-            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
-            if (categoryMatch && searchMatch && keywordMatch) {
-                $card.removeClass('hidden-card-item').show();
-                visibleCount++;
-            } else { $card.hide(); }
-        });
-        if (visibleCount === 0) $noResultsMessage.show(); else $noResultsMessage.hide();
-    } else {
-        $noResultsMessage.hide();
-        $allCards.removeAttr('style'); 
-        handleCardView($('#content-area'), initialLoad);
-    }
-}
-
-/* === LOAD DATA FUNCTIONS === */
-
-function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
-    const $albumList = $('#photo-album-list');
-    const $targetList = $albumList.length ? $albumList : $('#about-album-list');
-    $.getJSON(jsonUrl, function (albumData) {
-        if ($('#album-title').length) $('#album-title').text(decodeText(albumData.albumTitle));
-        $targetList.empty(); 
-        $.each(albumData.photos, function(index, photo) {
-            const title = decodeText(photo.title);
-            const category = decodeText(photo.category);
-            const description = decodeText(photo.description);
-            const cardHtml = `<div class="card-item" data-category="${category}" data-keywords="${title},${description}" data-title="${title}" data-desc="${description}"><a href="${photo.url}" data-load-type="image"><img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}"></a></div>`;
-            $targetList.append(cardHtml);
-        });
-        if ($('#album-category-filter').length) {
-            populateCategoryFilter('#photo-album-list', '#album-category-filter');
-            populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
-        }
-        const defaultIncrement = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
-        handleCardView($targetList.parent(), initialLoadOverride, defaultIncrement);
-        if (typeof onComplete === 'function') onComplete();
-    }).fail(function() { 
-        if ($('#album-title').length) $('#album-title').text("Error Loading Album"); 
-    });
-}
-
-function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
-    $('#Grid').empty(); 
-    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
-    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
-    var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
-    $.getJSON(URL, options, function (data) {
-        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
-        if (data.items) {
-            resultsLoop(data, Category, BKcol);
-            handleCardView($('#content-area'), initialLoadOverride);
-            populateSmartKeywords('#Grid', '#youtube-keyword-filter');
-            populateCategoryFilter('#Grid', '#youtube-category-filter');
-            if (typeof onComplete === 'function') onComplete();
-        }
-    });
-}
-
-function resultsLoop(data, Cat, BKcol) {
-    $.each(data.items, function (i, item) {
-        if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) return;
-        let thumb = item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '';
-        const title = decodeText(item.snippet.title);
-        const desc = decodeText(item.snippet.description);
-        const vid = item.snippet.resourceId.videoId;
-        $('#Grid').append(`<div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}"><a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe"><img class="YTi" src="${thumb}" alt="${title}" ><h3>${title}</h3><p>${desc}</p><span class="card-category" style="display: none;">${Cat}</span></a></div>`);
-    });
-}
-
-function filterYouTubeCards() {
-    const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
-    const selectedKeyword = $('#youtube-keyword-filter').val();
-    const $grid = $('#Grid');
-    const $allCards = $grid.children('.card-item');
-    const $showMoreButton = $grid.next('.toggle-card-button');
-    const $noResultsMessage = $('#youtube-no-results');
-    let visibleCount = 0;
-    if (searchTerm.length > 0 || selectedKeyword !== "all") {
-        $showMoreButton.hide();
-        $allCards.each(function() {
-            const $card = $(this);
-            const cardText = getCardSearchableText($card); 
-            const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
-            const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
-            if (searchMatch && keywordMatch) {
-                $card.removeClass('hidden-card-item').show();
-                visibleCount++;
-            } else { $card.hide(); }
-        });
-        if (visibleCount === 0) $noResultsMessage.show(); else $noResultsMessage.hide();
-    } else {
-        $noResultsMessage.hide();
-        $allCards.removeAttr('style'); 
-        handleCardView($('#content-area'), parseInt($('.nav-link[data-page*="youtube_page.html"]').data('initial-load')) || 10);
-    }
-}
-
-function openCardByTitle(titleToFind) {
-    if (!titleToFind) return;
-    const decodedTitle = decodeURIComponent(titleToFind).trim().toLowerCase();
-    let $card = $('#' + titleToFind);
-    if ($card.length === 0) {
-        $card = $('.card-item').filter(function() {
-            const cardId = $(this).attr('id');
-            if (cardId && cardId.toLowerCase() === decodedTitle) return true;
-            const cardTitle = $(this).find('h3').text().trim().toLowerCase();
-            const imgAlt = $(this).find('img.card-image').attr('alt') || '';
-            return cardTitle === decodedTitle || (imgAlt && imgAlt.toLowerCase() === decodedTitle);
-        });
-    }
-    if ($card.length) {
-        $('html, body').animate({ scrollTop: $card.offset().top - 100 }, 500);
-        $card.click();
-    } else {
-        console.warn('Deep link card not found for title/id:', decodedTitle);
-    }
-}
-
 /* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
     
-    // Inject custom styles
-    injectModalStyles();
-
     // Inject modal (UPDATED STRUCTURE: Added Tutorial Toggle)
     $('body').append(`
         <div id="content-modal" class="modal-backdrop">
@@ -1421,11 +1047,8 @@ $(document).ready(function () {
         if($iframe.length) {
              try {
                  const doc = $iframe[0].contentDocument;
-                 const bars = doc.querySelectorAll('.nav-bar');
-                 bars.forEach(b => {
-                     b.style.opacity = (b.style.opacity === '0' ? '1' : '0');
-                     b.style.pointerEvents = (b.style.opacity === '0' ? 'none' : 'auto');
-                 });
+                 // Toggle class on body to control nav visibility
+                 doc.body.classList.toggle('show-nav');
              } catch(e) {}
         }
     });
@@ -1452,8 +1075,16 @@ $(document).ready(function () {
         const $infoBtn = $(this);
         // Toggle Global
         isModalInfoVisible = !isModalInfoVisible;
+        
         // Apply State
-        applyInfoState();
+        const $infoDiv = $('.modal-photo-info');
+        if (isModalInfoVisible) {
+            $infoBtn.addClass('active');
+            $infoDiv.addClass('visible');
+        } else {
+            $infoBtn.removeClass('active');
+            $infoDiv.removeClass('visible');
+        }
     });
 
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
