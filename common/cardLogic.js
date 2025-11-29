@@ -40,11 +40,10 @@ function animateModalClose() {
 
 /* === PERSISTENCE LOGIC (GLOBAL) === */
 function applyInfoState() {
-    // Only handles button state, DIV visibility handled via Inline HTML logic now
     const $infoBtn = $('.modal-info-btn'); const $infoDiv = $('.modal-photo-info');
     if ($infoDiv.length === 0) { $infoBtn.hide(); return; }
     $infoBtn.show();
-    if (isModalInfoVisible) { $infoBtn.addClass('active'); } else { $infoBtn.removeClass('active'); }
+    if (isModalInfoVisible) { $infoBtn.addClass('active'); $infoDiv.addClass('visible'); } else { $infoBtn.removeClass('active'); $infoDiv.removeClass('visible'); }
 }
 
 /* === MODAL KEY HANDLER (GLOBAL) === */
@@ -77,8 +76,9 @@ function loadModalContent(index) {
     if (loadType === 'research' && jsonUrl) { $modal.addClass('research-mode'); $modalFsBtn.hide(); $modalInfoBtn.hide(); buildResearchModal(jsonUrl); return; } 
     
     if (loadType === 'tutorial' && manifestUrl) {
-        isTutorialMode = true; $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); $modal.addClass('research-mode'); $('.tutorial-fs-toggle').show().css('display', 'flex'); 
-        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%;"><iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = '.nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.show-nav .nav-bar, body.show-nav .controls, body.show-nav footer { position: absolute !important; bottom: 0 !important; left: 0 !important; opacity: 0 !important; pointer-events: none !important; } body.show-nav.nav-visible .nav-bar, body.show-nav.nav-visible .controls, body.show-nav.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;">&times;</button>`;
+        isTutorialMode = true; $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); $modal.addClass('research-mode'); 
+        // Note: Toggle icon is HIDDEN by default, shown only in Full Screen via event listener
+        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%;"><iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = '.nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;">&times;</button>`;
         $modalContent.html(playerHtml);
         $modalContent.find('.tutorial-custom-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
         $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); });
@@ -94,10 +94,10 @@ function loadModalContent(index) {
     updateSocialMeta(title, desc, thumbUrl);
 
     let infoHtml = '';
-    // FIXED PERSISTENCE: Inline styles control initial visibility
+    // FIXED: Strict persistence logic
     if (title || desc) { 
-        const style = isModalInfoVisible ? 'display:block; opacity:1;' : 'display:none; opacity:0;';
-        infoHtml = `<div class="modal-photo-info raised-layer" style="${style}"><h3>${title}</h3><p>${desc}</p></div>`;
+        const initialClass = isModalInfoVisible ? 'visible' : '';
+        infoHtml = `<div class="modal-photo-info raised-layer ${initialClass}"><h3>${title}</h3><p>${desc}</p></div>`;
     }
 
     switch (loadType) {
@@ -159,9 +159,15 @@ $(document).ready(function () {
     $('body').on('click', '#content-modal', function(e) { if (e.target.id === 'content-modal') { $(this).find('.modal-close-btn').first().click(); } });
     $('body').on('click', '.modal-play-btn', function() { if (slideshowInterval) { stopSlideshow(); } else { $(this).html('&#10074;&#10074; Pause'); const speed = parseInt($('.slideshow-speed').val()) || 5000; if (currentCardIndex < currentCardList.length - 1) $('.modal-next-btn').click(); else currentCardIndex = -1; slideshowInterval = setInterval(function() { if (currentCardIndex < currentCardList.length - 1) { $('.modal-next-btn').click(); } else { stopSlideshow(); } }, speed); } });
     $('body').on('change', '.slideshow-speed', function() { if (slideshowInterval) { $('.modal-play-btn').click(); setTimeout(() => { $('.modal-play-btn').click(); }, 100); } });
-    $('body').on('click', '.modal-fullscreen-btn', function() { const wrapper = document.querySelector('#modal-content-area .image-wrapper') || document.querySelector('#modal-content-area .iframe-wrapper') || document.querySelector('#modal-content-area .markdown-wrapper'); const target = wrapper || document.getElementById('modal-content-area'); if (document.fullscreenElement) { document.exitFullscreen(); } else { if (target && target.requestFullscreen) { target.requestFullscreen().then(() => { if(isTutorialMode) { $('.tutorial-fs-toggle').fadeIn(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('hide-nav', 'show-nav'); } catch(e){} } } }).catch(err => console.log(err)); } } });
+    
+    // FULLSCREEN & TUTORIAL NAV LOGIC
+    $('body').on('click', '.modal-fullscreen-btn', function() {
+        const wrapper = document.querySelector('#modal-content-area .image-wrapper') || document.querySelector('#modal-content-area .iframe-wrapper') || document.querySelector('#modal-content-area .markdown-wrapper'); const target = wrapper || document.getElementById('modal-content-area');
+        if (document.fullscreenElement) { document.exitFullscreen(); } else { if (target && target.requestFullscreen) { target.requestFullscreen().then(() => { if(isTutorialMode) { $('.tutorial-fs-toggle').fadeIn(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); } catch(e){} } } }).catch(err => console.log(err)); } }
+    });
     $('body').on('click', '.tutorial-fs-toggle', function() { const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.toggle('nav-visible'); } catch(e) {} } });
-    document.addEventListener('fullscreenchange', (event) => { if (!document.fullscreenElement) { $('.tutorial-fs-toggle').hide(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.remove('hide-nav', 'show-nav', 'nav-visible'); } catch(e){} } } });
+    document.addEventListener('fullscreenchange', (event) => { if (!document.fullscreenElement) { $('.tutorial-fs-toggle').hide(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.remove('fs-mode', 'nav-visible'); } catch(e){} } } });
+
     $('body').on('click', '.modal-prev-btn', function() { stopSlideshow(); if (currentCardIndex > 0) loadModalContent(currentCardIndex - 1); });
     $('body').on('click', '.modal-next-btn', function() { if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1); else stopSlideshow(); });
     $('body').on('click', '.modal-info-btn', function() { const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); if (manifestUrl) { buildTutorialSummary(manifestUrl, $('#modal-content-area')); } else { isModalInfoVisible = !isModalInfoVisible; applyInfoState(); } });
