@@ -1,0 +1,16 @@
+{
+  "title": "Advanced Resource Database",
+  "description": "Filter, sort, and explore resources. Click 'Action' to open content directly in the player.",
+  "columns": [
+    {"title":"Resource Name", "field":"name", "headerFilter":"input"},
+    {"title":"Type", "field":"type", "headerFilter":"select", "headerFilterParams":{"values":["Chess", "Tutorial", "Report"]}},
+    {"title":"Difficulty", "field":"difficulty", "hozAlign":"center", "formatter":"star"},
+    {"title":"Action", "field":"action", "formatter":"linkButton", "hozAlign":"center"}
+  ],
+  "rows": [
+    { "name":"Kasparov vs Topalov", "type":"Chess", "difficulty":5, "action":"link:chess:https://raw.githubusercontent.com/username/repo/main/kasparov.pgn:Analyze" },
+    { "name":"Intro to Web Components", "type":"Tutorial", "difficulty":2, "action":"link:tutorial:data/sample_tutorial.json:Start" },
+    { "name":"Fischer's Game of the Century", "type":"Chess", "difficulty":4, "action":"link:chess:data/fischer.pgn:View" },
+    { "name":"Advanced CSS Grid", "type":"Tutorial", "difficulty":3, "action":"link:tutorial:data/css_grid.json:Learn" }
+  ]
+}
