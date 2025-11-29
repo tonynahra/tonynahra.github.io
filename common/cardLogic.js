@@ -40,11 +40,12 @@ function animateModalClose() {
 
 /* === PERSISTENCE LOGIC (GLOBAL) === */
 function applyInfoState() {
+    console.log('[DEBUG] Applying Info State. Global Visible:', isModalInfoVisible);
     const $infoBtn = $('.modal-info-btn'); 
     // Force DOM elements to match global state variable
     if (isModalInfoVisible) { 
         $infoBtn.addClass('active'); 
-        $('.modal-photo-info').addClass('visible');
+        $('.modal-photo-info').addClass('visible'); // Adds display: block !important
     } else { 
         $infoBtn.removeClass('active'); 
         $('.modal-photo-info').removeClass('visible');
@@ -54,7 +55,44 @@ function applyInfoState() {
 /* === MODAL KEY HANDLER (GLOBAL) === */
 function handleModalKeys(e) {
     if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; } if ($(e.target).is('input, textarea, select')) return;
-    switch (e.key) { case "Escape": $('.modal-close-btn').first().click(); break; case "ArrowLeft": $('.modal-prev-btn').first().click(); break; case "ArrowRight": $('.modal-next-btn').first().click(); break; case " ": e.preventDefault(); $('.modal-next-btn').first().click(); break; case "i": e.preventDefault(); $('.modal-info-btn').first().click(); break; case "f": e.preventDefault(); $('.modal-fullscreen-btn').first().click(); break; }
+    switch (e.key) { 
+        case "Escape": $('.modal-close-btn').first().click(); break; 
+        case "ArrowLeft": $('.modal-prev-btn').first().click(); break; 
+        case "ArrowRight": $('.modal-next-btn').first().click(); break; 
+        case " ": e.preventDefault(); $('.modal-next-btn').first().click(); break; 
+        case "i": e.preventDefault(); $('.modal-info-btn').first().click(); break; 
+        case "f": e.preventDefault(); $('.modal-fullscreen-btn').first().click(); break; 
+        case "ArrowUp": // Show Tutorial Nav
+            if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.add('nav-visible'); } catch(e){} } break;
+        case "ArrowDown": // Hide Tutorial Nav
+            if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.remove('nav-visible'); } catch(e){} } break;
+    }
+}
+
+/* === HELP OVERLAY === */
+function showKeyboardShortcuts() {
+    const $modalContent = $('#modal-content-area');
+    if ($modalContent.find('.help-overlay').length) { $modalContent.find('.help-overlay').remove(); return; }
+    
+    const helpHtml = `
+        <div class="help-overlay" onclick="$(this).remove()">
+            <div class="help-box" onclick="event.stopPropagation()">
+                <h2>Keyboard Shortcuts</h2>
+                <ul class="help-list">
+                    <li><span class="help-desc">Next Slide</span> <span class="help-key">Right Arrow / Space</span></li>
+                    <li><span class="help-desc">Previous Slide</span> <span class="help-key">Left Arrow</span></li>
+                    <li><span class="help-desc">Toggle Info</span> <span class="help-key">I</span></li>
+                    <li><span class="help-desc">Full Screen</span> <span class="help-key">F</span></li>
+                    <li><span class="help-desc">Close Modal</span> <span class="help-key">Esc</span></li>
+                    <li><span class="help-desc">Tutorial Nav Show</span> <span class="help-key">Up Arrow</span></li>
+                    <li><span class="help-desc">Tutorial Nav Hide</span> <span class="help-key">Down Arrow</span></li>
+                </ul>
+                <button onclick="$(this).closest('.help-overlay').remove()" style="margin-top:20px; width:100%; padding:10px; background:rgba(255,255,255,0.2); border:none; color:#fff; cursor:pointer;">Close</button>
+            </div>
+        </div>
+    `;
+    $modalContent.append(helpHtml);
+    $modalContent.find('.help-overlay').fadeIn(200);
 }
 
 /* === MODAL CONTENT LOADER (GLOBAL) === */
@@ -83,10 +121,10 @@ function loadModalContent(index) {
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); $modal.addClass('research-mode'); 
         
-        // FIXED NAV INJECTION: width: 100%, box-sizing: border-box, max-width: 100vw to prevent overflow
+        // FIXED TUTORIAL NAV: Toggle icon INSIDE wrapper, CSS modified for width/position
         const playerHtml = `
             <div class="iframe-wrapper" style="height:100%; width:100%; position:relative;">
-                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100vw !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe>
+                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100vw !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe>
                 <button class="tutorial-fs-toggle" title="Toggle Controls">&#9881;</button>
             </div>
             <button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;">&times;</button>
@@ -114,9 +152,9 @@ function loadModalContent(index) {
         const initialClass = isModalInfoVisible ? 'visible' : '';
         infoHtml = `<div class="modal-photo-info raised-layer ${initialClass}"><h3>${title}</h3><p>${desc}</p></div>`;
     }
-    // Sync Button immediately
-    if(isModalInfoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
-    if (!title && !desc) $modalInfoBtn.hide();
+    
+    // Log debug for traceability
+    console.log('[DEBUG] Load Content. Global Info Visible:', isModalInfoVisible);
 
     switch (loadType) {
         case 'markdown': $.ajax({ url: loadUrl, type: 'GET', dataType: 'text', success: function(markdownText) { const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText; $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); }, error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); } }); break;
@@ -170,7 +208,7 @@ function setupChessUI(pgnFileContent, $modalContent, $modal) {
 /* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
     injectModalStyles();
-    $('body').append(`<div id="content-modal" class="modal-backdrop"><div class="modal-content"><div class="modal-header"><div class="modal-nav-left"><button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button><button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button><button class="modal-info-btn" title="Toggle Info (I)">Info</button><div class="slideshow-controls" style="display:none; margin-right:10px;"><button class="modal-play-btn" title="Start Slideshow">&#9658; Play</button><select class="slideshow-speed" title="Slideshow Speed"><option value="3000">3s</option><option value="5000" selected>5s</option><option value="10000">10s</option><option value="20000">20s</option></select></div></div><div class="modal-nav-right"><button class="modal-fullscreen-btn" title="Full Screen" style="display:none; font-size:1.1rem; margin-right:10px;">&#x26F6; Full Screen</button><a href="#" class="open-new-window" style="display:none;" target="_blank" rel="noopener noreferrer"></a><button class="modal-close-btn" title="Close (Esc)">&times; Close</button></div></div><div id="modal-content-area"></div></div></div>`);
+    $('body').append(`<div id="content-modal" class="modal-backdrop"><div class="modal-content"><div class="modal-header"><div class="modal-nav-left"><button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button><button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button><button class="modal-info-btn" title="Toggle Info (I)">Info</button><button class="modal-help-btn" title="Keyboard Shortcuts" onclick="showKeyboardShortcuts()">?</button><div class="slideshow-controls" style="display:none; margin-right:10px;"><button class="modal-play-btn" title="Start Slideshow">&#9658; Play</button><select class="slideshow-speed" title="Slideshow Speed"><option value="3000">3s</option><option value="5000" selected>5s</option><option value="10000">10s</option><option value="20000">20s</option></select></div></div><div class="modal-nav-right"><button class="modal-fullscreen-btn" title="Full Screen" style="display:none; font-size:1.1rem; margin-right:10px;">&#x26F6; Full Screen</button><a href="#" class="open-new-window" style="display:none;" target="_blank" rel="noopener noreferrer"></a><button class="modal-close-btn" title="Close (Esc)">&times; Close</button></div></div><div id="modal-content-area"></div></div></div>`);
 
     $('body').on('click', '.toggle-card-button', function() { const $button = $(this); const $list = $button.prev('.card-list'); if ($list.length) { showMoreCards($button, $list); } });
     $('body').on('click', '.card-item, .item', function(e) { const $clickedCard = $(this); const $link = $clickedCard.find('a').first(); if (!$link.length) return; const $clickedLink = $(e.target).closest('a'); if ($clickedLink.length > 0 && !$clickedLink.is($link)) return; e.preventDefault(); e.stopPropagation(); const $cardList = $clickedCard.closest('.card-list'); const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible'); currentCardList = []; $allVisibleCards.each(function() { currentCardList.push($(this).find('a').first()); }); currentCardIndex = $allVisibleCards.index($clickedCard); if (currentCardList.length > 0) { loadModalContent(currentCardIndex); animateModalOpen(); $(document).on('keydown.modalNav', handleModalKeys); } });
@@ -182,7 +220,7 @@ $(document).ready(function () {
     // FULLSCREEN & TUTORIAL NAV LOGIC
     $('body').on('click', '.modal-fullscreen-btn', function() {
         const wrapper = document.querySelector('#modal-content-area .image-wrapper') || document.querySelector('#modal-content-area .iframe-wrapper') || document.querySelector('#modal-content-area .markdown-wrapper'); const target = wrapper || document.getElementById('modal-content-area');
-        if (document.fullscreenElement) { document.exitFullscreen(); } else { if (target && target.requestFullscreen) { target.requestFullscreen().then(() => { if(isTutorialMode) { $('.tutorial-fs-toggle').fadeIn(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); } catch(e){} } } }).catch(err => console.log(err)); } }
+        if (document.fullscreenElement) { document.exitFullscreen(); } else { if (target && target.requestFullscreen) { target.requestFullscreen().then(() => { if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); $('.tutorial-fs-toggle').fadeIn(); } catch(e){} } } }).catch(err => console.log(err)); } }
     });
     $('body').on('click', '.tutorial-fs-toggle', function() { const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.toggle('nav-visible'); } catch(e) {} } });
     document.addEventListener('fullscreenchange', (event) => { if (!document.fullscreenElement) { $('.tutorial-fs-toggle').hide(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.remove('fs-mode', 'nav-visible'); } catch(e){} } } });
