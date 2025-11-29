@@ -87,7 +87,7 @@ select.slideshow-speed { background: #333; color: #fff; border: 1px solid #555; 
 
 /* === TUTORIAL CONTROLS === */
 .tutorial-fs-toggle {
-    position: fixed; /* Fixed to viewport when in FS */
+    position: fixed; /* Fixed to viewport */
     bottom: 20px; left: 20px; 
     z-index: 2147483647; /* MAX Z-INDEX */
     background: rgba(0,0,0,0.6); color: white; border: 2px solid rgba(255,255,255,0.6);
