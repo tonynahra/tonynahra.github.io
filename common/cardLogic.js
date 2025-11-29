@@ -334,8 +334,14 @@ function loadModalContent(index) {
     if (title || desc) { // Only create info HTML if there's content
         // FIX: Ensure the state of info visibility is applied when loading the card
         const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
+        
+        // NEW FIX: FORCE INLINE DISPLAY IF VISIBLE
+        // This ensures that if the user kept the info open, it opens immediately with display: block
+        // overriding any default css 'display: none'.
+        const infoStyle = isModalInfoVisible ? 'style="display: block;"' : ''; 
+        
         infoHtml = `
-            <div class="modal-photo-info ${infoVisibleClass}">
+            <div class="modal-photo-info ${infoVisibleClass}" ${infoStyle}>
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
@@ -1332,7 +1338,8 @@ $(document).ready(function () {
         if (currentCardList.length > 0) {
             loadModalContent(currentCardIndex);
             $('body').addClass('modal-open');
-            $('#content-modal').fadeIn(200);
+            // UPDATED: Slower fade in (400ms) for better visual effect
+            $('#content-modal').fadeIn(400);
             $(document).on('keydown.modalNav', handleModalKeys);
         }
     });
@@ -1347,7 +1354,8 @@ $('body').on('click', '.modal-close-btn', function() {
         // --- END CENTRALIZED CLEANUP ---
 
         // Main modal hide logic
-        $modal.fadeOut(200);
+        // UPDATED: Slower fade out (400ms) for better visual effect
+        $modal.fadeOut(400);
         $('#modal-content-area').html(''); 
         
         // Reset global states
@@ -1402,8 +1410,18 @@ $('body').on('click', '.modal-close-btn', function() {
             console.log("Photo Info button clicked. isModalInfoVisible:", isModalInfoVisible, "Info Div found:", $infoDiv.length > 0);
 
             if ($infoDiv.length > 0) {
-                $infoDiv.toggleClass('info-visible', isModalInfoVisible);
+                // UPDATE BUTTON
                 $infoBtn.toggleClass('active', isModalInfoVisible); 
+                $infoDiv.toggleClass('info-visible', isModalInfoVisible);
+
+                // VISUAL FIX: Use jQuery Fade Toggle to override any "display: none" from CSS
+                // This ensures smooth animation and guarantees visibility
+                if (isModalInfoVisible) {
+                     $infoDiv.stop().fadeIn(300);
+                } else {
+                     $infoDiv.stop().fadeOut(300);
+                }
+
             } else {
                 // FALLBACK: If we're not in tutorial mode and didn't find the photo div, 
                 $infoBtn.removeClass('active');
