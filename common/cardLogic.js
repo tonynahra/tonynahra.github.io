@@ -260,7 +260,7 @@ function loadModalContent(index) {
         $modalInfoBtn.show(); // Show Info button for tutorials
         $modalInfoBtn.data('manifest-url', manifestUrl); // Store manifest URL
 
-        // $modal.find('.modal-header').hide(); // REMOVED: Rely on CSS to hide the header when custom UI is present.
+        // $modal.find('.modal-header').hide(); // REMOVED: Rely on Chess Mode CSS to hide/style the header
         
         $modal.addClass('research-mode'); // Keep research-mode class for styling consistency
         $modalOpenLink.attr('href', manifestUrl);
