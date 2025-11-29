@@ -2,7 +2,8 @@
 var currentCardList = []; 
 var currentCardIndex = 0; 
 var isModalInfoVisible = false; 
-var isTutorialMode = false; // State to manage Info button behavior for tutorials
+var isTutorialMode = false; 
+var slideshowInterval = null; // Tracks slideshow timer
 
 /* === CSS INJECTION FOR TRANSITIONS & STYLING === */
 function injectModalStyles() {
@@ -10,10 +11,10 @@ function injectModalStyles() {
 
     const styles = `
     <style id="dynamic-modal-styles">
-        /* ZOOM ANIMATIONS - DRAMATIC & NOTICEABLE */
+        /* ZOOM ANIMATIONS */
         @keyframes modalZoomIn {
-            0% { opacity: 0; transform: scale(0.5); } /* Starts at 50% size */
-            70% { opacity: 1; transform: scale(1.02); } /* Small bounce */
+            0% { opacity: 0; transform: scale(0.5); }
+            70% { opacity: 1; transform: scale(1.02); }
             100% { opacity: 1; transform: scale(1); }
         }
         @keyframes modalZoomOut {
@@ -21,7 +22,6 @@ function injectModalStyles() {
             100% { opacity: 0; transform: scale(0.5); }
         }
         
-        /* Apply animation to the content wrapper */
         .modal-animate-enter {
             animation: modalZoomIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
             display: flex !important;
@@ -35,11 +35,9 @@ function injectModalStyles() {
         .modal-photo-info.raised-layer {
             position: absolute;
             bottom: 30px;
-            /* CENTERING FIX: Left/Right 0 + Margin Auto */
             left: 0;
             right: 0;
             margin: 0 auto;
-            
             width: 85%;
             max-width: 800px;
             padding: 20px 25px;
@@ -50,13 +48,26 @@ function injectModalStyles() {
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff;
             z-index: 50;
-            
-            /* Transitions managed by JS, but standard CSS transition for hover effects if added */
             transition: opacity 0.3s ease;
         }
         
         .modal-photo-info.raised-layer h3 { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
         .modal-photo-info.raised-layer p { color: #ddd; margin-bottom: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+
+        /* Fullscreen Helper */
+        .image-wrapper:fullscreen {
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        .image-wrapper:fullscreen img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
     </style>
     `;
     $('head').append(styles);
@@ -72,6 +83,14 @@ function decodeText(text) {
         return $textarea.val();
     } catch (e) {
         return text;
+    }
+}
+
+function stopSlideshow() {
+    if (slideshowInterval) {
+        clearInterval(slideshowInterval);
+        slideshowInterval = null;
+        $('.modal-play-btn').html('&#9658; Play'); // Reset text to Play
     }
 }
 
@@ -125,25 +144,15 @@ function showMoreCards($button, $list) {
 function animateModalOpen() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
-    
-    // Reset classes
     $content.removeClass('modal-animate-leave');
-    
-    // Fade in the background overlay
     $modal.fadeIn(300);
-    
-    // Trigger CSS Zoom Animation on content
     $content.addClass('modal-animate-enter');
 }
 
 function animateModalClose() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
-    
-    // Swap animation classes for Zoom Out
     $content.removeClass('modal-animate-enter').addClass('modal-animate-leave');
-    
-    // Wait for CSS animation (0.5s) to mostly finish before hiding container
     setTimeout(function() {
         $modal.fadeOut(300, function() {
             $content.removeClass('modal-animate-leave'); 
@@ -170,7 +179,6 @@ function handleModalKeys(e) {
     }
 }
 
-// Function to generate and display the tutorial summary (Table of Contents)
 function buildTutorialSummary(manifestUrl, $modalContent) {
     $modalContent.addClass('summary-view-active');
     
@@ -191,13 +199,11 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
     $summaryOverlay = $modalContent.find(`#${overlayId}`);
 
     const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(manifestUrl)}`;
-    console.log("Fetching manifest via proxy:", proxyUrl);
 
     $.ajax({
         url: proxyUrl,
         dataType: 'text', 
         success: function (xmlText) {
-            
             let data = {};
             try {
                 const parser = new DOMParser();
@@ -210,7 +216,6 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                 });
                 data.steps = steps;
             } catch (e) {
-                console.error("Error parsing manifest XML:", e);
                 $summaryOverlay.html('<div class="error-message">Error parsing tutorial manifest data.</div>').fadeIn(200);
                 return;
             }
@@ -221,18 +226,15 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             }
 
             let summaryHtml = '<div class="summary-box"><h2>Tutorial Summary</h2><ol class="summary-list">';
-            
             $.each(data.steps, function(index, step) {
                 const displayIndex = index + 1;
                 const stepTitle = decodeText(step.title || `Step ${displayIndex}`);
-                
                 summaryHtml += `
                     <li class="summary-item clickable" data-step-index="${index}" style="cursor: pointer;">
                         <span class="step-number">${displayIndex}.</span>
                         <span class="step-title">${stepTitle}</span>
                     </li>`;
             });
-            
             summaryHtml += '</ol></div>';
             
             $summaryOverlay.html(summaryHtml).fadeIn(200);
@@ -245,16 +247,10 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
                     const target = e.target.closest('.summary-item.clickable');
                     if (target) {
                         e.stopPropagation(); 
-
                         const stepIndex = target.getAttribute('data-step-index');
                         const $iframe = $modalContent.find('.iframe-wrapper .loaded-iframe');
-                        
                         if ($iframe.length) {
-                            $iframe[0].contentWindow.postMessage({ 
-                                command: 'goToStep', 
-                                index: parseInt(stepIndex) 
-                            }, '*');
-                            
+                            $iframe[0].contentWindow.postMessage({ command: 'goToStep', index: parseInt(stepIndex) }, '*');
                             $summaryOverlay.fadeOut(200);
                             $('.modal-info-btn').removeClass('active');
                         }
@@ -263,8 +259,7 @@ function buildTutorialSummary(manifestUrl, $modalContent) {
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.error("Error fetching proxied manifest (Check PHP logs):", textStatus, errorThrown);
-            $summaryOverlay.html('<div class="error-message">Error fetching tutorial manifest via proxy. (Check proxy setup)</div>').fadeIn(200);
+            $summaryOverlay.html('<div class="error-message">Error fetching tutorial manifest via proxy.</div>').fadeIn(200);
         }
     });
 }
@@ -283,15 +278,16 @@ function loadModalContent(index) {
     const $modalContent = $('#modal-content-area');
     const $modalOpenLink = $modal.find('.open-new-window');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
+    const $modalPlayBtn = $modal.find('.modal-play-btn');
+    const $modalFsBtn = $modal.find('.modal-fullscreen-btn');
 
-    // FIX 1: Ensure Header is Clean (Remove inline styles that break flex layout)
+    // FIX 1: Ensure Header is Clean
     $modal.find('.modal-header').removeAttr('style'); 
 
-    // === CRITICAL FIX: Clean Slate Logic ===
+    // === CLEAN SLATE ===
     $modal.removeClass('chess-mode research-mode'); 
     $('body').removeClass('chess-mode-active');
     
-    // Reset specific logic states (BUT NOT global info persistence)
     isTutorialMode = false;
     $modalInfoBtn.removeData('manifest-url'); 
     $modalContent.removeClass('summary-view-active');
@@ -306,6 +302,19 @@ function loadModalContent(index) {
     const jsonUrl = $link.data('json-url');
     const manifestUrl = $link.data('manifest-url');
     
+    // === BUTTON VISIBILITY MANAGEMENT ===
+    // Play and Fullscreen buttons are ONLY for images
+    if (!loadType && /\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) { loadType = 'image'; }
+    
+    if (loadType === 'image') {
+        $modalPlayBtn.show();
+        $modalFsBtn.show();
+    } else {
+        $modalPlayBtn.hide();
+        $modalFsBtn.hide();
+        stopSlideshow(); // Ensure slideshow stops if we switch to non-image
+    }
+
     // 1. Research Logic
     if (loadType === 'research' && jsonUrl) {
         $modal.addClass('research-mode'); 
@@ -321,7 +330,6 @@ function loadModalContent(index) {
         isTutorialMode = true; 
         $modalInfoBtn.show(); 
         $modalInfoBtn.data('manifest-url', manifestUrl); 
-        // Tutorial contents start closed regardless of photo setting
         $modalInfoBtn.removeClass('active'); 
 
         $modal.addClass('research-mode'); 
@@ -339,40 +347,28 @@ function loadModalContent(index) {
         return;
     }
 
-    // 3. Standard Logic (Includes Photos/Images/Iframes)
+    // 3. Standard Logic
     $modalOpenLink.attr('href', loadUrl); 
     $modalContent.find('.modal-photo-info').remove(); 
-    
     $modalInfoBtn.hide(); 
     
-    // === AUTO DETECT TYPE ===
     if (!loadType) {
-        if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) {
-            loadType = 'image';
-        } else if (/\.md$/i.test(loadUrl)) {
-            loadType = 'markdown';
-        } else if (/\.pgn$/i.test(loadUrl)) {
-            loadType = 'chess';
-        } else if (loadUrl.endsWith('.html')) {
-            loadType = 'html';
-        } else if (loadUrl.startsWith('http')) {
-            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) {
-                loadType = 'blocked'; 
-            } else {
-                loadType = 'iframe';
-            }
-        } else {
-            loadType = 'newtab'; 
-        }
+        // Auto-detect fallbacks if not caught above
+        if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) loadType = 'image';
+        else if (/\.md$/i.test(loadUrl)) loadType = 'markdown';
+        else if (/\.pgn$/i.test(loadUrl)) loadType = 'chess';
+        else if (loadUrl.endsWith('.html')) loadType = 'html';
+        else if (loadUrl.startsWith('http')) {
+            if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) loadType = 'blocked'; 
+            else loadType = 'iframe';
+        } else loadType = 'newtab'; 
     }
 
-    // === NEW: GitHub Link Fixer ===
     if ((loadType === 'markdown' || loadType === 'chess') && loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
         loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
     }
 
     const customHeight = $link.data('height') || '90vh';
-    
     const $card = currentCardList[currentCardIndex].closest('.card-item');
     const title = $card.find('h3').text() || $card.find('img').attr('alt') || $card.data('title'); 
     const desc = $card.find('p').text() || $card.data('desc'); 
@@ -384,11 +380,9 @@ function loadModalContent(index) {
         $modalInfoBtn.toggleClass('active', isModalInfoVisible);
         
         // Explicitly set inline styles based on global state
-        // CRITICAL FIX: Do NOT use !important here, it prevents jQuery from toggling display later
         const displayStyle = isModalInfoVisible ? 'block' : 'none';
         const opacityStyle = isModalInfoVisible ? '1' : '0';
         
-        // Added class 'raised-layer' for the new styling
         infoHtml = `
             <div class="modal-photo-info raised-layer" style="display: ${displayStyle}; opacity: ${opacityStyle};">
                 <h3>${title}</h3>
@@ -399,62 +393,48 @@ function loadModalContent(index) {
     switch (loadType) {
         case 'markdown':
             $.ajax({
-                url: loadUrl, type: 'GET',
-                dataType: 'text',
+                url: loadUrl, type: 'GET', dataType: 'text',
                 success: function(markdownText) { 
-                    const htmlContent = typeof marked !== 'undefined' 
-                        ? marked.parse(markdownText) 
-                        : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
-                    
-                    $modalContent.html(`
-                        <div class="markdown-wrapper">
-                            <div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">
-                                ${htmlContent}
-                            </div>
-                        </div>
-                    `);
+                    const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText;
+                    $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`);
                     if (infoHtml) { $modalContent.append(infoHtml); $modalInfoBtn.show(); }
                 },
-                                
-                error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file. (Check CORS/URL)</div>'); }
+                error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); }
             });
             break;
-        case 'chess':
-            // FIX: Hide the main modal info button in Chess mode to avoid conflict
-            $modalInfoBtn.hide(); 
+
+
+
+
             
-            // Fix GitHub CORS
+        case 'chess':
+            $modalInfoBtn.hide(); 
+            // Enter Chess Mode
+            $modal.addClass('chess-mode');
+            $('body').addClass('chess-mode-active');
+            
             if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
                 loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
 
-            // 1. ENTER CHESS MODE
-            $modal.addClass('chess-mode');
-            $('body').addClass('chess-mode-active');
-            
-
             $.ajax({
-                url: loadUrl,
-                dataType: 'text',
+                url: loadUrl, dataType: 'text',
                 success: function(pgnFileContent) {
                     let rawGames = pgnFileContent.split(/(?=\[Event ")/g).filter(g => g.trim().length > 0);
                     if (rawGames.length === 0) rawGames = [pgnFileContent];
 
                     const boardId = 'chess-board-' + Date.now();
                     const styleId = 'chess-style-' + Date.now();
-
                     let currentFontSize = 26;
                     let commentsEnabled = true;
                     let commentMap = {};
 
-                    // --- PARSER ---
+                    // --- CHESS PARSER ---
                     const parseCommentsMap = (pgnText) => {
                         const map = {};
                         let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim();
-
                         const cleanPGN = (text) => {
-                            let result = "";
-                            let depth = 0;
+                            let result = ""; let depth = 0;
                             for (let i = 0; i < text.length; i++) {
                                 if (text[i] === '(') { depth++; continue; }
                                 if (text[i] === ')') { if(depth > 0) depth--; continue; }
@@ -462,31 +442,15 @@ function loadModalContent(index) {
                             }
                             return result;
                         };
-                        body = cleanPGN(body);
-
-                        body = body.replace(/(\r\n|\n|\r)/gm, " ");
-                        body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
-
+                        body = cleanPGN(body).replace(/(\r\n|\n|\r)/gm, " ").replace(/\{/g, " { ").replace(/\}/g, " } ");
                         const tokens = body.split(/\s+/);
-                        let moveIndex = 0;
-                        let insideComment = false;
-                        let currentComment = [];
-
+                        let moveIndex = 0; let insideComment = false; let currentComment = [];
                         for (let i = 0; i < tokens.length; i++) {
                             const token = tokens[i].trim();
                             if (!token) continue;
-
                             if (token === '{') { insideComment = true; currentComment = []; continue; }
-                            if (token === '}') {
-                                insideComment = false;
-                                const idx = moveIndex === 0 ? -1 : moveIndex - 1;
-                                map[idx] = currentComment.join(" ");
-                                continue;
-                            }
-
-                            if (insideComment) {
-                                currentComment.push(token);
-                            } else {
+                            if (token === '}') { insideComment = false; const idx = moveIndex === 0 ? -1 : moveIndex - 1; map[idx] = currentComment.join(" "); continue; }
+                            if (insideComment) { currentComment.push(token); } else {
                                 if (/^\d+\.+/.test(token)) continue;
                                 if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
                                 if (token.startsWith('$')) continue;
@@ -496,7 +460,6 @@ function loadModalContent(index) {
                         return map;
                     };
 
-                    // NEW HELPER: Checks if the SPECIFIC move has any content
                     const hasCommentary = (moveIndex) => {
                         const text = commentMap[moveIndex] || "";
                         const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
@@ -504,7 +467,7 @@ function loadModalContent(index) {
                         return hasEval || cleanText.length > 0;
                     };
 
-                    // 2. INJECT HTML
+                    // CHESS HTML
                     $modalContent.html(`
                         <style id="${styleId}"></style>
                         <div class="chess-container">
@@ -518,28 +481,20 @@ function loadModalContent(index) {
                                 <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
                             </div>
                             <div class="chess-main-area">
-                                <div class="chess-white-box">
-                                    <div id="${boardId}"></div>
-                                </div>
+                                <div class="chess-white-box"><div id="${boardId}"></div></div>
                                 <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
-                                <div id="chess-metadata-overlay" class="chess-metadata-overlay"></div> </div>
+                                <div id="chess-metadata-overlay" class="chess-metadata-overlay"></div>
+                            </div>
                         </div>
                     `);
 
-                    // --- FONT SIZE HANDLERS ---
-                    const minFontSize = 14;
-                    const maxFontSize = 40;
-                    const sizeStep = 2; // Change font size by 2 pixels per click
-
+                    // FONT HANDLERS
                     const applySizeChange = (newSize) => {
                         currentFontSize = newSize;
-                        updateChessStyles(); // Update moves panel
-                        
-                        // Get current move index and total moves to re-render the comment box
+                        updateChessStyles(); 
                         const totalMoves = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                         let activeMoveIndex = -1;
                         const movesPanel = document.getElementById(boardId + 'Moves');
-                        
                         if (movesPanel) {
                             const activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
                             if (activeEl) {
@@ -547,234 +502,99 @@ function loadModalContent(index) {
                                 activeMoveIndex = allMoves.indexOf(activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move'));
                             }
                         }
-                        updateCommentContent(activeMoveIndex, totalMoves); // Force update comment box content
-                    }
+                        updateCommentContent(activeMoveIndex, totalMoves); 
+                    };
 
-                    $('#chess-font-minus').off('click').on('click', function(e) {
-                        e.preventDefault();
-                        if (currentFontSize > minFontSize) {
-                            applySizeChange(currentFontSize - sizeStep);
-                        }
-                    });
+                    $('#chess-font-minus').on('click', function(e) { e.preventDefault(); if (currentFontSize > 14) applySizeChange(currentFontSize - 2); });
+                    $('#chess-font-plus').on('click', function(e) { e.preventDefault(); if (currentFontSize < 40) applySizeChange(currentFontSize + 2); });
 
-                    $('#chess-font-plus').off('click').on('click', function(e) {
-                        e.preventDefault();
-                        if (currentFontSize < maxFontSize) {
-                            applySizeChange(currentFontSize + sizeStep);
-                        }
-                    });
-                    // --- END FONT SIZE HANDLERS ---
-
-                    // --- DYNAMIC STYLES ---
+                    // STYLES
                     const updateChessStyles = () => {
                         const movesId = `#${boardId}Moves`;
                         const css = `
-                            ${movesId} {
-                                background-color: #ffffff !important;
-                                color: #000000 !important;
-                                font-size: ${currentFontSize}px !important;
-                                line-height: ${currentFontSize + 10}px !important;
-                                padding: 20px !important;
-                                border-left: 4px solid #d2b48c !important;
-                                height: 100% !important;
-                                overflow-y: auto !important;
-                                width: 360px !important;
-                                min-width: 360px !important;
-                                display: block !important;
-                            }
-                            ${movesId} move {
-                                font-size: ${currentFontSize}px !important;
-                                line-height: ${currentFontSize + 10}px !important;
-                                color: #000000 !important;
-                                cursor: pointer !important;
-                                display: inline-block !important;
-                                margin-right: 8px !important;
-                                margin-bottom: 5px !important;
-                                border-radius: 3px !important;
-                                padding: 2px 4px !important;
-                            }
+                            ${movesId} { background-color: #ffffff !important; color: #000000 !important; font-size: ${currentFontSize}px !important; line-height: ${currentFontSize + 10}px !important; padding: 20px !important; border-left: 4px solid #d2b48c !important; height: 100% !important; overflow-y: auto !important; width: 360px !important; min-width: 360px !important; display: block !important; }
+                            ${movesId} move { font-size: ${currentFontSize}px !important; line-height: ${currentFontSize + 10}px !important; color: #000000 !important; cursor: pointer !important; display: inline-block !important; margin-right: 8px !important; margin-bottom: 5px !important; border-radius: 3px !important; padding: 2px 4px !important; }
                             ${movesId} move:hover { background-color: #e0e0e0 !important; }
                             ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
-
-                            #${boardId} .pgnvjs-wrapper {
-                                display: flex !important;
-                                flex-direction: row !important;
-                                align-items: flex-start !important;
-                                width: 100% !important;
-                                justify-content: center !important;
-                            }
-                            
-                            /* NEW: Dynamic styling for the comment overlay based on currentFontSize */
-                            #chess-comment-overlay {
-                                /* Base comment size is 250px wide for 26px font. Scale it up/down */
-                                width: ${250 + (currentFontSize - 26) * 6}px !important;
-                                min-width: 250px !important;
-                                padding: ${15 + (currentFontSize - 26) * 0.5}px !important;
-                            }
+                            #${boardId} .pgnvjs-wrapper { display: flex !important; flex-direction: row !important; align-items: flex-start !important; width: 100% !important; justify-content: center !important; }
+                            #chess-comment-overlay { width: ${250 + (currentFontSize - 26) * 6}px !important; min-width: 250px !important; padding: ${15 + (currentFontSize - 26) * 0.5}px !important; }
                         `;
                         $(`#${styleId}`).text(css);
                     };
 
-                    // --- EVAL GENERATOR (MODIFIED: Returns empty string if no eval) ---
+                    // EVAL
                     const generateEvalHtml = (rawText) => {
                         const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                        let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                        cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim();
+                        let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim().replace(/\[%[^\]]+\]/g, '').trim();
+                        if (!evalMatch) return { html: "", text: cleanText };
 
-                
-                        if (!evalMatch) {
-                            return { html: "", text: cleanText };
+                        let moveDisplay = "0", moveWidth = 0, moveLeft = 50, moveColor = "#888", balanceScore = "0", balanceWidth = 0, balanceLeft = 50, balanceColor = "#888", whiteWinPct = 50;
+                        const valStr = evalMatch[1];
+                        let rawVal = 0;
+
+                        if (valStr.startsWith('#')) {
+                            const isBlackMate = valStr.includes('-');
+                            moveDisplay = "Mate " + valStr;
+                            moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
+                            balanceScore = isBlackMate ? "-100" : "+100"; balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor; whiteWinPct = isBlackMate ? 0 : 100;
+                        } else {
+                            rawVal = parseFloat(valStr);
+                            moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
+                            const absMove = Math.min(Math.abs(rawVal), 10);
+                            moveWidth = (absMove / 10) * 50;
+                            if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; } else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
+                            balanceScore = Math.round(rawVal * 10);
+                            balanceScore = Math.max(-100, Math.min(100, balanceScore));
+                            const absBal = Math.abs(balanceScore);
+                            balanceWidth = (absBal / 100) * 50;
+                            if (balanceScore > 0) { balanceLeft = 50; balanceColor = "#2ecc71"; } else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
+                            if (balanceScore > 0) balanceScore = `+${balanceScore}`;
+                            whiteWinPct = 50 + (rawVal * 8); whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                         }
-                
-
-                        let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
-                        let balanceScore = "0"; let balanceWidth = 0; let balanceLeft = 50; let balanceColor = "#888";
-                        let whiteWinPct = 50;
-
-                        if (evalMatch) {
-                            const valStr = evalMatch[1];
-                            let rawVal = 0;
-
-                            if (valStr.startsWith('#')) {
-                                const isBlackMate = valStr.includes('-');
-                                moveDisplay = "Mate " + valStr;
-                                moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ?
-                                "#e74c3c" : "#2ecc71";
-
-                                balanceScore = isBlackMate ? "-100" : "+100";
-                                balanceWidth = 50; balanceLeft = isBlackMate ? 0 : 50; balanceColor = moveColor;
-                                whiteWinPct = isBlackMate ? 0 : 100;
-                            } else {
-                                rawVal = parseFloat(valStr);
-
-                                moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
-                                const absMove = Math.min(Math.abs(rawVal), 10);
-                                moveWidth = (absMove / 10) * 50;
-                                if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
-                                else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
-
-                                balanceScore = Math.round(rawVal * 10);
-                                balanceScore = Math.max(-100, Math.min(100, balanceScore));
-
-                                const absBal = Math.abs(balanceScore);
-                                balanceWidth = (absBal / 100) * 50;
-                                if (balanceScore > 0) { balanceLeft = 50; balanceColor = "#2ecc71"; }
-                                else { balanceLeft = 50 - balanceWidth; balanceColor = "#e74c3c"; }
-
-                                if (balanceScore > 0) balanceScore = `+${balanceScore}`;
-                                whiteWinPct = 50 + (rawVal * 8);
-                                whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
-                            }
-                        }
-
-                        const whiteWinPctFormatted = whiteWinPct.toFixed(1);
-                        const blackWinPctFormatted = (100 - whiteWinPct).toFixed(1);
 
                         const evalHtml = `
-                            <div class="eval-row">
-                                <div class="eval-header">
-                                    <span>Move Score</span>
-                                    <span class="eval-value">${moveDisplay}</span>
-                                </div>
-                                <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
-                            </div>
-                            <div class="eval-row">
-                                <div class="eval-header">
-                                    <span>Game Balance</span>
-                                    <span class="eval-value">${balanceScore}</span>
-                                </div>
-                                <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div>
-                            </div>
-                            <div class="eval-row">
-                                <div class="eval-header">
-                                    <span>White vs Black</span>
-                                    <span class="eval-value">${whiteWinPctFormatted}% / ${blackWinPctFormatted}%</span>
-                                </div>
-                                <div class="win-rate-bar" style="height: 10px; background: #000000; overflow: hidden; border-radius: 3px; border: 1px solid #777;">
-                                    <div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #ffffff; float: left;"></div>
-                                </div>
-                            </div>
+                            <div class="eval-row"><div class="eval-header"><span>Move Score</span><span class="eval-value">${moveDisplay}</span></div><div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div></div>
+                            <div class="eval-row"><div class="eval-header"><span>Game Balance</span><span class="eval-value">${balanceScore}</span></div><div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${balanceLeft}%; width: ${balanceWidth}%; background-color: ${balanceColor};"></div></div></div>
+                            <div class="eval-row"><div class="eval-header"><span>White vs Black</span><span class="eval-value">${whiteWinPct.toFixed(1)}% / ${(100 - whiteWinPct).toFixed(1)}%</span></div><div class="win-rate-bar" style="height: 10px; background: #000; overflow: hidden; border-radius: 3px; border: 1px solid #777;"><div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #fff; float: left;"></div></div></div>
                         `;
                         return { html: evalHtml, text: cleanText };
                     };
 
-                    // --- COMMENT UPDATER ---
                     const updateCommentContent = (moveIndex, totalMoves) => {
                         const overlay = document.getElementById('chess-comment-overlay');
                         const btn = $('#chess-comment-btn');
+                        if (hasCommentary(moveIndex)) { btn.css({ background: '#4CAF50', color: '#000', border: '1px solid #4CAF50' }); } 
+                        else { btn.css({ background: '#1a1a1a', color: '#ccc', border: '1px solid #444' }); }
 
-                        // 1. DYNAMIC BUTTON COLORING (Per Move)
-                        const hasComment = hasCommentary(moveIndex);
-                        if (hasComment) {
-                            // Green if annotation exists
-                            btn.css({ background: '#4CAF50', color: '#000', border: '1px solid #4CAF50' });
-                        } else {
-                            // Dark Grey if no annotation
-                            btn.css({ background: '#1a1a1a', color: '#ccc', border: '1px solid #444' });
-                        }
-
-                        // 2. VISIBILITY CHECK
                         if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                         $(overlay).fadeIn();
 
                         const commentText = commentMap[moveIndex] || "";
-                        const parsed = generateEvalHtml(commentText); // parsed.html will now be empty if no eval is present
-                        let content = "";
-                        
-                        // Base 26px font maps to 100% zoom. Calculate relative size increase.
+                        const parsed = generateEvalHtml(commentText);
                         const zoomFactor = currentFontSize / 26; 
-
-                        const baseLabelSize = 14;
-                        const baseContentSize = 18;
-                        const baseCounterSize = 16;
-
-                        const labelFontSize = Math.round(baseLabelSize * zoomFactor);
-                        const contentFontSize = Math.round(baseContentSize * zoomFactor);
-                        const counterFontSize = Math.round(baseCounterSize * zoomFactor);
+                        const contentFontSize = Math.round(18 * zoomFactor);
                         
-                        // 3. TEXT CONTENT (Modified Title Style)
                         let textContent = "";
                         if (parsed.text) {
-                            textContent = `
-                                <h5 style="margin: 0 0 8px 0; color: navy; background: #e0e0e0; font-size: ${labelFontSize}px; padding: 4px 8px; border-radius: 3px; display: inline-block; font-weight: bold;">Game Commentary</h5>
-                                <div style="margin-bottom:12px; font-size: ${contentFontSize}px; color: #2c3e50;">${parsed.text}</div>
-                            `;
+                            textContent = `<h5 style="margin:0 0 8px 0; color:navy; background:#e0e0e0; font-size:${Math.round(14 * zoomFactor)}px; padding:4px 8px; border-radius:3px; display:inline-block; font-weight:bold;">Game Commentary</h5><div style="margin-bottom:12px; font-size:${contentFontSize}px; color:#2c3e50;">${parsed.text}</div>`;
                         } else if (moveIndex === -1) {
-                            textContent = `<div style="color:#546e7a; margin-bottom:12px; font-size: ${contentFontSize}px; text-align: center;">Start of Game</div>`;
+                            textContent = `<div style="color:#546e7a; margin-bottom:12px; font-size:${contentFontSize}px; text-align:center;">Start of Game</div>`;
                         } else {
-                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px; font-size: ${contentFontSize}px; text-align: center;">No commentary.</div>`;
+                            textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px; font-size:${contentFontSize}px; text-align:center;">No commentary.</div>`;
                         }
-                        content += `<div class="comment-text-content">${textContent}</div>`;
-
-                        // 4. BARS & COUNTER
-                        let footer = "";
-                        footer += parsed.html; // This will be empty if no eval was found
-
+                        
                         const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1;
                         const displayTotal = totalMoves || '?';
-                        
-                        footer += `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
-
-                        overlay.innerHTML = content + footer;
+                        const footer = `${parsed.html}<div class="move-counter" style="font-size: ${Math.round(16 * zoomFactor)}px;">Move ${displayMove} / ${displayTotal}</div>`;
+                        overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + footer;
                     };
 
-                    // CLICK HANDLER
                     $('#chess-comment-btn').off('click').on('click', function(e) {
-                        e.preventDefault();
-                        commentsEnabled = !commentsEnabled;
-                        const btn = $(this);
-
-                        if (commentsEnabled) {
-                            btn.text('Comments: On');
-                        } else {
-                            btn.text('Comments: Off');
-                        }
-
-                        // IMMEDIATE REFRESH: Grab active move to update content and button color instantly
+                        e.preventDefault(); commentsEnabled = !commentsEnabled;
+                        $(this).text(commentsEnabled ? 'Comments: On' : 'Comments: Off');
                         const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                         let activeMoveIndex = -1;
                         const movesPanel = document.getElementById(boardId + 'Moves');
-
                         if (movesPanel) {
                             const activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
                             if (activeEl) {
@@ -785,17 +605,9 @@ function loadModalContent(index) {
                         updateCommentContent(activeMoveIndex, total);
                     });
 
+                    // CLOSE BUTTON
+                    $('#chess-close-btn').off('click').on('click', function(e) { e.preventDefault(); $('.modal-close-btn').first().click(); });
 
-                    // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
-                    $('#chess-close-btn').off('click').on('click', function(e) {
-                        e.preventDefault();
-                        // Simply trigger the universal close button click, 
-                        // which now handles all cleanup (Step 2).
-                        $('.modal-close-btn').first().click(); 
-                    });
-                    
-
-                    // --- RENDER ---
                     const $select = $('#chess-game-select');
                     rawGames.forEach((gamePgn, idx) => {
                         const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -806,97 +618,71 @@ function loadModalContent(index) {
                     if (rawGames.length <= 1) $select.hide();
 
                     let gameObserver = null;
-
                     function renderGame(index) {
                         if (gameObserver) gameObserver.disconnect();
-
                         const selectedPgn = rawGames[index];
                         commentMap = parseCommentsMap(selectedPgn);
-
                         const headers = {};
-                        const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                         let match;
-                        while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
+                        while ((match = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
 
                         let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
                         for (const [key, val] of Object.entries(headers)) {
                             infoHtml += `<tr><td style="color: var(--text-accent); font-weight:bold; width: 30%;">${key}</td><td style="color: #fff;">${val}</td></tr>`;
                         }
                         infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
-                        $(`#chess-metadata-overlay`).html(infoHtml); // Use the common ID
+                        $(`#chess-metadata-overlay`).html(infoHtml);
 
-                        // SIZE
-                        const winHeight = $(window).height();
-                        const winWidth = $(window).width();
-                        const maxWidth = winWidth * 0.90;
-                        const maxHeight = winHeight - 250;
-                        const boardSize = Math.min(maxWidth, maxHeight);
-
+                        const boardSize = Math.min($(window).width() * 0.90, $(window).height() - 250);
                         $(`#${boardId}`).empty();
 
                         if (typeof PGNV !== 'undefined') {
-                            PGNV.pgnView(boardId, {
-                                pgn: selectedPgn,
-                                theme: 'brown',
-                                boardSize: boardSize,
-                                layout: 'left',
-                                width: '100%',
-                                headers: false,
-                            });
-
+                            PGNV.pgnView(boardId, { pgn: selectedPgn, theme: 'brown', boardSize: boardSize, layout: 'left', width: '100%', headers: false });
                             updateChessStyles();
-                            const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
-                            updateCommentContent(-1, total);
+                            updateCommentContent(-1, document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0);
 
-                            // Observer
                             const checkInterval = setInterval(() => {
                                 const movesPanel = document.getElementById(boardId + 'Moves');
-
                                 if (movesPanel) {
                                     clearInterval(checkInterval);
-
                                     const totalMoves = movesPanel.querySelectorAll('move').length;
-
                                     gameObserver = new MutationObserver(() => {
                                         let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
-
                                         if (activeEl) {
                                             const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
                                             if (activeMove) {
                                                 const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                                const index = allMoves.indexOf(activeMove);
-                                                updateCommentContent(index, totalMoves);
+                                                updateCommentContent(allMoves.indexOf(activeMove), totalMoves);
                                                 return;
                                             }
                                         }
                                         updateCommentContent(-1, totalMoves);
                                     });
-
                                     gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
                                 }
                             }, 200);
                         } else {
-                            $modal.removeClass('chess-mode');
-                            $('body').removeClass('chess-mode-active');
-                            $modal.find('.modal-header').removeAttr('style'); // FIX: Restore flex
-                            $modalContent.html('<div class="error-message">PGN Library not loaded.</div>');
+                            $('.modal-close-btn').first().click();
                         }
                     }
-
                     renderGame(0);
                     $select.off('change').on('change', function() { renderGame($(this).val()); });
-                    // FIX: Re-attach click handler for the CHESS info button (which is separate)
                     $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-overlay`).fadeToggle(); });
-
                 },
                 error: function() {
-                    $modal.removeClass('chess-mode');
-                    $('body').removeClass('chess-mode-active');
-                    $modal.find('.modal-header').removeAttr('style'); // FIX: Restore flex
-                    $modalContent.html('<div class="error-message">Could not load PGN file.</div>');
+                    $('.modal-close-btn').first().click();
                 }
             });
             break;
+
+
+
+
+
+
+
+
+            
         case 'html':
             $.ajax({
                 url: loadUrl, type: 'GET',
@@ -908,37 +694,19 @@ function loadModalContent(index) {
             });
             break;
         case 'image':
-            $modalContent.html(`
-                <div class="image-wrapper">
-                    <img src="${loadUrl}" class="loaded-image" alt="Loaded content">
-                </div>
-            `);
+            $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`);
             if (infoHtml) { 
-                // Ensure photo info element is added to modalContent
                 $modalContent.append(infoHtml);
                 $modalInfoBtn.show(); 
-                // Fix: Ensure the active state of the info button is set on image load
-                $modalInfoBtn.toggleClass('active', isModalInfoVisible);
             }
             break;
         case 'iframe':
-            // FIX: Use the specified absolute server proxy path (https://mediamaze.com/p/?)
             let iframeSrc = loadUrl;
-            if (loadUrl.startsWith('http')) {
-                // Use the absolute PHP proxy endpoint
-                iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`;
-                console.log("Using absolute PHP proxy for URL:", iframeSrc);
-            }
-
-            $modalContent.html(`
-                <div class="iframe-wrapper">
-                    <iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe>
-                </div>
-            `);
+            if (loadUrl.startsWith('http')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; }
+            $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`);
             if (infoHtml) { 
                 $modalContent.append(infoHtml);
                 $modalInfoBtn.show(); 
-                $modalInfoBtn.toggleClass('active', isModalInfoVisible); 
             }
             break;
         case 'blocked':
@@ -952,36 +720,22 @@ function loadModalContent(index) {
     $('.modal-prev-btn').prop('disabled', index <= 0);
     $('.modal-next-btn').prop('disabled', index >= currentCardList.length - 1);
 }
-/* === RESEARCH BUILDER (Uses Main Header) === */
+
+/* === RESEARCH BUILDER === */
 
 function buildResearchModal(jsonUrl) {
     const $modalContent = $('#modal-content-area');
+    $modalContent.html(`<div class="tab-nav" id="research-tab-nav-modal"></div><div class="tab-content" id="research-tab-content-modal"><div class="content-loader"><div class="spinner"></div></div></div>`);
     
-    // Only inject the TABS, not a new header
-    const researchHtml = `
-        <div class="tab-nav" id="research-tab-nav-modal"></div>
-        <div class="tab-content" id="research-tab-content-modal">
-            <div class="content-loader"><div class="spinner"></div></div>
-        </div>
-    `;
-    $modalContent.html(researchHtml);
-
     $.getJSON(jsonUrl, function (data) {
-        // Update the MAIN modal open link
         $('#content-modal .open-new-window').attr('href', jsonUrl);
-        
         const $tabNav = $('#research-tab-nav-modal');
         $tabNav.empty(); 
-        
         $.each(data.tickers, function(index, ticker) {
             const $button = $(`<button class="tab-button"></button>`);
             $button.text(ticker.name);
             $button.attr('data-content-url', ticker.contentUrl);
-            
-            if (index === 0) {
-                $button.addClass('active');
-                loadModalTabContent(ticker.contentUrl);
-            }
+            if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl); }
             $tabNav.append($button);
         });
     }).fail(function() {
@@ -990,19 +744,15 @@ function buildResearchModal(jsonUrl) {
 }
 
 function loadModalTabContent(htmlUrl) {
-    // Update the main "Open in new window" link to the current tab
     $('#content-modal .open-new-window').attr('href', htmlUrl);
-
-    const $target = $('#research-tab-content-modal');
-    $target.html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`);
+    $('#research-tab-content-modal').html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`);
 }
 
-/* === FILTER LOGIC (Standard) === */
+/* === FILTER LOGIC === */
 
 function populateCategoryFilter(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return;
-
     const categoryCounts = {};
     $(`${listId} .card-item`).each(function() {
         const categories = $(this).data('category');
@@ -1013,57 +763,36 @@ function populateCategoryFilter(listId, filterId) {
             });
         }
     });
-
     const sortedCategories = Object.entries(categoryCounts).sort(([,a], [,b]) => b - a);
     $filter.children('option:not(:first)').remove(); 
-    sortedCategories.forEach(([key, count]) => {
-        $filter.append($('<option>', { value: key, text: `${key} (${count})` }));
-    });
+    sortedCategories.forEach(([key, count]) => { $filter.append($('<option>', { value: key, text: `${key} (${count})` })); });
 }
 
 function populateSmartKeywords(listId, filterId) {
     const $filter = $(filterId);
     if (!$filter.length) return; 
-    
     const stop = (typeof STOP_WORDS !== 'undefined') ? STOP_WORDS : new Set(['a', 'the']);
     const replace = (typeof REPLACEMENT_MAP !== 'undefined') ? REPLACEMENT_MAP : {};
-
     const wordCounts = {}; 
     $(`${listId} .card-item`).each(function() {
         const localKeywords = new Set();
         const $card = $(this);
-        const text = [
-            $card.find('h3').text(), $card.find('p').text(),
-            $card.find('.card-category').text(), $card.find('img').attr('alt'),
-            $card.data('category'), $card.data('keywords')
-        ].map(t => String(t||'')).join(' ');
-        
+        const text = [$card.find('h3').text(), $card.find('p').text(), $card.find('.card-category').text(), $card.find('img').attr('alt'), $card.data('category'), $card.data('keywords')].map(t => String(t||'')).join(' ');
         const words = decodeText(text).split(/[^a-zA-Z0-9'-]+/);
-        
         words.forEach(word => {
             let clean = word.toLowerCase().trim().replace(/[^a-z0-9]/gi, '');
             if (replace[clean]) clean = replace[clean];
-            if (clean.length > 2 && clean.length <= 15 && !stop.has(clean) && isNaN(clean)) {
-                localKeywords.add(clean);
-            }
+            if (clean.length > 2 && clean.length <= 15 && !stop.has(clean) && isNaN(clean)) { localKeywords.add(clean); }
         });
         localKeywords.forEach(k => wordCounts[k] = (wordCounts[k] || 0) + 1);
     });
-
     const sorted = Object.entries(wordCounts).sort(([,a], [,b]) => b - a).slice(0, 30);
     $filter.children('option:not(:first)').remove();
-    sorted.forEach(([key, count]) => {
-        const display = key.length > 15 ? key.substring(0, 15) + '...' : key;
-        $filter.append($('<option>', { value: key, text: `${display} (${count})` }));
-    });
+    sorted.forEach(([key, count]) => { $filter.append($('<option>', { value: key, text: `${key} (${count})` })); });
 }
 
 function getCardSearchableText($card) {
-    const textSources = [
-        $card.find('h3').text(), $card.find('p').text(),
-        $card.find('.card-category').text(), $card.find('img').attr('alt'),
-        $card.data('category'), $card.data('keywords')
-    ];
+    const textSources = [$card.find('h3').text(), $card.find('p').text(), $card.find('.card-category').text(), $card.find('img').attr('alt'), $card.data('category'), $card.data('keywords')];
     return decodeText(textSources.map(text => String(text || '')).join(' ').toLowerCase());
 }
 
@@ -1071,11 +800,7 @@ function checkKeywordMatch(cardText, selectedKeyword) {
     if (selectedKeyword === "all") return true;
     const synonyms = (typeof SYNONYM_MAP !== 'undefined') ? (SYNONYM_MAP[selectedKeyword] || []) : [];
     const keywordsToMatch = [selectedKeyword, ...synonyms];
-    
-    return keywordsToMatch.some(key => {
-        const regex = new RegExp(`\\b${key}\\b`, 'i'); 
-        return regex.test(cardText);
-    });
+    return keywordsToMatch.some(key => { return new RegExp(`\\b${key}\\b`, 'i').test(cardText); });
 }
 
 function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResultsId, initialLoad) {
@@ -1087,18 +812,13 @@ function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResult
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $(noResultsId);
     let visibleCount = 0;
-
     if (searchTerm.length > 0 || selectedCategory !== "all" || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
             const $card = $(this);
-            const cardCategory = $card.data('category'); 
             const cardText = getCardSearchableText($card); 
-            
-            const categoryMatch = (selectedCategory === "all" || String(cardCategory).includes(selectedCategory));
             const searchMatch = (searchTerm === "" || cardText.includes(searchTerm));
             const keywordMatch = checkKeywordMatch(cardText, selectedKeyword);
-
             if (categoryMatch && searchMatch && keywordMatch) {
                 $card.removeClass('hidden-card-item').show();
                 visibleCount++;
@@ -1114,63 +834,36 @@ function filterCardsGeneric(listId, searchId, catFilterId, keyFilterId, noResult
 
 /* === LOAD DATA FUNCTIONS === */
 
-
-// UPDATED: Added onComplete parameter and callback execution
 function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
     const $albumList = $('#photo-album-list');
     const $targetList = $albumList.length ? $albumList : $('#about-album-list');
-    
     $.getJSON(jsonUrl, function (albumData) {
-        if ($('#album-title').length) {
-            $('#album-title').text(decodeText(albumData.albumTitle));
-        }
-        
+        if ($('#album-title').length) $('#album-title').text(decodeText(albumData.albumTitle));
         $targetList.empty(); 
-        
         $.each(albumData.photos, function(index, photo) {
             const title = decodeText(photo.title);
             const category = decodeText(photo.category);
             const description = decodeText(photo.description);
-            
-            const cardHtml = `
-                <div class="card-item" 
-                     data-category="${category}" 
-                     data-keywords="${title},${description}"
-                     data-title="${title}"
-                     data-desc="${description}">
-                    <a href="${photo.url}" data-load-type="image">
-                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
-                    </a>
-                </div>`;
+            const cardHtml = `<div class="card-item" data-category="${category}" data-keywords="${title},${description}" data-title="${title}" data-desc="${description}"><a href="${photo.url}" data-load-type="image"><img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}"></a></div>`;
             $targetList.append(cardHtml);
         });
-        
         if ($('#album-category-filter').length) {
             populateCategoryFilter('#photo-album-list', '#album-category-filter');
             populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
         }
-        
         const defaultIncrement = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
-        // Use 10 as default if incrementOverride is missing (undefined)
         handleCardView($targetList.parent(), initialLoadOverride, defaultIncrement);
-        
-        // --- NEW: Call the callback if provided ---
-        if (typeof onComplete === 'function') {
-            onComplete();
-        }
-        
+        if (typeof onComplete === 'function') onComplete();
     }).fail(function() { 
         if ($('#album-title').length) $('#album-title').text("Error Loading Album"); 
     });
 }
 
-// UPDATED: Added onComplete parameter and callback execution
 function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
     $('#Grid').empty(); 
     var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
     var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
     var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
-
     $.getJSON(URL, options, function (data) {
         $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
         if (data.items) {
@@ -1178,43 +871,22 @@ function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
             handleCardView($('#content-area'), initialLoadOverride);
             populateSmartKeywords('#Grid', '#youtube-keyword-filter');
             populateCategoryFilter('#Grid', '#youtube-category-filter');
-            
-            // Call callback when complete
-            if (typeof onComplete === 'function') {
-                onComplete();
-            }
+            if (typeof onComplete === 'function') onComplete();
         }
     });
 }
-
 
 function resultsLoop(data, Cat, BKcol) {
     $.each(data.items, function (i, item) {
-        if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) {
-            console.warn("Skipping playlist item, missing resourceId:", item);
-            return; // skip this item
-        }
-        
+        if (!item.snippet.resourceId || !item.snippet.resourceId.videoId) return;
         let thumb = item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '';
-        
         const title = decodeText(item.snippet.title);
         const desc = decodeText(item.snippet.description);
         const vid = item.snippet.resourceId.videoId;
-
-        $('#Grid').append(`
-        <div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}">
-            <a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe">
-               <img class="YTi" src="${thumb}" alt="${title}" >
-               <h3>${title}</h3>
-               <p>${desc}</p>
-               <span class="card-category" style="display: none;">${Cat}</span>
-            </a>
-        </div>
-        `);
+        $('#Grid').append(`<div data-category="${Cat}" class="card-item youtube-card-item" style="border-left-color: #${BKcol}"><a href="https://www.youtube.com/embed/${vid}" data-load-type="iframe"><img class="YTi" src="${thumb}" alt="${title}" ><h3>${title}</h3><p>${desc}</p><span class="card-category" style="display: none;">${Cat}</span></a></div>`);
     });
 }
 
-// Define filterYouTubeCards globally so mainPage.js can access it
 function filterYouTubeCards() {
     const searchTerm = decodeText($('#youtube-search-box').val().toLowerCase());
     const selectedKeyword = $('#youtube-keyword-filter').val();
@@ -1223,7 +895,6 @@ function filterYouTubeCards() {
     const $showMoreButton = $grid.next('.toggle-card-button');
     const $noResultsMessage = $('#youtube-no-results');
     let visibleCount = 0;
-
     if (searchTerm.length > 0 || selectedKeyword !== "all") {
         $showMoreButton.hide();
         $allCards.each(function() {
@@ -1244,98 +915,34 @@ function filterYouTubeCards() {
     }
 }
 
-
-
-/* === DEEP LINK HELPER (NEW) === */
-
 function openCardByTitle(titleToFind) {
     if (!titleToFind) return;
-    
-    // Decode and normalize the search title
     const decodedTitle = decodeURIComponent(titleToFind).trim().toLowerCase();
-    
-    console.log(`DEBUG: searching for card with title: "${decodedTitle}"`);
-
-    // Find the card by matching the 'id' attribute first (exact match)
     let $card = $('#' + titleToFind);
-    
-    // If not found by ID, search for matching title (H3) or Alt Text
     if ($card.length === 0) {
         $card = $('.card-item').filter(function() {
             const cardId = $(this).attr('id');
             if (cardId && cardId.toLowerCase() === decodedTitle) return true;
-
             const cardTitle = $(this).find('h3').text().trim().toLowerCase();
             const imgAlt = $(this).find('img.card-image').attr('alt') || '';
-            
             return cardTitle === decodedTitle || (imgAlt && imgAlt.toLowerCase() === decodedTitle);
         });
     }
-
     if ($card.length) {
-        console.log("DEBUG: Card found! Clicking it.");
-        // Scroll to card
-        $('html, body').animate({
-            scrollTop: $card.offset().top - 100
-        }, 500);
-        // Click it
+        $('html, body').animate({ scrollTop: $card.offset().top - 100 }, 500);
         $card.click();
     } else {
         console.warn('Deep link card not found for title/id:', decodedTitle);
     }
 }
 
-
-function toggleModalInfo(button) {
-    // 1. Find the modal info panel within the modal-content-area
-    const modalContentArea = button.closest('.modal-content').querySelector('#modal-content-area');
-    const infoPanel = modalContentArea.querySelector('.modal-photo-info');
-    
-    // 2. Toggle the class on the info panel
-    const isVisible = infoPanel.classList.toggle('info-visible');
-    
-    // 3. Toggle the button text and update the state attribute
-    if (isVisible) {
-        button.textContent = 'Hide Info';
-        button.setAttribute('data-info-state', 'visible'); // Persist state
-    } else {
-        button.textContent = 'Info';
-        button.setAttribute('data-info-state', 'hidden'); // Persist state
-    }
-}
-
-function initializeModalInfoState(modalElement) {
-    const infoButton = modalElement.querySelector('.modal-info-btn');
-    const infoPanel = modalElement.querySelector('.modal-photo-info');
-    
-    // Check for a saved state (e.g., from a previous session or a page load)
-    let savedState = infoButton.getAttribute('data-info-state');
-
-    // If no state is saved, default to 'visible' when opening the modal for the first time.
-    // NOTE: This assumes the data-info-state attribute is *only* set on click.
-    if (!savedState) {
-        savedState = 'visible';
-        infoButton.setAttribute('data-info-state', savedState); 
-    }
-
-    // Apply the saved state to the panel and button text
-    if (savedState === 'visible') {
-        infoPanel.classList.add('info-visible');
-        infoButton.textContent = 'Hide Info';
-    } else {
-        infoPanel.classList.remove('info-visible');
-        infoButton.textContent = 'Info';
-    }
-}
-
-
 /* === --- EVENT LISTENERS (DELEGATED) --- === */
 $(document).ready(function () {
     
-    // Inject Custom Styles for Transitions and Info Box
+    // Inject custom styles
     injectModalStyles();
 
-    // Inject modal HTML
+    // Inject modal
     $('body').append(`
         <div id="content-modal" class="modal-backdrop">
             <div class="modal-content">
@@ -1344,6 +951,8 @@ $(document).ready(function () {
                         <button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button>
                         <button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button>
                         <button class="modal-info-btn" title="Toggle Info (I)">Info</button>
+                        <button class="modal-play-btn" style="display:none;" title="Start Slideshow (10s)">&#9658; Play</button>
+                        <button class="modal-fullscreen-btn" style="display:none;" title="Full Screen">&#x26F6; Full Screen</button>
                     </div>
                     <div class="modal-nav-right">
                         <a href="#" class="open-new-window" target="_blank" rel="noopener noreferrer">
@@ -1368,124 +977,113 @@ $(document).ready(function () {
         const $clickedCard = $(this);
         const $link = $clickedCard.find('a').first();
         if (!$link.length) { return; } 
-        
         const $clickedLink = $(e.target).closest('a');
         if ($clickedLink.length > 0 && !$clickedLink.is($link)) { return; }
-        
-        e.preventDefault(); 
-        e.stopPropagation(); 
-        
+        e.preventDefault(); e.stopPropagation(); 
         const $cardList = $clickedCard.closest('.card-list');
         const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible');
-        
         currentCardList = [];
-        $allVisibleCards.each(function() {
-            currentCardList.push($(this).find('a').first());
-        });
-        
+        $allVisibleCards.each(function() { currentCardList.push($(this).find('a').first()); });
         currentCardIndex = $allVisibleCards.index($clickedCard);
         
         if (currentCardList.length > 0) {
             loadModalContent(currentCardIndex);
             $('body').addClass('modal-open');
-            // UPDATED: Use custom animation helper
+            // USE ANIMATION HELPER (ZOOM IN)
             animateModalOpen();
             $(document).on('keydown.modalNav', handleModalKeys);
         }
     });
 
-$('body').on('click', '.modal-close-btn', function() {
+    $('body').on('click', '.modal-close-btn', function() {
         const $modal = $('#content-modal');
-        
-        // --- CENTRALIZED CLEANUP: REMOVE ALL POTENTIALLY STICKY CLASSES ---
         document.body.classList.remove('modal-open');
         document.body.classList.remove('chess-mode-active');
         $modal.removeClass('chess-mode'); 
-        // --- END CENTRALIZED CLEANUP ---
+        
+        // Stop Slideshow
+        stopSlideshow();
 
-        // Main modal hide logic with animation helper
+        // USE ANIMATION HELPER (ZOOM OUT)
         animateModalClose();
         
-        // Reset global states BUT NOT isModalInfoVisible
         currentCardList = [];
         currentCardIndex = 0;
-        isTutorialMode = false; // Reset tutorial mode
+        // PERSISTENCE: Do not reset isModalInfoVisible here!
+        isTutorialMode = false; 
         $(document).off('keydown.modalNav');
-        
-        // FIX: Ensure header display property is cleared (reverts to flex from CSS)
-        // Do NOT use .show() here as it forces display:block
         $modal.find('.modal-header').removeAttr('style'); 
     });
 
-    
     $('body').on('click', '#content-modal', function(e) {
-        if (e.target.id === 'content-modal') {
-            $(this).find('.modal-close-btn').first().click();
-        }
+        if (e.target.id === 'content-modal') { $(this).find('.modal-close-btn').first().click(); }
     });
     
+    // Play Button Listener
+    $('body').on('click', '.modal-play-btn', function() {
+        if (slideshowInterval) {
+            stopSlideshow();
+        } else {
+            $(this).html('&#10074;&#10074; Pause'); // Change to Pause symbol
+            // Advance immediately, then every 10s
+            $('.modal-next-btn').click();
+            slideshowInterval = setInterval(function() {
+                $('.modal-next-btn').click();
+            }, 10000);
+        }
+    });
+
+    // Fullscreen Button Listener
+    $('body').on('click', '.modal-fullscreen-btn', function() {
+        const wrapper = document.querySelector('#modal-content-area .image-wrapper');
+        if (wrapper) {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                wrapper.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+            }
+        }
+    });
+
     $('body').on('click', '.modal-prev-btn', function() {
+        stopSlideshow(); // Manual navigation stops slideshow
         if (currentCardIndex > 0) loadModalContent(currentCardIndex - 1);
     });
     
     $('body').on('click', '.modal-next-btn', function() {
+        // NOTE: We don't stop slideshow here because the slideshow interval actually triggers this click!
         if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1);
+        else stopSlideshow(); // Stop if we hit the end
     });
 
-    // UPDATED FIX: Info button listener handles both Photo and Tutorial modes
     $('body').on('click', '.modal-info-btn', function() {
-        
         const $infoBtn = $(this);
         const $modalContent = $('#modal-content-area');
-        
-        // 1. Check for Tutorial Mode (manifest-url data must be present on the button)
         const manifestUrl = $infoBtn.data('manifest-url'); 
         
         if (manifestUrl) {
-            // TUTORIAL MODE: Show/hide Summary (Table of Contents)
-            console.log("Tutorial Info button clicked. Manifest found, showing summary.");
             buildTutorialSummary(manifestUrl, $modalContent);
-        } 
-        
-        // 2. Check for Photo/Iframe Mode (modal-photo-info element must be present)
-        else {
-            
+        } else {
             const $infoDiv = $modalContent.find('.modal-photo-info');
-            
-            // Console log the state for debugging (as requested by user)
-            console.log("Photo Info button clicked. Info Div found:", $infoDiv.length > 0);
-
             if ($infoDiv.length > 0) {
-                // TOGGLE GLOBAL STATE
+                // TOGGLE STATE
                 isModalInfoVisible = !isModalInfoVisible; 
-
-                // UPDATE BUTTON
                 $infoBtn.toggleClass('active', isModalInfoVisible); 
-                $infoDiv.toggleClass('info-visible', isModalInfoVisible);
-
-                // VISUAL FIX: Use jQuery Fade Toggle to override any "display: none" from CSS
-                // We use .stop(true, true) to clear animation queue and prevent "bouncing"
+                // ANIMATE TOGGLE (with stop to prevent queue buildup)
                 if (isModalInfoVisible) {
-                     // Ensure display block is set before fading in (just in case)
                      $infoDiv.stop(true, true).css('display', 'block').animate({opacity: 1}, 300);
                 } else {
-                     $infoDiv.stop(true, true).animate({opacity: 0}, 300, function() {
-                         $(this).hide();
-                     });
+                     $infoDiv.stop(true, true).animate({opacity: 0}, 300, function() { $(this).hide(); });
                 }
-
             } else {
-                // FALLBACK: If we're not in tutorial mode and didn't find the photo div, 
                 $infoBtn.removeClass('active');
-                isModalInfoVisible = false; // Reset state if click was ineffective
+                isModalInfoVisible = false; 
             }
         }
     });
-    
-    // REMOVE JQUERY AGGRESSIVE HANDLER TO RELY ON NATIVE HANDLER IN buildTutorialSummary
-    // $('body').off('click.tutorialNav'); // This was removed inside loadModalContent
 
-    // Filter listeners
     $('body').on('input', '#youtube-search-box', filterYouTubeCards);
     $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
     $('body').on('input', '#post-search-box', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
@@ -1504,7 +1102,6 @@ $('body').on('click', '.modal-close-btn', function() {
     $('body').on('change', '#tutorials-category-filter', () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
     $('body').on('change', '#tutorials-keyword-filter', () => filterCardsGeneric('#tutorials-card-list', '#tutorials-search-box', '#tutorials-category-filter', '#tutorials-keyword-filter', '#tutorials-no-results', 10));
 
-    // Research Tab listener
     $('#content-modal').on('click', '.tab-button', function() {
         $(this).siblings().removeClass('active');
         $(this).addClass('active');
