@@ -41,7 +41,14 @@ function animateModalClose() {
 /* === PERSISTENCE LOGIC (GLOBAL) === */
 function applyInfoState() {
     const $infoBtn = $('.modal-info-btn'); 
-    if (isModalInfoVisible) { $infoBtn.addClass('active'); } else { $infoBtn.removeClass('active'); }
+    // Force DOM elements to match global state variable
+    if (isModalInfoVisible) { 
+        $infoBtn.addClass('active'); 
+        $('.modal-photo-info').addClass('visible');
+    } else { 
+        $infoBtn.removeClass('active'); 
+        $('.modal-photo-info').removeClass('visible');
+    }
 }
 
 /* === MODAL KEY HANDLER (GLOBAL) === */
@@ -76,10 +83,10 @@ function loadModalContent(index) {
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); $modal.addClass('research-mode'); 
         
-        // FIXED TUTORIAL NAV: Toggle icon INSIDE wrapper, CSS modified for width/position
+        // FIXED NAV INJECTION: width: 100%, box-sizing: border-box, max-width: 100vw to prevent overflow
         const playerHtml = `
             <div class="iframe-wrapper" style="height:100%; width:100%; position:relative;">
-                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; } .nav-bar, .controls, footer, .navbar { position: relative !important; left: auto !important; right: auto !important; width: 100% !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe>
+                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100vw !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe>
                 <button class="tutorial-fs-toggle" title="Toggle Controls">&#9881;</button>
             </div>
             <button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;">&times;</button>
@@ -89,6 +96,9 @@ function loadModalContent(index) {
         $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); });
         const $card = currentCardList[currentCardIndex].closest('.card-item');
         updateSocialMeta($card.find('h3').text(), $card.find('p').text(), $card.find('img').attr('src'));
+        
+        // Hide Toggle initially (only for FS)
+        $('.tutorial-fs-toggle').hide();
         return;
     }
 
@@ -99,25 +109,25 @@ function loadModalContent(index) {
     updateSocialMeta(title, desc, thumbUrl);
 
     let infoHtml = '';
-    // FIXED PERSISTENCE: Inline styles control initial visibility based on global flag
+    // FIXED PERSISTENCE: Inline styles. 'visible' class handles !important overrides in CSS.
     if (title || desc) { 
-        // We use !important in the inline style to ensure it overrides the CSS 'display:none'
-        const visibleStyle = isModalInfoVisible ? 'display:block !important; opacity:1 !important;' : 'display:none; opacity:0;';
-        infoHtml = `<div class="modal-photo-info raised-layer" style="${visibleStyle}"><h3>${title}</h3><p>${desc}</p></div>`;
+        const initialClass = isModalInfoVisible ? 'visible' : '';
+        infoHtml = `<div class="modal-photo-info raised-layer ${initialClass}"><h3>${title}</h3><p>${desc}</p></div>`;
     }
-    // Sync Button
+    // Sync Button immediately
     if(isModalInfoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
     if (!title && !desc) $modalInfoBtn.hide();
 
     switch (loadType) {
-        case 'markdown': $.ajax({ url: loadUrl, type: 'GET', dataType: 'text', success: function(markdownText) { const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText; $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`); if (infoHtml) { $modalContent.append(infoHtml); } }, error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); } }); break;
+        case 'markdown': $.ajax({ url: loadUrl, type: 'GET', dataType: 'text', success: function(markdownText) { const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText; $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); }, error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); } }); break;
         case 'chess': loadChessGame(loadUrl, $modal, $modalContent); break;
-        case 'html': $.ajax({ url: loadUrl, type: 'GET', success: function(data) { $modalContent.html(data); if (infoHtml) { $modalContent.append(infoHtml); } }, error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); } }); break;
+        case 'html': $.ajax({ url: loadUrl, type: 'GET', success: function(data) { $modalContent.html(data); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); }, error: function() { $modalContent.html('<div class="error-message">Could not load content.</div>'); } }); break;
         case 'image':
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`); if (infoHtml) { $modalContent.append(infoHtml); }
+            applyInfoState(); // FORCE STATE APPLY
             $modalContent.find('.image-wrapper').on('dblclick', function() { if (document.fullscreenElement) { document.exitFullscreen(); } else { const el = this; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } });
             break;
-        case 'iframe': let iframeSrc = loadUrl; if (loadUrl.startsWith('http') && !loadUrl.includes('youtube.com') && !loadUrl.includes('youtu.be')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; } $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`); if (infoHtml) { $modalContent.append(infoHtml); } break;
+        case 'iframe': let iframeSrc = loadUrl; if (loadUrl.startsWith('http') && !loadUrl.includes('youtube.com') && !loadUrl.includes('youtu.be')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; } $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); break;
         case 'blocked': $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>'); break;
         default: $modalContent.html('<div class="error-message">This link cannot be opened here. Please use the "Open in new window" button.</div>'); break;
     }
@@ -172,7 +182,7 @@ $(document).ready(function () {
     // FULLSCREEN & TUTORIAL NAV LOGIC
     $('body').on('click', '.modal-fullscreen-btn', function() {
         const wrapper = document.querySelector('#modal-content-area .image-wrapper') || document.querySelector('#modal-content-area .iframe-wrapper') || document.querySelector('#modal-content-area .markdown-wrapper'); const target = wrapper || document.getElementById('modal-content-area');
-        if (document.fullscreenElement) { document.exitFullscreen(); } else { if (target && target.requestFullscreen) { target.requestFullscreen().then(() => { if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); $('.tutorial-fs-toggle').fadeIn(); } catch(e){} } } }).catch(err => console.log(err)); } }
+        if (document.fullscreenElement) { document.exitFullscreen(); } else { if (target && target.requestFullscreen) { target.requestFullscreen().then(() => { if(isTutorialMode) { $('.tutorial-fs-toggle').fadeIn(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); } catch(e){} } } }).catch(err => console.log(err)); } }
     });
     $('body').on('click', '.tutorial-fs-toggle', function() { const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.toggle('nav-visible'); } catch(e) {} } });
     document.addEventListener('fullscreenchange', (event) => { if (!document.fullscreenElement) { $('.tutorial-fs-toggle').hide(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.remove('fs-mode', 'nav-visible'); } catch(e){} } } });
@@ -181,7 +191,7 @@ $(document).ready(function () {
     $('body').on('click', '.modal-next-btn', function() { if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1); else stopSlideshow(); });
     
     // INFO BUTTON (FIXED PERSISTENCE)
-    $('body').on('click', '.modal-info-btn', function() { const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); if (manifestUrl) { buildTutorialSummary(manifestUrl, $('#modal-content-area')); } else { isModalInfoVisible = !isModalInfoVisible; const $infoDiv = $('.modal-photo-info'); if (isModalInfoVisible) { $infoBtn.addClass('active'); $infoDiv.stop(true,true).css('display','block').animate({opacity:1},200); } else { $infoBtn.removeClass('active'); $infoDiv.stop(true,true).animate({opacity:0},200,function(){ $(this).hide(); }); } } });
+    $('body').on('click', '.modal-info-btn', function() { const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); if (manifestUrl) { buildTutorialSummary(manifestUrl, $('#modal-content-area')); } else { isModalInfoVisible = !isModalInfoVisible; const $infoDiv = $('.modal-photo-info'); if (isModalInfoVisible) { $infoBtn.addClass('active'); $infoDiv.addClass('visible'); } else { $infoBtn.removeClass('active'); $infoDiv.removeClass('visible'); } } });
 
     $('body').on('input', '#youtube-search-box', filterYouTubeCards); $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
     $('body').on('input', '#post-search-box', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').on('change', '#post-category-filter', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').on('change', '#post-keyword-filter', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
