@@ -1463,7 +1463,9 @@ $('body').on('click', '.modal-close-btn', function() {
         isModalInfoVisible = false; // Reset info visibility state on close
         isTutorialMode = false; // Reset tutorial mode
         $(document).off('keydown.modalNav');
-        $modal.find('.modal-header').show();
+        
+        // FIX 3: Ensure the header is always restored (though it should be visible after class removal)
+        $modal.find('.modal-header').show(); 
     });
 
 
