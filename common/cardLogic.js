@@ -223,6 +223,12 @@ function loadModalContent(index) {
     // FIX 1: Header is always shown by default at the start of loading ANY content.
     $modal.find('.modal-header').show(); 
     
+    // === CRITICAL FIX: Clean Slate Logic ===
+    // Remove chess-mode and research-mode immediately to prevent sticky headers
+    // when navigating directly or if cleanup failed previously.
+    $modal.removeClass('chess-mode research-mode'); 
+    $('body').removeClass('chess-mode-active');
+    
     // Reset general state and info button data
     isTutorialMode = false;
     // CRITICAL: isModalInfoVisible state must NOT be reset here for Photo/Iframe cards, 
@@ -735,25 +741,6 @@ $('#chess-close-btn').off('click').on('click', function(e) {
     $('.modal-close-btn').first().click(); 
 });
                     
-                    // CLOSING FUNCTIONALITY FOR THE CUSTOM 'X Close' BUTTON
-/* $('#chess-close-btn').off('click').on('click', function(e) {
-                        e.preventDefault();
-                        // 1. Remove custom classes to exit chess mode
-                        $modal.removeClass('chess-mode');
-                        $('body').removeClass('chess-mode-active');
-                        
-                        // 2. Hide the custom header content
-                        $modal.find('.modal-header').show(); 
-
-                        // 3. Explicitly hide the modal popup (the core fix)
-                        if (typeof $modal.modal === 'function') {
-                            $modal.modal('hide');
-                        } else {
-                            // Fallback hide if it's a simple hidden container
-                            $modal.hide();
-                        }
-                    });
-*/
 
                     // --- RENDER ---
                     const $select = $('#chess-game-select');
@@ -1208,60 +1195,6 @@ function filterYouTubeCards() {
 
 /* === DEEP LINK HELPER (NEW) === */
 
-function loadPhotoAlbum(jsonUrl, initialLoadOverride, onComplete) {
-    const $albumList = $('#photo-album-list');
-    const $targetList = $albumList.length ? $albumList : $('#about-album-list');
-    
-    $.getJSON(jsonUrl, function (albumData) {
-        if ($('#album-title').length) {
-            $('#album-title').text(decodeText(albumData.albumTitle));
-        }
-        
-        $targetList.empty(); 
-        
-        $.each(albumData.photos, function(index, photo) {
-            const title = decodeText(photo.title);
-            const category = decodeText(photo.category);
-            const description = decodeText(photo.description);
-            
-            const cardHtml = `
-                <div class="card-item" 
-                     data-category="${category}" 
-                     data-keywords="${title},${description}"
-                     data-title="${title}"
-                     data-desc="${description}">
-                    <a href="${photo.url}" data-load-type="image">
-                        <img src="${photo.thumbnailUrl}" loading="lazy" class="card-image" alt="${title}">
-                    </a>
-                </div>`;
-            $targetList.append(cardHtml);
-        });
-        
-        if ($('#album-category-filter').length) {
-            populateCategoryFilter('#photo-album-list', '#album-category-filter');
-            populateSmartKeywords('#photo-album-list', '#album-keyword-filter');
-        }
-        
-        const defaultIncrement = $targetList.attr('id') === 'about-album-list' ? 20 : 10;
-        
-        handleCardView($targetList.parent(), initialLoadOverride, defaultIncrement);
-        
-        // Call the callback if provided
-        if (typeof onComplete === 'function') {
-            onComplete();
-        }
-        
-    }).fail(function() { 
-        if ($('#album-title').length) $('#album-title').text("Error Loading Album"); 
-    });
-}
-
-
-
-
-
-/* === DEEP LINK HELPER (NEW) === */
-
 function openCardByTitle(titleToFind) {
     if (!titleToFind) return;
     
@@ -1300,35 +1233,6 @@ function openCardByTitle(titleToFind) {
 }
 
 
-
-
-
-
-
-// UPDATED: Accepts onComplete callback
-function loadVids(PL, Category, BKcol, initialLoadOverride, onComplete) {
-    $('#Grid').empty(); 
-    var key = 'AIzaSyD7XIk7Bu3xc_1ztJl6nY6gDN4tFWq4_tY'; 
-    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
-    var options = { part: 'snippet', key: key, maxResults: 50, playlistId: PL };
-
-    $.getJSON(URL, options, function (data) {
-        $('#playlist-title').text(`Youtubelist: ${Category.replace(/_/g, ' ')}`);
-        if (data.items) {
-            resultsLoop(data, Category, BKcol);
-            handleCardView($('#content-area'), initialLoadOverride);
-            populateSmartKeywords('#Grid', '#youtube-keyword-filter');
-            populateCategoryFilter('#Grid', '#youtube-category-filter');
-            
-            // Call callback when complete
-            if (typeof onComplete === 'function') {
-                onComplete();
-            }
-        }
-    });
-}
-    
-
 function toggleModalInfo(button) {
     // 1. Find the modal info panel within the modal-content-area
     const modalContentArea = button.closest('.modal-content').querySelector('#modal-content-area');
@@ -1346,12 +1250,6 @@ function toggleModalInfo(button) {
         button.setAttribute('data-info-state', 'hidden'); // Persist state
     }
 }
-
-// You will need to attach this function to the button in your main setup function:
-document.querySelector('.modal-info-btn').addEventListener('click', function(e) {
-     toggleModalInfo(e.currentTarget);
-});
-
 
 function initializeModalInfoState(modalElement) {
     const infoButton = modalElement.querySelector('.modal-info-btn');
@@ -1376,11 +1274,6 @@ function initializeModalInfoState(modalElement) {
         infoButton.textContent = 'Info';
     }
 }
-
-// The flow when opening the modal (in your existing openModal function) should be:
-// 1. Load card details (title, image, etc.) into the modal.
-// 2. initializeModalInfoState(document.getElementById('content-modal'));
-// 3. Display the modal.
 
 
 /* === --- EVENT LISTENERS (DELEGATED) --- === */
@@ -1467,14 +1360,6 @@ $('body').on('click', '.modal-close-btn', function() {
         // FIX 3: Ensure the header is always restored (though it should be visible after class removal)
         $modal.find('.modal-header').show(); 
     });
-
-
-
-
-
-
-
-
 
     
     $('body').on('click', '#content-modal', function(e) {
