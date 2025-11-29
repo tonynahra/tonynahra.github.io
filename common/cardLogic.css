@@ -68,10 +68,29 @@ select.slideshow-speed { background: #333; color: #fff; border: 1px solid #555; 
 .modal-photo-info h3 { font-size: 1.2rem; color: #fff; margin-bottom: 5px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 .modal-photo-info p { font-size: 1rem; color: #eee; margin: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 
+/* === HELP OVERLAY (TEAL THEME) === */
+.help-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);
+    z-index: 2000; display: none; color: #fff;
+    align-items: center; justify-content: center;
+}
+.help-box {
+    background: #004d40; /* Dark Teal */
+    border: 2px solid #64ffda; /* Light Teal Accent */
+    border-radius: 10px; padding: 30px; max-width: 500px; width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.help-box h2 { color: #64ffda; margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
+.help-list { list-style: none; padding: 0; margin: 0; font-family: var(--font-code); }
+.help-list li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; }
+.help-key { font-weight: bold; color: #fff; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px; }
+.help-desc { color: #b2dfdb; }
+
 /* === TUTORIAL CONTROLS === */
 .tutorial-fs-toggle {
     position: absolute; bottom: 20px; left: 20px; 
-    z-index: 2147483647; /* Max z-index */
+    z-index: 2147483647; /* MAX Z-INDEX */
     background: rgba(0,0,0,0.6); color: white; border: 2px solid rgba(255,255,255,0.6);
     border-radius: 50%; width: 50px; height: 50px; cursor: pointer; display: none;
     align-items: center; justify-content: center; font-size: 24px; transition: 0.3s;
