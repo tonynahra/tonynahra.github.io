@@ -220,6 +220,8 @@ function loadModalContent(index) {
     const $modalOpenLink = $modal.find('.open-new-window');
     const $modalInfoBtn = $modal.find('.modal-info-btn');
 
+    $modal.find('.modal-header').show();
+    
     // Reset general state and info button data
     isTutorialMode = false;
     // CRITICAL: isModalInfoVisible state must NOT be reset here for Photo/Iframe cards, 
