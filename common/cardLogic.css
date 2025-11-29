@@ -1,12 +1,6 @@
 /* === CARD GRID & ITEMS === */
 .card-list { column-width: 300px; column-gap: 20px; list-style: none; padding: 0; }
-.card-item {
-    background-color: var(--bg-medium); padding: 15px; border-radius: 6px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3); border-left: 3px solid var(--text-accent);
-    display: flex; flex-direction: column; justify-content: space-between;
-    break-inside: avoid; margin-bottom: 20px; width: 100%; box-sizing: border-box;
-    cursor: pointer; transition: all 0.3s;
-}
+.card-item { background-color: var(--bg-medium); padding: 15px; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); border-left: 3px solid var(--text-accent); display: flex; flex-direction: column; justify-content: space-between; break-inside: avoid; margin-bottom: 20px; width: 100%; box-sizing: border-box; cursor: pointer; transition: all 0.3s; }
 .card-item:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.4); }
 .card-item h3 { margin-top: 0; color: var(--text-accent); font-size: 1.15rem; }
 .card-item p { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; line-height: 1.5em; max-height: 6em; }
@@ -56,16 +50,17 @@ select.slideshow-speed { background: #333; color: #fff; border: 1px solid #555; 
 .image-wrapper:fullscreen img { width: 100vw; height: 100vh; max-width: none; max-height: none; object-fit: contain; }
 .iframe-wrapper:fullscreen iframe { width: 100vw !important; height: 100vh !important; }
 
-/* === PHOTO INFO (PERSISTENCE) === */
+/* === PHOTO INFO (FIXED PERSISTENCE) === */
 #modal-content-area .modal-photo-info {
     position: absolute; bottom: 30px; left: 0; right: 0; margin: 0 auto;
     width: 85%; max-width: 800px; padding: 20px 25px;
     background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
     border-radius: 12px; border-top: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff; z-index: 50; display: none; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    color: #fff; z-index: 50; 
+    /* Base style handled by JS inline to ensure persistence */
+    transition: opacity 0.3s ease;
 }
-#modal-content-area .modal-photo-info.visible { display: block !important; opacity: 1 !important; pointer-events: auto !important; }
 .modal-photo-info h3 { font-size: 1.2rem; color: #fff; margin-bottom: 5px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 .modal-photo-info p { font-size: 1rem; color: #eee; margin: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 
