@@ -31,7 +31,7 @@ function showMoreCards($button, $list) {
 /* === ANIMATION HELPERS (GLOBAL) === */
 function animateModalOpen() {
     const $modal = $('#content-modal'); const $content = $modal.find('.modal-content'); $modal.removeClass('fading-out'); $content.removeClass('modal-animate-leave'); $modal.css('display', 'flex').css('opacity', '1'); 
-    requestAnimationFrame(() => { $content.addClass('modal-animate-enter'); setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100); setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 600); });
+    requestAnimationFrame(() => { $content.addClass('modal-animate-enter'); setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100); setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 800); });
 }
 function animateModalClose() {
     const $modal = $('#content-modal'); const $content = $modal.find('.modal-content'); $content.removeClass('modal-animate-enter').addClass('modal-animate-leave'); $modal.addClass('fading-out'); 
@@ -40,15 +40,16 @@ function animateModalClose() {
 
 /* === PERSISTENCE LOGIC (GLOBAL) === */
 function applyInfoState() {
-    console.log('[DEBUG] Applying Info State. Global Visible:', isModalInfoVisible);
+    console.log('[DEBUG] applyInfoState called. Global Flag:', isModalInfoVisible);
     const $infoBtn = $('.modal-info-btn'); 
-    // Force DOM elements to match global state variable
+    const $infoDiv = $('.modal-photo-info');
+    
     if (isModalInfoVisible) { 
         $infoBtn.addClass('active'); 
-        $('.modal-photo-info').addClass('visible'); // Adds display: block !important
+        $infoDiv.addClass('visible');
     } else { 
         $infoBtn.removeClass('active'); 
-        $('.modal-photo-info').removeClass('visible');
+        $infoDiv.removeClass('visible');
     }
 }
 
@@ -73,26 +74,8 @@ function handleModalKeys(e) {
 function showKeyboardShortcuts() {
     const $modalContent = $('#modal-content-area');
     if ($modalContent.find('.help-overlay').length) { $modalContent.find('.help-overlay').remove(); return; }
-    
-    const helpHtml = `
-        <div class="help-overlay" onclick="$(this).remove()">
-            <div class="help-box" onclick="event.stopPropagation()">
-                <h2>Keyboard Shortcuts</h2>
-                <ul class="help-list">
-                    <li><span class="help-desc">Next Slide</span> <span class="help-key">Right Arrow / Space</span></li>
-                    <li><span class="help-desc">Previous Slide</span> <span class="help-key">Left Arrow</span></li>
-                    <li><span class="help-desc">Toggle Info</span> <span class="help-key">I</span></li>
-                    <li><span class="help-desc">Full Screen</span> <span class="help-key">F</span></li>
-                    <li><span class="help-desc">Close Modal</span> <span class="help-key">Esc</span></li>
-                    <li><span class="help-desc">Tutorial Nav Show</span> <span class="help-key">Up Arrow</span></li>
-                    <li><span class="help-desc">Tutorial Nav Hide</span> <span class="help-key">Down Arrow</span></li>
-                </ul>
-                <button onclick="$(this).closest('.help-overlay').remove()" style="margin-top:20px; width:100%; padding:10px; background:rgba(255,255,255,0.2); border:none; color:#fff; cursor:pointer;">Close</button>
-            </div>
-        </div>
-    `;
-    $modalContent.append(helpHtml);
-    $modalContent.find('.help-overlay').fadeIn(200);
+    const helpHtml = `<div class="help-overlay" onclick="$(this).remove()"><div class="help-box" onclick="event.stopPropagation()"><h2>Keyboard Shortcuts</h2><ul class="help-list"><li><span class="help-desc">Next Slide</span> <span class="help-key">Right Arrow / Space</span></li><li><span class="help-desc">Previous Slide</span> <span class="help-key">Left Arrow</span></li><li><span class="help-desc">Toggle Info</span> <span class="help-key">I</span></li><li><span class="help-desc">Full Screen</span> <span class="help-key">F</span></li><li><span class="help-desc">Close Modal</span> <span class="help-key">Esc</span></li><li><span class="help-desc">Tutorial Nav Show</span> <span class="help-key">Up Arrow</span></li><li><span class="help-desc">Tutorial Nav Hide</span> <span class="help-key">Down Arrow</span></li></ul><button onclick="$(this).closest('.help-overlay').remove()" style="margin-top:20px; width:100%; padding:10px; background:rgba(255,255,255,0.2); border:none; color:#fff; cursor:pointer;">Close</button></div></div>`;
+    $modalContent.append(helpHtml); $modalContent.find('.help-overlay').fadeIn(200);
 }
 
 /* === MODAL CONTENT LOADER (GLOBAL) === */
@@ -121,22 +104,16 @@ function loadModalContent(index) {
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); $modal.addClass('research-mode'); 
         
-        // FIXED TUTORIAL NAV: Toggle icon INSIDE wrapper, CSS modified for width/position
-        const playerHtml = `
-            <div class="iframe-wrapper" style="height:100%; width:100%; position:relative;">
-                <iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100vw !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe>
-                <button class="tutorial-fs-toggle" title="Toggle Controls">&#9881;</button>
-            </div>
-            <button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;">&times;</button>
-        `;
+        // FIXED NAV INJECTION: width: 100%, box-sizing: border-box, max-width: 100vw to prevent overflow
+        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="tutorial_player.html?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100vw !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;">&times;</button>`;
         $modalContent.html(playerHtml);
         $modalContent.find('.tutorial-custom-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
         $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); });
         const $card = currentCardList[currentCardIndex].closest('.card-item');
         updateSocialMeta($card.find('h3').text(), $card.find('p').text(), $card.find('img').attr('src'));
         
-        // Hide Toggle initially (only for FS)
-        $('.tutorial-fs-toggle').hide();
+        // Ensure Toggle is IN DOM but Hidden initially
+        $('.tutorial-fs-toggle').hide().appendTo('body'); 
         return;
     }
 
@@ -147,14 +124,14 @@ function loadModalContent(index) {
     updateSocialMeta(title, desc, thumbUrl);
 
     let infoHtml = '';
-    // FIXED PERSISTENCE: Inline styles. 'visible' class handles !important overrides in CSS.
+    // FIXED PERSISTENCE: Inline styles control initial visibility based on global flag
     if (title || desc) { 
         const initialClass = isModalInfoVisible ? 'visible' : '';
         infoHtml = `<div class="modal-photo-info raised-layer ${initialClass}"><h3>${title}</h3><p>${desc}</p></div>`;
     }
-    
-    // Log debug for traceability
-    console.log('[DEBUG] Load Content. Global Info Visible:', isModalInfoVisible);
+    // Sync Button immediately
+    if(isModalInfoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
+    if (!title && !desc) $modalInfoBtn.hide();
 
     switch (loadType) {
         case 'markdown': $.ajax({ url: loadUrl, type: 'GET', dataType: 'text', success: function(markdownText) { const htmlContent = typeof marked !== 'undefined' ? marked.parse(markdownText) : '<p>Error: Marked.js library not loaded.</p>' + markdownText; $modalContent.html(`<div class="markdown-wrapper"><div class="markdown-body" style="padding: 20px; background: white; max-width: 800px; margin: 0 auto;">${htmlContent}</div></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); }, error: function() { $modalContent.html('<div class="error-message">Could not load Markdown file.</div>'); } }); break;
@@ -201,7 +178,7 @@ function setupChessUI(pgnFileContent, $modalContent, $modal) {
     const $select = $('#chess-game-select'); rawGames.forEach((gamePgn, idx) => { const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?'; const black = (gamePgn.match(/\[Black "(.*?)"\]/) || [])[1] || '?'; const result = (gamePgn.match(/\[Result "(.*?)"\]/) || [])[1] || '*'; $select.append(`<option value="${idx}">${idx + 1}. ${white} vs ${black} (${result})</option>`); }); if (rawGames.length <= 1) $select.hide();
     let gameObserver = null;
     function renderGame(index) { if (gameObserver) gameObserver.disconnect(); const selectedPgn = rawGames[index]; commentMap = parseCommentsMap(selectedPgn); const headers = {}; let match; while ((match = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; } let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse:collapse;">'; for (const [key, val] of Object.entries(headers)) { infoHtml += `<tr><td style="color:var(--text-accent); font-weight:bold; width:30%;">${key}</td><td style="color:#fff;">${val}</td></tr>`; } infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background:#e74c3c; color:white; border:none; padding:5px 15px; float:right; cursor:pointer;">Close</button>'; $(`#chess-metadata-${boardId}`).html(infoHtml); const winHeight = $(window).height(); const winWidth = $(window).width(); const maxWidth = winWidth * 0.90; const maxHeight = winHeight - 250; const boardSize = Math.min(maxWidth, maxHeight); $(`#${boardId}`).empty();
-        if (typeof PGNV !== 'undefined') { PGNV.pgnView(boardId, { pgn: selectedPgn, theme: 'brown', boardSize: boardSize, layout: 'left', width: '100%', headers: false }); updateChessStyles(); const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0; updateCommentContent(-1, total); setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 600); const checkInterval = setInterval(() => { const movesPanel = document.getElementById(boardId + 'Moves'); if (movesPanel) { clearInterval(checkInterval); const totalMoves = movesPanel.querySelectorAll('move').length; gameObserver = new MutationObserver(() => { let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow'); if (activeEl) { const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move'); if (activeMove) { const allMoves = Array.from(movesPanel.querySelectorAll('move')); const index = allMoves.indexOf(activeMove); updateCommentContent(index, totalMoves); return; } } updateCommentContent(-1, totalMoves); }); gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] }); } }, 200); } else { $('.modal-close-btn').first().click(); } }
+        if (typeof PGNV !== 'undefined') { PGNV.pgnView(boardId, { pgn: selectedPgn, theme: 'brown', boardSize: boardSize, layout: 'left', width: '100%', headers: false }); updateChessStyles(); const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0; updateCommentContent(-1, total); setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 800); const checkInterval = setInterval(() => { const movesPanel = document.getElementById(boardId + 'Moves'); if (movesPanel) { clearInterval(checkInterval); const totalMoves = movesPanel.querySelectorAll('move').length; gameObserver = new MutationObserver(() => { let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow'); if (activeEl) { const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move'); if (activeMove) { const allMoves = Array.from(movesPanel.querySelectorAll('move')); const index = allMoves.indexOf(activeMove); updateCommentContent(index, totalMoves); return; } } updateCommentContent(-1, totalMoves); }); gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] }); } }, 200); } else { $('.modal-close-btn').first().click(); } }
     renderGame(0); $select.off('change').on('change', function() { renderGame($(this).val()); }); $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
 }
 
@@ -228,8 +205,13 @@ $(document).ready(function () {
     $('body').on('click', '.modal-prev-btn', function() { stopSlideshow(); if (currentCardIndex > 0) loadModalContent(currentCardIndex - 1); });
     $('body').on('click', '.modal-next-btn', function() { if (currentCardIndex < currentCardList.length - 1) loadModalContent(currentCardIndex + 1); else stopSlideshow(); });
     
-    // INFO BUTTON (FIXED PERSISTENCE)
-    $('body').on('click', '.modal-info-btn', function() { const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); if (manifestUrl) { buildTutorialSummary(manifestUrl, $('#modal-content-area')); } else { isModalInfoVisible = !isModalInfoVisible; const $infoDiv = $('.modal-photo-info'); if (isModalInfoVisible) { $infoBtn.addClass('active'); $infoDiv.addClass('visible'); } else { $infoBtn.removeClass('active'); $infoDiv.removeClass('visible'); } } });
+    // INFO BUTTON (FIXED PERSISTENCE WITH DEBUG)
+    $('body').on('click', '.modal-info-btn', function() { 
+        console.log('[DEBUG] Info Button Clicked');
+        const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); 
+        if (manifestUrl) { buildTutorialSummary(manifestUrl, $('#modal-content-area')); } 
+        else { isModalInfoVisible = !isModalInfoVisible; applyInfoState(); } 
+    });
 
     $('body').on('input', '#youtube-search-box', filterYouTubeCards); $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
     $('body').on('input', '#post-search-box', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').on('change', '#post-category-filter', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').on('change', '#post-keyword-filter', () => filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
