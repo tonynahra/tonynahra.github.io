@@ -19,7 +19,7 @@ function injectModalStyles() {
         }
         @keyframes modalPopDown {
             0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 0; transform: scale(0.9) translateY(10px); }
         }
         
         .modal-animate-enter {
@@ -29,6 +29,13 @@ function injectModalStyles() {
         
         .modal-animate-leave {
             animation: modalPopDown 0.3s ease-in forwards !important;
+        }
+        
+        /* Backdrop Fade Transition */
+        .modal-backdrop.fading-out {
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            opacity: 0;
         }
 
         /* RAISED INFO BOX STYLES */
@@ -50,6 +57,8 @@ function injectModalStyles() {
             z-index: 50;
             transition: opacity 0.3s ease;
             pointer-events: none;
+            display: none; /* Default hidden, managed by JS */
+            opacity: 0;
         }
         
         .modal-photo-info.raised-layer h3, 
@@ -217,13 +226,23 @@ function animateModalOpen() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
     
+    // Reset any leaving state
+    $modal.removeClass('fading-out');
     $content.removeClass('modal-animate-leave');
     
-    $modal.css('display', 'flex'); // Ensure layout before animating
+    // Ensure display is flex BEFORE adding animation class to center it
+    $modal.css('display', 'flex').css('opacity', '1'); 
     
     // Use requestAnimationFrame to ensure the class addition triggers the CSS animation
     requestAnimationFrame(() => {
         $content.addClass('modal-animate-enter');
+        
+        // FIX FOR DEEP LINKING LAYOUT ISSUES:
+        // Trigger a window resize event once the modal is visible.
+        // This forces layout recalculations (Chess board, Grid, etc).
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 50);
     });
 }
 
@@ -231,11 +250,14 @@ function animateModalClose() {
     const $modal = $('#content-modal');
     const $content = $modal.find('.modal-content');
     
+    // 1. Trigger Animations
     $content.removeClass('modal-animate-enter').addClass('modal-animate-leave');
+    $modal.addClass('fading-out'); // Adds opacity transition to background
     
-    // Wait for CSS animation to finish
+    // 2. Wait for animation to finish (300ms matches CSS) before hiding display
     setTimeout(function() {
         $modal.hide();
+        $modal.removeClass('fading-out');
         $content.removeClass('modal-animate-leave'); 
         $('#modal-content-area').html(''); 
     }, 300); 
@@ -353,11 +375,13 @@ function loadModalContent(index) {
     const $modalInfoBtn = $modal.find('.modal-info-btn');
     const $modalPlayControls = $modal.find('.slideshow-controls'); 
     const $modalFsBtn = $modal.find('.modal-fullscreen-btn');
+    const $modalOpenLink = $modal.find('.open-new-window');
 
     // === RESET UI ===
     $modal.find('.modal-header').removeAttr('style'); 
     $modal.removeClass('chess-mode research-mode'); 
     $('body').removeClass('chess-mode-active');
+    $modalOpenLink.hide(); // Force hide in all cases (per request)
     
     isTutorialMode = false;
     $modalInfoBtn.removeData('manifest-url'); 
@@ -385,7 +409,6 @@ function loadModalContent(index) {
     }
 
     // BUTTON VISIBILITY LOGIC
-    // 1. Slideshow controls (Images only)
     if (loadType === 'image') {
         $modalPlayControls.show();
     } else {
@@ -393,7 +416,7 @@ function loadModalContent(index) {
         stopSlideshow(); 
     }
 
-    // 2. Fullscreen Button logic
+    // Fullscreen Button logic
     if (loadType === 'image' || loadType === 'iframe' || loadType === 'markdown' || loadType === 'tutorial') {
         $modalFsBtn.show(); 
     } else {
@@ -452,36 +475,35 @@ function loadModalContent(index) {
 
     let infoHtml = '';
 
-    // === INFO HTML GENERATION (STRICT PERSISTENCE) ===
+    // === INFO HTML GENERATION ===
+    // Note: We create it hidden by default, and let enforcePersistence() handle showing it.
     if (title || desc) { 
-        // We set inline style based on PERSISTENT GLOBAL STATE directly in the HTML string.
-        // This avoids race conditions where JS tries to show() it after it's already rendered hidden.
-        const displayStyle = isModalInfoVisible ? 'block' : 'none';
-        const opacityStyle = isModalInfoVisible ? '1' : '0';
-        
         infoHtml = `
-            <div class="modal-photo-info raised-layer" style="display: ${displayStyle}; opacity: ${opacityStyle};">
+            <div class="modal-photo-info raised-layer">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
     }
 
     // === PERSISTENCE ENFORCER FUNCTION ===
+    // This function is called immediately after content load.
+    // It checks the GLOBAL variable and forces the UI to match.
     const enforcePersistence = () => {
         const $infoDiv = $modalContent.find('.modal-photo-info');
         
-        // 1. Force Button State
-        if (isModalInfoVisible) {
-            $modalInfoBtn.addClass('active');
-        } else {
-            $modalInfoBtn.removeClass('active');
-        }
-
-        // 2. Hide button if no info available
-        if ($infoDiv.length === 0) {
-            $modalInfoBtn.hide();
-        } else {
+        if ($infoDiv.length > 0) {
             $modalInfoBtn.show();
+            
+            // STRICT PERSISTENCE CHECK
+            if (isModalInfoVisible) {
+                $modalInfoBtn.addClass('active');
+                $infoDiv.show().css('opacity', 1); // FORCE SHOW
+            } else {
+                $modalInfoBtn.removeClass('active');
+                $infoDiv.hide().css('opacity', 0); // FORCE HIDE
+            }
+        } else {
+            $modalInfoBtn.hide();
         }
     };
 
