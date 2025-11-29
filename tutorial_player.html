@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Player</title>
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-color: #ffffff;
+            --text-main: #2c3e50;
+            --text-light: #7f8c8d;
+            --accent: #2980b9;
+            --accent-hover: #3498db;
+            --success: #27ae60;
+            --error: #c0392b;
+            --font-stack: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Container handles scroll */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CONTENT AREA --- */
+        #slide-container {
+            flex: 1;
+            overflow-y: auto; /* Vertical scroll for content */
+            padding: 40px 30px 100px 30px; /* Bottom padding for fixed navs */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .slide-content {
+            max-width: 800px;
+            width: 100%;
+            background: #fff;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        
+        .slide-content.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1 { color: var(--accent); font-size: 2.2rem; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { color: var(--text-main); margin-top: 30px; font-size: 1.5rem; }
+        p { font-size: 1.1rem; line-height: 1.6; color: #444; margin-bottom: 15px; }
+        ul, ol { font-size: 1.1rem; line-height: 1.6; color: #444; margin-bottom: 20px; padding-left: 25px; }
+        li { margin-bottom: 8px; }
+        code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; color: #e74c3c; font-family: Consolas, monospace; font-size: 0.95em; }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: Consolas, monospace; font-size: 0.95rem; line-height: 1.5; margin: 20px 0; }
+
+        /* --- QUIZ INTERFACE --- */
+        .quiz-container { margin-top: 30px; background: #f8f9fa; padding: 25px; border-radius: 10px; border: 1px solid #e9ecef; }
+        .quiz-question { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; color: #2c3e50; }
+        
+        .quiz-option {
+            background: #ffffff;
+            border: 2px solid #e0e0e0;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1.05rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .quiz-option:hover:not(.disabled) { border-color: var(--accent); background: #f0f8ff; }
+        .quiz-option.selected { border-color: var(--accent); background: #e1f0fa; font-weight: 600; }
+        .quiz-option.correct { border-color: var(--success); background: #d4edda; color: #155724; }
+        .quiz-option.incorrect { border-color: var(--error); background: #f8d7da; color: #721c24; }
+        .quiz-option.disabled { cursor: default; opacity: 0.7; pointer-events: none; }
+
+        /* Feedback Icons */
+        .quiz-option::after { content: ''; font-weight: bold; font-size: 1.2rem; }
+        .quiz-option.correct::after { content: '✓'; color: var(--success); }
+        .quiz-option.incorrect::after { content: '✕'; color: var(--error); }
+
+        .feedback-box {
+            margin-top: 20px; padding: 15px; border-radius: 8px; display: none; font-size: 1rem; line-height: 1.5;
+        }
+        .feedback-box.visible { display: block; animation: slideDown 0.3s ease; }
+        .feedback-success { background: #d4edda; border-left: 5px solid var(--success); color: #155724; }
+        .feedback-error { background: #fff3cd; border-left: 5px solid #f39c12; color: #856404; }
+        .feedback-link { display: inline-block; margin-top: 8px; font-weight: bold; color: inherit; text-decoration: underline; }
+
+        .btn-submit {
+            margin-top: 20px; padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 50px;
+            font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; display: inline-block;
+        }
+        .btn-submit:hover:not(:disabled) { background: var(--accent-hover); }
+        .btn-submit:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+        /* --- INTERNAL NAVIGATION BAR --- */
+        .nav-bar {
+            width: 100%;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+            /* Position is controlled by parent context (relative/absolute) */
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover:not(:disabled) { background: var(--accent); color: white; }
+        .nav-btn:disabled { border-color: #e0e0e0; color: #ccc; cursor: default; }
+
+        .progress-indicator { font-family: var(--font-stack); font-weight: bold; color: var(--text-light); }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- Scrollable Content Area -->
+    <div id="slide-container">
+        <div class="slide-content" id="content-area">
+            <!-- DYNAMIC CONTENT LOADS HERE -->
+            <div style="text-align:center; padding-top: 50px; color:#999;">
+                <p>Loading content...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Bottom Navigation -->
+    <div class="nav-bar">
+        <button class="nav-btn" id="btn-prev" onclick="navigate(-1)">&#8592; Back</button>
+        <span class="progress-indicator" id="progress-text">Loading...</span>
+        <button class="nav-btn" id="btn-next" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+
+<script>
+    // --- STATE MANAGEMENT ---
+    let slides = [];
+    let currentIndex = 0;
+    let quizState = {}; // { index: { selected: number, submitted: boolean } }
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const manifestUrl = urlParams.get('manifest');
+
+        if (!manifestUrl) {
+            showError("No tutorial manifest provided.");
+            return;
+        }
+
+        fetch(manifestUrl)
+            .then(res => {
+                if(!res.ok) throw new Error("Network response was not ok");
+                return res.json();
+            })
+            .then(data => {
+                if (data.slides && Array.isArray(data.slides)) {
+                    slides = data.slides;
+                    loadSlide(0);
+                } else {
+                    showError("Invalid tutorial format: 'slides' array missing.");
+                }
+            })
+            .catch(err => {
+                console.error("Tutorial Load Error:", err);
+                showError("Failed to load tutorial content.");
+            });
+
+        // Listen for keyboard events and forward them (for parent Fullscreen/Exit)
+        document.addEventListener('keydown', (e) => {
+            // 1. Local Navigation
+            if(e.key === "ArrowRight") navigate(1);
+            if(e.key === "ArrowLeft") navigate(-1);
+
+            // 2. Forward to Parent (for Esc, F, etc.)
+            try {
+                if(window.parent && window.parent.handleModalKeys) {
+                    window.parent.handleModalKeys({ key: e.key });
+                }
+            } catch(err) { /* Cross-origin restriction ignore */ }
+        });
+    });
+
+    // --- CORE FUNCTIONS ---
+    function loadSlide(index) {
+        if (index < 0 || index >= slides.length) return;
+        
+        const contentArea = document.getElementById('content-area');
+        contentArea.classList.remove('active'); // Fade out
+        
+        setTimeout(() => {
+            currentIndex = index;
+            const slide = slides[index];
+            
+            // Render based on type
+            if (slide.type === 'quiz') {
+                renderQuiz(slide, index);
+            } else {
+                renderText(slide);
+            }
+
+            updateNav();
+            
+            // Fade in
+            contentArea.classList.add('active');
+            document.getElementById('slide-container').scrollTop = 0;
+        }, 200);
+    }
+
+    function navigate(dir) {
+        const nextIndex = currentIndex + dir;
+        if (nextIndex >= 0 && nextIndex < slides.length) {
+            loadSlide(nextIndex);
+        }
+    }
+
+    function updateNav() {
+        document.getElementById('btn-prev').disabled = (currentIndex === 0);
+        document.getElementById('btn-next').disabled = (currentIndex === slides.length - 1);
+        document.getElementById('progress-text').innerText = `Page ${currentIndex + 1} of ${slides.length}`;
+    }
+
+    function showError(msg) {
+        document.getElementById('content-area').innerHTML = `<div style="color:#c0392b; text-align:center; padding:40px;"><h3>Error</h3><p>${msg}</p></div>`;
+    }
+
+    // --- RENDERERS ---
+    function renderText(slide) {
+        const html = `
+            <h1>${slide.title || 'Tutorial'}</h1>
+            <div class="body-content">${slide.body || ''}</div>
+        `;
+        document.getElementById('content-area').innerHTML = html;
+    }
+
+    function renderQuiz(slide, index) {
+        // Check state
+        const state = quizState[index] || { selected: null, submitted: false };
+        
+        // SAFEGUARD: Ensure options exist
+        const options = slide.options || [];
+        
+        let optionsHtml = '';
+        options.forEach((opt, i) => {
+            let classes = 'quiz-option';
+            if (state.selected === i) classes += ' selected';
+            if (state.submitted) {
+                classes += ' disabled';
+                if (i === slide.correctIndex) classes += ' correct';
+                else if (i === state.selected) classes += ' incorrect';
+            }
+            optionsHtml += `<div class="${classes}" id="opt-${i}" onclick="selectOption(${i})">${opt}</div>`;
+        });
+
+        // Feedback rendering
+        let feedbackHtml = '';
+        if (state.submitted) {
+            const isCorrect = (state.selected === slide.correctIndex);
+            const fbClass = isCorrect ? 'feedback-success' : 'feedback-error';
+            const fbText = isCorrect ? 'Correct!' : 'Incorrect.';
+            const link = slide.explanationUrl ? `<br><a href="${slide.explanationUrl}" target="_blank" class="feedback-link">Learn More &rarr;</a>` : '';
+            feedbackHtml = `
+                <div class="feedback-box visible ${fbClass}">
+                    <strong>${fbText}</strong><br>
+                    ${slide.feedback || ''} ${link}
+                </div>`;
+        }
+
+        const btnState = state.submitted ? 'style="display:none"' : (state.selected === null ? 'disabled' : '');
+
+        const html = `
+            <h1>📝 Knowledge Check</h1>
+            <div class="quiz-container">
+                <div class="quiz-question">${slide.question}</div>
+                <div id="options-list">${optionsHtml}</div>
+                <button class="btn-submit" id="btn-submit" onclick="submitQuiz()" ${btnState}>Submit Answer</button>
+                <div id="feedback-area">${feedbackHtml}</div>
+            </div>
+        `;
+        document.getElementById('content-area').innerHTML = html;
+    }
+
+    // --- QUIZ INTERACTION ---
+    window.selectOption = function(optionIndex) {
+        if (quizState[currentIndex] && quizState[currentIndex].submitted) return;
+
+        // Update State
+        quizState[currentIndex] = { ...quizState[currentIndex], selected: optionIndex };
+
+        // Update UI
+        const allOpts = document.querySelectorAll('.quiz-option');
+        allOpts.forEach(el => el.classList.remove('selected'));
+        document.getElementById(`opt-${optionIndex}`).classList.add('selected');
+        document.getElementById('btn-submit').disabled = false;
+    };
+
+    window.submitQuiz = function() {
+        const state = quizState[currentIndex];
+        if (!state || state.selected === null) return;
+
+        state.submitted = true;
+        // Re-render to show results
+        loadSlide(currentIndex);
+    };
+</script>
+</body>
+</html>
