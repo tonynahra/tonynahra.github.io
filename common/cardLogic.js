@@ -334,13 +334,16 @@ function loadModalContent(index) {
     if (title || desc) { // Only create info HTML if there's content
         // FIX: Ensure the state of info visibility is applied when loading the card
         const infoVisibleClass = isModalInfoVisible ? 'info-visible' : '';
-        
-        // NEW FIX: FORCE INLINE DISPLAY EXPLICITLY
-        // This ensures that we override CSS "display: none" immediately based on state.
-        const infoStyle = isModalInfoVisible ? 'display: block;' : 'display: none;';
+        // FIX: Set button active state based on persistent variable
+        $modalInfoBtn.toggleClass('active', isModalInfoVisible);
+
+        // NEW FIX: FORCE INLINE DISPLAY EXPLICITLY BASED ON STATE
+        // If state is false, we MUST set display: none because you removed it from CSS.
+        // We also apply the 50% opacity black background here.
+        const displayStyle = isModalInfoVisible ? 'block' : 'none';
         
         infoHtml = `
-            <div class="modal-photo-info ${infoVisibleClass}" style="${infoStyle}">
+            <div class="modal-photo-info ${infoVisibleClass}" style="display: ${displayStyle}; background: rgba(0, 0, 0, 0.5);">
                 <h3>${title}</h3>
                 <p>${desc}</p>
             </div>`;
@@ -1360,7 +1363,7 @@ $('body').on('click', '.modal-close-btn', function() {
         // Reset global states
         currentCardList = [];
         currentCardIndex = 0;
-        isModalInfoVisible = false; // Reset info visibility state on close
+        // REMOVED RESET TO PERSIST STATE: isModalInfoVisible = false; 
         isTutorialMode = false; // Reset tutorial mode
         $(document).off('keydown.modalNav');
         
@@ -1418,7 +1421,7 @@ $('body').on('click', '.modal-close-btn', function() {
                 // We use .stop(true, true) to clear animation queue and prevent "bouncing"
                 if (isModalInfoVisible) {
                      // Ensure display block is set before fading in (just in case)
-                     $infoDiv.css('display', 'block').hide().stop(true, true).fadeIn(400);
+                     $infoDiv.stop(true, true).fadeIn(400);
                 } else {
                      $infoDiv.stop(true, true).fadeOut(400);
                 }
