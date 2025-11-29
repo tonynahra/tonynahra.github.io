@@ -65,7 +65,6 @@
 
         if (!manifestUrl) { showError("No tutorial manifest provided."); return; }
 
-        // Handle XML (Original) vs JSON (New)
         if (manifestUrl.includes('.xml')) {
             loadXmlManifest(manifestUrl);
         } else {
@@ -88,37 +87,87 @@
     }
 
     function loadXmlManifest(url) {
-        // Use proxy to bypass CORS for XML
-        const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(url)}`;
-        fetch(proxyUrl).then(res => res.text()).then(str => {
+        // STRATEGY: Try Direct Fetch first. If CORS fails, try Proxy.
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error('Direct fetch failed');
+                return res.text();
+            })
+            .then(str => parseXml(str, url))
+            .catch(err => {
+                console.warn('Direct XML fetch failed, trying proxy...', err);
+                // Fallback to Proxy
+                const proxyUrl = `https://mediamaze.com/p/?url=${encodeURIComponent(url)}`;
+                fetch(proxyUrl)
+                    .then(res => {
+                        if (!res.ok) throw new Error('Proxy fetch failed');
+                        return res.text();
+                    })
+                    .then(str => parseXml(str, url))
+                    .catch(finalErr => showError("Failed to load XML tutorial (CORS/Proxy Error)."));
+            });
+    }
+
+    function parseXml(xmlStr, manifestUrl) {
+        try {
             const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(str, "text/xml");
+            const xmlDoc = parser.parseFromString(xmlStr, "text/xml");
             const steps = xmlDoc.getElementsByTagName("step");
+            
             slides = [];
+            
+            // Base URL logic for relative image paths
+            // If manifest is https://site.com/folder/A2.xml, base is https://site.com/folder/
+            const basePath = manifestUrl.substring(0, manifestUrl.lastIndexOf('/') + 1);
+
             for(let i=0; i<steps.length; i++) {
-                // Extract image URL from <image> tag inside <step>
-                const imgNode = steps[i].getElementsByTagName("image")[0];
+                // Try to find <image> tag
+                let imgNode = steps[i].getElementsByTagName("image")[0];
+                
+                // If not found, some X-Plain XMLs use <img src="..."> in content
+                if (!imgNode) {
+                    const content = steps[i].textContent;
+                    // Simple check if content implies an image path
+                    if(content && content.trim().length > 0 && !content.includes('<')) {
+                         // Sometimes the step content IS the image filename
+                         // Let's assume if no child tags, it might be an image
+                    }
+                }
+
                 if(imgNode) {
-                    // Resolve relative URLs if needed, here assuming absolute or base logic
-                    // Usually x-plain XMLs have relative paths. We need the base URL.
-                    // Simplified logic: assumes the XML has full or predictable paths.
-                    // If not, we might need base path logic. 
-                    // For now, we push the text content.
-                    slides.push({ type: 'image', src: imgNode.textContent });
+                    let imgSrc = imgNode.textContent.trim();
+                    if (imgSrc) {
+                        // Resolve Relative URL
+                        if (!imgSrc.startsWith('http') && !imgSrc.startsWith('//')) {
+                            imgSrc = basePath + imgSrc;
+                        }
+                        slides.push({ type: 'image', src: imgSrc });
+                    }
+                } else {
+                    // Fallback logic for X-Plain format: often "Slide1.jpg", "Slide2.jpg" inferred
+                    // If XML structure is strictly <step><image>...</image></step>, above works.
+                    // If structure differs, we might need to adapt.
+                    
+                    // Heuristic: Check if there is ANY text content that looks like a filename
+                    const stepText = steps[i].textContent.trim();
+                    if (stepText.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                         let imgSrc = stepText;
+                         if (!imgSrc.startsWith('http')) imgSrc = basePath + imgSrc;
+                         slides.push({ type: 'image', src: imgSrc });
+                    }
                 }
             }
-            
-            // Fallback if logic differs
-            if(slides.length === 0) {
-                 // Try standard x-plain pattern based on ID
-                 // This is a heuristic fallback
-                 slides.push({ type: 'text', title: 'Error', body: 'Could not parse slides from XML.' });
-            }
-            
-            isImageMode = true;
-            loadSlide(0);
 
-        }).catch(err => showError("Failed to load XML tutorial."));
+            if(slides.length === 0) {
+                showError("No slides found in XML.");
+            } else {
+                isImageMode = true;
+                loadSlide(0);
+            }
+        } catch (e) {
+            console.error(e);
+            showError("Error parsing XML data.");
+        }
     }
 
     function loadSlide(index) {
@@ -131,25 +180,9 @@
             const slide = slides[index];
             
             if (isImageMode) {
-                // XML Image Mode
-                // Note: Real X-Plain XMLs often use relative paths. 
-                // We need to prepend the base URL of the XML directory.
-                // Since we don't have the full logic, we try to display what we parsed.
-                // If src is relative, we might need to fix it. 
-                // Assuming src is usable for now.
-                
-                // Fix for relative paths: Get base dir of manifest
-                const urlParams = new URLSearchParams(window.location.search);
-                const manifest = urlParams.get('manifest');
-                const base = manifest.substring(0, manifest.lastIndexOf('/') + 1);
-                let imgSrc = slide.src;
-                if(!imgSrc.startsWith('http')) imgSrc = base + imgSrc;
-
-                const html = `<div class="image-slide-container"><img src="${imgSrc}" class="tutorial-image" alt="Slide ${index+1}"></div>`;
+                const html = `<div class="image-slide-container"><img src="${slide.src}" class="tutorial-image" alt="Slide ${index+1}" onerror="this.onerror=null;this.src='placeholder.png';this.parentElement.innerHTML='<p style=\\'color:red\\'>Image failed to load.</p>'"></div>`;
                 document.getElementById('content-area').innerHTML = html;
-                
             } else {
-                // JSON Text Mode
                 if (slide.type === 'quiz') renderQuiz(slide, index);
                 else renderText(slide);
             }
