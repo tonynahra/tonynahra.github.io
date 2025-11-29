@@ -285,7 +285,7 @@ function loadModalContent(index) {
             <button class="modal-close-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2000; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2rem;">&times;</button>
         `;
         $modalContent.html(playerHtml);
-        $modalContent.find('.modal-close-btn').on('click', function() { $('.modal-close-btn').first().click(); });
+        $modalContent.find('.modal-close-btn').on('click', function() { $('.modal-close-btn').first().click();  closeModalCleanup();  });
         return;
     }
 
