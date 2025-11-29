@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card System User Guide</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f9f9f9;
+            --code-bg: #2d2d2d;
+            --text: #333;
+        }
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: var(--text); max-width: 1200px; margin: 0 auto; padding: 20px; background: var(--bg); }
+        h1, h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h1 { margin-top: 0; }
+        
+        /* Sections */
+        section { background: #fff; padding: 30px; margin-bottom: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background: var(--primary); color: #fff; }
+        tr:nth-child(even) { background: #f8f9fa; }
+
+        /* Code Blocks */
+        pre { background: var(--code-bg); color: #f8f8f2; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: Consolas, monospace; }
+        code { background: #eef; padding: 2px 5px; border-radius: 4px; color: #c7254e; font-family: Consolas, monospace; }
+
+        /* Examples */
+        .example-box { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 6px; background: #fff; }
+        .tag { display: inline-block; background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+    <h1>Card System User Guide</h1>
+    <p>A complete reference for creating, configuring, and linking interactive content cards.</p>
+
+    <!-- SECTION 1: CARD STRUCTURE -->
+    <section>
+        <h2>1. Basic Card Structure</h2>
+        <p>Every card follows this standard HTML structure. The magic happens in the <code>&lt;a&gt;</code> tag's data attributes.</p>
+        <pre>&lt;div class="card-item" data-category="CategoryName" data-keywords="keyword1, keyword2"&gt;
+    &lt;a href="{CONTENT_URL}" 
+       data-load-type="{TYPE}" 
+       data-title="{OPTIONAL_TITLE}" 
+       data-desc="{OPTIONAL_DESCRIPTION}"&gt;
+       
+        &lt;!-- Thumbnail Image --&gt;
+        &lt;img src="thumb.jpg" class="card-image" alt="Alt Text"&gt;
+        
+        &lt;!-- Text Content --&gt;
+        &lt;h3&gt;Card Title&lt;/h3&gt;
+        &lt;p&gt;Short description shown on the card.&lt;/p&gt;
+        &lt;span class="card-category"&gt;Category Label&lt;/span&gt;
+    &lt;/a&gt;
+&lt;/div&gt;</pre>
+    </section>
+
+    <!-- SECTION 2: CARD TYPES -->
+    <section>
+        <h2>2. Supported Card Types</h2>
+        <p>Use the <code>data-load-type</code> attribute to define how the content opens.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Required Attributes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>image</code></td>
+                    <td>Opens an image in a zoomable, full-screen capable viewer. Supports slideshows.</td>
+                    <td><code>href="image.jpg"</code></td>
+                </tr>
+                <tr>
+                    <td><code>iframe</code></td>
+                    <td>Opens a URL in an iframe. Supports YouTube and generic web pages.</td>
+                    <td><code>href="https://..."</code></td>
+                </tr>
+                <tr>
+                    <td><code>markdown</code></td>
+                    <td>Fetches a raw .md file and renders it as formatted HTML.</td>
+                    <td><code>href="file.md"</code></td>
+                </tr>
+                <tr>
+                    <td><code>chess</code></td>
+                    <td>Loads a PGN file into an interactive Chess Board with engine analysis.</td>
+                    <td><code>href="game.pgn"</code></td>
+                </tr>
+                <tr>
+                    <td><code>tutorial</code></td>
+                    <td>Launches the interactive Tutorial Player (XML or JSON).</td>
+                    <td><code>data-manifest-url="file.json"</code></td>
+                </tr>
+                <tr>
+                    <td><code>table</code></td>
+                    <td>Renders a JSON data file as a responsive HTML table with deep links.</td>
+                    <td><code>href="data.json"</code></td>
+                </tr>
+                <tr>
+                    <td><code>research</code></td>
+                    <td>Creates a tabbed modal for stock/financial research.</td>
+                    <td><code>data-json-url="tickers.json"</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- SECTION 3: EXAMPLES -->
+    <section>
+        <h2>3. Code Examples</h2>
+
+        <h3>Chess Card</h3>
+        <pre>&lt;div class="card-item"&gt;
+    &lt;a href="games/kasparov.pgn" data-load-type="chess" data-title="Kasparov vs Topalov"&gt;
+        &lt;div class="chess-icon"&gt;♟️&lt;/div&gt;
+        &lt;h3&gt;Kasparov's Immortal&lt;/h3&gt;
+    &lt;/a&gt;
+&lt;/div&gt;</pre>
+
+        <h3>Tutorial Card (Text/JSON)</h3>
+        <pre>&lt;div class="card-item"&gt;
+    &lt;a href="#" data-load-type="tutorial" data-manifest-url="data/intro_tutorial.json"&gt;
+        &lt;img src="thumb_tutorial.jpg" class="card-image"&gt;
+        &lt;h3&gt;Start Tutorial&lt;/h3&gt;
+    &lt;/a&gt;
+&lt;/div&gt;</pre>
+
+        <h3>Data Table Card</h3>
+        <pre>&lt;div class="card-item"&gt;
+    &lt;a href="data/stats.json" data-load-type="table" data-title="Statistics"&gt;
+        &lt;h3&gt;View Statistics&lt;/h3&gt;
+    &lt;/a&gt;
+&lt;/div&gt;</pre>
+    </section>
+
+    <!-- SECTION 4: TABLE JSON FORMAT -->
+    <section>
+        <h2>4. Table JSON Structure</h2>
+        <p>To create a <code>table</code> card, your JSON file must follow this format. You can use <code>link:type:id:label</code> to create buttons inside cells.</p>
+        <pre>{
+  "title": "My Data Table",
+  "description": "Optional description above the table.",
+  "columns": ["Name", "Type", "Action"],
+  "rows": [
+    ["Game 1", "Chess", "link:chess:game1.pgn:View Game"],
+    ["Guide 1", "Tutorial", "link:tutorial:guide.json:Start"]
+  ]
+}</pre>
+    </section>
+
+    <!-- SECTION 5: PUBLIC API -->
+    <section>
+        <h2>5. Public JavaScript API</h2>
+        <p>These functions are available globally (`window.functionName`) for use in deep linking or custom scripts.</p>
+        <ul>
+            <li><code>openCardByTitle(titleOrId)</code>: Finds a card by its <code>id</code> or <code>&lt;h3&gt;</code> text and opens it.</li>
+            <li><code>checkDeepLink()</code>: Parsers the URL query string <code>?post=ID</code> and opens the matching card.</li>
+            <li><code>loadChessGame(url, modal, content)</code>: Manually triggers the Chess viewer.</li>
+            <li><code>buildTableModal(jsonUrl)</code>: Manually triggers the Table viewer.</li>
+            <li><code>updateSocialMeta(title, desc, image)</code>: Updates OG tags for social sharing dynamically.</li>
+        </ul>
+    </section>
+
+    <footer style="text-align:center; color:#999; margin-top:50px;">
+        Generated for Internal Documentation
+    </footer>
+
+</body>
+</html>
