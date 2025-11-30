@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Card Editor (Standalone)</title>
+    <style>
+        :root { --primary: #2980b9; --accent: #e74c3c; --bg: #f4f6f7; --text: #2c3e50; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); color: var(--text); }
+        
+        /* Toolbar */
+        #toolbar { background: white; padding: 15px 30px; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; }
+        .tool-group { display: flex; gap: 10px; align-items: center; border-right: 1px solid #eee; padding-right: 20px; }
+        .tool-group:last-child { border: none; margin-left: auto; }
+        
+        /* Main Grid */
+        #main { flex: 1; padding: 40px; overflow-y: auto; }
+        #card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+        
+        /* Cards */
+        .editor-card { 
+            background: white; border-radius: 8px; padding: 20px; 
+            border-left: 6px solid #ccc; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            cursor: grab; /* Drag Cursor */
+            transition: transform 0.1s, box-shadow 0.1s; position: relative;
+            display: flex; flex-direction: column;
+        }
+        .editor-card:active { cursor: grabbing; }
+        .editor-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        
+        /* DRAGGING STATE */
+        .editor-card.dragging {
+            opacity: 0.5;
+            border: 2px dashed var(--primary);
+            background: #eef;
+        }
+
+        /* High Visibility Selection */
+        .editor-card.selected { 
+            outline: 6px solid var(--primary); 
+            outline-offset: -2px; 
+            background: #ebf5fb;
+            box-shadow: 0 0 15px rgba(41, 128, 185, 0.5); 
+            z-index: 5;
+        }
+        
+        .editor-card h3 { margin: 0 0 10px 0; font-size: 18px; pointer-events: none; }
+        .editor-card p { font-size: 13px; color: #666; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 15px; pointer-events: none; }
+        .card-id-display { font-family: monospace; font-size: 11px; color: #95a5a6; margin-bottom: 5px; display: block; font-weight: bold; pointer-events: none; }
+
+        .card-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid #eee; }
+        
+        /* Badges */
+        .badges { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; pointer-events: none; }
+        .badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; background: #eee; font-weight: 600; text-transform: uppercase; }
+        .badge.type { background: #d5f5e3; color: #196f3d; }
+        
+        /* Dialogs - WIDER for Desktop */
+        dialog { 
+            border: none; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
+            padding: 0; width: 800px; max-width: 95vw; 
+        }
+        dialog::backdrop { background: rgba(0,0,0,0.5); }
+        .dialog-header { padding: 15px 25px; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; }
+        .dialog-header h3 { margin: 0; font-size: 20px; }
+        .dialog-body { padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+        .dialog-footer { padding: 20px 25px; background: #f9f9f9; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; }
+        
+        /* Inputs */
+        label { font-weight: bold; font-size: 12px; display: block; margin-bottom: 6px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+        input[type="text"], textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+        textarea { resize: vertical; }
+
+        .input-lg { font-size: 16px; font-weight: bold; height: 45px; }
+        .category-section { background-color: #eef2f5; border: 1px solid #d6dbdf; padding: 15px; border-radius: 6px; }
+
+        /* Checkbox Grid */
+        .cat-checkbox-container { border: 1px solid #ccc; padding: 10px; border-radius: 4px; max-height: 150px; overflow-y: auto; background: #fff; display: flex; flex-wrap: wrap; gap: 10px; }
+        .cat-checkbox-item { display: flex; align-items: center; gap: 6px; background: #fdfdfd; padding: 6px 10px; border-radius: 15px; font-size: 13px; border: 1px solid #ddd; cursor: pointer; user-select: none; transition: background 0.1s; }
+        .cat-checkbox-item:hover { background: #e8e8e8; border-color: #bbb; }
+        .cat-checkbox-item input { margin: 0; cursor: pointer; transform: scale(1.1); }
+
+        /* Buttons */
+        button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--accent); color: white; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-file { background: #34495e; color: white; }
+        
+        /* Small test button */
+        .btn-test { padding: 5px 10px; font-size: 12px; background: #bdc3c7; color: #333; border-radius: 4px; }
+        .btn-test:hover { background: #95a5a6; color: white; }
+
+        /* Color Dropdown */
+        .color-dd-wrapper { position: relative; height: 45px; }
+        .color-dd-trigger { display: flex; align-items: center; padding: 0 10px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: white; height: 100%; box-sizing: border-box; }
+        .color-swatch { width: 28px; height: 28px; border-radius: 4px; margin-right: 10px; border: 1px solid rgba(0,0,0,0.2); }
+        .color-dd-list { position: absolute; top: 100%; left: 0; right: 0; max-height: 300px; overflow-y: auto; background: white; border: 1px solid #ccc; border-radius: 4px; z-index: 100; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .color-dd-list.open { display: block; }
+        .color-dd-item { padding: 12px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        .color-dd-item:hover { filter: brightness(0.95); }
+        .color-dd-item span { margin-left: auto; font-family: monospace; font-size: 13px; font-weight: bold; }
+
+        .hidden { display: none !important; }
+        /* Hidden file input */
+        #file-input { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="toolbar">
+        <!-- File Loading -->
+        <div class="tool-group">
+            <input type="file" id="file-input" accept=".html" onchange="loadFile(this)">
+            <button class="btn-file" onclick="document.getElementById('file-input').click()">📂 Load File</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="tool-group">
+            <label style="margin:0;">Filter:</label>
+            <input type="text" id="filter-text" placeholder="Keyword..." onkeyup="renderGrid()" style="width:150px;">
+            <select id="filter-type" onchange="renderGrid()" style="width:120px;">
+                <option value="all">All Types</option>
+                <option value="image">Image</option>
+                <option value="iframe">Iframe</option>
+                <option value="markdown">Markdown</option>
+                <option value="chess">Chess</option>
+                <option value="tutorial">Tutorial</option>
+                <option value="research">Research</option>
+                <option value="chart">Chart</option>
+            </select>
+        </div>
+
+        <!-- Selection -->
+        <div class="tool-group">
+            <button class="btn-secondary" onclick="selectAllVisible()">Select All</button>
+            <button class="btn-secondary" onclick="deselectAll()">None</button>
+            <span id="sel-count" style="font-size:14px; color:#7f8c8d; font-weight:bold;">0 selected</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="tool-group">
+            <button class="btn-primary" onclick="addNewCard()">+ New</button>
+            <button class="btn-danger" id="btn-delete" onclick="deleteSelected()" style="display:none;">Delete</button>
+            <button class="btn-primary" id="btn-bulk" onclick="openBulkEdit()" style="display:none;">Edit Selected</button>
+        </div>
+
+        <!-- Download -->
+        <div class="tool-group">
+            <button class="btn-success" onclick="generateDownload()">Download HTML</button>
+        </div>
+    </div>
+
+    <div id="main">
+        <div id="card-grid"></div>
+        <div id="empty-state" style="text-align:center; color:#999; margin-top:50px;">
+            <h2>No cards loaded</h2>
+            <p>Click "Load File" to open a previously saved HTML file.</p>
+        </div>
+    </div>
+
+    <!-- DIALOGS -->
+    <dialog id="editor-dialog">
+        <div class="dialog-header">
+            <h3 id="dialog-title">Edit Card</h3>
+            <button onclick="closeDialog('editor-dialog')" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+        </div>
+        <div class="dialog-body">
+            
+            <div style="display:flex; gap:20px; align-items: flex-end;">
+                <div style="flex: 1.5;">
+                    <label>Unique ID</label>
+                    <input type="text" id="edit-id" class="input-lg" placeholder="YYMMDDHHMMSS" style="font-family:monospace; background:#fafafa;">
+                </div>
+                <div style="flex: 1.5;">
+                    <label>Type</label>
+                    <select id="edit-load-type" class="input-lg">
+                        <option value="">(None)</option>
+                        <option value="image">Image</option>
+                        <option value="iframe">Iframe</option>
+                        <option value="markdown">Markdown</option>
+                        <option value="chess">Chess</option>
+                        <option value="tutorial">Tutorial</option>
+                        <option value="research">Research</option>
+                        <option value="chart">Chart</option>
+                    </select>
+                </div>
+                <div style="width: 140px;">
+                    <label>Color</label>
+                    <div class="color-dd-wrapper">
+                        <div class="color-dd-trigger" onclick="toggleColorList()">
+                            <div id="trigger-swatch" class="color-swatch"></div>
+                            <span id="trigger-text">Select</span>
+                            <span style="margin-left:auto; font-size:10px;">&#9660;</span>
+                        </div>
+                        <div id="color-list" class="color-dd-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label>Title</label>
+                <input type="text" id="edit-title" style="font-size:15px; font-weight:500;">
+            </div>
+            <div>
+                <label>Description</label>
+                <textarea id="edit-desc" rows="3"></textarea>
+            </div>
+            <div class="category-section">
+                <label>Categories</label>
+                <div id="cat-checkbox-grid" class="cat-checkbox-container"></div>
+                <input type="text" id="edit-cat-custom" placeholder="Add new tags (comma separated)..." style="margin-top:8px; font-size:13px; background:#fff;">
+            </div>
+            <div>
+                <label>Link URL</label>
+                <div style="display:flex; gap: 10px;">
+                    <input type="text" id="edit-link-href" style="font-family:monospace;">
+                    <button class="btn-secondary" onclick="testEditUrl()" style="width:auto; padding:0 20px;" title="Test in new tab">Test ⧉</button>
+                </div>
+            </div>
+            <div>
+                <label>Link Text</label>
+                <input type="text" id="edit-link-text" list="link-text-options" placeholder="Type or select...">
+                <datalist id="link-text-options"></datalist>
+            </div>
+        </div>
+        <div class="dialog-footer">
+            <button class="btn-secondary" onclick="closeDialog('editor-dialog')">Cancel</button>
+            <button class="btn-primary" onclick="saveDialogChanges()">Apply Changes</button>
+        </div>
+    </dialog>
+
+    <script>
+        // --- STATE ---
+        let cards = [];
+        let headerHtml = ""; // Stores filter bar HTML
+        let footerHtml = ""; // Stores closing tags if needed
+        let selectedIds = new Set();
+        let knownColors = new Set(['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#34495e', '#ecf0f1', '#95a5a6']);
+        let editingIndices = [];
+        let tempColor = '';
+        let dragSrcEl = null;
+
+        // --- FILE LOADING ---
+        function loadFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                if(content) {
+                    parseHTML(content);
+                    document.getElementById('empty-state').style.display = 'none';
+                    renderGrid();
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- PARSING ---
+        function parseHTML(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Extract Header (Filter Bar)
+            const header = doc.querySelector('.filter-bar');
+            if (header) {
+                headerHtml = header.outerHTML;
+            } else {
+                headerHtml = `<div class="filter-bar">
+                    <h2>Recent Technical Posts</h2>
+                    <div class="filter-controls">
+                        <div class="search-wrapper"><input type="search" id="post-search-box" placeholder="Filter by title/desc..."></div>
+                        <div class="category-wrapper"><select id="post-category-filter"><option value="all">All Categories</option></select></div>
+                        <div class="keyword-wrapper"><select id="post-keyword-filter"><option value="all">Top Keywords</option></select></div>
+                    </div>
+                </div>`;
+            }
+            
+            // Extract Cards
+            cards = Array.from(doc.querySelectorAll('.card-item')).map((node, i) => {
+                const color = rgb2hex(node.style.borderLeftColor || '#cccccc');
+                knownColors.add(color);
+                
+                return {
+                    id: node.id || generateTimestampID() + i, 
+                    title: node.querySelector('h3')?.innerHTML || 'Untitled',
+                    desc: node.querySelector('p')?.innerHTML || '',
+                    cat: node.dataset.category || node.querySelector('.card-category')?.innerText || 'General',
+                    color: color,
+                    keywords: node.dataset.keywords || '',
+                    imgSrc: node.querySelector('img')?.src || null,
+                    linkHref: node.querySelector('a')?.getAttribute('href') || '#',
+                    linkText: node.querySelector('a')?.innerText || 'View', 
+                    loadType: node.querySelector('a')?.dataset.loadType || node.dataset.loadType || '',
+                    fullAttrs: getAttrs(node) // Store extra attributes if needed
+                };
+            });
+        }
+
+        // --- RENDERING & DRAG DROP ---
+        function renderGrid() {
+            const grid = document.getElementById('card-grid');
+            grid.innerHTML = '';
+            
+            const fText = document.getElementById('filter-text').value.toLowerCase();
+            const fType = document.getElementById('filter-type').value;
+
+            cards.forEach((c, i) => {
+                // Filters
+                if (fType !== 'all' && c.loadType !== fType) return;
+                if (fText && !`${c.title} ${c.cat} ${c.keywords} ${c.color}`.toLowerCase().includes(fText)) return;
+
+                const el = document.createElement('div');
+                el.className = `editor-card ${selectedIds.has(i) ? 'selected' : ''}`;
+                el.style.borderLeftColor = c.color;
+                el.setAttribute('draggable', 'true');
+                el.setAttribute('data-index', i);
+                
+                let h = `<span class="card-id-display">#${c.id}</span>`;
+                h += `<div class="badges">`;
+                if(c.loadType) h += `<span class="badge type">${c.loadType}</span>`;
+                c.cat.split(',').forEach(ct => {
+                    const clean = ct.trim();
+                    if(clean) h += `<span class="badge">${clean}</span>`;
+                });
+                h += `</div>`;
+                h += `<h3>${c.title}</h3><p>${c.desc}</p>`;
+                
+                // Footer
+                h += `<div class="card-footer">
+                        <span style="font-size:11px; color:#999;">${c.linkText}</span>
+                        <button class="btn-test" onclick="openLink(event, '${c.linkHref}')">⧉ Test Link</button>
+                      </div>`;
+                
+                el.innerHTML = h;
+                el.onclick = (e) => handleSelect(e, i);
+                
+                // Drag Events
+                el.addEventListener('dragstart', handleDragStart);
+                el.addEventListener('dragover', handleDragOver);
+                el.addEventListener('drop', handleDrop);
+                el.addEventListener('dragend', handleDragEnd);
+
+                grid.appendChild(el);
+            });
+            updateUI();
+        }
+
+        // --- DRAG LOGIC ---
+        function handleDragStart(e) {
+            dragSrcEl = this;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+            this.classList.add('dragging');
+        }
+        function handleDragOver(e) {
+            if (e.preventDefault) e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+        function handleDrop(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            if (dragSrcEl !== this) {
+                const srcIdx = parseInt(dragSrcEl.getAttribute('data-index'));
+                const targetIdx = parseInt(this.getAttribute('data-index'));
+                
+                // Move item in data array
+                const item = cards[srcIdx];
+                cards.splice(srcIdx, 1);
+                cards.splice(targetIdx, 0, item);
+                
+                renderGrid();
+            }
+            return false;
+        }
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+        }
+
+        // --- INTERACTIONS ---
+        function handleSelect(e, i) {
+            if (e.ctrlKey || e.metaKey) {
+                if (selectedIds.has(i)) selectedIds.delete(i);
+                else selectedIds.add(i);
+            } else {
+                selectedIds.clear();
+                selectedIds.add(i);
+                openEdit(i);
+            }
+            renderGrid();
+        }
+
+        function selectAllVisible() {
+            const fText = document.getElementById('filter-text').value.toLowerCase();
+            const fType = document.getElementById('filter-type').value;
+            cards.forEach((c, i) => {
+                let vis = true;
+                if (fType !== 'all' && c.loadType !== fType) vis = false;
+                if (fText && !`${c.title} ${c.cat} ${c.keywords} ${c.color}`.toLowerCase().includes(fText)) vis = false;
+                if(vis) selectedIds.add(i);
+            });
+            renderGrid();
+        }
+        function deselectAll() { selectedIds.clear(); renderGrid(); }
+
+        // --- EDITING ---
+        function openEdit(index) {
+            editingIndices = [index];
+            const c = cards[index];
+            fillDialog(c.id, c.title, c.desc, c.cat, c.color, c.loadType, c.linkHref, c.linkText, false);
+        }
+        function openBulkEdit() {
+            editingIndices = Array.from(selectedIds);
+            fillDialog('(Mixed)', '(Multiple)', '(Multiple)', '', '', '', '', '', true);
+        }
+
+        function fillDialog(id, title, desc, cat, color, type, href, txt, isBulk) {
+            const d = document.getElementById('editor-dialog');
+            document.getElementById('dialog-title').innerText = isBulk ? `Bulk Edit (${editingIndices.length} cards)` : 'Edit Card';
+            
+            const idInput = document.getElementById('edit-id');
+            idInput.value = id;
+            idInput.disabled = isBulk;
+            
+            document.getElementById('edit-title').value = title;
+            document.getElementById('edit-desc').value = desc;
+            document.getElementById('edit-load-type').value = type;
+            document.getElementById('edit-link-href').value = href;
+            document.getElementById('edit-link-text').value = txt;
+            
+            renderCategoryCheckboxes(cat); 
+            
+            const dlLink = document.getElementById('link-text-options');
+            dlLink.innerHTML = '';
+            new Set(cards.map(c => c.linkText)).forEach(txt => {
+                const opt = document.createElement('option');
+                opt.value = txt;
+                dlLink.appendChild(opt);
+            });
+
+            tempColor = color || '#cccccc';
+            updateColorTrigger(tempColor, isBulk);
+            buildColorList();
+            
+            d.showModal();
+        }
+
+        function renderCategoryCheckboxes(currentCatStr) {
+            const allTags = new Set();
+            cards.forEach(c => {
+                if(c.cat) c.cat.split(',').forEach(t => {
+                    const clean = t.trim();
+                    if(clean) allTags.add(clean);
+                });
+            });
+            const currentTags = new Set();
+            if(currentCatStr && currentCatStr !== '(Mixed)') {
+                currentCatStr.split(',').forEach(t => currentTags.add(t.trim()));
+            }
+
+            const container = document.getElementById('cat-checkbox-grid');
+            container.innerHTML = '';
+            
+            Array.from(allTags).sort().forEach(tag => {
+                const label = document.createElement('label');
+                label.className = 'cat-checkbox-item';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.value = tag;
+                if(currentTags.has(tag)) cb.checked = true;
+                label.appendChild(cb);
+                label.appendChild(document.createTextNode(tag));
+                container.appendChild(label);
+            });
+            document.getElementById('edit-cat-custom').value = '';
+        }
+
+        function saveDialogChanges() {
+            const idInput = document.getElementById('edit-id');
+            let id = idInput.value.trim();
+            if(id === '') id = generateTimestampID();
+            
+            const title = document.getElementById('edit-title').value;
+            const desc = document.getElementById('edit-desc').value;
+            const type = document.getElementById('edit-load-type').value;
+            const color = tempColor;
+            const href = document.getElementById('edit-link-href').value;
+            const txt = document.getElementById('edit-link-text').value;
+            const isBulk = editingIndices.length > 1;
+
+            const checkedBoxes = Array.from(document.querySelectorAll('#cat-checkbox-grid input:checked')).map(cb => cb.value);
+            const customText = document.getElementById('edit-cat-custom').value;
+            let customTags = [];
+            if(customText.trim()) customTags = customText.split(',').map(t => t.trim()).filter(t => t);
+            const finalCatString = Array.from(new Set([...checkedBoxes, ...customTags])).join(', ');
+
+            editingIndices.forEach(i => {
+                if(!isBulk) cards[i].id = id;
+                if(!isBulk || title !== '(Multiple)') cards[i].title = title;
+                if(!isBulk || desc !== '(Multiple)') cards[i].desc = desc;
+                if(finalCatString !== '') cards[i].cat = finalCatString; 
+                else if(!isBulk) cards[i].cat = '';
+                if(type) cards[i].loadType = type;
+                if(color && color !== '(Multiple)') cards[i].color = color;
+                if(!isBulk || href) cards[i].linkHref = href;
+                if(!isBulk || txt) cards[i].linkText = txt;
+            });
+            
+            document.getElementById('editor-dialog').close();
+            renderGrid();
+        }
+
+        function addNewCard() {
+            cards.unshift({
+                id: generateTimestampID(), 
+                title: 'New Post', desc: 'Description...', 
+                cat: 'General', color: '#3498db', keywords: '', imgSrc: null, 
+                linkHref: '#', linkText: 'View &rarr;', loadType: 'iframe'
+            });
+            renderGrid();
+            openEdit(0);
+        }
+
+        function deleteSelected() {
+            if(!confirm("Delete selected cards?")) return;
+            cards = cards.filter((_, i) => !selectedIds.has(i));
+            selectedIds.clear();
+            renderGrid();
+        }
+
+        // --- EXPORT ---
+        function generateHTML() {
+            let html = '<section class="posts-page card-list-page">\n';
+            html += `    ${headerHtml}\n`;
+            html += '    <div id="posts-card-list" class="card-list">\n';
+            
+            cards.forEach(c => {
+                const imgTag = c.imgSrc ? `<img src="${c.imgSrc}" class="card-image" alt="Img">` : '';
+                let dataAttrs = `id="${c.id}" class="card-item" data-category="${c.cat}" style="border-left-color: ${c.color};"`;
+                if(c.keywords) dataAttrs += ` data-keywords="${c.keywords}"`;
+                if(c.loadType) dataAttrs += ` data-load-type="${c.loadType}"`;
+
+                let linkAttrs = `href="${c.linkHref}"`;
+                if(c.loadType) linkAttrs += ` data-load-type="${c.loadType}"`;
+                if(['iframe','tutorial'].includes(c.loadType)) linkAttrs += ` class="content-loader-link"`;
+
+                html += `<div ${dataAttrs}>\n    ${imgTag}\n    <h3>${c.title}</h3>\n    <p>${c.desc}</p>\n    <span class="card-category">${c.cat}</span>\n`;
+                html += `    <a ${linkAttrs}>${c.linkText}</a>\n</div>\n\n`;
+            });
+            
+            html += '    </div>\n    <p id="posts-no-results" class="error-message" style="display: none;">No posts match your filter.</p>\n</section>';
+            return html;
+        }
+
+        function generateDownload() {
+            const valid = validateUniqueIDs();
+            if (valid !== true) { alert(valid); return; }
+
+            const content = generateHTML();
+            const blob = new Blob([content], {type: 'text/html'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `posts_${new Date().toISOString().slice(2,19).replace(/[-:T]/g,'')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // --- UTILS ---
+        function updateUI() {
+            document.getElementById('sel-count').innerText = `${selectedIds.size} selected`;
+            document.getElementById('btn-delete').style.display = selectedIds.size > 0 ? 'inline-block' : 'none';
+            document.getElementById('btn-bulk').style.display = selectedIds.size > 1 ? 'inline-block' : 'none';
+        }
+        function closeDialog(id) { document.getElementById(id).close(); }
+        function openLink(e, url) { e.stopPropagation(); if(url && url!='#') window.open(url,'_blank'); else alert("No URL"); }
+        function testEditUrl() { const url = document.getElementById('edit-link-href').value; if(url && url!='#') window.open(url,'_blank'); else alert("Empty URL"); }
+        function validateUniqueIDs() {
+            const seen = new Set();
+            for (let c of cards) {
+                if(!c.id) return "Error: Card found with empty ID.";
+                if(seen.has(c.id)) return "Error: Duplicate ID found: " + c.id;
+                seen.add(c.id);
+            }
+            return true;
+        }
+        function generateTimestampID() {
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            return String(now.getFullYear()).slice(2) + pad(now.getMonth()+1) + pad(now.getDate()) + pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds());
+        }
+        function rgb2hex(orig) {
+            if(!orig || orig.includes('#')) return orig || '#333333';
+            const rgb = orig.match(/\d+/g);
+            return rgb ? "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1) : orig;
+        }
+        function getAttrs(n) { const p={}; for(const a of n.attributes) p[a.name]=a.value; return p; }
+        function getContrastYIQ(hex){
+            hex = hex.replace("#", "");
+            var r = parseInt(hex.substr(0,2),16), g = parseInt(hex.substr(2,2),16), b = parseInt(hex.substr(4,2),16);
+            return (((r*299)+(g*587)+(b*114))/1000) >= 128 ? 'black' : 'white';
+        }
+
+        // Color Logic
+        function toggleColorList() { document.getElementById('color-list').classList.toggle('open'); }
+        function buildColorList() {
+            const list = document.getElementById('color-list');
+            list.innerHTML = '';
+            knownColors.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'color-dd-item';
+                item.style.backgroundColor = c;
+                item.style.color = getContrastYIQ(c);
+                item.innerHTML = `<span>${c}</span>`;
+                item.onclick = () => pickColor(c);
+                list.appendChild(item);
+            });
+            const cust = document.createElement('div');
+            cust.className = 'color-dd-item';
+            cust.style.background = 'white';
+            cust.innerHTML = `<input type="color" onchange="pickColor(this.value)" style="width:100%; height:30px;">`;
+            list.appendChild(cust);
+        }
+        function pickColor(c) {
+            tempColor = c;
+            knownColors.add(c);
+            updateColorTrigger(c, false);
+            document.getElementById('color-list').classList.remove('open');
+        }
+        function updateColorTrigger(c, isBulk) {
+            const box = document.getElementById('trigger-swatch');
+            const txt = document.getElementById('trigger-text');
+            if(isBulk && !c) { box.style.background = 'transparent'; txt.innerText = '(Keep)'; } 
+            else { box.style.background = c; txt.innerText = 'Select'; }
+        }
+    </script>
+</body>
+</html>
