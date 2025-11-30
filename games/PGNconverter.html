@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PGN Auto-Format Converter (Advanced)</title>
+    <title>PGN Auto-Format Converter (Line Break Fix)</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -31,6 +31,9 @@
             border-radius: 4px;
             font-family: 'Consolas', 'Courier New', monospace;
             box-sizing: border-box;
+            white-space: pre; /* Ensure spaces/newlines are rendered in the textarea */
+            overflow-wrap: normal;
+            word-wrap: normal;
         }
         .controls {
             display: flex;
@@ -65,8 +68,8 @@
 <body>
 
 <div class="container">
-    <h1>PGN Auto-Format Converter (Advanced) ♟️</h1>
-    <p>This version fixes the issue by extracting evaluations from variations and attaching them to the main moves.</p>
+    <h1>PGN Auto-Format Converter (Line Break Fix) ♟️</h1>
+    <p>This version ensures moves are in a single line, and extracts evaluations from variations to attach them to the main moves.</p>
 
     <div class="controls">
         <input type="file" id="pgnFile" accept=".pgn" title="Select a PGN file to load">
@@ -76,7 +79,7 @@
     <div class="textareas-container">
         <div>
             <h2>Input PGN (Paste or Loaded)</h2>
-            <textarea id="inputPGN" placeholder="Paste your ChessX-analyzed PGN here..."></textarea>
+            <textarea id="inputPGN" placeholder="Paste your PGN here..."></textarea>
         </div>
         <div>
             <h2>Converted PGN (Viewer Compatible)</h2>
@@ -90,71 +93,83 @@
 
     // --- CONVERSION FUNCTION ---
     function convertPGN() {
-        const inputPGN = document.getElementById('inputPGN').value.trim();
+        const inputPGN = document.getElementById('inputPGN').value;
         const outputTextarea = document.getElementById('outputPGN');
         const downloadButton = document.getElementById('downloadButton');
 
-        if (!inputPGN) {
+        if (!inputPGN.trim()) {
             outputTextarea.value = '';
             downloadButton.disabled = true;
             return;
         }
 
-        /*
-        ADVANCED REGEX EXPLANATION:
-        The goal is to find the evaluation that a program like ChessX inserts at the end of a long variation 
-        (like the one in your file) and insert it onto the last move of the main line before the variation starts.
-        
-        The PGN is structured: MOVE_A MOVE_B (VARIATION_START ... MOVE_X {[%eval X.XX]})
-        
-        This regex targets the main line move that immediately precedes a variation:
-        (\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\()
-          - (\d+\.)?: Optional move number (e.g., '1.'), followed by a space
-          - ([a-zA-Z0-9\#\+\=\!\?]+): Capture Group 2: The actual move (e.g., 'e5', 'Nf6')
-          - \s*: Whitespace
-          - (\(): Capture Group 3: The opening parenthesis of the variation.
-          
-        It replaces this: 
-        1.e4 e5 (1...c5 {[%eval 0.25]})2.Nf3 Nc6 (2...d6 ... {[%eval 0.15]})3.Bb5 a6 (3...Nf6 ... {[%eval 0.09]})
-        
-        With this (extracting the eval from the variation and placing it on the main line):
-        1.e4 {[%eval 0.25]} e5 2.Nf3 {[%eval 0.15]} Nc6 3.Bb5 {[%eval 0.09]} a6 ...
-        
-        NOTE: Since the provided PGN snippet only shows evaluations inside variations *not* linked to the main move, 
-        we must use a simpler approach that assumes the evaluation shown in the **first variation** is the one intended for the **preceding main move**.
-        */
-        
-        // This simple replacement is designed to convert the eval tag inside ANY comment structure 
-        // to the viewer-compatible format { [%eval X.XX] }
-        let convertedPGN = inputPGN.replace(/\{\s*\[%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}/g, '{ [%eval $1] }');
+        // 1. Separate Headers from Movetext
+        // Find the boundary: the first blank line followed by a move number (or result/star).
+        const headerEndRegex = /\]\s*\n\s*\n\s*(\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*)/;
+        const match = inputPGN.match(headerEndRegex);
 
+        let headers = inputPGN;
+        let movetext = '';
+        let result = '';
 
-        // THE CRUCIAL SECOND STEP: Find move followed by a variation with an eval and insert the eval onto the move.
-        // We look for a move, followed by a variation that contains an evaluation tag.
-        // The first group (G1) is the preceding move number (optional).
-        // The second group (G2) is the move itself (SAN).
-        // The third group (G3) captures the evaluation score.
-        // The fourth group (G4) captures the rest of the variation until the next move number.
-        const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1).)*?\[%eval\s*([\+\-]?[\d\.]+)\s*\].*?\))\s*/gs;
-
-        // The 'gs' flags make it global (g) and allow '.' to match newlines (s - dotall).
-        convertedPGN = convertedPGN.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
-            // Reconstruct the move and variation:
-            // 1. Insert the evaluation into the main move's comment using the desired format.
-            // 2. Keep the original variation text (G3) so the analysis lines aren't lost.
+        if (match) {
+            const index = match.index + match[0].lastIndexOf('\n\n') + 2; // Find the start of the movetext
+            headers = inputPGN.substring(0, index).trim();
+            movetext = inputPGN.substring(index).trim();
             
-            // This is White's move:
-            if (moveNum && !moveSAN.includes('...')) { 
-                 return `${moveNum}${moveSAN} { [%eval ${score}] } ${variationText} `;
-            } 
-            // This is Black's move:
-            else {
-                 return `${moveSAN} { [%eval ${score}] } ${variationText} `;
+            // Extract the final result from the movetext before cleaning line breaks
+            const resultMatch = movetext.match(/(1\/2-1\/2|1-0|0-1|\*)\s*$/);
+            if (resultMatch) {
+                result = resultMatch[0];
+                movetext = movetext.replace(resultMatch[0], '').trim();
             }
+        }
+        
+        // 2. Remove all line breaks and carriage returns from the movetext
+        // This is the specific change requested.
+        let singleLineMovetext = movetext.replace(/[\r\n]/g, ' ');
+        
+        // Remove redundant spaces caused by line breaks
+        singleLineMovetext = singleLineMovetext.replace(/\s+/g, ' ').trim();
+
+        // 3. Evaluation Tag Correction (Move Evaluation from Variations to Main Line)
+        
+        // A. Simple replacement for any existing tags that are already correct but might have weird spacing.
+        singleLineMovetext = singleLineMovetext.replace(/\{\s*\[%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}/g, '{ [%eval $1] }');
+
+        // B. The CRUCIAL FIX: Find a move followed by a variation containing an evaluation,
+        // extract the evaluation, and attach it to the move before the variation.
+        // This assumes the evaluation in the first variation is the intended move evaluation.
+        // Group 1: The move number (e.g., '1.').
+        // Group 2: The actual move (e.g., 'e5', 'Nf6', includes NAGs like '!!').
+        // Group 3: The variation block containing the evaluation.
+        // Group 4: The captured evaluation score (e.g., '0.25').
+        const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*).)*?\[%eval\s*([\+\-]?[\d\.]+)\s*\].*?\))\s*/g;
+
+        let fixedMovetext = singleLineMovetext.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
+            // Reconstruct the move, adding the evaluation tag as a comment on the main line move.
+            // Then, keep the full variation text.
+            let prefix = moveNum ? moveNum : ''; // 1. or empty
+            return `${prefix}${moveSAN} { [%eval ${score}] } ${variationText} `;
         });
 
-        // Final cleanup for any remaining standalone tags (e.g., from header)
-        convertedPGN = convertedPGN.replace(/\[%eval\s*([\+\-]?[\d\.]+)\s*\]/g, '{ [%eval $1] }');
+        // 4. Reassemble the PGN
+        let convertedPGN = headers;
+        if (headers && movetext) {
+            convertedPGN += '\n\n';
+        }
+        convertedPGN += fixedMovetext;
+        
+        if (result) {
+            convertedPGN += ` ${result}`;
+        }
+        
+        // Final cleanup for double spaces and leading/trailing spaces
+        convertedPGN = convertedPGN.replace(/\s+/g, ' ').trim();
+        
+        // Reformat headers for display/download
+        convertedPGN = convertedPGN.replace(/\[/g, '\n[').trim();
+
 
         outputTextarea.value = convertedPGN;
         downloadButton.disabled = convertedPGN.length === 0;
@@ -194,6 +209,7 @@
 
     // --- DOWNLOAD FUNCTION ---
     function downloadPGN() {
+        // We use the raw value from the output textarea for download
         const text = document.getElementById('outputPGN').value;
         const filename = originalFilename;
         
@@ -202,7 +218,13 @@
             return;
         }
 
-        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        // Convert newlines in the output text to ensure proper file formatting,
+        // but only outside the movetext where they are needed (i.e., between headers).
+        // Since we removed all newlines, we add one back between the closing header bracket and the next one.
+        const cleanedText = text.replace(/\]\s*\[/g, ']\n[').replace(/\]\s*1\./, ']\n\n1.');
+
+
+        const blob = new Blob([cleanedText], { type: 'text/plain;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = filename;
