@@ -6,13 +6,13 @@
     <title>PGN Auto-Format Converter & Viewer</title>
     <!-- Tailwind CSS for modern aesthetics -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- JQuery and Chess.js remain necessary -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     
-    <!-- FIX: Using the commonly more reliable distribution of PgnViewerJS from a single file -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.5.15/lib/css/pgnvjs.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.5.15/lib/js/pgnvjs.min.js"></script>
+    <!-- External Dependencies: jQuery is required by PgnViewerJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <!-- PGN Viewer Library (Version 1.6.11 as requested) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.6.11/lib/pgn-viewer.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.6.11/lib/dist.min.js"></script>
     
     <style>
         body {
@@ -43,7 +43,7 @@
             margin-bottom: 15px;
         }
         
-        /* New Tab Styles */
+        /* Tab Styles */
         .tab-buttons {
             display: flex;
             border-bottom: 2px solid #e5e7eb;
@@ -80,7 +80,7 @@
             display: block;
         }
 
-        /* Textarea Fix */
+        /* Textarea Fix: Horizontal Scroll */
         .textarea-container {
             height: 450px;
             overflow: hidden;
@@ -94,10 +94,9 @@
             border-radius: 6px;
             font-family: 'Consolas', 'Courier New', monospace;
             box-sizing: border-box;
-            resize: none; /* Disable vertical resize */
-            /* FIX: Allow horizontal scroll instead of wrapping the long line */
+            resize: none; 
             white-space: pre; 
-            overflow-x: auto;
+            overflow-x: auto; /* Allow horizontal scrolling */
             overflow-y: scroll;
         }
         
@@ -107,7 +106,7 @@
             border-radius: 0;
             border: none;
             min-height: 400px; 
-            height: 410px; /* Match height of textarea container */
+            height: 410px;
         }
 
         /* Standard Controls */
@@ -185,16 +184,18 @@
 <script>
     let originalFilename = 'converted_game.pgn';
 
-    // --- PGN VIEWER READY CHECK (Fixing the loading error) ---
+    // --- PGN VIEWER READY CHECK ---
     function initializePgnViewer() {
         const checkInterval = setInterval(() => {
             if (typeof PGNV !== 'undefined') {
                 clearInterval(checkInterval);
-                renderPgnViewer(document.getElementById('outputPGN').value);
+                // If there is content already (from reload), render it
+                const currentContent = document.getElementById('outputPGN').value;
+                renderPgnViewer(currentContent);
             }
         }, 100);
         
-        // Safety timeout to display error if viewer never loads after 5 seconds
+        // Safety timeout
         setTimeout(() => {
             if (typeof PGNV === 'undefined') {
                  document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) failed to load. Check your network or browser console.</p>';
@@ -204,15 +205,13 @@
     
     // --- TAB SWITCHING LOGIC ---
     function showTab(tabId, button) {
-        // Hide all panes and remove active class from all buttons
         document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
 
-        // Show the selected pane and set the button active
         document.getElementById(tabId).classList.add('active');
         button.classList.add('active');
 
-        // Special handling for the Viewer tab
+        // Only render viewer when tab is active to save resources/avoid layout bugs
         if (tabId === 'viewerTab') {
             const pgnContent = document.getElementById('outputPGN').value;
             renderPgnViewer(pgnContent);
@@ -254,34 +253,27 @@
         
         // 2. Remove all line breaks and carriage returns from the movetext
         let singleLineMovetext = movetext.replace(/[\r\n]/g, ' ');
-        singleLineMovetext = singleLineMovetext.replace(/\s+/g, ' ').trim(); // Remove redundant spaces
+        singleLineMovetext = singleLineMovetext.replace(/\s+/g, ' ').trim();
 
-        // 3. Evaluation Tag Correction (CRITICAL)
+        // 3. Evaluation Tag Correction
 
-        // A. Standardize and clean ALL evaluation tags to the STRICTLY REQUIRED format: { [%eval SCORE] }
-        // The regex captures only the score, ensuring the surrounding structure is perfectly clean for the viewer.
-        // Group 2 ($2) captures the score (e.g., '0.10' or '+1.25' or '#3').
+        // A. Standardize tags: { [%eval SCORE] }
         singleLineMovetext = singleLineMovetext.replace(
             /\{\s*(\[[^\]]*%eval\s*([\+\-]?[\d\.]+|#[+-]?\d+)[^\]]*\])[^}]*?\}/g, 
             (match, fullTag, score) => {
-                // Returns the minimal, strictly required format: { [%eval SCORE] }
                 return `{ [%eval ${score}] }`;
             }
         );
         
-        // B. The CRUCIAL FIX: Find a move followed by a variation containing an evaluation,
-        // extract the evaluation, and attach it to the move before the variation.
+        // B. Extract Eval from Variations
         const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*).)*?\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}\s*[^)]*?\))\s*/g;
 
         let fixedMovetext = singleLineMovetext.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
-            // Reconstruct the move, adding the evaluation tag in the REQUIRED format: { [%eval SCORE] }
             let prefix = moveNum ? moveNum : ''; 
-            
-            // The output format is critical here: [MoveNum] [MoveSAN] { [%eval SCORE] } [Variation Text]
             return `${prefix}${moveSAN} { [%eval ${score}] } ${variationText} `;
         });
 
-        // 4. Reassemble the PGN
+        // 4. Reassemble
         let convertedPGN = headers;
         if (headers && movetext) {
             convertedPGN += '\n\n';
@@ -292,20 +284,16 @@
             convertedPGN += ` ${result}`;
         }
         
-        // Final cleanup for double spaces and leading/trailing spaces
         convertedPGN = convertedPGN.replace(/\s+/g, ' ').trim();
-        
-        // Reformat headers with newlines for file export compliance
         convertedPGN = convertedPGN.replace(/\]\s*\[/g, ']\n[').trim();
 
-        // 5. Final PGN Formatting for viewer loading/display
+        // 5. Final Display Format
         let finalDisplayPGN = convertedPGN.replace(/\]\n?\[/g, ']\n[');
         finalDisplayPGN = finalDisplayPGN.replace(/\]\s*1\./, ']\n\n1.');
         
         outputTextarea.value = finalDisplayPGN;
         downloadButton.disabled = convertedPGN.length === 0;
 
-        // If the viewer tab is active, re-render immediately
         if (document.getElementById('viewerTab').classList.contains('active')) {
              renderPgnViewer(finalDisplayPGN);
         }
@@ -316,20 +304,19 @@
         const container = document.getElementById('pgnViewer');
         
         if (typeof PGNV === 'undefined') {
-            container.innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) is still not available. Please check your browser console for loading errors.</p>';
+            // Still waiting for load...
             return;
         }
 
-        container.innerHTML = ''; // Clear existing content/viewer
+        container.innerHTML = ''; 
 
         if (pgnContent.trim().length > 0) {
-            // PGNV.pgnView automatically creates the necessary HTML structure inside the container.
             PGNV.pgnView("pgnViewer", {
                 pgn: pgnContent,
                 theme: 'blue',
                 pieceStyle: 'merida',
                 boardTheme: 'uscf',
-                layout: 'top', // Changed to 'top' or default for better tab fit
+                layout: 'left', // Ensure layout fits the tab
                 showCoords: true,
                 movable: false,
                 comments: true,
@@ -341,7 +328,7 @@
         }
     }
 
-    // --- FILE/INPUT EVENT HANDLERS ---
+    // --- EVENT LISTENERS ---
     document.getElementById('pgnFile').addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (!file) { return; }
@@ -362,30 +349,24 @@
     
     document.getElementById('inputPGN').addEventListener('input', convertPGN);
     
-    // --- DOWNLOAD FUNCTION ---
     function downloadPGN() {
         const text = document.getElementById('outputPGN').value;
         const filename = originalFilename;
-        
         if (!text) { alert("Nothing to download."); return; }
 
         let finalDownloadText = text.replace(/\n/g, '\r\n');
-
         const blob = new Blob([finalDownloadText], { type: 'text/plain;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = filename;
-        
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        
         URL.revokeObjectURL(a.href);
     }
 
     // --- INITIALIZATION ---
     $(document).ready(function() {
-        // Start the process to check if the PGN Viewer script has loaded.
         initializePgnViewer();
     });
 </script>
