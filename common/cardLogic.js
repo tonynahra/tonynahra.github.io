@@ -1,5 +1,6 @@
 /* === GLOBAL VARIABLES === */
 var currentCardList = []; var currentCardIndex = 0; var isModalInfoVisible = false; var isTutorialMode = false; var slideshowInterval = null; 
+// USE WINDOW OBJECT FOR RELIABLE PERSISTENCE
 window.cardGlobalState = { infoVisible: false };
 
 function injectModalStyles() { 
@@ -118,7 +119,26 @@ window.buildTableModal = function(jsonUrl) {
     loadLibrary('https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js', 'js', 'Tabulator')
         .then(() => {
             $.getJSON(jsonUrl, function(data) {
-                if (!data || !data.data) { $modalContent.html('<div class="error-message">Invalid table data format. Expected "data" array.</div>'); return; }
+                // FIX: Handle both "data" (new) and "rows" (old) formats
+                let tableData = data.data;
+                if (!tableData && data.rows) {
+                    // Convert array of arrays (rows) to array of objects (data) if needed
+                    // Assuming columns order matches row order
+                    tableData = data.rows.map(row => {
+                        let obj = {};
+                        data.columns.forEach((col, index) => {
+                             // If col is object, get field, else it's string
+                             const fieldName = typeof col === 'object' ? col.field : col; 
+                             obj[fieldName] = row[index];
+                        });
+                        return obj;
+                    });
+                }
+
+                if (!tableData) { 
+                    $modalContent.html('<div class="error-message">Invalid table data format. Expected "data" array or "rows" array.</div>'); 
+                    return; 
+                }
                 
                 const tableId = 'tabulator-table-' + Date.now();
                 const tableHtml = `
@@ -131,13 +151,16 @@ window.buildTableModal = function(jsonUrl) {
 
                 // Initialize Tabulator
                 new Tabulator("#" + tableId, {
-                    data: data.data,
+                    data: tableData, // Use processed data
                     layout: "fitColumns",
                     responsiveLayout: "collapse",
                     pagination: "local",
                     paginationSize: 15,
                     movableColumns: true,
                     columns: data.columns.map(col => {
+                        // Ensure col is object
+                        if (typeof col === 'string') return { title: col, field: col };
+                        
                         // Custom formatter for deep link buttons
                         if (col.formatter === "linkButton") {
                             col.formatter = function(cell, formatterParams, onRendered){
@@ -289,6 +312,7 @@ function loadModalContent(index) {
 
     if (loadType === 'research' && jsonUrl) { $modal.addClass('research-mode'); $modalFsBtn.hide(); $modalInfoBtn.hide(); window.buildResearchModal(jsonUrl); return; } 
     
+    // === TABLE LOGIC ===
     if (loadType === 'table') {
         $modalFsBtn.hide(); $modalInfoBtn.hide(); currentTableJsonUrl = loadUrl; 
         window.buildTableModal(loadUrl);
