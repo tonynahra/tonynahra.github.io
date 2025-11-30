@@ -10,7 +10,7 @@
     <!-- External Dependencies: jQuery is required by PgnViewerJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     
-    <!-- PGN Viewer Library -->
+    <!-- PGN Viewer Library (1.6.11) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.6.11/lib/pgn-viewer.css">
     <script src="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.6.11/lib/dist.min.js"></script>
     
@@ -80,8 +80,8 @@
             display: block;
         }
 
-        /* Textarea/Div Container Styles */
-        .textarea-container {
+        /* Container for Inputs */
+        .input-container {
             height: 450px;
             overflow: hidden;
             display: flex;
@@ -103,19 +103,22 @@
             overflow-y: scroll;
         }
 
-        /* Output DIV (Replacing Textarea for Tab 2) */
+        /* Output DIV (Tab 2) - Fixed for single line scrolling */
         #outputPGN {
             width: 100%;
             height: 100%;
             padding: 12px;
             font-family: 'Consolas', 'Courier New', monospace;
             box-sizing: border-box;
-            white-space: pre; /* Essential for preserving formatting */
-            overflow-x: auto; /* Horizontal scroll */
-            overflow-y: scroll; /* Vertical scroll */
+            /* Forces text to stay on one line unless manually broken */
+            white-space: pre; 
+            /* Enables horizontal scrolling for the long line */
+            overflow-x: scroll; 
+            overflow-y: auto;
             background-color: #f9fafb;
             color: #374151;
             outline: none;
+            border: none;
         }
         
         /* Viewer styles */
@@ -158,7 +161,7 @@
             font-family: sans-serif;
             margin-bottom: 10px;
             background: white;
-            white-space: pre-wrap; /* Wrap text naturally */
+            white-space: pre-wrap; 
             overflow-y: auto;
         }
 
@@ -172,7 +175,7 @@
             transition: background-color 0.3s, box-shadow 0.3s;
         }
         #downloadButton, #saveMoveBtn {
-            background-color: #10b981; /* Emerald green */
+            background-color: #10b981; 
             color: white;
             box-shadow: 0 2px 4px rgba(16, 185, 129, 0.4);
         }
@@ -181,7 +184,7 @@
             box-shadow: 0 4px 8px rgba(16, 185, 129, 0.6);
         }
         input[type="file"] {
-            background-color: #3b82f6; /* Blue */
+            background-color: #3b82f6; 
             color: white;
             flex-grow: 1;
             margin-right: 10px;
@@ -211,7 +214,7 @@
         <!-- Input PGN Pane -->
         <div id="inputTab" class="tab-pane active">
             <h3 class="text-lg font-semibold text-gray-700 mb-3">Input PGN (Paste or Loaded)</h3>
-            <div class="textarea-container">
+            <div class="input-container">
                 <textarea id="inputPGN" placeholder="Paste your PGN here. Conversion happens automatically."></textarea>
             </div>
         </div>
@@ -219,8 +222,8 @@
         <!-- Converted PGN Pane -->
         <div id="convertedTab" class="tab-pane">
             <h3 class="text-lg font-semibold text-gray-700 mb-3">Converted PGN (Formatted for Viewer)</h3>
-            <div class="textarea-container">
-                <!-- Replaced Textarea with Contenteditable DIV for better viewing/scrolling -->
+            <div class="input-container">
+                <!-- DIV replacement for Textarea to handle long lines -->
                 <div id="outputPGN" contenteditable="true" spellcheck="false"></div>
             </div>
         </div>
@@ -258,15 +261,14 @@
 
 <script>
     let originalFilename = 'converted_game.pgn';
-    let pgnvObj = null; // Store the PGN Viewer object
-    let currentFen = ''; // Track current position
+    let pgnvObj = null; 
 
-    // --- PGN VIEWER READY CHECK ---
+    // --- PGN VIEWER INITIALIZATION CHECK ---
     function initializePgnViewer() {
         const checkInterval = setInterval(() => {
             if (typeof PGNV !== 'undefined') {
                 clearInterval(checkInterval);
-                const currentContent = document.getElementById('outputPGN').innerText; // Use innerText for DIV
+                const currentContent = document.getElementById('outputPGN').innerText;
                 if(currentContent) renderPgnViewer(currentContent);
             }
         }, 100);
@@ -278,7 +280,7 @@
         }, 5000);
     }
     
-    // --- TAB SWITCHING LOGIC ---
+    // --- TAB LOGIC ---
     function showTab(tabId, button) {
         document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
@@ -292,7 +294,7 @@
         }
     }
 
-    // --- CONVERSION FUNCTION ---
+    // --- CONVERSION LOGIC ---
     function convertPGN() {
         const inputPGN = document.getElementById('inputPGN').value;
         const outputDiv = document.getElementById('outputPGN');
@@ -305,7 +307,7 @@
             return;
         }
 
-        // 1. Separate Headers from Movetext
+        // 1. Separate Headers
         const headerEndRegex = /\]\s*\n\s*\n\s*(\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*)/;
         const match = inputPGN.match(headerEndRegex);
 
@@ -325,32 +327,39 @@
             }
         }
         
-        // 2. Remove line breaks
+        // 2. Remove line breaks -> Single Line
         let singleLineMovetext = movetext.replace(/[\r\n]/g, ' ');
         singleLineMovetext = singleLineMovetext.replace(/\s+/g, ' ').trim();
 
-        // 2.5 FIX SPACING (Critical for viewer detection)
-        // Ensure space after move numbers (e.g., "36...Kh7" -> "36... Kh7")
+        // 3. Fix Critical Formatting/Spacing
+        
+        // FIX A: Ensure space between move number tokens (e.g. "36...Kh7" -> "36... Kh7")
+        // This is crucial for parser detection of the last move.
         singleLineMovetext = singleLineMovetext.replace(/(\d+\.+)([^\s])/g, '$1 $2');
-        // Ensure space around braces
+        
+        // FIX B: Ensure space around braces so {Comment} becomes { Comment }
         singleLineMovetext = singleLineMovetext.replace(/\{/g, ' { ').replace(/\}/g, ' } ');
 
-        // 3. Evaluation Tag Correction
-        // Standardize: { [%eval SCORE] }
+        // 4. Evaluation Tag Correction
+        
+        // A. Standardize existing tags to { [%eval SCORE] }
         singleLineMovetext = singleLineMovetext.replace(
             /\{\s*(\[[^\]]*%eval\s*([\+\-]?[\d\.]+|#[+-]?\d+)[^\]]*\])[^}]*?\}/g, 
             (match, fullTag, score) => `{ [%eval ${score}] }`
         );
         
-        // Extract Eval from Variations
-        const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*).)*?\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}\s*[^)]*?\))\s*/g;
+        // B. Extract Eval from Variations
+        // UPDATED REGEX: Matches a variation that contains an eval, allowing move numbers inside.
+        // It consumes everything inside the parens `[^)]*?` until it hits the standard eval, then finishes.
+        const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\(\s*[^)]*?\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}\s*[^)]*?\))\s*/g;
 
         let fixedMovetext = singleLineMovetext.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
             let prefix = moveNum ? moveNum : ''; 
+            // Reconstruct: Move { [%eval] } Variation
             return `${prefix}${moveSAN} { [%eval ${score}] } ${variationText} `;
         });
 
-        // 4. Reassemble
+        // 5. Reassemble
         let convertedPGN = headers;
         if (headers && movetext) { convertedPGN += '\n\n'; }
         convertedPGN += fixedMovetext;
@@ -359,7 +368,7 @@
         convertedPGN = convertedPGN.replace(/\s+/g, ' ').trim();
         convertedPGN = convertedPGN.replace(/\]\s*\[/g, ']\n[').trim();
 
-        // 5. Final Display
+        // 6. Display
         let finalDisplayPGN = convertedPGN.replace(/\]\n?\[/g, ']\n[');
         finalDisplayPGN = finalDisplayPGN.replace(/\]\s*1\./, ']\n\n1.');
         
@@ -371,16 +380,14 @@
         }
     }
 
-    // --- PGN VIEWER RENDERING ---
+    // --- RENDER VIEWER ---
     function renderPgnViewer(pgnContent) {
         const container = document.getElementById('pgnViewer');
-        
-        if (typeof PGNV === 'undefined') { return; }
+        if (typeof PGNV === 'undefined') return;
 
         container.innerHTML = ''; 
 
         if (pgnContent.trim().length > 0) {
-            // Initialize Viewer
             pgnvObj = PGNV.pgnView("pgnViewer", {
                 pgn: pgnContent,
                 theme: 'blue',
@@ -394,7 +401,7 @@
                 notationFontColor: '#333'
             });
             
-            // --- EDITING HOOK ---
+            // Edit Hook
             document.getElementById('pgnViewer').addEventListener('click', function(e) {
                 const moveEl = e.target.closest('.move');
                 if (moveEl) {
@@ -413,14 +420,13 @@
                     }
                 }
             });
-            
         } else {
             container.innerHTML = '<p class="text-center text-gray-500 mt-8">Load a PGN file above to see the converted game here.</p>';
         }
     }
     
     function saveMoveData() {
-        alert("Note: To save edits permanently, please edit the text directly in 'Tab 2: Converted PGN'. \n\nFull interactive bi-directional editing (Board <-> PGN Text) requires a heavier weight editor logic than this lightweight viewer provides.");
+        alert("Note: To save edits permanently, please edit the text directly in 'Tab 2: Converted PGN'.");
     }
 
     // --- EVENT LISTENERS ---
@@ -460,7 +466,6 @@
         URL.revokeObjectURL(a.href);
     }
 
-    // --- INITIALIZATION ---
     $(document).ready(function() {
         initializePgnViewer();
     });
