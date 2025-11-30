@@ -147,18 +147,69 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     body.chess-fullscreen-active .modal-header { display: none !important; }
                     body.chess-fullscreen-active .chess-toolbar { display: none !important; }
                     
-                    /* Hide Moves Panel in Full Screen */
-                    body.chess-fullscreen-active ${movesId} { display: none !important; }
+                    /* HIDE MOVES PANEL WITHOUT BREAKING LAYOUT (Visibility Hidden + Absolute) */
+                    body.chess-fullscreen-active ${movesId} { 
+                        visibility: hidden !important; 
+                        position: absolute !important; 
+                        width: 0 !important; 
+                        height: 0 !important; 
+                        overflow: hidden !important; 
+                        border: none !important; 
+                        padding: 0 !important;
+                    }
 
-                    /* Maximize Board Container */
-                    body.chess-fullscreen-active .modal-content { max-width: 100% !important; width: 100% !important; height: 100% !important; border-radius: 0 !important; margin: 0 !important; padding: 0 !important; }
-                    body.chess-fullscreen-active .chess-container { height: 100vh !important; width: 100vw !important; padding: 0 !important; background: #222; display: flex; justify-content: center; align-items: center; }
-                    body.chess-fullscreen-active .chess-main-area { height: 100% !important; width: 100% !important; padding: 0 !important; display: flex; justify-content: center; align-items: center; }
-                    body.chess-fullscreen-active .chess-white-box { width: 100% !important; height: 100% !important; display: flex; justify-content: center; align-items: center; }
+                    /* MAIN CONTAINER OVERRIDES */
+                    body.chess-fullscreen-active .modal-content { 
+                        max-width: 100% !important; 
+                        width: 100% !important; 
+                        height: 100% !important; 
+                        border-radius: 0 !important; 
+                        margin: 0 !important; 
+                        padding: 0 !important; 
+                        background: #222 !important;
+                    }
+                    body.chess-fullscreen-active .chess-container { 
+                        height: 100vh !important; 
+                        width: 100vw !important; 
+                        padding: 0 !important; 
+                        display: flex; 
+                        justify-content: center; 
+                        align-items: center; 
+                    }
+                    body.chess-fullscreen-active .chess-main-area { 
+                        height: 100% !important; 
+                        width: 100% !important; 
+                        padding: 0 !important; 
+                        display: flex; 
+                        justify-content: center; 
+                        align-items: center; 
+                    }
+                    body.chess-fullscreen-active .chess-white-box { 
+                        width: 100% !important; 
+                        height: 100% !important; 
+                        display: flex; 
+                        justify-content: center; 
+                        align-items: center; 
+                    }
                     
-                    /* Force Board to Maximize */
-                    body.chess-fullscreen-active #${boardId} { width: 95vh !important; height: 95vh !important; max-width: 100vw !important; display: flex; justify-content: center; align-items: center; }
-                    body.chess-fullscreen-active .cg-board-wrap, body.chess-fullscreen-active .board { width: 100% !important; height: 100% !important; }
+                    /* FORCE BOARD TO MAXIMIZE SQUARE */
+                    body.chess-fullscreen-active #${boardId} { 
+                        /* vmin ensures it fits both portrait and landscape */
+                        width: 95vmin !important; 
+                        height: 95vmin !important; 
+                        max-width: 100vw !important; 
+                        max-height: 100vh !important;
+                        display: flex; 
+                        justify-content: center; 
+                        align-items: center; 
+                        margin: auto !important;
+                        z-index: 1000 !important;
+                    }
+                    body.chess-fullscreen-active .cg-board-wrap, 
+                    body.chess-fullscreen-active .board { 
+                        width: 100% !important; 
+                        height: 100% !important; 
+                    }
                 `;
                 $(`#${styleId}`).text(css);
             };
