@@ -143,22 +143,19 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         padding: ${15 + (currentFontSize - 26) * 0.5}px !important;
                     }
 
-                    /* FULL SCREEN STYLES */
+                    /* === FULL SCREEN STYLES === */
                     body.chess-fullscreen-active .modal-header { display: none !important; }
                     body.chess-fullscreen-active .chess-toolbar { display: none !important; }
                     
-                    /* HIDE MOVES PANEL WITHOUT BREAKING LAYOUT (Visibility Hidden + Absolute) */
+                    /* Hide Moves Panel - Absolute to prevent layout collapse */
                     body.chess-fullscreen-active ${movesId} { 
                         visibility: hidden !important; 
                         position: absolute !important; 
-                        width: 0 !important; 
-                        height: 0 !important; 
-                        overflow: hidden !important; 
-                        border: none !important; 
-                        padding: 0 !important;
+                        pointer-events: none !important;
+                        z-index: -1;
                     }
 
-                    /* MAIN CONTAINER OVERRIDES */
+                    /* Main Container Expansion */
                     body.chess-fullscreen-active .modal-content { 
                         max-width: 100% !important; 
                         width: 100% !important; 
@@ -166,16 +163,22 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         border-radius: 0 !important; 
                         margin: 0 !important; 
                         padding: 0 !important; 
-                        background: #222 !important;
+                        background: #1a1a1a !important;
                     }
+                    
                     body.chess-fullscreen-active .chess-container { 
+                        position: fixed !important;
+                        top: 0; left: 0; right: 0; bottom: 0;
                         height: 100vh !important; 
                         width: 100vw !important; 
                         padding: 0 !important; 
                         display: flex; 
                         justify-content: center; 
                         align-items: center; 
+                        z-index: 99999;
+                        background: #1a1a1a;
                     }
+
                     body.chess-fullscreen-active .chess-main-area { 
                         height: 100% !important; 
                         width: 100% !important; 
@@ -184,17 +187,19 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         justify-content: center; 
                         align-items: center; 
                     }
+
+                    /* Board Wrapper - Forces full viewport availability */
                     body.chess-fullscreen-active .chess-white-box { 
-                        width: 100% !important; 
-                        height: 100% !important; 
+                        width: 100vw !important; 
+                        height: 100vh !important; 
                         display: flex; 
                         justify-content: center; 
                         align-items: center; 
+                        background: #1a1a1a;
                     }
                     
-                    /* FORCE BOARD TO MAXIMIZE SQUARE */
+                    /* The Board Itself - Use vmin to keep it square and maxed out */
                     body.chess-fullscreen-active #${boardId} { 
-                        /* vmin ensures it fits both portrait and landscape */
                         width: 95vmin !important; 
                         height: 95vmin !important; 
                         max-width: 100vw !important; 
@@ -202,9 +207,10 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         display: flex; 
                         justify-content: center; 
                         align-items: center; 
-                        margin: auto !important;
-                        z-index: 1000 !important;
                     }
+                    
+                    /* Inner library elements override */
+                    body.chess-fullscreen-active .pgnvjs-wrapper,
                     body.chess-fullscreen-active .cg-board-wrap, 
                     body.chess-fullscreen-active .board { 
                         width: 100% !important; 
@@ -308,10 +314,18 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
             };
 
+            // --- FULL SCREEN LOGIC WITH RESIZE TIMER ---
             const toggleFullScreen = () => {
                 const $body = $('body');
                 $body.toggleClass('chess-fullscreen-active');
-                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
+                
+                // Force multiple resize events to catch transition/rendering delays
+                const triggerResize = () => window.dispatchEvent(new Event('resize'));
+                
+                triggerResize(); // Immediate
+                setTimeout(triggerResize, 100); // Short delay
+                setTimeout(triggerResize, 300); // Medium delay
+                setTimeout(triggerResize, 600); // Long delay to ensure layout is final
             };
 
             $('#chess-comment-btn').off('click').on('click', function(e) {
@@ -411,6 +425,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                     updateCommentContent(-1, total);
 
+                    // Resize Timers for Load
+                    setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 200);
                     setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 800);
 
                     const checkInterval = setInterval(() => {
