@@ -178,10 +178,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     
                     /* The Board - Uses vmin to fit perfectly in square */
                     body.chess-fullscreen-active #${boardId} { 
-                        width: 95vmin !important; height: 95vmin !important;
-                        max-width: 100vh !important; max-height: 100vh !important;
-                        margin: 0 auto !important;
                         display: flex !important; justify-content: center !important;
+                        margin: 0 auto !important;
                     }
                 `;
                 $(`#${styleId}`).text(css);
@@ -281,8 +279,11 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
             };
 
-            // --- WINDOW RESIZE HANDLER ---
+            // --- WINDOW RESIZE HANDLER (FIXED) ---
             const handleResize = () => {
+                const $board = $(`#${boardId}`);
+                if ($board.length === 0) return; // Guard clause if board is gone
+
                 if ($('body').hasClass('chess-fullscreen-active')) {
                     // Force resize logic for Full Screen
                     const w = $(window).width();
@@ -290,28 +291,30 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     const size = Math.min(w, h) * 0.95; // 95% of smallest dimension
                     
                     // Force explicit pixel size to board and wrapper
-                    $(`#${boardId}`).css({ 'width': size + 'px', 'height': size + 'px' });
+                    $board.css({ 'width': size + 'px', 'height': size + 'px' });
                     $(`#${boardId} .cg-board-wrap`).css({ 'width': size + 'px', 'height': size + 'px' });
                     $(`#${boardId} .board`).css({ 'width': size + 'px', 'height': size + 'px' });
                 } else {
                     // Clear overrides in normal mode
-                    $(`#${boardId}`).css({ 'width': '', 'height': '' });
+                    $board.css({ 'width': '', 'height': '' });
                     $(`#${boardId} .cg-board-wrap`).css({ 'width': '', 'height': '' });
                     $(`#${boardId} .board`).css({ 'width': '', 'height': '' });
                 }
-                // Trigger library redraw
-                window.dispatchEvent(new Event('resize'));
+                // NOTE: Removed the recursive dispatchEvent here to prevent Stack Overflow
             };
 
             const toggleFullScreen = () => {
                 const $body = $('body');
                 $body.toggleClass('chess-fullscreen-active');
                 
-                // Fire multiple resize events to catch layout settling
+                // 1. Calculate and Apply CSS immediately
                 handleResize();
-                setTimeout(handleResize, 100);
-                setTimeout(handleResize, 300);
-                setTimeout(handleResize, 500);
+
+                // 2. Trigger library resize after a delay to ensure container is ready
+                setTimeout(() => {
+                    handleResize(); 
+                    window.dispatchEvent(new Event('resize')); 
+                }, 200);
             };
 
             $(window).off('resize.chess').on('resize.chess', handleResize);
@@ -403,9 +406,11 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                     updateCommentContent(-1, total);
 
-                    // Resize triggers
-                    setTimeout(handleResize, 200);
-                    setTimeout(handleResize, 800);
+                    // Resize triggers for Load
+                    setTimeout(() => {
+                        handleResize();
+                        window.dispatchEvent(new Event('resize'));
+                    }, 500);
 
                     const checkInterval = setInterval(() => {
                         const movesPanel = document.getElementById(boardId + 'Moves');
