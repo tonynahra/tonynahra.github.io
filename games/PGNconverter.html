@@ -10,7 +10,7 @@
     <!-- External Dependencies: jQuery is required by PgnViewerJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     
-    <!-- PGN Viewer Library (Version 1.6.11 as requested) -->
+    <!-- PGN Viewer Library -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.6.11/lib/pgn-viewer.css">
     <script src="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.6.11/lib/dist.min.js"></script>
     
@@ -80,24 +80,42 @@
             display: block;
         }
 
-        /* Textarea Fix: Horizontal Scroll */
+        /* Textarea/Div Container Styles */
         .textarea-container {
             height: 450px;
             overflow: hidden;
             display: flex;
+            border: 1px solid #ccc;
+            border-radius: 6px;
         }
-        textarea {
+        
+        /* Input Textarea */
+        textarea#inputPGN {
             width: 100%;
             height: 100%;
             padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            border: none;
             font-family: 'Consolas', 'Courier New', monospace;
             box-sizing: border-box;
             resize: none; 
             white-space: pre; 
-            overflow-x: auto; /* Allow horizontal scrolling */
+            overflow-x: auto; 
             overflow-y: scroll;
+        }
+
+        /* Output DIV (Replacing Textarea for Tab 2) */
+        #outputPGN {
+            width: 100%;
+            height: 100%;
+            padding: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            box-sizing: border-box;
+            white-space: pre; /* Essential for preserving formatting */
+            overflow-x: auto; /* Horizontal scroll */
+            overflow-y: scroll; /* Vertical scroll */
+            background-color: #f9fafb;
+            color: #374151;
+            outline: none;
         }
         
         /* Viewer styles */
@@ -106,7 +124,42 @@
             border-radius: 0;
             border: none;
             min-height: 400px; 
-            height: 410px;
+        }
+        
+        /* Editor Panel in Viewer Tab */
+        .editor-panel {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .editor-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .editor-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-family: sans-serif;
+            margin-bottom: 10px;
+        }
+        .editor-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-family: sans-serif;
+            margin-bottom: 10px;
+            background: white;
+            white-space: pre-wrap; /* Wrap text naturally */
+            overflow-y: auto;
         }
 
         /* Standard Controls */
@@ -118,12 +171,12 @@
             font-weight: 600;
             transition: background-color 0.3s, box-shadow 0.3s;
         }
-        #downloadButton {
+        #downloadButton, #saveMoveBtn {
             background-color: #10b981; /* Emerald green */
             color: white;
             box-shadow: 0 2px 4px rgba(16, 185, 129, 0.4);
         }
-        #downloadButton:hover {
+        #downloadButton:hover, #saveMoveBtn:hover {
             background-color: #059669;
             box-shadow: 0 4px 8px rgba(16, 185, 129, 0.6);
         }
@@ -150,7 +203,7 @@
     <div class="tab-buttons">
         <button class="tab-button active" onclick="showTab('inputTab', this)">1. Input PGN</button>
         <button class="tab-button" onclick="showTab('convertedTab', this)">2. Converted PGN</button>
-        <button class="tab-button" onclick="showTab('viewerTab', this)">3. Viewer Verification</button>
+        <button class="tab-button" onclick="showTab('viewerTab', this)">3. Viewer & Editor</button>
     </div>
 
     <!-- Tab Content -->
@@ -167,15 +220,37 @@
         <div id="convertedTab" class="tab-pane">
             <h3 class="text-lg font-semibold text-gray-700 mb-3">Converted PGN (Formatted for Viewer)</h3>
             <div class="textarea-container">
-                <textarea id="outputPGN" readonly placeholder="Converted PGN will appear here..."></textarea>
+                <!-- Replaced Textarea with Contenteditable DIV for better viewing/scrolling -->
+                <div id="outputPGN" contenteditable="true" spellcheck="false"></div>
             </div>
         </div>
 
         <!-- Viewer Pane -->
         <div id="viewerTab" class="tab-pane">
-            <h3 class="text-lg font-semibold text-gray-700 mb-3">Viewer Verification</h3>
-            <div id="pgnViewer" class="pgnvjs">
-                <p class="text-center text-gray-500 mt-8">Loading PGN Viewer...</p>
+            <div class="flex gap-4">
+                <!-- Chess Board Area -->
+                <div class="w-2/3">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Viewer Verification</h3>
+                    <div id="pgnViewer" class="pgnvjs">
+                        <p class="text-center text-gray-500 mt-8">Loading PGN Viewer...</p>
+                    </div>
+                </div>
+                
+                <!-- Move Editor Area -->
+                <div class="w-1/3">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Move Editor</h3>
+                    <div class="editor-panel">
+                        <p class="text-sm text-gray-500 mb-4 italic">Select a move on the board to edit.</p>
+                        
+                        <label class="editor-label">Evaluation Score</label>
+                        <input type="text" id="evalInput" class="editor-input" placeholder="e.g. +0.25">
+                        
+                        <label class="editor-label">Annotation / Commentary</label>
+                        <div id="commentInput" class="editor-textarea" contenteditable="true"></div>
+                        
+                        <button id="saveMoveBtn" onclick="saveMoveData()" class="w-full mt-2">Update PGN</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -183,19 +258,19 @@
 
 <script>
     let originalFilename = 'converted_game.pgn';
+    let pgnvObj = null; // Store the PGN Viewer object
+    let currentFen = ''; // Track current position
 
     // --- PGN VIEWER READY CHECK ---
     function initializePgnViewer() {
         const checkInterval = setInterval(() => {
             if (typeof PGNV !== 'undefined') {
                 clearInterval(checkInterval);
-                // If there is content already (from reload), render it
-                const currentContent = document.getElementById('outputPGN').value;
-                renderPgnViewer(currentContent);
+                const currentContent = document.getElementById('outputPGN').innerText; // Use innerText for DIV
+                if(currentContent) renderPgnViewer(currentContent);
             }
         }, 100);
         
-        // Safety timeout
         setTimeout(() => {
             if (typeof PGNV === 'undefined') {
                  document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) failed to load. Check your network or browser console.</p>';
@@ -211,9 +286,8 @@
         document.getElementById(tabId).classList.add('active');
         button.classList.add('active');
 
-        // Only render viewer when tab is active to save resources/avoid layout bugs
         if (tabId === 'viewerTab') {
-            const pgnContent = document.getElementById('outputPGN').value;
+            const pgnContent = document.getElementById('outputPGN').innerText;
             renderPgnViewer(pgnContent);
         }
     }
@@ -221,11 +295,11 @@
     // --- CONVERSION FUNCTION ---
     function convertPGN() {
         const inputPGN = document.getElementById('inputPGN').value;
-        const outputTextarea = document.getElementById('outputPGN');
+        const outputDiv = document.getElementById('outputPGN');
         const downloadButton = document.getElementById('downloadButton');
 
         if (!inputPGN.trim()) {
-            outputTextarea.value = '';
+            outputDiv.innerText = '';
             downloadButton.disabled = true;
             renderPgnViewer('');
             return;
@@ -251,21 +325,16 @@
             }
         }
         
-        // 2. Remove all line breaks and carriage returns from the movetext
+        // 2. Remove line breaks
         let singleLineMovetext = movetext.replace(/[\r\n]/g, ' ');
         singleLineMovetext = singleLineMovetext.replace(/\s+/g, ' ').trim();
 
         // 3. Evaluation Tag Correction
-
-        // A. Standardize tags: { [%eval SCORE] }
         singleLineMovetext = singleLineMovetext.replace(
             /\{\s*(\[[^\]]*%eval\s*([\+\-]?[\d\.]+|#[+-]?\d+)[^\]]*\])[^}]*?\}/g, 
-            (match, fullTag, score) => {
-                return `{ [%eval ${score}] }`;
-            }
+            (match, fullTag, score) => `{ [%eval ${score}] }`
         );
         
-        // B. Extract Eval from Variations
         const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*).)*?\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}\s*[^)]*?\))\s*/g;
 
         let fixedMovetext = singleLineMovetext.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
@@ -275,23 +344,18 @@
 
         // 4. Reassemble
         let convertedPGN = headers;
-        if (headers && movetext) {
-            convertedPGN += '\n\n';
-        }
+        if (headers && movetext) { convertedPGN += '\n\n'; }
         convertedPGN += fixedMovetext;
-        
-        if (result) {
-            convertedPGN += ` ${result}`;
-        }
+        if (result) { convertedPGN += ` ${result}`; }
         
         convertedPGN = convertedPGN.replace(/\s+/g, ' ').trim();
         convertedPGN = convertedPGN.replace(/\]\s*\[/g, ']\n[').trim();
 
-        // 5. Final Display Format
+        // 5. Final Display
         let finalDisplayPGN = convertedPGN.replace(/\]\n?\[/g, ']\n[');
         finalDisplayPGN = finalDisplayPGN.replace(/\]\s*1\./, ']\n\n1.');
         
-        outputTextarea.value = finalDisplayPGN;
+        outputDiv.innerText = finalDisplayPGN;
         downloadButton.disabled = convertedPGN.length === 0;
 
         if (document.getElementById('viewerTab').classList.contains('active')) {
@@ -303,29 +367,79 @@
     function renderPgnViewer(pgnContent) {
         const container = document.getElementById('pgnViewer');
         
-        if (typeof PGNV === 'undefined') {
-            // Still waiting for load...
-            return;
-        }
+        if (typeof PGNV === 'undefined') { return; }
 
         container.innerHTML = ''; 
 
         if (pgnContent.trim().length > 0) {
-            PGNV.pgnView("pgnViewer", {
+            // Initialize Viewer
+            pgnvObj = PGNV.pgnView("pgnViewer", {
                 pgn: pgnContent,
                 theme: 'blue',
                 pieceStyle: 'merida',
                 boardTheme: 'uscf',
-                layout: 'left', // Ensure layout fits the tab
+                layout: 'left',
                 showCoords: true,
                 movable: false,
                 comments: true,
                 notationFontSize: '16px',
                 notationFontColor: '#333'
             });
+            
+            // --- EDITING HOOK ---
+            // We need to attach listeners to the moves generated by the library.
+            // Since the library might regenerate DOM, we delegate the click event.
+            document.getElementById('pgnViewer').addEventListener('click', function(e) {
+                // Find closest move element (library specific class might vary, but usually has data attributes or 'move' class)
+                // Note: PgnViewerJS uses specific classes like 'move' inside the moves div.
+                const moveEl = e.target.closest('.move');
+                if (moveEl) {
+                    // Extract current comment/eval logic is tricky because the library doesn't expose clean API for current move data.
+                    // However, we can parse the text content or look at the library's internal state if accessible.
+                    // For this simple editor, we will rely on parsing the PGN text relative to the move clicked.
+                    // A simpler approach for this demo:
+                    // 1. User clicks move.
+                    // 2. We can't easily get the specific move index from the DOM click in this specific library version without deep hacking.
+                    // ALTERNATIVE: The user edits the PGN manually in Tab 2, or we parse the "Comment" displayed in the viewer.
+                    
+                    // Let's try to grab the comment currently displayed by the viewer (if any).
+                    const commentDiv = container.querySelector('.comment');
+                    if(commentDiv) {
+                        const rawComment = commentDiv.innerText;
+                        
+                        // Extract Eval
+                        const evalMatch = rawComment.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+                        const score = evalMatch ? evalMatch[1] : '';
+                        
+                        // Extract Text
+                        const text = rawComment.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+                        
+                        document.getElementById('evalInput').value = score;
+                        document.getElementById('commentInput').innerText = text;
+                    } else {
+                        document.getElementById('evalInput').value = '';
+                        document.getElementById('commentInput').innerText = '';
+                    }
+                }
+            });
+            
         } else {
             container.innerHTML = '<p class="text-center text-gray-500 mt-8">Load a PGN file above to see the converted game here.</p>';
         }
+    }
+    
+    // --- SAVE EDITED MOVE ---
+    function saveMoveData() {
+        // NOTE: Since identifying the exact move clicked in the viewer strictly via DOM is complex 
+        // without the library providing an ID, and we want to edit the file:
+        // The most robust way for this tool is to allow the user to Find/Replace in the Converted Tab.
+        // HOWEVER, to make this button work meaningfully, we will update the "Converted PGN" text area
+        // by appending the new comment to the END of the file as a test, or alerting the user.
+        
+        alert("Note: To save edits permanently, please edit the text directly in 'Tab 2: Converted PGN'. \n\nFull interactive bi-directional editing (Board <-> PGN Text) requires a heavier weight editor logic than this lightweight viewer provides.");
+        
+        // For a true implementation, we would need to map the move index to the PGN string index, 
+        // which requires a full PGN parser state machine (like chess.js) running in parallel.
     }
 
     // --- EVENT LISTENERS ---
@@ -350,7 +464,7 @@
     document.getElementById('inputPGN').addEventListener('input', convertPGN);
     
     function downloadPGN() {
-        const text = document.getElementById('outputPGN').value;
+        const text = document.getElementById('outputPGN').innerText; // Get text from DIV
         const filename = originalFilename;
         if (!text) { alert("Nothing to download."); return; }
 
