@@ -32,15 +32,14 @@
         .input-container { height: 450px; overflow: hidden; display: flex; border: 1px solid #ccc; border-radius: 6px; }
         textarea#inputPGN { width: 100%; height: 100%; padding: 12px; border: none; font-family: 'Consolas', 'Courier New', monospace; resize: none; white-space: pre; overflow-x: auto; overflow-y: scroll; }
 
-        /* Output DIV - Fixed for Wrapping */
+        /* Output DIV - Formatted for readability */
         #outputPGN {
             width: 100%;
             height: 100%;
             padding: 12px;
             font-family: 'Consolas', 'Courier New', monospace;
             box-sizing: border-box;
-            /* Key Change: pre-wrap preserves newlines/spaces but wraps long text */
-            white-space: pre-wrap; 
+            white-space: pre-wrap; /* Wrap text naturally */
             overflow-y: auto;
             background-color: #f9fafb;
             color: #374151;
@@ -117,13 +116,13 @@
 <script>
     let originalFilename = 'converted_game.pgn';
     let pgnvObj = null;
+    let rawConvertedPGN = ''; // Store the raw single-line PGN for the viewer
 
     function initializePgnViewer() {
         const checkInterval = setInterval(() => {
             if (typeof PGNV !== 'undefined') {
                 clearInterval(checkInterval);
-                const currentContent = document.getElementById('outputPGN').innerText;
-                if(currentContent) renderPgnViewer(currentContent);
+                if(rawConvertedPGN) renderPgnViewer(rawConvertedPGN);
             }
         }, 100);
         setTimeout(() => {
@@ -139,8 +138,8 @@
         document.getElementById(tabId).classList.add('active');
         button.classList.add('active');
         if (tabId === 'viewerTab') {
-            const pgnContent = document.getElementById('outputPGN').innerText;
-            renderPgnViewer(pgnContent);
+            // Always use the raw single-line PGN for the viewer to avoid breaking it
+            renderPgnViewer(rawConvertedPGN);
         }
     }
 
@@ -156,21 +155,15 @@
         }
 
         // 1. ROBUST HEADER/BODY SEPARATION
-        // Find the boundary between headers and moves. 
-        // We look for the first blank line followed by a character that is NOT a bracket '['.
         let headers = "";
         let movetext = inputPGN;
-        
-        // This splits by the first double newline that is followed by non-bracket text (start of moves)
         const splitMatch = inputPGN.match(/(\n\s*\n)(?=[^[])/);
         
         if (splitMatch) {
             headers = inputPGN.substring(0, splitMatch.index).trim();
             movetext = inputPGN.substring(splitMatch.index).trim();
         } else {
-            // Fallback: if no clear break, check if it starts with [Event.
             if (inputPGN.trim().startsWith('[')) {
-                // Try to find the last ] and assume moves start after.
                 const lastBracket = inputPGN.lastIndexOf(']');
                 if (lastBracket > -1) {
                     headers = inputPGN.substring(0, lastBracket + 1).trim();
@@ -180,28 +173,20 @@
         }
 
         // 2. CLEAN MOVETEXT (Single Line)
-        // Remove newlines to make it a single continuous line for parsing safety
         let singleLineMovetext = movetext.replace(/[\r\n]+/g, ' ');
         singleLineMovetext = singleLineMovetext.replace(/\s+/g, ' ').trim();
 
-        // 3. FIX CRITICAL FORMATTING
-        // Ensure space after move numbers (fixes "36...Kh7" -> "36... Kh7")
+        // 3. FIX FORMATTING
         singleLineMovetext = singleLineMovetext.replace(/(\d+\.+)([^\s])/g, '$1 $2');
-        // Ensure space around braces so comments are distinct tokens
         singleLineMovetext = singleLineMovetext.replace(/\{/g, ' { ').replace(/\}/g, ' } ');
 
         // 4. EVALUATION HANDLING
-        
-        // A. Standardize existing valid eval tags to { [%eval SCORE] }
-        // This regex is careful NOT to touch other comments like {Engine...}
-        // It only targets comments that explicitly look like they contain an eval.
         singleLineMovetext = singleLineMovetext.replace(
             /\{\s*(\[[^\]]*%eval\s*([\+\-]?[\d\.]+|#[+-]?\d+)[^\]]*\])[^}]*?\}/g, 
             (match, fullTag, score) => `{ [%eval ${score}] }`
         );
         
-        // B. Extract Eval from Variations and attach to main move
-        // Matches: Move -> Variation -> containing Eval
+        // Extract Eval from Variations
         const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\(\s*[^)]*?\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}\s*[^)]*?\))\s*/g;
 
         let fixedMovetext = singleLineMovetext.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
@@ -209,22 +194,30 @@
             return `${prefix}${moveSAN} { [%eval ${score}] } ${variationText} `;
         });
 
-        // 5. REASSEMBLE
-        // Enforce exactly two newlines between headers and body (Critical for Viewer)
+        // 5. REASSEMBLE (Raw PGN for Viewer/Download)
         let convertedPGN = headers;
         if (headers && fixedMovetext) {
+            // CRITICAL: Double newline specifically for the viewer/file compliance
             convertedPGN += '\n\n';
         }
         convertedPGN += fixedMovetext;
+        convertedPGN = convertedPGN.replace(/\]\s*\[/g, ']\n[').trim(); // Clean headers
         
-        // Final Formatting
-        convertedPGN = convertedPGN.replace(/\]\s*\[/g, ']\n['); // Fix header lines
+        // Store raw PGN for viewer/download
+        rawConvertedPGN = convertedPGN;
+
+        // 6. DISPLAY FORMATTING (Formatted for Human Readability in Tab 2)
+        // Add newlines before move numbers (e.g. " 10." -> "\n10.") for display only
+        let displayPGN = convertedPGN;
+        // This regex looks for a space followed by a move number, ensuring it's not inside a comment/variation tag if possible.
+        // Simple approach: Add newline before every move number.
+        displayPGN = displayPGN.replace(/\s(\d+\.)/g, '\n$1');
         
-        outputDiv.innerText = convertedPGN;
+        outputDiv.innerText = displayPGN;
         downloadButton.disabled = convertedPGN.length === 0;
 
         if (document.getElementById('viewerTab').classList.contains('active')) {
-             renderPgnViewer(convertedPGN);
+             renderPgnViewer(rawConvertedPGN);
         }
     }
 
@@ -243,11 +236,10 @@
                 showCoords: true,
                 movable: false,
                 comments: true,
-                headers: false, // Hide headers in viewer for cleaner look
+                headers: false, 
                 notationFontSize: '16px',
             });
             
-            // Edit Hook
             document.getElementById('pgnViewer').addEventListener('click', function(e) {
                 const moveEl = e.target.closest('.move');
                 if (moveEl) {
@@ -256,6 +248,7 @@
                         const rawComment = commentDiv.innerText;
                         const evalMatch = rawComment.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         const score = evalMatch ? evalMatch[1] : '';
+                        // Remove the eval tag to show just the text annotation
                         const text = rawComment.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
                         document.getElementById('evalInput').value = score;
                         document.getElementById('commentInput').innerText = text;
@@ -289,15 +282,24 @@
     document.getElementById('inputPGN').addEventListener('input', convertPGN);
     
     function downloadPGN() {
-        const text = document.getElementById('outputPGN').innerText;
-        if (!text) return;
-        const blob = new Blob([text.replace(/\n/g, '\r\n')], { type: 'text/plain;charset=utf-8' });
+        // We use the rawConvertedPGN for download to ensure machine readability
+        // If the user edited the display DIV, we'd need to re-parse it. 
+        // For this version, we download the raw string to be safe.
+        // If you want to support edits from Tab 2, use document.getElementById('outputPGN').innerText
+        // and strip the extra newlines we added for display.
+        
+        const text = rawConvertedPGN; 
+        if (!text) { alert("Nothing to download."); return; }
+
+        let finalDownloadText = text.replace(/\n/g, '\r\n');
+        const blob = new Blob([finalDownloadText], { type: 'text/plain;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = originalFilename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
     }
 
     $(document).ready(function() { initializePgnViewer(); });
