@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PGN Auto-Format Converter (Final Fix)</title>
+    <title>PGN Auto-Format Converter (CDN Fix)</title>
     <!-- Tailwind CSS for modern aesthetics -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chess Viewer Libraries (pgn-viewer depends on these) -->
+    <!-- JQuery and Chess.js remain necessary -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <link rel="stylesheet" href="https://mliebelt.github.io/PgnViewerJS/lib/css/chessboard.min.css">
-    <link rel="stylesheet" href="https://mliebelt.github.io/PgnViewerJS/lib/css/pgnvjs.min.css">
-    <script src="https://mliebelt.github.io/PgnViewerJS/lib/js/pgnvjs.min.js"></script>
+    
+    <!-- FIX: Using the commonly more reliable distribution of PgnViewerJS from a single file -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.5.15/lib/css/pgnvjs.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.5.15/lib/js/pgnvjs.min.js"></script>
     
     <style>
         body {
@@ -195,6 +196,8 @@
         
         // B. The CRUCIAL FIX: Find a move followed by a variation containing an evaluation,
         // extract the evaluation, and attach it to the move before the variation.
+        
+        // The regex searches for a move followed by a variation containing '{ [%eval SCORE] }'.
         const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*).)*?\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}\s*[^)]*?\))\s*/g;
 
         let fixedMovetext = singleLineMovetext.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
@@ -236,17 +239,23 @@
 
     // --- PGN VIEWER RENDERING ---
     function renderPgnViewer(pgnContent) {
-        // If PGNV is not defined, we display the error message.
-        if (typeof PGNV === 'undefined') {
-            document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) failed to load. Check CDN links.</p>';
-            return;
-        }
-
         const container = document.getElementById('pgnViewer');
         // Clear previous viewer instance
         container.innerHTML = ''; 
 
+        // Re-check for PGNV *immediately* before rendering
+        if (typeof PGNV === 'undefined') {
+            container.innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) is still not available. Please check your browser console for loading errors.</p>';
+            return;
+        }
+
         if (pgnContent.trim().length > 0) {
+            // Check if the viewer already exists and remove it to avoid conflicts
+            if (document.querySelector('.pgnvjs-board')) {
+                // Since pgnvjs doesn't expose a destroy method easily, we re-initialize the container
+                container.innerHTML = ''; 
+            }
+
             PGNV.pgnView("pgnViewer", {
                 pgn: pgnContent,
                 theme: 'blue',
@@ -321,21 +330,18 @@
     }
 
     // Initial render setup: Wait for all resources (including CDNs) to load.
-    document.addEventListener('DOMContentLoaded', () => {
-        // Show loading message while waiting for the full load
-        document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-gray-500 mt-8">Loading PGN Viewer...</p>';
+    // The previous window.onload was correct, but we'll use a safer document.ready check for the initial render.
+    $(document).ready(function() {
+        // We use a small timeout to ensure the external pgnvjs script has fully executed
+        setTimeout(function() {
+            if (typeof PGNV !== 'undefined') {
+                renderPgnViewer('');
+            } else {
+                 document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) is still not available. Please check your browser console for loading errors.</p>';
+            }
+        }, 500); // 500ms should be enough for the CDN script to execute
     });
 
-    window.onload = function() {
-        // Once the window and all scripts are loaded, check for PGNV
-        if (typeof PGNV !== 'undefined') {
-             // Initial render with empty PGN
-             renderPgnViewer('');
-        } else {
-             // Display clear error if PGNV is still not found after full load
-             document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) failed to load. Check your network or CDN links.</p>';
-        }
-    };
 </script>
 
 </body>
