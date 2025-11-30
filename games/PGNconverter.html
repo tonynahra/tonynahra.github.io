@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PGN Format Converter</title>
+    <title>PGN Auto-Format Converter (Advanced)</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -34,9 +34,9 @@
         }
         .controls {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between; 
             align-items: center;
-            gap: 10px;
+            margin-bottom: 15px;
         }
         button, input[type="file"] {
             padding: 10px 15px;
@@ -49,6 +49,7 @@
         button {
             background-color: #007bff;
             color: white;
+            min-width: 250px;
         }
         button:hover {
             background-color: #0056b3;
@@ -56,7 +57,7 @@
         input[type="file"] {
             background-color: #6c757d;
             color: white;
-            width: 250px;
+            min-width: 250px;
             box-sizing: border-box;
         }
     </style>
@@ -64,12 +65,12 @@
 <body>
 
 <div class="container">
-    <h1>PGN Format Converter (ChessX to Viewer)</h1>
-    <p>Paste your PGN or load a file below. The converter will reformat the `[%eval ...]` tags to ensure compatibility with most PGN viewers by wrapping them in curly braces.</p>
+    <h1>PGN Auto-Format Converter (Advanced) ♟️</h1>
+    <p>This version fixes the issue by extracting evaluations from variations and attaching them to the main moves.</p>
 
     <div class="controls">
         <input type="file" id="pgnFile" accept=".pgn" title="Select a PGN file to load">
-        <button onclick="convertPGN()">Convert PGN</button>
+        <button onclick="downloadPGN()" id="downloadButton" disabled>Download Converted PGN</button>
     </div>
     
     <div class="textareas-container">
@@ -79,34 +80,13 @@
         </div>
         <div>
             <h2>Converted PGN (Viewer Compatible)</h2>
-            <textarea id="outputPGN" readonly placeholder="Converted PGN will appear here..."></textarea>
+            <textarea id="outputPGN" readonly placeholder="Converted PGN will appear here automatically..."></textarea>
         </div>
     </div>
-    
-    <button onclick="downloadPGN()" id="downloadButton" disabled>Download Converted PGN</button>
 </div>
 
 <script>
-    // --- FILE LOADING FUNCTION ---
-    document.getElementById('pgnFile').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (!file) {
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('inputPGN').value = e.target.result;
-            // Clear output after new file load
-            document.getElementById('outputPGN').value = ''; 
-            document.getElementById('downloadButton').disabled = true;
-        };
-        reader.onerror = function(e) {
-            alert('Error reading file: ' + e.target.error.name);
-        };
-
-        reader.readAsText(file);
-    });
+    let originalFilename = 'converted_game.pgn';
 
     // --- CONVERSION FUNCTION ---
     function convertPGN() {
@@ -115,74 +95,122 @@
         const downloadButton = document.getElementById('downloadButton');
 
         if (!inputPGN) {
-            alert("Please paste or load a PGN file first.");
             outputTextarea.value = '';
             downloadButton.disabled = true;
             return;
         }
 
         /*
-        Conversion Logic:
-        The goal is to ensure all engine evaluation tags (which often appear 
-        as [%eval X.XX] or similar in PGN) are correctly wrapped in 
-        curly braces {} to be recognized as comments by simple PGN viewers.
+        ADVANCED REGEX EXPLANATION:
+        The goal is to find the evaluation that a program like ChessX inserts at the end of a long variation 
+        (like the one in your file) and insert it onto the last move of the main line before the variation starts.
         
-        The RegEx looks for:
-        \s*\[%eval\s*([\+\-]?[\d\.]+)\]
-          \s* -> zero or more whitespace characters
-          \[%eval\s* -> literal '[%eval' followed by zero or more whitespace
-          ([\+\-]?[\d\.]+) -> Capture Group 1: optional +/-, followed by digits and dots (the score)
-          \]        -> literal ']'
+        The PGN is structured: MOVE_A MOVE_B (VARIATION_START ... MOVE_X {[%eval X.XX]})
         
-        It replaces it with:
-        { [%eval $1] }
-        Which correctly wraps the tag in curly braces {}.
+        This regex targets the main line move that immediately precedes a variation:
+        (\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\()
+          - (\d+\.)?: Optional move number (e.g., '1.'), followed by a space
+          - ([a-zA-Z0-9\#\+\=\!\?]+): Capture Group 2: The actual move (e.g., 'e5', 'Nf6')
+          - \s*: Whitespace
+          - (\(): Capture Group 3: The opening parenthesis of the variation.
+          
+        It replaces this: 
+        1.e4 e5 (1...c5 {[%eval 0.25]})2.Nf3 Nc6 (2...d6 ... {[%eval 0.15]})3.Bb5 a6 (3...Nf6 ... {[%eval 0.09]})
+        
+        With this (extracting the eval from the variation and placing it on the main line):
+        1.e4 {[%eval 0.25]} e5 2.Nf3 {[%eval 0.15]} Nc6 3.Bb5 {[%eval 0.09]} a6 ...
+        
+        NOTE: Since the provided PGN snippet only shows evaluations inside variations *not* linked to the main move, 
+        we must use a simpler approach that assumes the evaluation shown in the **first variation** is the one intended for the **preceding main move**.
         */
         
-        const evalRegex = /(\s*\[%eval\s*([\+\-]?[\d\.]+)\])/g;
-        
-        // This is a simple replacement that ensures the eval tag is inside a comment {}.
-        // It's safer to use a generic replacement that handles the most common missing braces issue.
-        let convertedPGN = inputPGN.replace(evalRegex, function(match, fullTag, score) {
-             // If the match is NOT already surrounded by {}, we wrap it.
-             // We return the full { [%eval score] } format.
-             return `{ [%eval ${score}] }`;
+        // This simple replacement is designed to convert the eval tag inside ANY comment structure 
+        // to the viewer-compatible format { [%eval X.XX] }
+        let convertedPGN = inputPGN.replace(/\{\s*\[%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}/g, '{ [%eval $1] }');
+
+
+        // THE CRUCIAL SECOND STEP: Find move followed by a variation with an eval and insert the eval onto the move.
+        // We look for a move, followed by a variation that contains an evaluation tag.
+        // The first group (G1) is the preceding move number (optional).
+        // The second group (G2) is the move itself (SAN).
+        // The third group (G3) captures the evaluation score.
+        // The fourth group (G4) captures the rest of the variation until the next move number.
+        const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1).)*?\[%eval\s*([\+\-]?[\d\.]+)\s*\].*?\))\s*/gs;
+
+        // The 'gs' flags make it global (g) and allow '.' to match newlines (s - dotall).
+        convertedPGN = convertedPGN.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
+            // Reconstruct the move and variation:
+            // 1. Insert the evaluation into the main move's comment using the desired format.
+            // 2. Keep the original variation text (G3) so the analysis lines aren't lost.
+            
+            // This is White's move:
+            if (moveNum && !moveSAN.includes('...')) { 
+                 return `${moveNum}${moveSAN} { [%eval ${score}] } ${variationText} `;
+            } 
+            // This is Black's move:
+            else {
+                 return `${moveSAN} { [%eval ${score}] } ${variationText} `;
+            }
         });
 
-        // Some ChessX PGNs might use {[%eval X.XX]}, which is fine, 
-        // but often the problem is the one without braces, so the first regex handles it.
-        // We'll use a second, more specific replacement to ensure proper spacing if needed:
-        convertedPGN = convertedPGN.replace(/\{\s*\[%eval\s*([^\]]+)\]\s*\}/g, '{ [%eval $1] }');
-
+        // Final cleanup for any remaining standalone tags (e.g., from header)
+        convertedPGN = convertedPGN.replace(/\[%eval\s*([\+\-]?[\d\.]+)\s*\]/g, '{ [%eval $1] }');
 
         outputTextarea.value = convertedPGN;
-        downloadButton.disabled = false;
+        downloadButton.disabled = convertedPGN.length === 0;
     }
+
+    // --- FILE LOADING FUNCTION ---
+    document.getElementById('pgnFile').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+        
+        // 1. Set the download filename based on the uploaded file
+        const parts = file.name.split('.');
+        const extension = parts.pop();
+        const baseName = parts.join('.');
+        originalFilename = `${baseName}_C.${extension}`;
+
+        // 2. Read the file
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('inputPGN').value = e.target.result;
+            // 3. Trigger automatic conversion
+            convertPGN(); 
+        };
+        reader.onerror = function(e) {
+            alert('Error reading file: ' + e.target.error.name);
+        };
+
+        reader.readAsText(file);
+    });
+    
+    // --- AUTOCONVERT ON PASTE/INPUT ---
+    document.getElementById('inputPGN').addEventListener('input', convertPGN);
+    document.getElementById('inputPGN').addEventListener('change', convertPGN);
+
 
     // --- DOWNLOAD FUNCTION ---
     function downloadPGN() {
         const text = document.getElementById('outputPGN').value;
-        const filename = 'converted_game.pgn';
+        const filename = originalFilename;
         
         if (!text) {
             alert("Nothing to download.");
             return;
         }
 
-        // Create a Blob containing the text data
         const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-        
-        // Create a temporary link element
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = filename;
         
-        // Append to body, click it, and remove it
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         
-        // Revoke the object URL after use to free up resources
         URL.revokeObjectURL(a.href);
     }
 </script>
