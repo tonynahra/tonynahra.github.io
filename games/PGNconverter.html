@@ -47,7 +47,17 @@
             border: none;
         }
         
-        .pgnvjs { box-shadow: none; border-radius: 0; border: none; min-height: 400px; }
+        /* Viewer Container Styles */
+        .viewer-wrapper {
+            min-height: 400px;
+            position: relative;
+        }
+        .pgnvjs { 
+            box-shadow: none; 
+            border-radius: 0; 
+            border: none; 
+            min-height: 400px; 
+        }
         
         /* Editor Panel */
         .editor-panel { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin-top: 15px; }
@@ -95,7 +105,9 @@
             <div class="flex gap-4">
                 <div class="w-2/3">
                     <h3 class="text-lg font-semibold text-gray-700 mb-3">Viewer</h3>
-                    <div id="pgnViewer" class="pgnvjs"><p class="text-center text-gray-500 mt-8">Loading...</p></div>
+                    <div class="viewer-wrapper">
+                        <div id="pgnViewer" class="pgnvjs"><p class="text-center text-gray-500 mt-8">Loading...</p></div>
+                    </div>
                 </div>
                 <div class="w-1/3">
                     <h3 class="text-lg font-semibold text-gray-700 mb-3">Move Editor</h3>
@@ -193,19 +205,15 @@
         // 5. REASSEMBLE (RAW)
         let convertedPGN = headers;
         if (headers && fixedMovetext) {
-            convertedPGN += '\n\n'; // Strict double newline
+            convertedPGN += '\n\n'; 
         }
         convertedPGN += fixedMovetext;
         convertedPGN = convertedPGN.replace(/\]\s*\[/g, ']\n[').trim(); 
         
-        rawConvertedPGN = convertedPGN; // Store compliant PGN for viewer/download
+        rawConvertedPGN = convertedPGN; 
 
-        // 6. DISPLAY FORMATTING (Tab 2)
-        // Wraps lines at move numbers, ignoring "0." (evals)
-        // Looks for: Space + Digits (excluding 0) + Dot + Space
+        // 6. DISPLAY FORMATTING
         let displayPGN = convertedPGN;
-        // This Regex ensures we only break on "1. ", "10. " etc, and NOT "0."
-        // And importantly, it enforces that there is a SPACE after the dot.
         displayPGN = displayPGN.replace(/(\s)([1-9]\d*\.)(\s)/g, '\n$2$3');
         
         outputDiv.innerText = displayPGN;
@@ -217,16 +225,30 @@
     }
 
     function renderPgnViewer(pgnContent) {
-        const container = document.getElementById('pgnViewer');
-        if (typeof PGNV === 'undefined') return;
+        const wrapper = document.querySelector('.viewer-wrapper');
         
-        // Guard: Check if PGN has actual content headers/moves
-        if (!pgnContent || pgnContent.trim().length < 5) {
-             container.innerHTML = '<p class="text-center text-gray-500 mt-8">Waiting for valid PGN content...</p>';
-             return;
+        // Remove existing viewer container if present
+        const oldViewer = document.getElementById('pgnViewer');
+        if (oldViewer) {
+            oldViewer.remove();
         }
 
-        container.innerHTML = ''; 
+        // Create fresh container
+        const container = document.createElement('div');
+        container.id = 'pgnViewer';
+        container.className = 'pgnvjs';
+        wrapper.appendChild(container);
+
+        if (typeof PGNV === 'undefined') {
+             container.innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) failed to load.</p>';
+             return;
+        }
+        
+        // Validation: Must have at least "1." to be a game
+        if (!pgnContent || pgnContent.trim().length < 5 || !pgnContent.includes('1.')) {
+             container.innerHTML = '<p class="text-center text-gray-500 mt-8">Waiting for valid game content (must contain moves e.g. "1. e4")...</p>';
+             return;
+        }
 
         try {
             pgnvObj = PGNV.pgnView("pgnViewer", {
@@ -242,26 +264,39 @@
                 notationFontSize: '16px',
             });
             
-            document.getElementById('pgnViewer').addEventListener('click', function(e) {
+            // Attach listener to the fresh container
+            container.addEventListener('click', function(e) {
                 const moveEl = e.target.closest('.move');
                 if (moveEl) {
-                    const commentDiv = container.querySelector('.comment');
-                    if(commentDiv) {
-                        const rawComment = commentDiv.innerText;
-                        const evalMatch = rawComment.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                        const score = evalMatch ? evalMatch[1] : '';
-                        const text = rawComment.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                        document.getElementById('evalInput').value = score;
-                        document.getElementById('commentInput').innerText = text;
-                    } else {
-                        document.getElementById('evalInput').value = '';
-                        document.getElementById('commentInput').innerText = '';
-                    }
+                    // Try to find the comment associated with this move in the DOM
+                    // The library usually renders comments nearby or we can parse.
+                    // Since specific DOM structure varies, we do a best-effort find
+                    // or just clear if not found for now to prevent stale data.
+                    
+                    // Note: This viewer renders comments inline or in a block.
+                    // We need to look for a .comment class inside the active move's container or globally active.
+                    
+                    // Simple hack: Look for the *active* comment in the DOM after a short delay for render
+                    setTimeout(() => {
+                        const activeComment = container.querySelector('.comment');
+                        if(activeComment) {
+                            const rawComment = activeComment.innerText;
+                            const evalMatch = rawComment.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+                            const score = evalMatch ? evalMatch[1] : '';
+                            const text = rawComment.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+                            
+                            document.getElementById('evalInput').value = score;
+                            document.getElementById('commentInput').innerText = text;
+                        } else {
+                            document.getElementById('evalInput').value = '';
+                            document.getElementById('commentInput').innerText = '';
+                        }
+                    }, 50);
                 }
             });
         } catch (e) {
             console.error("Viewer render error:", e);
-            container.innerHTML = `<p class="text-center text-red-500 mt-8">Error rendering PGN. Ensure headers and moves are separated by a blank line.</p>`;
+            container.innerHTML = `<p class="text-center text-red-500 mt-8">Error rendering PGN. Check console for details.</p>`;
         }
     }
     
@@ -284,7 +319,7 @@
     document.getElementById('inputPGN').addEventListener('input', convertPGN);
     
     function downloadPGN() {
-        const text = rawConvertedPGN; // Use the raw, compliant string
+        const text = rawConvertedPGN; 
         if (!text) { alert("Nothing to download."); return; }
 
         let finalDownloadText = text.replace(/\n/g, '\r\n');
