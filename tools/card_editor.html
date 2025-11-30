@@ -126,7 +126,7 @@
         <!-- Filters -->
         <div class="tool-group">
             <label style="margin:0;">Filter:</label>
-            <input type="text" id="filter-text" placeholder="Keyword..." onkeyup="renderGrid()" style="width:120px;">
+            <input type="text" id="filter-text" placeholder="ID, Title, Keyword..." onkeyup="renderGrid()" style="width:150px;">
             <select id="filter-type" onchange="renderGrid()" style="width:120px;">
                 <option value="all">All Types</option>
                 <option value="image">Image</option>
@@ -355,9 +355,9 @@
             const fType = document.getElementById('filter-type').value;
 
             cards.forEach((c, i) => {
-                // Filters
+                // Filters (Now includes c.id in search)
                 if (fType !== 'all' && c.loadType !== fType) return;
-                if (fText && !`${c.title} ${c.cat} ${c.keywords} ${c.color}`.toLowerCase().includes(fText)) return;
+                if (fText && !`${c.id} ${c.title} ${c.cat} ${c.keywords} ${c.color}`.toLowerCase().includes(fText)) return;
 
                 const el = document.createElement('div');
                 el.className = `editor-card ${selectedIds.has(i) ? 'selected' : ''}`;
@@ -445,7 +445,7 @@
             cards.forEach((c, i) => {
                 let vis = true;
                 if (fType !== 'all' && c.loadType !== fType) vis = false;
-                if (fText && !`${c.title} ${c.cat} ${c.keywords} ${c.color}`.toLowerCase().includes(fText)) vis = false;
+                if (fText && !`${c.id} ${c.title} ${c.cat} ${c.keywords} ${c.color}`.toLowerCase().includes(fText)) vis = false;
                 if(vis) selectedIds.add(i);
             });
             renderGrid();
@@ -603,7 +603,11 @@
 
         function generateDownload() {
             const valid = validateUniqueIDs();
-            if (valid !== true) { alert(valid); return; }
+            if (valid !== true) { 
+                alert(valid); // Alert user
+                // Filter is automatically applied by validateUniqueIDs if duplicate found
+                return; 
+            }
 
             const content = generateHTML();
             const blob = new Blob([content], {type: 'text/html'});
@@ -624,15 +628,22 @@
         function closeDialog(id) { document.getElementById(id).close(); }
         function openLink(e, url) { e.stopPropagation(); if(url && url!='#') window.open(url,'_blank'); else alert("No URL"); }
         function testEditUrl() { const url = document.getElementById('edit-link-href').value; if(url && url!='#') window.open(url,'_blank'); else alert("Empty URL"); }
+        
         function validateUniqueIDs() {
             const seen = new Set();
             for (let c of cards) {
                 if(!c.id) return "Error: Card found with empty ID.";
-                if(seen.has(c.id)) return "Error: Duplicate ID found: " + c.id;
+                if(seen.has(c.id)) {
+                    // DUPLICATE FOUND: Filter the view
+                    document.getElementById('filter-text').value = c.id;
+                    renderGrid();
+                    return "Error: Duplicate ID found: " + c.id + "\n\nFilter applied to show duplicates.";
+                }
                 seen.add(c.id);
             }
             return true;
         }
+
         function generateTimestampID() {
             const now = new Date();
             const pad = n => String(n).padStart(2, '0');
