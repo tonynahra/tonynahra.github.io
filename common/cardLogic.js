@@ -94,28 +94,33 @@ window.handleModalKeys = function(e) {
     if (isTutorialMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
     const isChessMode = $('#content-modal').hasClass('chess-mode');
-
-    // Helper to find and click chess control buttons (fixes FullScreen nav issues)
+    
+    // UPDATED CHESS NAV: Uses window dispatch to ensure it works even if buttons are hidden in FS mode
     const triggerChessMove = (direction) => {
+        const keyName = direction === 'prev' ? 'ArrowLeft' : 'ArrowRight';
+        const keyCode = direction === 'prev' ? 37 : 39;
+        
+        // 1. Try clicking visible buttons first (most reliable if visible)
         const $area = $('#modal-content-area');
-        // Selectors common in PGN viewers (buttons or icon classes)
         let $btn = direction === 'prev' 
             ? $area.find('.prev, .fa-arrow-left, button[title="Previous"], button[data-id="prev"]') 
             : $area.find('.next, .fa-arrow-right, button[title="Next"], button[data-id="next"]');
-            
+
         if ($btn.length && $btn.is(':visible')) {
             $btn.first().click();
         } else {
-            // Fallback: Dispatch key event to board if buttons are hidden
+            // 2. Fallback: Dispatch event to the window/document to simulate global key press
+            const event = new KeyboardEvent('keydown', {
+                key: keyName, code: keyName, keyCode: keyCode, which: keyCode, bubbles: true, cancelable: true
+            });
+            window.dispatchEvent(event);
+            
+            // 3. Last Resort: Dispatch to the specific board container
             const board = $area.find('.cg-board, .board, .chess-white-box')[0];
-            if (board) {
-                const keyName = direction === 'prev' ? 'ArrowLeft' : 'ArrowRight';
-                const keyCode = direction === 'prev' ? 37 : 39;
-                board.dispatchEvent(new KeyboardEvent('keydown', { key: keyName, code: keyName, keyCode: keyCode, which: keyCode, bubbles: true }));
-            }
+            if (board) board.dispatchEvent(event);
         }
     };
-    
+
     switch (e.key) { 
         case "Escape": 
             if ($('body').hasClass('chess-fullscreen-active')) {
@@ -299,7 +304,7 @@ window.loadChessGame = function(loadUrl, $modal, $modalContent) {
 };
 
 /* === RESEARCH LOADER (GLOBAL) === */
-window.buildResearchModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html(`<div class="tab-nav" id="research-tab-nav-modal"></div><div class="tab-content" id="research-tab-content-modal"><div class="content-loader"><div class="spinner"></div></div></div>`); $.getJSON(jsonUrl, function (data) { $('#content-modal .open-new-window').attr('href', jsonUrl); const $tabNav = $('#research-tab-nav-modal'); $tabNav.empty(); $.each(data.tickers, function(index, ticker) { const $button = $(`<button class="tab-button"></button>`); $button.text(ticker.name); $button.attr('data-content-url', ticker.contentUrl); if (index === 0) { $button.addClass('active'); window.loadModalTabContent(ticker.contentUrl); } $tabNav.append($button); }); }).fail(function() { $modalContent.html('<div class="error-message">Error loading research data.</div>'); }); }
+window.buildResearchModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html(`<div class="tab-nav" id="research-tab-nav-modal"></div><div class="tab-content" id="research-tab-content-modal"><div class="content-loader"><div class="spinner"></div></div></div>`); $.getJSON(jsonUrl, function (data) { $('#content-modal .open-new-window').attr('href', jsonUrl); const $tabNav = $('#research-tab-nav-modal'); $tabNav.empty(); $.each(data.tickers, function(index, ticker) { const $button = $(`<button class="tab-button"></button>`); $button.text(ticker.name); $button.attr('data-content-url', ticker.contentUrl); if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl); } $tabNav.append($button); }); }).fail(function() { $modalContent.html('<div class="error-message">Error loading research data.</div>'); }); }
 window.loadModalTabContent = function(htmlUrl) { $('#content-modal .open-new-window').attr('href', htmlUrl); $('#research-tab-content-modal').html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`); }
 
 
@@ -367,7 +372,6 @@ function loadModalContent(index) {
     if(window.cardGlobalState.infoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
     if (!title && !desc) $modalInfoBtn.hide();
 
-    // Hides modal nav buttons specifically for chess
     if (loadType === 'chess') { 
         $('.modal-prev-btn, .modal-next-btn').hide();
         window.loadChessGame(loadUrl, $modal, $modalContent); 
