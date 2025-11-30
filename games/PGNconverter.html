@@ -134,19 +134,24 @@
 
         // 3. Evaluation Tag Correction (Move Evaluation from Variations to Main Line)
         
-        // A. FINAL FIX: Standardize all evaluation tags, removing spaces inside the brackets 
-        // but ensuring the structure is { [%eval SCORE] }.
-        // This regex looks for any [%eval...] structure with optional content/depth 
-        // and standardizes it to the working format.
+        // A. FINAL FIX: Standardize and clean ALL evaluation tags to the working format: { [%eval SCORE] }
+        // This regex looks for:
+        // { (optional space/newline) [%eval (optional space) SCORE (optional text) ] (optional space/newline) }
+        // The captured score is in Group 1 ($1)
         singleLineMovetext = singleLineMovetext.replace(/\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)[^\]]*\]\s*\}/g, '{ [%eval $1] }');
 
         // B. The CRUCIAL FIX: Find a move followed by a variation containing an evaluation,
         // extract the evaluation, and attach it to the move before the variation.
-        const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*).)*?\[%eval\s*([\+\-]?[\d\.]+)\s*\].*?\))\s*/g;
+        
+        // NOTE: The variation content (G3) now includes the whole variation, and we specifically look for the 
+        // standardized evaluation tag inside it.
+        const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*).)*?\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)\s*\][^}]*?\)\s*)/g;
 
         let fixedMovetext = singleLineMovetext.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
             // Reconstruct the move, adding the evaluation tag in the required format: { [%eval SCORE] }
             let prefix = moveNum ? moveNum : ''; 
+            
+            // The score (G4) is used here. We prepend the original move's SAN (G2).
             return `${prefix}${moveSAN} { [%eval ${score}] } ${variationText} `;
         });
 
