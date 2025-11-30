@@ -1,3 +1,4 @@
+// This function is designed to be loaded dynamically
 window.startChessGame = function(loadUrl, $modal, $modalContent) {
     // Fix GitHub CORS for raw PGN files
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -88,18 +89,18 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             // 3. INJECT CHESS UI HTML (Added Full Screen Button)
             $modalContent.html(`
                 <style id="${styleId}"></style>
-                <div class="chess-container">
+                <div class="chess-container" id="chess-main-wrapper">
                     <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 8px; background: #1a1a1a; gap: 10px; border-bottom: 1px solid #333;">
                         <select id="chess-game-select" style="flex: 1; max-width: 400px; padding: 5px; background:#000; color:#fff; border:1px solid #444;"></select>
                         <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Info</button>
                         <button id="chess-font-minus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">-</button>
                         <button id="chess-font-plus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">+</button>
                         <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 4px 10px;">Comments: On</button>
-                        <button id="chess-fullscreen-btn" class="tab-button" style="color: #fff; background: #333; border: 1px solid #555; padding: 4px 10px;">&#x26F6; Full Screen</button>
+                        <button id="chess-fs-btn" class="tab-button" style="color: #fff; background: #2c3e50; border: 1px solid #555; padding: 4px 10px;">&#x26F6; Full Screen</button>
                         <div style="flex: 1;"></div>
                         <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
                     </div>
-                    <div class="chess-main-area">
+                    <div class="chess-main-area" style="position: relative; flex: 1; width: 100%; overflow: hidden;">
                         <div class="chess-white-box">
                             <div id="${boardId}"></div>
                         </div>
@@ -146,8 +147,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         align-items: flex-start !important;
                         width: 100% !important;
                         justify-content: center !important;
+                        height: 100%; /* Ensure full height usage */
                     }
                     
+                    /* Specific override for Full Screen */
+                    .chess-container:fullscreen .chess-main-area {
+                        height: calc(100vh - 50px); /* Subtract toolbar height */
+                    }
+
                     #chess-comment-overlay {
                         width: ${250 + (currentFontSize - 26) * 6}px !important;
                         min-width: 250px !important;
@@ -157,7 +164,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 $(`#${styleId}`).text(css);
             };
 
-            // --- EVAL HTML GENERATOR (UPDATED: REMOVED GAME BALANCE) ---
+            // --- EVAL HTML GENERATOR (NO BALANCE BAR) ---
             const generateEvalHtml = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -187,8 +194,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
                         else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
 
-                        // Removed Balance Calcs
-
                         whiteWinPct = 50 + (rawVal * 8);
                         whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                     }
@@ -205,7 +210,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         </div>
                         <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
                     </div>
-                    <!-- GAME BALANCE REMOVED -->
+                    <!-- REMOVED GAME BALANCE BAR HERE -->
                     <div class="eval-row">
                         <div class="eval-header">
                             <span>White vs Black</span>
@@ -224,6 +229,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const overlay = document.getElementById('chess-comment-overlay');
                 const btn = $('#chess-comment-btn');
 
+                // 1. DYNAMIC BUTTON COLORING (Per Move)
                 const hasComment = hasCommentary(moveIndex);
                 if (hasComment) {
                     btn.css({ background: '#4CAF50', color: '#000', border: '1px solid #4CAF50' });
@@ -231,6 +237,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     btn.css({ background: '#1a1a1a', color: '#ccc', border: '1px solid #444' });
                 }
 
+                // 2. VISIBILITY CHECK
                 if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                 $(overlay).fadeIn();
 
@@ -261,10 +268,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             };
 
             // --- EVENT HANDLERS ---
+            
+            // 1. Comment Toggle (Button)
             $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 commentsEnabled = !commentsEnabled;
                 $(this).text(commentsEnabled ? 'Comments: On' : 'Comments: Off');
+                
+                // Refresh current state
                 const movesPanel = document.getElementById(boardId + 'Moves');
                 if(movesPanel) {
                     const total = movesPanel.querySelectorAll('move').length;
@@ -278,10 +289,10 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 }
             });
 
-            // FULLSCREEN HANDLER
-            $('#chess-fullscreen-btn').off('click').on('click', function(e) {
+            // 2. Full Screen Toggle
+            $('#chess-fs-btn').off('click').on('click', function(e) {
                 e.preventDefault();
-                const wrapper = document.querySelector('.chess-main-area');
+                const wrapper = document.getElementById('chess-main-wrapper');
                 if (document.fullscreenElement) {
                     document.exitFullscreen();
                 } else {
@@ -289,17 +300,24 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 }
             });
 
-            // KEYBOARD SHORTCUTS (Local Scope)
+            // 3. Global Key Listener for Comment Toggle (Works in FS)
             const chessKeyHandler = function(e) {
-                if (e.key === 'c' || e.key === 'C' || e.key === 'i' || e.key === 'I') {
+                // 'C' or 'I' toggles comments
+                if (e.key.toLowerCase() === 'c' || e.key.toLowerCase() === 'i') {
                     $('#chess-comment-btn').click();
                 }
             };
             document.addEventListener('keydown', chessKeyHandler);
 
+            // 4. Cleanup on Close
             $('#chess-close-btn').off('click').on('click', function(e) {
                 e.preventDefault();
-                document.removeEventListener('keydown', chessKeyHandler); // Clean up
+                document.removeEventListener('keydown', chessKeyHandler);
+                
+                // Exit FS if active
+                if (document.fullscreenElement) document.exitFullscreen();
+                
+                // Trigger main close
                 $('.modal-close-btn').first().click();
             });
 
@@ -343,19 +361,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                 $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                const winHeight = $(window).height();
-                const winWidth = $(window).width();
-                const maxWidth = winWidth * 0.90;
-                const maxHeight = winHeight - 250;
-                const boardSize = Math.min(maxWidth, maxHeight);
-
+                // Reset Board Div
                 $(`#${boardId}`).empty();
 
                 if (typeof PGNV !== 'undefined') {
                     PGNV.pgnView(boardId, {
                         pgn: selectedPgn,
                         theme: 'brown',
-                        boardSize: boardSize,
+                        boardSize: 400, // Initial guess, CSS overrides
                         layout: 'left',
                         width: '100%',
                         headers: false,
@@ -370,10 +383,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
                     const checkInterval = setInterval(() => {
                         const movesPanel = document.getElementById(boardId + 'Moves');
-
                         if (movesPanel) {
                             clearInterval(checkInterval);
-
                             const totalMoves = movesPanel.querySelectorAll('move').length;
 
                             gameObserver = new MutationObserver(() => {
