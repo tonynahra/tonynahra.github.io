@@ -4,116 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PGN Auto-Format Converter & Viewer</title>
-    <!-- Tailwind CSS for modern aesthetics -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- External Dependencies: jQuery is required by PgnViewerJS -->
+    <!-- jQuery -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     
-    <!-- PGN Viewer Library (1.6.11) -->
+    <!-- PGN Viewer Library -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.6.11/lib/pgn-viewer.css">
     <script src="https://cdn.jsdelivr.net/npm/@mliebelt/pgn-viewer@1.6.11/lib/dist.min.js"></script>
     
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            background-color: #f4f4f4;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            font-size: 1.75rem;
-            font-weight: 700;
-        }
-        .controls-row {
-            display: flex;
-            justify-content: space-between; 
-            align-items: center;
-            margin-bottom: 15px;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f4f4f4; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 20px auto; background-color: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        h1 { border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 15px; font-size: 1.75rem; font-weight: 700; }
+        .controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         
-        /* Tab Styles */
-        .tab-buttons {
-            display: flex;
-            border-bottom: 2px solid #e5e7eb;
-        }
-        .tab-button {
-            padding: 10px 15px;
-            cursor: pointer;
-            background-color: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            border-bottom: none;
-            border-radius: 6px 6px 0 0;
-            margin-right: 2px;
-            transition: background-color 0.2s;
-            font-weight: 600;
-        }
-        .tab-button.active {
-            background-color: #fff;
-            border-bottom: 2px solid #fff;
-            margin-bottom: -2px; /* Pull tab forward */
-            color: #007bff;
-            border-color: #007bff;
-        }
-        .tab-content {
-            border: 1px solid #e5e7eb;
-            border-top: none;
-            padding: 20px;
-            background: #fff;
-            border-radius: 0 0 6px 6px;
-        }
-        .tab-pane {
-            display: none;
-        }
-        .tab-pane.active {
-            display: block;
-        }
+        /* Tabs */
+        .tab-buttons { display: flex; border-bottom: 2px solid #e5e7eb; }
+        .tab-button { padding: 10px 15px; cursor: pointer; background-color: #f3f4f6; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 6px 6px 0 0; margin-right: 2px; font-weight: 600; }
+        .tab-button.active { background-color: #fff; border-bottom: 2px solid #fff; margin-bottom: -2px; color: #007bff; border-color: #007bff; }
+        .tab-content { border: 1px solid #e5e7eb; border-top: none; padding: 20px; background: #fff; border-radius: 0 0 6px 6px; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
 
-        /* Container for Inputs */
-        .input-container {
-            height: 450px;
-            overflow: hidden;
-            display: flex;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        
-        /* Input Textarea */
-        textarea#inputPGN {
-            width: 100%;
-            height: 100%;
-            padding: 12px;
-            border: none;
-            font-family: 'Consolas', 'Courier New', monospace;
-            box-sizing: border-box;
-            resize: none; 
-            white-space: pre; 
-            overflow-x: auto; 
-            overflow-y: scroll;
-        }
+        /* Input Container */
+        .input-container { height: 450px; overflow: hidden; display: flex; border: 1px solid #ccc; border-radius: 6px; }
+        textarea#inputPGN { width: 100%; height: 100%; padding: 12px; border: none; font-family: 'Consolas', 'Courier New', monospace; resize: none; white-space: pre; overflow-x: auto; overflow-y: scroll; }
 
-        /* Output DIV (Tab 2) - Fixed for single line scrolling */
+        /* Output DIV - Fixed for Wrapping */
         #outputPGN {
             width: 100%;
             height: 100%;
             padding: 12px;
             font-family: 'Consolas', 'Courier New', monospace;
             box-sizing: border-box;
-            /* Forces text to stay on one line unless manually broken */
-            white-space: pre; 
-            /* Enables horizontal scrolling for the long line */
-            overflow-x: scroll; 
+            /* Key Change: pre-wrap preserves newlines/spaces but wraps long text */
+            white-space: pre-wrap; 
             overflow-y: auto;
             background-color: #f9fafb;
             color: #374151;
@@ -121,136 +48,64 @@
             border: none;
         }
         
-        /* Viewer styles */
-        .pgnvjs {
-            box-shadow: none;
-            border-radius: 0;
-            border: none;
-            min-height: 400px; 
-        }
+        .pgnvjs { box-shadow: none; border-radius: 0; border: none; min-height: 400px; }
         
-        /* Editor Panel in Viewer Tab */
-        .editor-panel {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-        .editor-label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #4b5563;
-            margin-bottom: 4px;
-            display: block;
-        }
-        .editor-input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            font-family: sans-serif;
-            margin-bottom: 10px;
-        }
-        .editor-textarea {
-            width: 100%;
-            min-height: 80px;
-            padding: 8px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            font-family: sans-serif;
-            margin-bottom: 10px;
-            background: white;
-            white-space: pre-wrap; 
-            overflow-y: auto;
-        }
+        /* Editor Panel */
+        .editor-panel { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin-top: 15px; }
+        .editor-label { font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 4px; display: block; }
+        .editor-input { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 10px; }
+        .editor-textarea { width: 100%; min-height: 80px; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 10px; background: white; white-space: pre-wrap; overflow-y: auto; }
 
-        /* Standard Controls */
-        button, input[type="file"] {
-            padding: 10px 15px;
-            cursor: pointer;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-        #downloadButton, #saveMoveBtn {
-            background-color: #10b981; 
-            color: white;
-            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.4);
-        }
-        #downloadButton:hover, #saveMoveBtn:hover {
-            background-color: #059669;
-            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.6);
-        }
-        input[type="file"] {
-            background-color: #3b82f6; 
-            color: white;
-            flex-grow: 1;
-            margin-right: 10px;
-        }
+        /* Buttons */
+        button, input[type="file"] { padding: 10px 15px; cursor: pointer; border: none; border-radius: 6px; font-weight: 600; transition: 0.3s; }
+        #downloadButton, #saveMoveBtn { background-color: #10b981; color: white; }
+        #downloadButton:hover, #saveMoveBtn:hover { background-color: #059669; }
+        input[type="file"] { background-color: #3b82f6; color: white; flex-grow: 1; margin-right: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1 class="text-gray-800">PGN Auto-Format Converter & Viewer ♟️</h1>
-    <p class="text-gray-600 mb-4">Fixes evaluation tag formatting, spacing issues, and allows seamless testing with the embedded viewer.</p>
+    <p class="text-gray-600 mb-4">Converts PGNs for compatibility, fixes move detection, and enables editing.</p>
 
     <div class="controls-row">
         <input type="file" id="pgnFile" accept=".pgn" title="Select a PGN file to load">
         <button onclick="downloadPGN()" id="downloadButton" disabled>Download Converted PGN</button>
     </div>
 
-    <!-- Tab Buttons -->
+    <!-- Tabs -->
     <div class="tab-buttons">
         <button class="tab-button active" onclick="showTab('inputTab', this)">1. Input PGN</button>
         <button class="tab-button" onclick="showTab('convertedTab', this)">2. Converted PGN</button>
         <button class="tab-button" onclick="showTab('viewerTab', this)">3. Viewer & Editor</button>
     </div>
 
-    <!-- Tab Content -->
     <div class="tab-content">
-        <!-- Input PGN Pane -->
         <div id="inputTab" class="tab-pane active">
-            <h3 class="text-lg font-semibold text-gray-700 mb-3">Input PGN (Paste or Loaded)</h3>
-            <div class="input-container">
-                <textarea id="inputPGN" placeholder="Paste your PGN here. Conversion happens automatically."></textarea>
-            </div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">Input PGN</h3>
+            <div class="input-container"><textarea id="inputPGN" placeholder="Paste PGN here..."></textarea></div>
         </div>
 
-        <!-- Converted PGN Pane -->
         <div id="convertedTab" class="tab-pane">
-            <h3 class="text-lg font-semibold text-gray-700 mb-3">Converted PGN (Formatted for Viewer)</h3>
-            <div class="input-container">
-                <!-- DIV replacement for Textarea to handle long lines -->
-                <div id="outputPGN" contenteditable="true" spellcheck="false"></div>
-            </div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">Converted PGN (Formatted)</h3>
+            <div class="input-container"><div id="outputPGN" contenteditable="true" spellcheck="false"></div></div>
         </div>
 
-        <!-- Viewer Pane -->
         <div id="viewerTab" class="tab-pane">
             <div class="flex gap-4">
-                <!-- Chess Board Area -->
                 <div class="w-2/3">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Viewer Verification</h3>
-                    <div id="pgnViewer" class="pgnvjs">
-                        <p class="text-center text-gray-500 mt-8">Loading PGN Viewer...</p>
-                    </div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Viewer</h3>
+                    <div id="pgnViewer" class="pgnvjs"><p class="text-center text-gray-500 mt-8">Loading...</p></div>
                 </div>
-                
-                <!-- Move Editor Area -->
                 <div class="w-1/3">
                     <h3 class="text-lg font-semibold text-gray-700 mb-3">Move Editor</h3>
                     <div class="editor-panel">
-                        <p class="text-sm text-gray-500 mb-4 italic">Select a move on the board to edit.</p>
-                        
+                        <p class="text-sm text-gray-500 mb-4 italic">Click a move to edit.</p>
                         <label class="editor-label">Evaluation Score</label>
-                        <input type="text" id="evalInput" class="editor-input" placeholder="e.g. +0.25">
-                        
-                        <label class="editor-label">Annotation / Commentary</label>
+                        <input type="text" id="evalInput" class="editor-input" placeholder="+0.25">
+                        <label class="editor-label">Annotation</label>
                         <div id="commentInput" class="editor-textarea" contenteditable="true"></div>
-                        
                         <button id="saveMoveBtn" onclick="saveMoveData()" class="w-full mt-2">Update PGN</button>
                     </div>
                 </div>
@@ -261,9 +116,8 @@
 
 <script>
     let originalFilename = 'converted_game.pgn';
-    let pgnvObj = null; 
+    let pgnvObj = null;
 
-    // --- PGN VIEWER INITIALIZATION CHECK ---
     function initializePgnViewer() {
         const checkInterval = setInterval(() => {
             if (typeof PGNV !== 'undefined') {
@@ -272,29 +126,24 @@
                 if(currentContent) renderPgnViewer(currentContent);
             }
         }, 100);
-        
         setTimeout(() => {
             if (typeof PGNV === 'undefined') {
-                 document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) failed to load. Check your network or browser console.</p>';
+                 document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-red-600 mt-8">Error: Viewer library failed to load.</p>';
             }
         }, 5000);
     }
     
-    // --- TAB LOGIC ---
     function showTab(tabId, button) {
-        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         button.classList.add('active');
-
         if (tabId === 'viewerTab') {
             const pgnContent = document.getElementById('outputPGN').innerText;
             renderPgnViewer(pgnContent);
         }
     }
 
-    // --- CONVERSION LOGIC ---
     function convertPGN() {
         const inputPGN = document.getElementById('inputPGN').value;
         const outputDiv = document.getElementById('outputPGN');
@@ -303,88 +152,85 @@
         if (!inputPGN.trim()) {
             outputDiv.innerText = '';
             downloadButton.disabled = true;
-            renderPgnViewer('');
             return;
         }
 
-        // 1. Separate Headers
-        const headerEndRegex = /\]\s*\n\s*\n\s*(\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*)/;
-        const match = inputPGN.match(headerEndRegex);
-
-        let headers = inputPGN;
-        let movetext = '';
-        let result = '';
-
-        if (match) {
-            const index = match.index + match[0].lastIndexOf('\n\n') + 2; 
-            headers = inputPGN.substring(0, index).trim();
-            movetext = inputPGN.substring(index).trim();
-            
-            const resultMatch = movetext.match(/(1\/2-1\/2|1-0|0-1|\*)\s*$/);
-            if (resultMatch) {
-                result = resultMatch[0];
-                movetext = movetext.replace(resultMatch[0], '').trim();
+        // 1. ROBUST HEADER/BODY SEPARATION
+        // Find the boundary between headers and moves. 
+        // We look for the first blank line followed by a character that is NOT a bracket '['.
+        let headers = "";
+        let movetext = inputPGN;
+        
+        // This splits by the first double newline that is followed by non-bracket text (start of moves)
+        const splitMatch = inputPGN.match(/(\n\s*\n)(?=[^[])/);
+        
+        if (splitMatch) {
+            headers = inputPGN.substring(0, splitMatch.index).trim();
+            movetext = inputPGN.substring(splitMatch.index).trim();
+        } else {
+            // Fallback: if no clear break, check if it starts with [Event.
+            if (inputPGN.trim().startsWith('[')) {
+                // Try to find the last ] and assume moves start after.
+                const lastBracket = inputPGN.lastIndexOf(']');
+                if (lastBracket > -1) {
+                    headers = inputPGN.substring(0, lastBracket + 1).trim();
+                    movetext = inputPGN.substring(lastBracket + 1).trim();
+                }
             }
         }
-        
-        // 2. Remove line breaks -> Single Line
-        let singleLineMovetext = movetext.replace(/[\r\n]/g, ' ');
+
+        // 2. CLEAN MOVETEXT (Single Line)
+        // Remove newlines to make it a single continuous line for parsing safety
+        let singleLineMovetext = movetext.replace(/[\r\n]+/g, ' ');
         singleLineMovetext = singleLineMovetext.replace(/\s+/g, ' ').trim();
 
-        // 3. Fix Critical Formatting/Spacing
-        
-        // FIX A: Ensure space between move number tokens (e.g. "36...Kh7" -> "36... Kh7")
-        // This is crucial for parser detection of the last move.
+        // 3. FIX CRITICAL FORMATTING
+        // Ensure space after move numbers (fixes "36...Kh7" -> "36... Kh7")
         singleLineMovetext = singleLineMovetext.replace(/(\d+\.+)([^\s])/g, '$1 $2');
-        
-        // FIX B: Ensure space around braces so {Comment} becomes { Comment }
+        // Ensure space around braces so comments are distinct tokens
         singleLineMovetext = singleLineMovetext.replace(/\{/g, ' { ').replace(/\}/g, ' } ');
 
-        // 4. Evaluation Tag Correction
+        // 4. EVALUATION HANDLING
         
-        // A. Standardize existing tags to { [%eval SCORE] }
+        // A. Standardize existing valid eval tags to { [%eval SCORE] }
+        // This regex is careful NOT to touch other comments like {Engine...}
+        // It only targets comments that explicitly look like they contain an eval.
         singleLineMovetext = singleLineMovetext.replace(
             /\{\s*(\[[^\]]*%eval\s*([\+\-]?[\d\.]+|#[+-]?\d+)[^\]]*\])[^}]*?\}/g, 
             (match, fullTag, score) => `{ [%eval ${score}] }`
         );
         
-        // B. Extract Eval from Variations
-        // UPDATED REGEX: Matches a variation that contains an eval, allowing move numbers inside.
-        // It consumes everything inside the parens `[^)]*?` until it hits the standard eval, then finishes.
+        // B. Extract Eval from Variations and attach to main move
+        // Matches: Move -> Variation -> containing Eval
         const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\(\s*[^)]*?\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}\s*[^)]*?\))\s*/g;
 
         let fixedMovetext = singleLineMovetext.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
             let prefix = moveNum ? moveNum : ''; 
-            // Reconstruct: Move { [%eval] } Variation
             return `${prefix}${moveSAN} { [%eval ${score}] } ${variationText} `;
         });
 
-        // 5. Reassemble
+        // 5. REASSEMBLE
+        // Enforce exactly two newlines between headers and body (Critical for Viewer)
         let convertedPGN = headers;
-        if (headers && movetext) { convertedPGN += '\n\n'; }
+        if (headers && fixedMovetext) {
+            convertedPGN += '\n\n';
+        }
         convertedPGN += fixedMovetext;
-        if (result) { convertedPGN += ` ${result}`; }
         
-        convertedPGN = convertedPGN.replace(/\s+/g, ' ').trim();
-        convertedPGN = convertedPGN.replace(/\]\s*\[/g, ']\n[').trim();
-
-        // 6. Display
-        let finalDisplayPGN = convertedPGN.replace(/\]\n?\[/g, ']\n[');
-        finalDisplayPGN = finalDisplayPGN.replace(/\]\s*1\./, ']\n\n1.');
+        // Final Formatting
+        convertedPGN = convertedPGN.replace(/\]\s*\[/g, ']\n['); // Fix header lines
         
-        outputDiv.innerText = finalDisplayPGN;
+        outputDiv.innerText = convertedPGN;
         downloadButton.disabled = convertedPGN.length === 0;
 
         if (document.getElementById('viewerTab').classList.contains('active')) {
-             renderPgnViewer(finalDisplayPGN);
+             renderPgnViewer(convertedPGN);
         }
     }
 
-    // --- RENDER VIEWER ---
     function renderPgnViewer(pgnContent) {
         const container = document.getElementById('pgnViewer');
         if (typeof PGNV === 'undefined') return;
-
         container.innerHTML = ''; 
 
         if (pgnContent.trim().length > 0) {
@@ -397,8 +243,8 @@
                 showCoords: true,
                 movable: false,
                 comments: true,
+                headers: false, // Hide headers in viewer for cleaner look
                 notationFontSize: '16px',
-                notationFontColor: '#333'
             });
             
             // Edit Hook
@@ -411,7 +257,6 @@
                         const evalMatch = rawComment.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                         const score = evalMatch ? evalMatch[1] : '';
                         const text = rawComment.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                        
                         document.getElementById('evalInput').value = score;
                         document.getElementById('commentInput').innerText = text;
                     } else {
@@ -421,54 +266,41 @@
                 }
             });
         } else {
-            container.innerHTML = '<p class="text-center text-gray-500 mt-8">Load a PGN file above to see the converted game here.</p>';
+            container.innerHTML = '<p class="text-center text-gray-500 mt-8">Load PGN to view.</p>';
         }
     }
     
     function saveMoveData() {
-        alert("Note: To save edits permanently, please edit the text directly in 'Tab 2: Converted PGN'.");
+        alert("To save edits: \n1. Manually edit the text in Tab 2 'Converted PGN'.\n2. The 'Download' button will verify and save that text.");
     }
 
-    // --- EVENT LISTENERS ---
     document.getElementById('pgnFile').addEventListener('change', function(event) {
         const file = event.target.files[0];
-        if (!file) { return; }
-        
-        const parts = file.name.split('.');
-        const extension = parts.pop();
-        const baseName = parts.join('.');
-        originalFilename = `${baseName}_C.${extension}`;
-
+        if (!file) return;
+        originalFilename = file.name.replace('.pgn', '_C.pgn');
         const reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById('inputPGN').value = e.target.result;
             convertPGN(); 
         };
-        reader.onerror = function(e) { alert('Error reading file: ' + e.target.error.name); };
         reader.readAsText(file);
     });
     
     document.getElementById('inputPGN').addEventListener('input', convertPGN);
     
     function downloadPGN() {
-        const text = document.getElementById('outputPGN').innerText; 
-        const filename = originalFilename;
-        if (!text) { alert("Nothing to download."); return; }
-
-        let finalDownloadText = text.replace(/\n/g, '\r\n');
-        const blob = new Blob([finalDownloadText], { type: 'text/plain;charset=utf-8' });
+        const text = document.getElementById('outputPGN').innerText;
+        if (!text) return;
+        const blob = new Blob([text.replace(/\n/g, '\r\n')], { type: 'text/plain;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = filename;
+        a.download = originalFilename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
     }
 
-    $(document).ready(function() {
-        initializePgnViewer();
-    });
+    $(document).ready(function() { initializePgnViewer(); });
 </script>
 
 </body>
