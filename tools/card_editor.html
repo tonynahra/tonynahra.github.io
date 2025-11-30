@@ -142,6 +142,11 @@
                 <span id="filter-clear" onclick="clearFilter()" title="Clear Filter">×</span>
             </div>
             
+            <!-- Category Filter -->
+            <select id="filter-category" onchange="renderGrid()" style="width:120px;">
+                <option value="all">All Cats</option>
+            </select>
+
             <select id="filter-type" onchange="renderGrid()" style="width:120px;">
                 <option value="all">All Types</option>
                 <option value="image">Image</option>
@@ -356,9 +361,28 @@
                     fullAttrs: getAttrs(node) // Store extra attributes if needed
                 };
             });
+
+            // Populate Category Filter
+            populateCategoryFilter();
         }
 
         // --- FILTERING ---
+        function populateCategoryFilter() {
+            const select = document.getElementById('filter-category');
+            select.innerHTML = '<option value="all">All Cats</option>';
+            const unique = new Set();
+            cards.forEach(c => c.cat.split(',').forEach(t => {
+                const v = t.trim();
+                if(v) unique.add(v);
+            }));
+            Array.from(unique).sort().forEach(tag => {
+                const opt = document.createElement('option');
+                opt.value = tag;
+                opt.innerText = tag;
+                select.appendChild(opt);
+            });
+        }
+
         function handleFilterInput() {
             const input = document.getElementById('filter-text');
             const clearBtn = document.getElementById('filter-clear');
@@ -385,10 +409,18 @@
             
             const fText = document.getElementById('filter-text').value.toLowerCase();
             const fType = document.getElementById('filter-type').value;
+            const fCat = document.getElementById('filter-category').value;
 
             cards.forEach((c, i) => {
                 // Filters (Now includes c.id in search)
                 if (fType !== 'all' && c.loadType !== fType) return;
+                
+                // Category Filter
+                if (fCat !== 'all') {
+                    const tags = c.cat.split(',').map(t=>t.trim());
+                    if(!tags.includes(fCat)) return;
+                }
+
                 if (fText && !`${c.id} ${c.title} ${c.cat} ${c.keywords} ${c.color}`.toLowerCase().includes(fText)) return;
 
                 const el = document.createElement('div');
