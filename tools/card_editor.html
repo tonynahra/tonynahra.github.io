@@ -12,6 +12,16 @@
         .tool-group { display: flex; gap: 10px; align-items: center; border-right: 1px solid #eee; padding-right: 20px; }
         .tool-group:last-child { border: none; margin-left: auto; }
         
+        /* Filter Container with Clear Button */
+        .filter-input-wrapper { position: relative; width: 150px; }
+        #filter-text { width: 100%; padding-right: 25px; } /* Space for X */
+        #filter-clear {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; color: #999; font-weight: bold; font-size: 16px;
+            display: none; user-select: none;
+        }
+        #filter-clear:hover { color: #e74c3c; }
+
         /* Main Grid */
         #main { flex: 1; padding: 40px; overflow-y: auto; }
         #card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
@@ -24,6 +34,7 @@
             cursor: grab; /* Drag Cursor */
             transition: transform 0.1s, box-shadow 0.1s; position: relative;
             display: flex; flex-direction: column;
+            user-select: none; /* Prevent text selection during rapid clicking */
         }
         .editor-card:active { cursor: grabbing; }
         .editor-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
@@ -126,7 +137,11 @@
         <!-- Filters -->
         <div class="tool-group">
             <label style="margin:0;">Filter:</label>
-            <input type="text" id="filter-text" placeholder="ID, Title, Keyword..." onkeyup="renderGrid()" style="width:150px;">
+            <div class="filter-input-wrapper">
+                <input type="text" id="filter-text" placeholder="ID, Title, Keyword..." onkeyup="handleFilterInput()">
+                <span id="filter-clear" onclick="clearFilter()" title="Clear Filter">×</span>
+            </div>
+            
             <select id="filter-type" onchange="renderGrid()" style="width:120px;">
                 <option value="all">All Types</option>
                 <option value="image">Image</option>
@@ -264,9 +279,6 @@
             // Proxy configuration
             const proxyBase = "https://mediamaze.com/p/?";
             const encodedTarget = encodeURIComponent(targetUrl);
-            const fullUrl = proxyBase + targetUrl; // The user's specific proxy seems to append unencoded based on prompt, but standard is encode. 
-            // Note: The prompt example showed https%3A%2F%2F... which is encoded. 
-            // Let's rely on standard logic:
             const fetchUrl = proxyBase + encodedTarget;
 
             statusMsg.style.display = 'block';
@@ -346,6 +358,26 @@
             });
         }
 
+        // --- FILTERING ---
+        function handleFilterInput() {
+            const input = document.getElementById('filter-text');
+            const clearBtn = document.getElementById('filter-clear');
+            
+            if (input.value.length > 0) {
+                clearBtn.style.display = 'block';
+            } else {
+                clearBtn.style.display = 'none';
+            }
+            renderGrid();
+        }
+
+        function clearFilter() {
+            const input = document.getElementById('filter-text');
+            input.value = '';
+            document.getElementById('filter-clear').style.display = 'none';
+            renderGrid();
+        }
+
         // --- RENDERING & DRAG DROP ---
         function renderGrid() {
             const grid = document.getElementById('card-grid');
@@ -382,7 +414,12 @@
                       </div>`;
                 
                 el.innerHTML = h;
+                
+                // UPDATED: Single Click Selects Only
                 el.onclick = (e) => handleSelect(e, i);
+                
+                // UPDATED: Double Click Edits
+                el.ondblclick = (e) => openEdit(i);
                 
                 // Drag Events
                 el.addEventListener('dragstart', handleDragStart);
@@ -429,12 +466,13 @@
         // --- INTERACTIONS ---
         function handleSelect(e, i) {
             if (e.ctrlKey || e.metaKey) {
+                // Toggle Select
                 if (selectedIds.has(i)) selectedIds.delete(i);
                 else selectedIds.add(i);
             } else {
+                // Exclusive Select (No edit popup!)
                 selectedIds.clear();
                 selectedIds.add(i);
-                openEdit(i);
             }
             renderGrid();
         }
@@ -636,6 +674,7 @@
                 if(seen.has(c.id)) {
                     // DUPLICATE FOUND: Filter the view
                     document.getElementById('filter-text').value = c.id;
+                    handleFilterInput(); // Trigger X button appearance
                     renderGrid();
                     return "Error: Duplicate ID found: " + c.id + "\n\nFilter applied to show duplicates.";
                 }
