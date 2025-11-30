@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PGN Auto-Format Converter (Line Break Fix)</title>
+    <title>PGN Auto-Format Converter (Final Fix)</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -68,8 +68,8 @@
 <body>
 
 <div class="container">
-    <h1>PGN Auto-Format Converter (Line Break Fix) ♟️</h1>
-    <p>This version ensures moves are in a single line, and extracts evaluations from variations to attach them to the main moves.</p>
+    <h1>PGN Auto-Format Converter (Final Fix) ♟️</h1>
+    <p>This version ensures moves are in a single line, extracts evaluations from variations, and uses the exact `Annotated.pgn` formatting for max compatibility: `{ [%eval 0.10] }`.</p>
 
     <div class="controls">
         <input type="file" id="pgnFile" accept=".pgn" title="Select a PGN file to load">
@@ -113,7 +113,8 @@
         let result = '';
 
         if (match) {
-            const index = match.index + match[0].lastIndexOf('\n\n') + 2; // Find the start of the movetext
+            // Calculate the start index of the movetext (after the blank line)
+            const index = match.index + match[0].lastIndexOf('\n\n') + 2; 
             headers = inputPGN.substring(0, index).trim();
             movetext = inputPGN.substring(index).trim();
             
@@ -126,7 +127,6 @@
         }
         
         // 2. Remove all line breaks and carriage returns from the movetext
-        // This is the specific change requested.
         let singleLineMovetext = movetext.replace(/[\r\n]/g, ' ');
         
         // Remove redundant spaces caused by line breaks
@@ -134,22 +134,19 @@
 
         // 3. Evaluation Tag Correction (Move Evaluation from Variations to Main Line)
         
-        // A. Simple replacement for any existing tags that are already correct but might have weird spacing.
-        singleLineMovetext = singleLineMovetext.replace(/\{\s*\[%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}/g, '{ [%eval $1] }');
+        // A. FINAL FIX: Standardize all evaluation tags, removing spaces inside the brackets 
+        // but ensuring the structure is { [%eval SCORE] }.
+        // This regex looks for any [%eval...] structure with optional content/depth 
+        // and standardizes it to the working format.
+        singleLineMovetext = singleLineMovetext.replace(/\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)[^\]]*\]\s*\}/g, '{ [%eval $1] }');
 
         // B. The CRUCIAL FIX: Find a move followed by a variation containing an evaluation,
         // extract the evaluation, and attach it to the move before the variation.
-        // This assumes the evaluation in the first variation is the intended move evaluation.
-        // Group 1: The move number (e.g., '1.').
-        // Group 2: The actual move (e.g., 'e5', 'Nf6', includes NAGs like '!!').
-        // Group 3: The variation block containing the evaluation.
-        // Group 4: The captured evaluation score (e.g., '0.25').
         const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*).)*?\[%eval\s*([\+\-]?[\d\.]+)\s*\].*?\))\s*/g;
 
         let fixedMovetext = singleLineMovetext.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
-            // Reconstruct the move, adding the evaluation tag as a comment on the main line move.
-            // Then, keep the full variation text.
-            let prefix = moveNum ? moveNum : ''; // 1. or empty
+            // Reconstruct the move, adding the evaluation tag in the required format: { [%eval SCORE] }
+            let prefix = moveNum ? moveNum : ''; 
             return `${prefix}${moveSAN} { [%eval ${score}] } ${variationText} `;
         });
 
@@ -167,8 +164,13 @@
         // Final cleanup for double spaces and leading/trailing spaces
         convertedPGN = convertedPGN.replace(/\s+/g, ' ').trim();
         
-        // Reformat headers for display/download
-        convertedPGN = convertedPGN.replace(/\[/g, '\n[').trim();
+        // Reformat headers with newlines only for display/download
+        convertedPGN = convertedPGN.replace(/\]\s*\[/g, ']\n[').trim();
+
+        // Add the mandatory final blank line after headers
+        if (convertedPGN.indexOf(']') > -1 && convertedPGN.indexOf('1.') > -1) {
+            convertedPGN = convertedPGN.replace(/\]\n?\[Event/, ']\n\n[Event');
+        }
 
 
         outputTextarea.value = convertedPGN;
@@ -218,13 +220,12 @@
             return;
         }
 
-        // Convert newlines in the output text to ensure proper file formatting,
-        // but only outside the movetext where they are needed (i.e., between headers).
-        // Since we removed all newlines, we add one back between the closing header bracket and the next one.
-        const cleanedText = text.replace(/\]\s*\[/g, ']\n[').replace(/\]\s*1\./, ']\n\n1.');
+        // Prepare text for download, ensuring proper blank line separation
+        let finalDownloadText = text.replace(/\]\n?\[/g, ']\r\n[');
+        finalDownloadText = finalDownloadText.replace(/\]\r\n\r\n\[/g, ']\r\n['); // Fix accidental double blank lines
+        finalDownloadText = finalDownloadText.replace(/\]\s*1\./, ']\r\n\r\n1.'); // Ensure blank line between headers and movetext
 
-
-        const blob = new Blob([cleanedText], { type: 'text/plain;charset=utf-8' });
+        const blob = new Blob([finalDownloadText], { type: 'text/plain;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = filename;
