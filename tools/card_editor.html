@@ -8,13 +8,21 @@
         body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); color: var(--text); }
         
         /* Toolbar */
-        #toolbar { background: white; padding: 15px 30px; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; flex-wrap: wrap; }
+        #toolbar { background: white; padding: 15px 30px; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; flex-wrap: wrap; height: 50px; }
         .tool-group { display: flex; gap: 10px; align-items: center; border-right: 1px solid #eee; padding-right: 20px; }
         .tool-group:last-child { border: none; margin-left: auto; }
         
+        /* Source Indicator (Toolbar) */
+        #source-indicator { display: none; align-items: center; gap: 10px; }
+        #current-source-name { 
+            background: #f0f2f5; border: 1px solid #ddd; padding: 8px 12px; 
+            border-radius: 4px; font-weight: bold; color: #555; font-family: monospace; 
+            min-width: 150px; text-align: center; cursor: default;
+        }
+
         /* Filter Container with Clear Button */
         .filter-input-wrapper { position: relative; width: 150px; }
-        #filter-text { width: 100%; padding-right: 25px; } /* Space for X */
+        #filter-text { width: 100%; padding-right: 25px; } 
         #filter-clear {
             position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
             cursor: pointer; color: #999; font-weight: bold; font-size: 16px;
@@ -23,42 +31,48 @@
         #filter-clear:hover { color: #e74c3c; }
 
         /* Main Grid */
-        #main { flex: 1; padding: 40px; overflow-y: auto; }
-        #card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+        #main { flex: 1; padding: 40px; overflow-y: auto; position: relative; }
+        #card-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
         
+        /* LANDING PAGE (Start Screen) */
+        #landing-page {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; color: #555; text-align: center;
+        }
+        .landing-options { display: flex; gap: 40px; margin-top: 30px; }
+        .landing-card {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 300px;
+            border: 1px solid #eee; transition: transform 0.2s;
+        }
+        .landing-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .landing-card h3 { margin-top: 0; color: var(--primary); }
+        .landing-card p { font-size: 13px; color: #777; margin-bottom: 20px; line-height: 1.5; }
+        .or-divider { align-self: center; font-weight: bold; color: #ccc; font-size: 18px; }
+
         /* Cards */
         .editor-card { 
             background: white; border-radius: 8px; padding: 20px; 
             border-left: 6px solid #ccc; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            cursor: grab; /* Drag Cursor */
+            cursor: grab; 
             transition: transform 0.1s, box-shadow 0.1s; position: relative;
             display: flex; flex-direction: column;
-            user-select: none; /* Prevent text selection during rapid clicking */
+            user-select: none; 
         }
         .editor-card:active { cursor: grabbing; }
         .editor-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
         
-        /* DRAGGING STATE */
-        .editor-card.dragging {
-            opacity: 0.5;
-            border: 2px dashed var(--primary);
-            background: #eef;
-        }
+        .editor-card.dragging { opacity: 0.5; border: 2px dashed var(--primary); background: #eef; }
 
-        /* High Visibility Selection */
         .editor-card.selected { 
-            outline: 6px solid var(--primary); 
-            outline-offset: -2px; 
-            background: #ebf5fb;
-            box-shadow: 0 0 15px rgba(41, 128, 185, 0.5); 
-            z-index: 5;
+            outline: 6px solid var(--primary); outline-offset: -2px; 
+            background: #ebf5fb; box-shadow: 0 0 15px rgba(41, 128, 185, 0.5); z-index: 5;
         }
         
         .editor-card h3 { margin: 0 0 10px 0; font-size: 18px; pointer-events: none; }
         .editor-card p { font-size: 13px; color: #666; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 15px; pointer-events: none; }
         .card-id-display { font-family: monospace; font-size: 11px; color: #95a5a6; margin-bottom: 5px; display: block; font-weight: bold; pointer-events: none; }
-
         .card-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid #eee; }
         
         /* Badges */
@@ -66,11 +80,8 @@
         .badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; background: #eee; font-weight: 600; text-transform: uppercase; }
         .badge.type { background: #d5f5e3; color: #196f3d; }
         
-        /* Dialogs - WIDER for Desktop */
-        dialog { 
-            border: none; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
-            padding: 0; width: 800px; max-width: 95vw; 
-        }
+        /* Dialogs */
+        dialog { border: none; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); padding: 0; width: 800px; max-width: 95vw; }
         dialog::backdrop { background: rgba(0,0,0,0.5); }
         .dialog-header { padding: 15px 25px; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; }
         .dialog-header h3 { margin: 0; font-size: 20px; }
@@ -98,9 +109,8 @@
         .btn-danger { background: var(--accent); color: white; }
         .btn-secondary { background: #95a5a6; color: white; }
         .btn-success { background: #27ae60; color: white; }
-        .btn-file { background: #34495e; color: white; }
+        .btn-file { background: #34495e; color: white; width: 100%; }
         
-        /* Small test button */
         .btn-test { padding: 5px 10px; font-size: 12px; background: #bdc3c7; color: #333; border-radius: 4px; }
         .btn-test:hover { background: #95a5a6; color: white; }
 
@@ -111,81 +121,97 @@
         .color-dd-list { position: absolute; top: 100%; left: 0; right: 0; max-height: 300px; overflow-y: auto; background: white; border: 1px solid #ccc; border-radius: 4px; z-index: 100; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .color-dd-list.open { display: block; }
         .color-dd-item { padding: 12px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
-        .color-dd-item:hover { filter: brightness(0.95); }
         .color-dd-item span { margin-left: auto; font-family: monospace; font-size: 13px; font-weight: bold; }
 
         .hidden { display: none !important; }
-        /* Hidden file input */
         #file-input { display: none; }
     </style>
 </head>
 <body>
 
     <div id="toolbar">
-        <!-- Remote URL Loader -->
-        <div class="tool-group">
-            <input type="text" id="remote-url-input" value="https://tonynahra.github.io/posts.html" placeholder="https://..." style="width: 250px;">
-            <button class="btn-secondary" onclick="loadRemoteUrl()">🌐 Load URL</button>
+        <!-- Source Indicator (Hidden Initially) -->
+        <div id="source-indicator" class="tool-group">
+            <span style="font-size:12px; color:#999; font-weight:bold;">SOURCE:</span>
+            <span id="current-source-name">None</span>
+            <button class="btn-secondary" onclick="resetSource()" style="padding: 5px 15px; font-size:12px;">Change Source</button>
         </div>
 
-        <!-- Local File Loading -->
-        <div class="tool-group">
-            <input type="file" id="file-input" accept=".html" onchange="loadFile(this)">
-            <button class="btn-file" onclick="document.getElementById('file-input').click()">📂 Open File</button>
-        </div>
+        <!-- Filters (Hidden Initially) -->
+        <div id="toolbar-controls" style="display:none; flex:1; align-items:center; gap:20px;">
+            <div class="tool-group">
+                <label style="margin:0;">Filter:</label>
+                <div class="filter-input-wrapper">
+                    <input type="text" id="filter-text" placeholder="ID, Title, Keyword..." onkeyup="handleFilterInput()">
+                    <span id="filter-clear" onclick="clearFilter()" title="Clear Filter">×</span>
+                </div>
+                
+                <select id="filter-category" onchange="renderGrid()" style="width:120px;">
+                    <option value="all">All Cats</option>
+                </select>
 
-        <!-- Filters -->
-        <div class="tool-group">
-            <label style="margin:0;">Filter:</label>
-            <div class="filter-input-wrapper">
-                <input type="text" id="filter-text" placeholder="ID, Title, Keyword..." onkeyup="handleFilterInput()">
-                <span id="filter-clear" onclick="clearFilter()" title="Clear Filter">×</span>
+                <select id="filter-type" onchange="renderGrid()" style="width:120px;">
+                    <option value="all">All Types</option>
+                    <option value="image">Image</option>
+                    <option value="iframe">Iframe</option>
+                    <option value="markdown">Markdown</option>
+                    <option value="chess">Chess</option>
+                    <option value="tutorial">Tutorial</option>
+                    <option value="research">Research</option>
+                    <option value="chart">Chart</option>
+                </select>
             </div>
-            
-            <!-- Category Filter -->
-            <select id="filter-category" onchange="renderGrid()" style="width:120px;">
-                <option value="all">All Cats</option>
-            </select>
 
-            <select id="filter-type" onchange="renderGrid()" style="width:120px;">
-                <option value="all">All Types</option>
-                <option value="image">Image</option>
-                <option value="iframe">Iframe</option>
-                <option value="markdown">Markdown</option>
-                <option value="chess">Chess</option>
-                <option value="tutorial">Tutorial</option>
-                <option value="research">Research</option>
-                <option value="chart">Chart</option>
-            </select>
-        </div>
+            <div class="tool-group">
+                <button class="btn-secondary" onclick="selectAllVisible()">Select All</button>
+                <button class="btn-secondary" onclick="deselectAll()">None</button>
+                <span id="sel-count" style="font-size:14px; color:#7f8c8d; font-weight:bold;">0 selected</span>
+            </div>
 
-        <!-- Selection -->
-        <div class="tool-group">
-            <button class="btn-secondary" onclick="selectAllVisible()">Select All</button>
-            <button class="btn-secondary" onclick="deselectAll()">None</button>
-            <span id="sel-count" style="font-size:14px; color:#7f8c8d; font-weight:bold;">0 selected</span>
-        </div>
+            <div class="tool-group">
+                <button class="btn-primary" onclick="addNewCard()">+ New</button>
+                <button class="btn-danger" id="btn-delete" onclick="deleteSelected()" style="display:none;">Delete</button>
+                <button class="btn-primary" id="btn-bulk" onclick="openBulkEdit()" style="display:none;">Edit Selected</button>
+            </div>
 
-        <!-- Actions -->
-        <div class="tool-group">
-            <button class="btn-primary" onclick="addNewCard()">+ New</button>
-            <button class="btn-danger" id="btn-delete" onclick="deleteSelected()" style="display:none;">Delete</button>
-            <button class="btn-primary" id="btn-bulk" onclick="openBulkEdit()" style="display:none;">Edit Selected</button>
-        </div>
-
-        <!-- Download -->
-        <div class="tool-group">
-            <button class="btn-success" onclick="generateDownload()">Download HTML</button>
+            <div class="tool-group" style="margin-left:auto;">
+                <button class="btn-success" onclick="generateDownload()">Download HTML</button>
+            </div>
         </div>
     </div>
 
     <div id="main">
-        <div id="card-grid"></div>
-        <div id="empty-state" style="text-align:center; color:#999; margin-top:50px;">
-            <h2>No cards loaded</h2>
-            <p>Enter a URL above or open a local file.</p>
+        <!-- START SCREEN / LANDING PAGE -->
+        <div id="landing-page">
+            <h1 style="color:var(--text); margin-bottom:10px;">Card Visual Editor</h1>
+            <p style="margin-top:0;">Select a source to begin editing</p>
+            
+            <div class="landing-options">
+                <!-- Option 1: Local File -->
+                <div class="landing-card">
+                    <div style="font-size:40px; margin-bottom:10px;">📂</div>
+                    <h3>Local File</h3>
+                    <p>Open a previously downloaded <b>.html</b> file from your computer to continue editing.</p>
+                    <input type="file" id="file-input" accept=".html" onchange="loadFile(this)">
+                    <button class="btn-file" onclick="document.getElementById('file-input').click()">Open File</button>
+                </div>
+
+                <div class="or-divider">OR</div>
+
+                <!-- Option 2: Remote URL -->
+                <div class="landing-card">
+                    <div style="font-size:40px; margin-bottom:10px;">🌐</div>
+                    <h3>Remote URL</h3>
+                    <p>Load content directly from a live website URL via proxy.</p>
+                    <input type="text" id="landing-url-input" value="https://tonynahra.github.io/posts.html" placeholder="https://..." style="width:100%; padding:8px; box-sizing:border-box; margin-bottom:10px; border:1px solid #ddd; border-radius:4px;">
+                    <button class="btn-secondary" style="width:100%;" onclick="loadLandingUrl()">Load URL</button>
+                </div>
+            </div>
+            <p id="landing-status" style="color:#2980b9; font-weight:bold; margin-top:20px; display:none;">Loading...</p>
         </div>
-        <p id="status-msg" style="text-align:center; color:#2980b9; font-weight:bold; display:none;">Loading...</p>
+
+        <!-- EDITOR GRID -->
+        <div id="card-grid"></div>
     </div>
 
     <!-- DIALOGS -->
@@ -195,7 +221,6 @@
             <button onclick="closeDialog('editor-dialog')" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
         </div>
         <div class="dialog-body">
-            
             <div style="display:flex; gap:20px; align-items: flex-end;">
                 <div style="flex: 1.5;">
                     <label>Unique ID</label>
@@ -226,7 +251,6 @@
                     </div>
                 </div>
             </div>
-
             <div>
                 <label>Title</label>
                 <input type="text" id="edit-title" style="font-size:15px; font-weight:500;">
@@ -259,36 +283,76 @@
         </div>
     </dialog>
 
+    <dialog id="url-dialog" style="width: 800px;">
+        <div class="dialog-header">
+            <h3>Edit Source URL</h3>
+            <button onclick="closeDialog('url-dialog')" style="background:none; border:none; color:white;">&times;</button>
+        </div>
+        <div class="dialog-body">
+            <label>Full URL</label>
+            <input type="text" id="url-large-input" style="font-family:monospace; padding:15px; font-size:16px;">
+        </div>
+        <div class="dialog-footer">
+            <button class="btn-secondary" onclick="closeDialog('url-dialog')">Cancel</button>
+            <button class="btn-primary" onclick="applyLargeUrl()">Load This URL</button>
+        </div>
+    </dialog>
+
     <script>
         // --- STATE ---
         let cards = [];
-        let headerHtml = ""; // Stores filter bar HTML
-        let footerHtml = ""; // Stores closing tags if needed
+        let headerHtml = ""; 
         let selectedIds = new Set();
         let knownColors = new Set(['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#34495e', '#ecf0f1', '#95a5a6']);
         let editingIndices = [];
         let tempColor = '';
         let dragSrcEl = null;
 
-        // --- REMOTE URL LOADING ---
-        async function loadRemoteUrl() {
-            const urlInput = document.getElementById('remote-url-input');
+        // --- APP STATE MANAGEMENT ---
+        function activateEditor(sourceName) {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('card-grid').style.display = 'grid';
+            
+            // Show Toolbar Controls
+            document.getElementById('source-indicator').style.display = 'flex';
+            document.getElementById('toolbar-controls').style.display = 'flex';
+            
+            // Set Source Name
+            document.getElementById('current-source-name').innerText = sourceName;
+            
+            renderGrid();
+        }
+
+        function resetSource() {
+            if(!confirm("Are you sure? Unsaved changes will be lost.")) return;
+            
+            // Reset Data
+            cards = [];
+            selectedIds.clear();
+            
+            // Reset UI
+            document.getElementById('landing-page').style.display = 'flex';
+            document.getElementById('card-grid').style.display = 'none';
+            document.getElementById('source-indicator').style.display = 'none';
+            document.getElementById('toolbar-controls').style.display = 'none';
+            document.getElementById('landing-status').style.display = 'none';
+            document.getElementById('file-input').value = ''; // Reset file input
+        }
+
+        // --- LOADING ---
+        async function loadLandingUrl() {
+            const urlInput = document.getElementById('landing-url-input');
             const targetUrl = urlInput.value.trim();
-            const statusMsg = document.getElementById('status-msg');
+            const statusMsg = document.getElementById('landing-status');
 
-            if (!targetUrl) {
-                alert("Please enter a URL.");
-                return;
-            }
+            if (!targetUrl) { alert("Please enter a URL."); return; }
 
-            // Proxy configuration
             const proxyBase = "https://mediamaze.com/p/?";
             const encodedTarget = encodeURIComponent(targetUrl);
             const fetchUrl = proxyBase + encodedTarget;
 
             statusMsg.style.display = 'block';
-            statusMsg.innerText = "Fetching via Proxy...";
-            document.getElementById('empty-state').style.display = 'none';
+            statusMsg.innerText = "Fetching...";
 
             try {
                 const response = await fetch(fetchUrl);
@@ -296,16 +360,20 @@
                 const text = await response.text();
                 
                 parseHTML(text);
-                renderGrid();
-                statusMsg.style.display = 'none';
+                
+                // Extract filename from URL for display
+                let filename = targetUrl.substring(targetUrl.lastIndexOf('/')+1);
+                if(filename.includes('?')) filename = filename.substring(0, filename.indexOf('?'));
+                if(!filename) filename = "Remote URL";
+                
+                activateEditor(filename);
             } catch (error) {
-                console.error("Fetch error:", error);
-                statusMsg.innerText = "Error loading URL. Check console or CORS.";
+                console.error(error);
+                statusMsg.innerText = "Error loading URL. Check console.";
                 statusMsg.style.color = "red";
             }
         }
 
-        // --- LOCAL FILE LOADING ---
         function loadFile(input) {
             const file = input.files[0];
             if (!file) return;
@@ -315,8 +383,9 @@
                 const content = e.target.result;
                 if(content) {
                     parseHTML(content);
-                    document.getElementById('empty-state').style.display = 'none';
-                    renderGrid();
+                    // Remove extension for display
+                    const name = file.name.replace(/\.[^/.]+$/, "");
+                    activateEditor(name);
                 }
             };
             reader.readAsText(file);
@@ -326,27 +395,13 @@
         function parseHTML(html) {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-            
-            // Extract Header (Filter Bar)
             const header = doc.querySelector('.filter-bar');
-            if (header) {
-                headerHtml = header.outerHTML;
-            } else {
-                headerHtml = `<div class="filter-bar">
-                    <h2>Recent Technical Posts</h2>
-                    <div class="filter-controls">
-                        <div class="search-wrapper"><input type="search" id="post-search-box" placeholder="Filter by title/desc..."></div>
-                        <div class="category-wrapper"><select id="post-category-filter"><option value="all">All Categories</option></select></div>
-                        <div class="keyword-wrapper"><select id="post-keyword-filter"><option value="all">Top Keywords</option></select></div>
-                    </div>
-                </div>`;
-            }
+            if (header) headerHtml = header.outerHTML;
+            else headerHtml = `<div class="filter-bar"><h2>Recent Technical Posts</h2></div>`; // Simplified default
             
-            // Extract Cards
             cards = Array.from(doc.querySelectorAll('.card-item')).map((node, i) => {
                 const color = rgb2hex(node.style.borderLeftColor || '#cccccc');
                 knownColors.add(color);
-                
                 return {
                     id: node.id || generateTimestampID() + i, 
                     title: node.querySelector('h3')?.innerHTML || 'Untitled',
@@ -358,15 +413,13 @@
                     linkHref: node.querySelector('a')?.getAttribute('href') || '#',
                     linkText: node.querySelector('a')?.innerText || 'View', 
                     loadType: node.querySelector('a')?.dataset.loadType || node.dataset.loadType || '',
-                    fullAttrs: getAttrs(node) // Store extra attributes if needed
+                    fullAttrs: getAttrs(node)
                 };
             });
-
-            // Populate Category Filter
             populateCategoryFilter();
         }
 
-        // --- FILTERING ---
+        // --- LOGIC ---
         function populateCategoryFilter() {
             const select = document.getElementById('filter-category');
             select.innerHTML = '<option value="all">All Cats</option>';
@@ -385,24 +438,15 @@
 
         function handleFilterInput() {
             const input = document.getElementById('filter-text');
-            const clearBtn = document.getElementById('filter-clear');
-            
-            if (input.value.length > 0) {
-                clearBtn.style.display = 'block';
-            } else {
-                clearBtn.style.display = 'none';
-            }
+            document.getElementById('filter-clear').style.display = input.value.length > 0 ? 'block' : 'none';
             renderGrid();
         }
-
         function clearFilter() {
-            const input = document.getElementById('filter-text');
-            input.value = '';
+            document.getElementById('filter-text').value = '';
             document.getElementById('filter-clear').style.display = 'none';
             renderGrid();
         }
 
-        // --- RENDERING & DRAG DROP ---
         function renderGrid() {
             const grid = document.getElementById('card-grid');
             grid.innerHTML = '';
@@ -412,15 +456,11 @@
             const fCat = document.getElementById('filter-category').value;
 
             cards.forEach((c, i) => {
-                // Filters (Now includes c.id in search)
                 if (fType !== 'all' && c.loadType !== fType) return;
-                
-                // Category Filter
                 if (fCat !== 'all') {
                     const tags = c.cat.split(',').map(t=>t.trim());
                     if(!tags.includes(fCat)) return;
                 }
-
                 if (fText && !`${c.id} ${c.title} ${c.cat} ${c.keywords} ${c.color}`.toLowerCase().includes(fText)) return;
 
                 const el = document.createElement('div');
@@ -438,33 +478,24 @@
                 });
                 h += `</div>`;
                 h += `<h3>${c.title}</h3><p>${c.desc}</p>`;
-                
-                // Footer
                 h += `<div class="card-footer">
                         <span style="font-size:11px; color:#999;">${c.linkText}</span>
                         <button class="btn-test" onclick="openLink(event, '${c.linkHref}')">⧉ Test Link</button>
                       </div>`;
                 
                 el.innerHTML = h;
-                
-                // UPDATED: Single Click Selects Only
                 el.onclick = (e) => handleSelect(e, i);
-                
-                // UPDATED: Double Click Edits
                 el.ondblclick = (e) => openEdit(i);
-                
-                // Drag Events
                 el.addEventListener('dragstart', handleDragStart);
                 el.addEventListener('dragover', handleDragOver);
                 el.addEventListener('drop', handleDrop);
                 el.addEventListener('dragend', handleDragEnd);
-
                 grid.appendChild(el);
             });
             updateUI();
         }
 
-        // --- DRAG LOGIC ---
+        // --- DRAG ---
         function handleDragStart(e) {
             dragSrcEl = this;
             e.dataTransfer.effectAllowed = 'move';
@@ -481,34 +512,26 @@
             if (dragSrcEl !== this) {
                 const srcIdx = parseInt(dragSrcEl.getAttribute('data-index'));
                 const targetIdx = parseInt(this.getAttribute('data-index'));
-                
-                // Move item in data array
                 const item = cards[srcIdx];
                 cards.splice(srcIdx, 1);
                 cards.splice(targetIdx, 0, item);
-                
                 renderGrid();
             }
             return false;
         }
-        function handleDragEnd(e) {
-            this.classList.remove('dragging');
-        }
+        function handleDragEnd(e) { this.classList.remove('dragging'); }
 
-        // --- INTERACTIONS ---
+        // --- INTERACTION ---
         function handleSelect(e, i) {
             if (e.ctrlKey || e.metaKey) {
-                // Toggle Select
                 if (selectedIds.has(i)) selectedIds.delete(i);
                 else selectedIds.add(i);
             } else {
-                // Exclusive Select (No edit popup!)
                 selectedIds.clear();
                 selectedIds.add(i);
             }
             renderGrid();
         }
-
         function selectAllVisible() {
             const fText = document.getElementById('filter-text').value.toLowerCase();
             const fType = document.getElementById('filter-type').value;
@@ -532,23 +555,18 @@
             editingIndices = Array.from(selectedIds);
             fillDialog('(Mixed)', '(Multiple)', '(Multiple)', '', '', '', '', '', true);
         }
-
         function fillDialog(id, title, desc, cat, color, type, href, txt, isBulk) {
             const d = document.getElementById('editor-dialog');
             document.getElementById('dialog-title').innerText = isBulk ? `Bulk Edit (${editingIndices.length} cards)` : 'Edit Card';
-            
             const idInput = document.getElementById('edit-id');
             idInput.value = id;
             idInput.disabled = isBulk;
-            
             document.getElementById('edit-title').value = title;
             document.getElementById('edit-desc').value = desc;
             document.getElementById('edit-load-type').value = type;
             document.getElementById('edit-link-href').value = href;
             document.getElementById('edit-link-text').value = txt;
-            
             renderCategoryCheckboxes(cat); 
-            
             const dlLink = document.getElementById('link-text-options');
             dlLink.innerHTML = '';
             new Set(cards.map(c => c.linkText)).forEach(txt => {
@@ -556,30 +574,22 @@
                 opt.value = txt;
                 dlLink.appendChild(opt);
             });
-
             tempColor = color || '#cccccc';
             updateColorTrigger(tempColor, isBulk);
             buildColorList();
-            
             d.showModal();
         }
-
         function renderCategoryCheckboxes(currentCatStr) {
             const allTags = new Set();
             cards.forEach(c => {
-                if(c.cat) c.cat.split(',').forEach(t => {
-                    const clean = t.trim();
-                    if(clean) allTags.add(clean);
-                });
+                if(c.cat) c.cat.split(',').forEach(t => { const clean = t.trim(); if(clean) allTags.add(clean); });
             });
             const currentTags = new Set();
             if(currentCatStr && currentCatStr !== '(Mixed)') {
                 currentCatStr.split(',').forEach(t => currentTags.add(t.trim()));
             }
-
             const container = document.getElementById('cat-checkbox-grid');
             container.innerHTML = '';
-            
             Array.from(allTags).sort().forEach(tag => {
                 const label = document.createElement('label');
                 label.className = 'cat-checkbox-item';
@@ -593,12 +603,10 @@
             });
             document.getElementById('edit-cat-custom').value = '';
         }
-
         function saveDialogChanges() {
             const idInput = document.getElementById('edit-id');
             let id = idInput.value.trim();
             if(id === '') id = generateTimestampID();
-            
             const title = document.getElementById('edit-title').value;
             const desc = document.getElementById('edit-desc').value;
             const type = document.getElementById('edit-load-type').value;
@@ -606,29 +614,24 @@
             const href = document.getElementById('edit-link-href').value;
             const txt = document.getElementById('edit-link-text').value;
             const isBulk = editingIndices.length > 1;
-
             const checkedBoxes = Array.from(document.querySelectorAll('#cat-checkbox-grid input:checked')).map(cb => cb.value);
             const customText = document.getElementById('edit-cat-custom').value;
             let customTags = [];
             if(customText.trim()) customTags = customText.split(',').map(t => t.trim()).filter(t => t);
             const finalCatString = Array.from(new Set([...checkedBoxes, ...customTags])).join(', ');
-
             editingIndices.forEach(i => {
                 if(!isBulk) cards[i].id = id;
                 if(!isBulk || title !== '(Multiple)') cards[i].title = title;
                 if(!isBulk || desc !== '(Multiple)') cards[i].desc = desc;
-                if(finalCatString !== '') cards[i].cat = finalCatString; 
-                else if(!isBulk) cards[i].cat = '';
+                if(finalCatString !== '') cards[i].cat = finalCatString; else if(!isBulk) cards[i].cat = '';
                 if(type) cards[i].loadType = type;
                 if(color && color !== '(Multiple)') cards[i].color = color;
                 if(!isBulk || href) cards[i].linkHref = href;
                 if(!isBulk || txt) cards[i].linkText = txt;
             });
-            
             document.getElementById('editor-dialog').close();
             renderGrid();
         }
-
         function addNewCard() {
             cards.unshift({
                 id: generateTimestampID(), 
@@ -639,46 +642,33 @@
             renderGrid();
             openEdit(0);
         }
-
         function deleteSelected() {
             if(!confirm("Delete selected cards?")) return;
             cards = cards.filter((_, i) => !selectedIds.has(i));
             selectedIds.clear();
             renderGrid();
         }
-
-        // --- EXPORT ---
         function generateHTML() {
             let html = '<section class="posts-page card-list-page">\n';
             html += `    ${headerHtml}\n`;
             html += '    <div id="posts-card-list" class="card-list">\n';
-            
             cards.forEach(c => {
                 const imgTag = c.imgSrc ? `<img src="${c.imgSrc}" class="card-image" alt="Img">` : '';
                 let dataAttrs = `id="${c.id}" class="card-item" data-category="${c.cat}" style="border-left-color: ${c.color};"`;
                 if(c.keywords) dataAttrs += ` data-keywords="${c.keywords}"`;
                 if(c.loadType) dataAttrs += ` data-load-type="${c.loadType}"`;
-
                 let linkAttrs = `href="${c.linkHref}"`;
                 if(c.loadType) linkAttrs += ` data-load-type="${c.loadType}"`;
                 if(['iframe','tutorial'].includes(c.loadType)) linkAttrs += ` class="content-loader-link"`;
-
                 html += `<div ${dataAttrs}>\n    ${imgTag}\n    <h3>${c.title}</h3>\n    <p>${c.desc}</p>\n    <span class="card-category">${c.cat}</span>\n`;
                 html += `    <a ${linkAttrs}>${c.linkText}</a>\n</div>\n\n`;
             });
-            
             html += '    </div>\n    <p id="posts-no-results" class="error-message" style="display: none;">No posts match your filter.</p>\n</section>';
             return html;
         }
-
         function generateDownload() {
             const valid = validateUniqueIDs();
-            if (valid !== true) { 
-                alert(valid); // Alert user
-                // Filter is automatically applied by validateUniqueIDs if duplicate found
-                return; 
-            }
-
+            if (valid !== true) { alert(valid); return; }
             const content = generateHTML();
             const blob = new Blob([content], {type: 'text/html'});
             const a = document.createElement('a');
@@ -688,8 +678,6 @@
             a.click();
             document.body.removeChild(a);
         }
-
-        // --- UTILS ---
         function updateUI() {
             document.getElementById('sel-count').innerText = `${selectedIds.size} selected`;
             document.getElementById('btn-delete').style.display = selectedIds.size > 0 ? 'inline-block' : 'none';
@@ -698,15 +686,15 @@
         function closeDialog(id) { document.getElementById(id).close(); }
         function openLink(e, url) { e.stopPropagation(); if(url && url!='#') window.open(url,'_blank'); else alert("No URL"); }
         function testEditUrl() { const url = document.getElementById('edit-link-href').value; if(url && url!='#') window.open(url,'_blank'); else alert("Empty URL"); }
-        
+        function openUrlDialog() { document.getElementById('url-large-input').value = document.getElementById('edit-link-href').value; document.getElementById('url-dialog').showModal(); }
+        function applyLargeUrl() { document.getElementById('edit-link-href').value = document.getElementById('url-large-input').value; document.getElementById('url-dialog').close(); }
         function validateUniqueIDs() {
             const seen = new Set();
             for (let c of cards) {
                 if(!c.id) return "Error: Card found with empty ID.";
                 if(seen.has(c.id)) {
-                    // DUPLICATE FOUND: Filter the view
                     document.getElementById('filter-text').value = c.id;
-                    handleFilterInput(); // Trigger X button appearance
+                    handleFilterInput();
                     renderGrid();
                     return "Error: Duplicate ID found: " + c.id + "\n\nFilter applied to show duplicates.";
                 }
@@ -714,7 +702,6 @@
             }
             return true;
         }
-
         function generateTimestampID() {
             const now = new Date();
             const pad = n => String(n).padStart(2, '0');
@@ -731,8 +718,6 @@
             var r = parseInt(hex.substr(0,2),16), g = parseInt(hex.substr(2,2),16), b = parseInt(hex.substr(4,2),16);
             return (((r*299)+(g*587)+(b*114))/1000) >= 128 ? 'black' : 'white';
         }
-
-        // Color Logic
         function toggleColorList() { document.getElementById('color-list').classList.toggle('open'); }
         function buildColorList() {
             const list = document.getElementById('color-list');
