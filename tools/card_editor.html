@@ -8,7 +8,7 @@
         body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); color: var(--text); }
         
         /* Toolbar */
-        #toolbar { background: white; padding: 15px 30px; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; }
+        #toolbar { background: white; padding: 15px 30px; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; flex-wrap: wrap; }
         .tool-group { display: flex; gap: 10px; align-items: center; border-right: 1px solid #eee; padding-right: 20px; }
         .tool-group:last-child { border: none; margin-left: auto; }
         
@@ -111,16 +111,22 @@
 <body>
 
     <div id="toolbar">
-        <!-- File Loading -->
+        <!-- Remote URL Loader -->
+        <div class="tool-group">
+            <input type="text" id="remote-url-input" value="https://tonynahra.github.io/posts.html" placeholder="https://..." style="width: 250px;">
+            <button class="btn-secondary" onclick="loadRemoteUrl()">🌐 Load URL</button>
+        </div>
+
+        <!-- Local File Loading -->
         <div class="tool-group">
             <input type="file" id="file-input" accept=".html" onchange="loadFile(this)">
-            <button class="btn-file" onclick="document.getElementById('file-input').click()">📂 Load File</button>
+            <button class="btn-file" onclick="document.getElementById('file-input').click()">📂 Open File</button>
         </div>
 
         <!-- Filters -->
         <div class="tool-group">
             <label style="margin:0;">Filter:</label>
-            <input type="text" id="filter-text" placeholder="Keyword..." onkeyup="renderGrid()" style="width:150px;">
+            <input type="text" id="filter-text" placeholder="Keyword..." onkeyup="renderGrid()" style="width:120px;">
             <select id="filter-type" onchange="renderGrid()" style="width:120px;">
                 <option value="all">All Types</option>
                 <option value="image">Image</option>
@@ -157,8 +163,9 @@
         <div id="card-grid"></div>
         <div id="empty-state" style="text-align:center; color:#999; margin-top:50px;">
             <h2>No cards loaded</h2>
-            <p>Click "Load File" to open a previously saved HTML file.</p>
+            <p>Enter a URL above or open a local file.</p>
         </div>
+        <p id="status-msg" style="text-align:center; color:#2980b9; font-weight:bold; display:none;">Loading...</p>
     </div>
 
     <!-- DIALOGS -->
@@ -243,7 +250,45 @@
         let tempColor = '';
         let dragSrcEl = null;
 
-        // --- FILE LOADING ---
+        // --- REMOTE URL LOADING ---
+        async function loadRemoteUrl() {
+            const urlInput = document.getElementById('remote-url-input');
+            const targetUrl = urlInput.value.trim();
+            const statusMsg = document.getElementById('status-msg');
+
+            if (!targetUrl) {
+                alert("Please enter a URL.");
+                return;
+            }
+
+            // Proxy configuration
+            const proxyBase = "https://mediamaze.com/p/?";
+            const encodedTarget = encodeURIComponent(targetUrl);
+            const fullUrl = proxyBase + targetUrl; // The user's specific proxy seems to append unencoded based on prompt, but standard is encode. 
+            // Note: The prompt example showed https%3A%2F%2F... which is encoded. 
+            // Let's rely on standard logic:
+            const fetchUrl = proxyBase + encodedTarget;
+
+            statusMsg.style.display = 'block';
+            statusMsg.innerText = "Fetching via Proxy...";
+            document.getElementById('empty-state').style.display = 'none';
+
+            try {
+                const response = await fetch(fetchUrl);
+                if (!response.ok) throw new Error("Network response was not ok");
+                const text = await response.text();
+                
+                parseHTML(text);
+                renderGrid();
+                statusMsg.style.display = 'none';
+            } catch (error) {
+                console.error("Fetch error:", error);
+                statusMsg.innerText = "Error loading URL. Check console or CORS.";
+                statusMsg.style.color = "red";
+            }
+        }
+
+        // --- LOCAL FILE LOADING ---
         function loadFile(input) {
             const file = input.files[0];
             if (!file) return;
