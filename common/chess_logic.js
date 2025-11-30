@@ -1,6 +1,5 @@
 // This function is designed to be loaded dynamically
 window.startChessGame = function(loadUrl, $modal, $modalContent) {
-    // Fix GitHub CORS for raw PGN files
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
         loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
     }
@@ -25,10 +24,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             let commentsEnabled = true;
             let commentMap = {};
 
-            // --- PGN PARSER HELPER ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
-                // Remove headers to focus on moves
                 let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim();
 
                 const cleanPGN = (text) => {
@@ -42,8 +39,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     return result;
                 };
                 body = cleanPGN(body);
-
-                // Standardize formatting
                 body = body.replace(/(\r\n|\n|\r)/gm, " ");
                 body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
 
@@ -55,20 +50,16 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 for (let i = 0; i < tokens.length; i++) {
                     const token = tokens[i].trim();
                     if (!token) continue;
-
                     if (token === '{') { insideComment = true; currentComment = []; continue; }
                     if (token === '}') {
                         insideComment = false;
-                        // Map comment to previous move
                         const idx = moveIndex === 0 ? -1 : moveIndex - 1;
                         map[idx] = currentComment.join(" ");
                         continue;
                     }
-
                     if (insideComment) {
                         currentComment.push(token);
                     } else {
-                        // Skip move numbers, results, and NAGs
                         if (/^\d+\.+/.test(token)) continue;
                         if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
                         if (token.startsWith('$')) continue;
@@ -78,7 +69,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 return map;
             };
 
-            // --- CHECK FOR COMMENTARY ---
             const hasCommentary = (moveIndex) => {
                 const text = commentMap[moveIndex] || "";
                 const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
@@ -86,7 +76,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 return hasEval || cleanText.length > 0;
             };
 
-            // 3. INJECT CHESS UI HTML
             $modalContent.html(`
                 <style id="${styleId}"></style>
                 <div class="chess-container">
@@ -110,7 +99,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 </div>
             `);
 
-            // --- DYNAMIC STYLES ---
             const updateChessStyles = () => {
                 const movesId = `#${boardId}Moves`;
                 const css = `
@@ -158,14 +146,23 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     /* FULL SCREEN STYLES */
                     body.chess-fullscreen-active .modal-header { display: none !important; }
                     body.chess-fullscreen-active .chess-toolbar { display: none !important; }
-                    body.chess-fullscreen-active .modal-content { max-width: 100% !important; width: 100% !important; height: 100% !important; border-radius: 0 !important; margin: 0 !important; }
-                    body.chess-fullscreen-active .chess-container { height: 100vh !important; }
-                    body.chess-fullscreen-active .chess-main-area { height: 100vh !important; padding: 0 !important; }
+                    
+                    /* Hide Moves Panel in Full Screen */
+                    body.chess-fullscreen-active ${movesId} { display: none !important; }
+
+                    /* Maximize Board Container */
+                    body.chess-fullscreen-active .modal-content { max-width: 100% !important; width: 100% !important; height: 100% !important; border-radius: 0 !important; margin: 0 !important; padding: 0 !important; }
+                    body.chess-fullscreen-active .chess-container { height: 100vh !important; width: 100vw !important; padding: 0 !important; background: #222; display: flex; justify-content: center; align-items: center; }
+                    body.chess-fullscreen-active .chess-main-area { height: 100% !important; width: 100% !important; padding: 0 !important; display: flex; justify-content: center; align-items: center; }
+                    body.chess-fullscreen-active .chess-white-box { width: 100% !important; height: 100% !important; display: flex; justify-content: center; align-items: center; }
+                    
+                    /* Force Board to Maximize */
+                    body.chess-fullscreen-active #${boardId} { width: 95vh !important; height: 95vh !important; max-width: 100vw !important; display: flex; justify-content: center; align-items: center; }
+                    body.chess-fullscreen-active .cg-board-wrap, body.chess-fullscreen-active .board { width: 100% !important; height: 100% !important; }
                 `;
                 $(`#${styleId}`).text(css);
             };
 
-            // --- EVAL HTML GENERATOR ---
             const generateEvalHtml = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
                 let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
@@ -186,13 +183,11 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         whiteWinPct = isBlackMate ? 0 : 100;
                     } else {
                         rawVal = parseFloat(valStr);
-
                         moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
                         const absMove = Math.min(Math.abs(rawVal), 10);
                         moveWidth = (absMove / 10) * 50;
                         if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
                         else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
-
                         whiteWinPct = 50 + (rawVal * 8);
                         whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                     }
@@ -201,7 +196,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const whiteWinPctFormatted = whiteWinPct.toFixed(1);
                 const blackWinPctFormatted = (100 - whiteWinPct).toFixed(1);
 
-                // REMOVED GAME BALANCE ROW AS REQUESTED
                 const evalHtml = `
                     <div class="eval-row">
                         <div class="eval-header">
@@ -223,7 +217,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 return { html: evalHtml, text: cleanText };
             };
 
-            // --- COMMENT UPDATER ---
             const updateCommentContent = (moveIndex, totalMoves) => {
                 const overlay = document.getElementById('chess-comment-overlay');
                 const btn = $('#chess-comment-btn');
@@ -264,27 +257,21 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
             };
 
-            // --- FULL SCREEN LOGIC ---
             const toggleFullScreen = () => {
                 const $body = $('body');
                 $body.toggleClass('chess-fullscreen-active');
-                
-                // Force resize event so PGN viewer redraws board at new size
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
             };
 
-            // --- EVENT LISTENERS ---
             $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 commentsEnabled = !commentsEnabled;
                 const btn = $(this);
-
                 if (commentsEnabled) btn.text('Comments: On'); else btn.text('Comments: Off');
 
                 const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                 let activeMoveIndex = -1;
                 const movesPanel = document.getElementById(boardId + 'Moves');
-
                 if (movesPanel) {
                     const activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
                     if (activeEl) {
@@ -298,10 +285,9 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             $('#chess-fs-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 toggleFullScreen();
-                $(this).blur(); // Remove focus so arrow keys work on board
+                $(this).blur(); 
             });
             
-            // Allow 'F' key to toggle fullscreen inside chess mode
             $(document).on('keydown.chessFs', function(e) {
                 if (e.key.toLowerCase() === 'f' && $('#content-modal').hasClass('chess-mode')) {
                     toggleFullScreen();
@@ -310,7 +296,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
             $('#chess-close-btn').off('click').on('click', function(e) {
                 e.preventDefault();
-                // Trigger the main close button to handle cleanup
                 $('.modal-close-btn').first().click();
             });
 
@@ -324,7 +309,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 if (currentFontSize < 40) { applySizeChange(currentFontSize + 2); }
             });
 
-            // --- GAME RENDER ---
             const $select = $('#chess-game-select');
             rawGames.forEach((gamePgn, idx) => {
                 const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -376,7 +360,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                     updateCommentContent(-1, total);
 
-                    // Trigger resize for deep linking fix
                     setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 800);
 
                     const checkInterval = setInterval(() => {
