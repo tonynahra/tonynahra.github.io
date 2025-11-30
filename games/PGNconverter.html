@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PGN Auto-Format Converter (with Viewer)</title>
+    <title>PGN Auto-Format Converter (Final Fix)</title>
     <!-- Tailwind CSS for modern aesthetics -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chess Viewer Libraries (pgn-viewer depends on these) -->
@@ -96,6 +96,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             border-radius: 6px;
             border: 1px solid #e0e0e0;
+            min-height: 450px; /* Ensure space for viewer */
         }
         @media (max-width: 1024px) {
             .main-layout {
@@ -111,7 +112,7 @@
 
 <div class="container">
     <h1 class="text-gray-800">PGN Auto-Format Converter (with Viewer) ♟️</h1>
-    <p class="text-gray-600 mb-4">Load, convert, and verify your PGN here. The conversion logic ensures the `[%eval]` tag is correctly formatted for your custom JavaScript viewer.</p>
+    <p class="text-gray-600 mb-4">Load, convert, and verify your PGN here. The conversion logic ensures the <code>[%eval]</code> tag is correctly formatted for your custom JavaScript viewer.</p>
 
     <div class="main-layout">
         <!-- Input and Conversion Panel -->
@@ -131,14 +132,16 @@
         <!-- PGN Viewer Panel -->
         <div class="viewer-panel">
             <h2 class="text-lg font-semibold text-gray-700">3. Viewer Verification</h2>
-            <div id="pgnViewer" class="pgnvjs"></div>
+            <!-- Initial content is a loading message -->
+            <div id="pgnViewer" class="pgnvjs">
+                <p class="text-center text-gray-500 mt-8">Loading PGN Viewer...</p>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     let originalFilename = 'converted_game.pgn';
-    let pgnTextToRender = '';
 
     // --- CONVERSION FUNCTION ---
     function convertPGN() {
@@ -180,18 +183,19 @@
         // 3. Evaluation Tag Correction
 
         // A. Standardize and clean ALL evaluation tags to the working format: { [%eval SCORE] }
-        // This handles existing tags in variations, removing any non-score content (like depth or extra notes)
-        // and ensuring the exact spacing: {<space>[%eval<space>SCORE]<space>}
-        // Group 1 ($1) captures the score (e.g., '0.10' or '+1.25').
+        // This ensures the content inside braces is minimal and correctly spaced for the chess_logic.js regex.
+        // Group 1 ($1) captures the score (e.g., '0.10' or '+1.25' or '#3').
         singleLineMovetext = singleLineMovetext.replace(
-            /\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)[^\]]*\]\s*\}/g, 
-            '{ [%eval $1] }'
+            /\{\s*(\[[^\]]*%eval\s*([\+\-]?[\d\.]+|#[+-]?\d+)[^\]]*\])[^}]*?\}/g, 
+            (match, fullTag, score) => {
+                // Return the fixed, minimal format: { [%eval SCORE] }
+                return `{ [%eval ${score}] }`;
+            }
         );
         
         // B. The CRUCIAL FIX: Find a move followed by a variation containing an evaluation,
         // extract the evaluation, and attach it to the move before the variation.
-        // We use the standardized format enforced in Step A.
-        const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*).)*?\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)\s*\][^}]*?\)\s*)/g;
+        const variationRegex = /(\d+\.)?\s*([a-zA-Z0-9\#\+\=\!\?]+)\s*(\((?:(?!\d+\.|\s*1\/2-1\/2|\s*1-0|\s*0-1|\s*\*).)*?\{\s*\[\s*%eval\s*([\+\-]?[\d\.]+)\s*\]\s*\}\s*[^)]*?\))\s*/g;
 
         let fixedMovetext = singleLineMovetext.replace(variationRegex, (match, moveNum, moveSAN, variationText, score) => {
             // Reconstruct the move, adding the evaluation tag in the REQUIRED format: { [%eval SCORE] }
@@ -227,14 +231,14 @@
         downloadButton.disabled = convertedPGN.length === 0;
 
         // Render the result in the embedded viewer
-        pgnTextToRender = finalDisplayPGN;
-        renderPgnViewer(pgnTextToRender);
+        renderPgnViewer(finalDisplayPGN);
     }
 
     // --- PGN VIEWER RENDERING ---
     function renderPgnViewer(pgnContent) {
+        // If PGNV is not defined, we display the error message.
         if (typeof PGNV === 'undefined') {
-            document.getElementById('pgnViewer').innerHTML = '<p class="text-red-500">PGN Viewer Library not loaded.</p>';
+            document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) failed to load. Check CDN links.</p>';
             return;
         }
 
@@ -293,7 +297,6 @@
 
     // --- DOWNLOAD FUNCTION ---
     function downloadPGN() {
-        // Use the displayed output for download
         const text = document.getElementById('outputPGN').value;
         const filename = originalFilename;
         
@@ -317,10 +320,22 @@
         URL.revokeObjectURL(a.href);
     }
 
-    // Initial render on load
+    // Initial render setup: Wait for all resources (including CDNs) to load.
     document.addEventListener('DOMContentLoaded', () => {
-        renderPgnViewer('');
+        // Show loading message while waiting for the full load
+        document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-gray-500 mt-8">Loading PGN Viewer...</p>';
     });
+
+    window.onload = function() {
+        // Once the window and all scripts are loaded, check for PGNV
+        if (typeof PGNV !== 'undefined') {
+             // Initial render with empty PGN
+             renderPgnViewer('');
+        } else {
+             // Display clear error if PGNV is still not found after full load
+             document.getElementById('pgnViewer').innerHTML = '<p class="text-center text-red-600 font-bold mt-8">ERROR: PGN Viewer Library (pgnvjs) failed to load. Check your network or CDN links.</p>';
+        }
+    };
 </script>
 
 </body>
