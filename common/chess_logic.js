@@ -200,14 +200,17 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         moveDisplay = "Mate " + valStr;
                         moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ?
                         "#e74c3c" : "#2ecc71";
+
                         whiteWinPct = isBlackMate ? 0 : 100;
                     } else {
                         rawVal = parseFloat(valStr);
+
                         moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
                         const absMove = Math.min(Math.abs(rawVal), 10);
                         moveWidth = (absMove / 10) * 50;
                         if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
                         else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
+
                         whiteWinPct = 50 + (rawVal * 8);
                         whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                     }
@@ -305,23 +308,21 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 $(this).focus();
             });
 
+            // Key Handler (Global for FS)
+            const chessKeyHandler = function(e) {
+                if (e.key.toLowerCase() === 'c' || e.key.toLowerCase() === 'i') { $('#chess-comment-btn').click(); }
+            };
+            document.addEventListener('keydown', chessKeyHandler);
+
             $('#chess-close-btn').off('click').on('click', function(e) {
-                e.preventDefault();
+                e.preventDefault(); document.removeEventListener('keydown', chessKeyHandler);
                 if (document.fullscreenElement) document.exitFullscreen();
                 $('.modal-close-btn').first().click();
             });
 
-            $('#chess-font-minus').off('click').on('click', function(e) {
-                e.preventDefault();
-                if (currentFontSize > 14) { applySizeChange(currentFontSize - 2); }
-            });
+            $('#chess-font-minus').off('click').on('click', function(e) { e.preventDefault(); if (currentFontSize > 14) { applySizeChange(currentFontSize - 2); }});
+            $('#chess-font-plus').off('click').on('click', function(e) { e.preventDefault(); if (currentFontSize < 40) { applySizeChange(currentFontSize + 2); }});
 
-            $('#chess-font-plus').off('click').on('click', function(e) {
-                e.preventDefault();
-                if (currentFontSize < 40) { applySizeChange(currentFontSize + 2); }
-            });
-
-            // --- GAME RENDER ---
             const $select = $('#chess-game-select');
             rawGames.forEach((gamePgn, idx) => {
                 const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -332,53 +333,26 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             if (rawGames.length <= 1) $select.hide();
 
             let gameObserver = null;
-
             function renderGame(index) {
                 if (gameObserver) gameObserver.disconnect();
-
-                const selectedPgn = rawGames[index];
-                commentMap = parseCommentsMap(selectedPgn);
-
-                const headers = {};
-                const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
-                let match;
-                while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
-
-                let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
-                for (const [key, val] of Object.entries(headers)) {
-                    infoHtml += `<tr><td style="color: var(--text-accent); font-weight:bold; width: 30%;">${key}</td><td style="color: #fff;">${val}</td></tr>`;
-                }
-                infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
-                $(`#chess-metadata-${boardId}`).html(infoHtml);
-
+                const selectedPgn = rawGames[index]; commentMap = parseCommentsMap(selectedPgn);
+                const headers = {}; let match;
+                while ((match = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
+                let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse:collapse;">'; for (const [key, val] of Object.entries(headers)) { infoHtml += `<tr><td style="color:var(--text-accent); font-weight:bold; width:30%;">${key}</td><td style="color:#fff;">${val}</td></tr>`; } infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background:#e74c3c; color:white; border:none; padding:5px 15px; float:right; cursor:pointer;">Close</button>'; $(`#chess-metadata-${boardId}`).html(infoHtml); 
                 $(`#${boardId}`).empty();
 
                 if (typeof PGNV !== 'undefined') {
-                    PGNV.pgnView(boardId, {
-                        pgn: selectedPgn,
-                        theme: 'brown',
-                        boardSize: 400,
-                        layout: 'left',
-                        width: '100%',
-                        headers: false,
-                    });
-
+                    PGNV.pgnView(boardId, { pgn: selectedPgn, theme: 'brown', boardSize: 400, layout: 'left', width: '100%', headers: false });
                     updateChessStyles();
                     const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                     updateCommentContent(-1, total);
-                    
-                    // Force focus for keys
-                    document.getElementById(`chess-wrapper-${boardId}`).focus();
 
-                    // Resize Observer
-                    const resizeObserver = new ResizeObserver(() => {
-                        window.dispatchEvent(new Event('resize'));
-                    });
-                    resizeObserver.observe(document.getElementById(`chess-wrapper-${boardId}`));
+                    // RESIZE OBSERVER
+                    const resizeObserver = new ResizeObserver(() => { window.dispatchEvent(new Event('resize')); });
+                    resizeObserver.observe(document.getElementById('chess-main-wrapper'));
 
                     const checkInterval = setInterval(() => {
                         const movesPanel = document.getElementById(boardId + 'Moves');
-
                         if (movesPanel) {
                             clearInterval(checkInterval);
                             const totalMoves = movesPanel.querySelectorAll('move').length;
@@ -396,25 +370,13 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                                 }
                                 updateCommentContent(-1, totalMoves);
                             });
-
                             gameObserver.observe(movesPanel, { attributes: true, subtree: true, childList: true, attributeFilter: ['class'] });
                         }
                     }, 200);
-                } else {
-                    $('.modal-close-btn').first().click();
-                }
+                } else { $('.modal-close-btn').first().click(); }
             }
-
-            renderGame(0);
-            $select.off('change').on('change', function() { renderGame($(this).val()); });
-            $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
-
+            renderGame(0); $select.off('change').on('change', function() { renderGame($(this).val()); }); $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
         },
-        error: function() {
-            $modal.removeClass('chess-mode');
-            $('body').removeClass('chess-mode-active');
-            $modal.find('.modal-header').show();
-            $modalContent.html('<div class="error-message">Could not load PGN file.</div>');
-        }
+        error: function() { $modal.removeClass('chess-mode'); $('body').removeClass('chess-mode-active'); $modal.find('.modal-header').show(); $modalContent.html('<div class="error-message">Could not load PGN file.</div>'); }
     });
 };
