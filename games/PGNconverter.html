@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGN Format Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .textareas-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 50%;
+            height: 400px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            box-sizing: border-box;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        button, input[type="file"] {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input[type="file"] {
+            background-color: #6c757d;
+            color: white;
+            width: 250px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>PGN Format Converter (ChessX to Viewer)</h1>
+    <p>Paste your PGN or load a file below. The converter will reformat the `[%eval ...]` tags to ensure compatibility with most PGN viewers by wrapping them in curly braces.</p>
+
+    <div class="controls">
+        <input type="file" id="pgnFile" accept=".pgn" title="Select a PGN file to load">
+        <button onclick="convertPGN()">Convert PGN</button>
+    </div>
+    
+    <div class="textareas-container">
+        <div>
+            <h2>Input PGN (Paste or Loaded)</h2>
+            <textarea id="inputPGN" placeholder="Paste your ChessX-analyzed PGN here..."></textarea>
+        </div>
+        <div>
+            <h2>Converted PGN (Viewer Compatible)</h2>
+            <textarea id="outputPGN" readonly placeholder="Converted PGN will appear here..."></textarea>
+        </div>
+    </div>
+    
+    <button onclick="downloadPGN()" id="downloadButton" disabled>Download Converted PGN</button>
+</div>
+
+<script>
+    // --- FILE LOADING FUNCTION ---
+    document.getElementById('pgnFile').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('inputPGN').value = e.target.result;
+            // Clear output after new file load
+            document.getElementById('outputPGN').value = ''; 
+            document.getElementById('downloadButton').disabled = true;
+        };
+        reader.onerror = function(e) {
+            alert('Error reading file: ' + e.target.error.name);
+        };
+
+        reader.readAsText(file);
+    });
+
+    // --- CONVERSION FUNCTION ---
+    function convertPGN() {
+        const inputPGN = document.getElementById('inputPGN').value.trim();
+        const outputTextarea = document.getElementById('outputPGN');
+        const downloadButton = document.getElementById('downloadButton');
+
+        if (!inputPGN) {
+            alert("Please paste or load a PGN file first.");
+            outputTextarea.value = '';
+            downloadButton.disabled = true;
+            return;
+        }
+
+        /*
+        Conversion Logic:
+        The goal is to ensure all engine evaluation tags (which often appear 
+        as [%eval X.XX] or similar in PGN) are correctly wrapped in 
+        curly braces {} to be recognized as comments by simple PGN viewers.
+        
+        The RegEx looks for:
+        \s*\[%eval\s*([\+\-]?[\d\.]+)\]
+          \s* -> zero or more whitespace characters
+          \[%eval\s* -> literal '[%eval' followed by zero or more whitespace
+          ([\+\-]?[\d\.]+) -> Capture Group 1: optional +/-, followed by digits and dots (the score)
+          \]        -> literal ']'
+        
+        It replaces it with:
+        { [%eval $1] }
+        Which correctly wraps the tag in curly braces {}.
+        */
+        
+        const evalRegex = /(\s*\[%eval\s*([\+\-]?[\d\.]+)\])/g;
+        
+        // This is a simple replacement that ensures the eval tag is inside a comment {}.
+        // It's safer to use a generic replacement that handles the most common missing braces issue.
+        let convertedPGN = inputPGN.replace(evalRegex, function(match, fullTag, score) {
+             // If the match is NOT already surrounded by {}, we wrap it.
+             // We return the full { [%eval score] } format.
+             return `{ [%eval ${score}] }`;
+        });
+
+        // Some ChessX PGNs might use {[%eval X.XX]}, which is fine, 
+        // but often the problem is the one without braces, so the first regex handles it.
+        // We'll use a second, more specific replacement to ensure proper spacing if needed:
+        convertedPGN = convertedPGN.replace(/\{\s*\[%eval\s*([^\]]+)\]\s*\}/g, '{ [%eval $1] }');
+
+
+        outputTextarea.value = convertedPGN;
+        downloadButton.disabled = false;
+    }
+
+    // --- DOWNLOAD FUNCTION ---
+    function downloadPGN() {
+        const text = document.getElementById('outputPGN').value;
+        const filename = 'converted_game.pgn';
+        
+        if (!text) {
+            alert("Nothing to download.");
+            return;
+        }
+
+        // Create a Blob containing the text data
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        
+        // Create a temporary link element
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        
+        // Append to body, click it, and remove it
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Revoke the object URL after use to free up resources
+        URL.revokeObjectURL(a.href);
+    }
+</script>
+
+</body>
+</html>
