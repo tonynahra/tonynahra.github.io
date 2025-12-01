@@ -74,7 +74,13 @@ function animateModalOpen() {
 }
 function animateModalClose() {
     const $modal = $('#content-modal'); const $content = $modal.find('.modal-content'); $content.removeClass('modal-animate-enter').addClass('modal-animate-leave'); $modal.addClass('fading-out'); 
-    $('body').removeClass('chess-fullscreen-active'); 
+    
+    // Cleanup full screen state if active
+    if (document.fullscreenElement) {
+        document.exitFullscreen().catch(err => {});
+    }
+    $('body').removeClass('chess-fullscreen-active');
+
     setTimeout(function() { $modal.hide(); $modal.removeClass('fading-out'); $content.removeClass('modal-animate-leave'); $('#modal-content-area').html(''); }, 300); 
 }
 
@@ -93,56 +99,34 @@ window.handleModalKeys = function(e) {
     if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; } if ($(e.target).is('input, textarea, select')) return;
     if (isTutorialMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
+    // UPDATED: Check for chess mode to prevent conflict
     const isChessMode = $('#content-modal').hasClass('chess-mode');
-    
-    // UPDATED CHESS NAV: Uses window dispatch to ensure it works even if buttons are hidden in FS mode
-    const triggerChessMove = (direction) => {
-        const keyName = direction === 'prev' ? 'ArrowLeft' : 'ArrowRight';
-        const keyCode = direction === 'prev' ? 37 : 39;
-        
-        const $area = $('#modal-content-area');
-        let $btn = direction === 'prev' 
-            ? $area.find('.prev, .fa-arrow-left, button[title="Previous"], button[data-id="prev"]') 
-            : $area.find('.next, .fa-arrow-right, button[title="Next"], button[data-id="next"]');
-
-        if ($btn.length && $btn.is(':visible')) {
-            $btn.first().click();
-        } else {
-            const event = new KeyboardEvent('keydown', {
-                key: keyName, code: keyName, keyCode: keyCode, which: keyCode, bubbles: true, cancelable: true
-            });
-            window.dispatchEvent(event);
-            const board = $area.find('.cg-board, .board, .chess-white-box')[0];
-            if (board) board.dispatchEvent(event);
-        }
-    };
 
     switch (e.key) { 
         case "Escape": 
-            // If in native full screen, browser handles it.
-            // Only close modal if NOT in native full screen.
+            // Let native FS handle escape if active, otherwise close modal
             if (!document.fullscreenElement) {
                 $('.modal-close-btn').first().click(); 
             }
             break; 
         case "ArrowLeft": 
-            if (isChessMode) { triggerChessMove('prev'); }
-            else if (!isTutorialMode) { $('.modal-prev-btn').first().click(); } 
+            // UPDATED: Do not trigger modal navigation in chess mode
+            if (!isTutorialMode && !isChessMode) { $('.modal-prev-btn').first().click(); } 
             break; 
         case "ArrowRight": 
-            if (isChessMode) { triggerChessMove('next'); }
-            else if (!isTutorialMode) { $('.modal-next-btn').first().click(); } 
+            // UPDATED: Do not trigger modal navigation in chess mode
+            if (!isTutorialMode && !isChessMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case " ": 
             if(e.preventDefault) e.preventDefault(); 
-            if (isChessMode) { triggerChessMove('next'); }
-            else if (!isTutorialMode) { $('.modal-next-btn').first().click(); } 
+            // UPDATED: Allow spacebar for chess next move? Usually space triggers next slide. 
+            // We will disable it for chess to avoid conflict or letting it bubble.
+            if (!isTutorialMode && !isChessMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case "i": if(e.preventDefault) e.preventDefault(); $('.modal-info-btn').first().click(); break; 
         case "f": 
             if(e.preventDefault) e.preventDefault(); 
-            // CRITICAL FIX: If in chess mode, ignore 'F' here.
-            // Chess logic handles 'F' internally to call specific toggleFullScreen().
+            // Ignore global F if in chess mode (chess logic handles it specifically)
             if (!isChessMode) {
                 $('.modal-fullscreen-btn').first().click(); 
             }
@@ -171,19 +155,24 @@ window.buildTableModal = function(jsonUrl) {
                 // FIX: Handle both "data" (new) and "rows" (old) formats
                 let tableData = data.data;
                 if (!tableData && data.rows) {
+                    // Convert array of arrays (rows) to array of objects (data) if needed
+                    // Assuming columns order matches row order
                     tableData = data.rows.map(row => {
                         let obj = {};
                         data.columns.forEach((col, index) => {
+                             // If col is object, get field, else it's string
                              const fieldName = typeof col === 'object' ? col.field : col; 
                              obj[fieldName] = row[index];
                         });
                         return obj;
                     });
                 }
+
                 if (!tableData) { 
                     $modalContent.html('<div class="error-message">Invalid table data format. Expected "data" array or "rows" array.</div>'); 
                     return; 
                 }
+                
                 const tableId = 'tabulator-table-' + Date.now();
                 const tableHtml = `
                     <div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;">
@@ -193,20 +182,24 @@ window.buildTableModal = function(jsonUrl) {
                     </div>`;
                 $modalContent.html(tableHtml);
 
+                // Initialize Tabulator
                 new Tabulator("#" + tableId, {
-                    data: tableData,
+                    data: tableData, // Use processed data
                     layout: "fitColumns",
                     responsiveLayout: "collapse",
                     pagination: "local",
                     paginationSize: 15,
                     movableColumns: true,
                     columns: data.columns.map(col => {
+                        // Ensure col is object
                         if (typeof col === 'string') return { title: col, field: col };
+                        
+                        // Custom formatter for deep link buttons
                         if (col.formatter === "linkButton") {
                             col.formatter = function(cell, formatterParams, onRendered){
                                 const val = cell.getValue();
                                 if(!val) return "";
-                                const parts = val.split(':'); 
+                                const parts = val.split(':'); // link:type:id:label
                                 if(parts[0] !== 'link') return val;
                                 return `<button class="table-action-btn" style="padding:4px 10px; background:var(--text-accent); border:none; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="window.openFromTable('${parts[1]}', '${parts[2]}')">${parts[3] || 'Open'}</button>`;
                             };
@@ -236,22 +229,27 @@ window.buildChartModal = function(jsonUrl) {
                         </div>
                     </div>
                 `);
+
                 const ctx = document.getElementById(chartId).getContext('2d');
+                
+                // Basic Financial Chart Configuration
                 new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data.labels,
                         datasets: data.datasets.map(ds => {
+                            // Auto-style common technical indicators
                             if (ds.label.includes('Bollinger')) {
                                 ds.borderColor = 'rgba(100, 100, 100, 0.3)';
                                 ds.backgroundColor = 'rgba(100, 100, 100, 0.05)';
-                                ds.fill = ds.label.includes('Lower') ? '-1' : false;
+                                ds.fill = ds.label.includes('Lower') ? '-1' : false; // Fill between bands
                                 ds.pointRadius = 0;
                                 ds.borderWidth = 1;
                             } else if (ds.label.includes('SMA') || ds.label.includes('EMA')) {
                                 ds.borderWidth = 2;
                                 ds.pointRadius = 0;
                             } else if (ds.type === 'bar') {
+                                // Volume bars
                                 ds.yAxisID = 'y-volume';
                                 ds.backgroundColor = 'rgba(52, 152, 219, 0.5)';
                             }
@@ -264,7 +262,7 @@ window.buildChartModal = function(jsonUrl) {
                         interaction: { mode: 'index', intersect: false },
                         scales: {
                             y: { type: 'linear', display: true, position: 'right', title: { display:true, text:'Price' } },
-                            'y-volume': { type: 'linear', display: false, position: 'left', min: 0, max: Math.max(...data.datasets.find(d=>d.type==='bar')?.data || [100]) * 4 }
+                            'y-volume': { type: 'linear', display: false, position: 'left', min: 0, max: Math.max(...data.datasets.find(d=>d.type==='bar')?.data || [100]) * 4 } // Push volume down
                         }
                     }
                 });
@@ -273,9 +271,11 @@ window.buildChartModal = function(jsonUrl) {
         .catch(() => $modalContent.html('<div class="error-message">Failed to load Chart.js.</div>'));
 };
 
+// Global helper for table buttons
 window.openFromTable = function(type, id) {
     const $modal = $('#content-modal');
     const $modalContent = $('#modal-content-area');
+    
     if (type === 'chess') {
         window.loadChessGame(id, $modal, $modalContent);
     } else if (type === 'tutorial') {
@@ -283,9 +283,11 @@ window.openFromTable = function(type, id) {
         $('.modal-prev-btn, .modal-next-btn').hide();
         let playerFile = "text_tutorial_player.html"; 
         if (id.toLowerCase().endsWith('.xml') || id.includes('x-plain')) { playerFile = "tutorial_player.html"; }
+        
         const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="${playerFile}?manifest=${encodeURIComponent(id)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{const d=this.contentDocument;d.addEventListener('keydown',function(e){window.parent.handleModalKeys({key:e.key});});const s=d.createElement('style');s.innerHTML='body{overflow-x:hidden;margin:0;padding:0;width:100%;}.nav-bar,.controls,footer,.navbar{position:relative!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:0!important;left:0!important;right:0!important;z-index:1000!important;transition:opacity 0.3s!important;opacity:1!important;pointer-events:auto;}body.fs-mode .nav-bar,body.fs-mode .controls,body.fs-mode footer{position:absolute!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;opacity:0!important;pointer-events:none!important;}body.fs-mode.nav-visible .nav-bar,body.fs-mode.nav-visible .controls,body.fs-mode.nav-visible footer{opacity:1!important;pointer-events:auto!important;}';d.head.appendChild(s);}catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;" onclick="window.buildTableModal('${currentTableJsonUrl}')">&times;</button>`;
+        
         $modalContent.html(playerHtml);
-        $('.tutorial-fs-toggle').remove(); 
+        $('.tutorial-fs-toggle').remove(); // Clear old
         $('body').append('<button class="tutorial-fs-toggle" title="Toggle Controls" style="display:none;">&#9881;</button>');
         $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); });
     }
@@ -307,7 +309,7 @@ window.loadChessGame = function(loadUrl, $modal, $modalContent) {
 };
 
 /* === RESEARCH LOADER (GLOBAL) === */
-window.buildResearchModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html(`<div class="tab-nav" id="research-tab-nav-modal"></div><div class="tab-content" id="research-tab-content-modal"><div class="content-loader"><div class="spinner"></div></div></div>`); $.getJSON(jsonUrl, function (data) { $('#content-modal .open-new-window').attr('href', jsonUrl); const $tabNav = $('#research-tab-nav-modal'); $tabNav.empty(); $.each(data.tickers, function(index, ticker) { const $button = $(`<button class="tab-button"></button>`); $button.text(ticker.name); $button.attr('data-content-url', ticker.contentUrl); if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl); } $tabNav.append($button); }); }).fail(function() { $modalContent.html('<div class="error-message">Error loading research data.</div>'); }); }
+window.buildResearchModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html(`<div class="tab-nav" id="research-tab-nav-modal"></div><div class="tab-content" id="research-tab-content-modal"><div class="content-loader"><div class="spinner"></div></div></div>`); $.getJSON(jsonUrl, function (data) { $('#content-modal .open-new-window').attr('href', jsonUrl); const $tabNav = $('#research-tab-nav-modal'); $tabNav.empty(); $.each(data.tickers, function(index, ticker) { const $button = $(`<button class="tab-button"></button>`); $button.text(ticker.name); $button.attr('data-content-url', ticker.contentUrl); if (index === 0) { $button.addClass('active'); window.loadModalTabContent(ticker.contentUrl); } $tabNav.append($button); }); }).fail(function() { $modalContent.html('<div class="error-message">Error loading research data.</div>'); }); }
 window.loadModalTabContent = function(htmlUrl) { $('#content-modal .open-new-window').attr('href', htmlUrl); $('#research-tab-content-modal').html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`); }
 
 
@@ -320,6 +322,8 @@ function loadModalContent(index) {
     const $modal = $('#content-modal'); const $modalContent = $('#modal-content-area'); const $modalInfoBtn = $modal.find('.modal-info-btn'); const $modalPlayControls = $modal.find('.slideshow-controls'); const $modalFsBtn = $modal.find('.modal-fullscreen-btn'); const $modalOpenLink = $modal.find('.open-new-window');
 
     $modal.find('.modal-header').removeAttr('style'); $modal.removeClass('chess-mode research-mode'); $('body').removeClass('chess-mode-active'); $modalOpenLink.hide(); 
+    
+    // UPDATED: Hide prev/next buttons for chess
     $('.modal-prev-btn, .modal-next-btn').show();
     
     isTutorialMode = false; $modalInfoBtn.removeData('manifest-url'); $modalContent.removeClass('summary-view-active'); $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
@@ -333,7 +337,7 @@ function loadModalContent(index) {
         if (/\.(jpg|jpeg|png|gif)$/i.test(loadUrl)) loadType = 'image'; 
         else if (/\.md$/i.test(loadUrl)) loadType = 'markdown'; 
         else if (/\.pgn$/i.test(loadUrl)) loadType = 'chess';
-        else if (/\.json$/i.test(loadUrl) && !manifestUrl) loadType = 'table';
+        else if (/\.json$/i.test(loadUrl) && !manifestUrl) loadType = 'table'; // Simple JSON is table by default if no manifest
         else if (loadUrl.endsWith('.html')) loadType = 'html'; 
         else if (loadUrl.startsWith('http')) { if (loadUrl.includes('github.com') || loadUrl.includes('google.com')) loadType = 'blocked'; else loadType = 'iframe'; } else loadType = 'newtab'; 
     }
@@ -343,17 +347,30 @@ function loadModalContent(index) {
 
     if (loadType === 'research' && jsonUrl) { $modal.addClass('research-mode'); $modalFsBtn.hide(); $modalInfoBtn.hide(); window.buildResearchModal(jsonUrl); return; } 
     
-    if (loadType === 'table') { $modalFsBtn.hide(); $modalInfoBtn.hide(); currentTableJsonUrl = loadUrl; window.buildTableModal(loadUrl); return; }
-    if (loadType === 'chart') { $modalFsBtn.hide(); $modalInfoBtn.hide(); window.buildChartModal(jsonUrl || loadUrl); return; }
+    // === TABLE LOGIC ===
+    if (loadType === 'table') {
+        $modalFsBtn.hide(); $modalInfoBtn.hide(); currentTableJsonUrl = loadUrl; 
+        window.buildTableModal(loadUrl);
+        return;
+    }
+
+    if (loadType === 'chart') {
+        $modalFsBtn.hide(); $modalInfoBtn.hide();
+        window.buildChartModal(jsonUrl || loadUrl);
+        return;
+    }
 
     if (loadType === 'tutorial' && manifestUrl) {
         isTutorialMode = true; $modalInfoBtn.show(); $modalInfoBtn.data('manifest-url', manifestUrl); $modalInfoBtn.removeClass('active'); $modal.addClass('research-mode'); 
         $('.modal-prev-btn, .modal-next-btn').hide();
+
         let playerFile = "text_tutorial_player.html"; 
         if (manifestUrl.toLowerCase().endsWith('.xml') || manifestUrl.includes('x-plain')) { playerFile = "tutorial_player.html"; }
+
         const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="${playerFile}?manifest=${encodeURIComponent(manifestUrl)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{ const d = this.contentDocument; d.addEventListener('keydown', function(e) { window.parent.handleModalKeys({ key: e.key }); }); const s = d.createElement('style'); s.innerHTML = 'body { overflow-x: hidden; margin: 0; padding: 0; width: 100%; } .nav-bar, .controls, footer, .navbar { position: relative !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin: 0 !important; left: 0 !important; right: 0 !important; z-index: 1000 !important; transition: opacity 0.3s !important; opacity: 1 !important; pointer-events: auto; } body.fs-mode .nav-bar, body.fs-mode .controls, body.fs-mode footer { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; opacity: 0 !important; pointer-events: none !important; } body.fs-mode.nav-visible .nav-bar, body.fs-mode.nav-visible .controls, body.fs-mode.nav-visible footer { opacity: 1 !important; pointer-events: auto !important; }'; d.head.appendChild(s); }catch(e){}"></iframe></div>`;
         $modalContent.html(playerHtml);
         $('body').append('<button class="tutorial-fs-toggle" title="Toggle Controls" style="display:none;">&#9881;</button>');
+        
         $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); });
         const $card = currentCardList[currentCardIndex].closest('.card-item');
         updateSocialMeta($card.find('h3').text(), $card.find('p').text(), $card.find('img').attr('src'));
@@ -375,8 +392,9 @@ function loadModalContent(index) {
     if(window.cardGlobalState.infoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
     if (!title && !desc) $modalInfoBtn.hide();
 
+    // UPDATED: Chess Logic
     if (loadType === 'chess') { 
-        $('.modal-prev-btn, .modal-next-btn').hide();
+        $('.modal-prev-btn, .modal-next-btn').hide(); // Hide buttons
         window.loadChessGame(loadUrl, $modal, $modalContent); 
         return; 
     }
@@ -442,6 +460,7 @@ $(document).ready(function () {
     $('body').on('click', '.modal-prev-btn', function() { $(this).blur(); window.stopSlideshow(); if (currentCardIndex > 0) window.loadModalContent(currentCardIndex - 1); });
     $('body').on('click', '.modal-next-btn', function() { $(this).blur(); if (currentCardIndex < currentCardList.length - 1) window.loadModalContent(currentCardIndex + 1); else window.stopSlideshow(); });
     
+    // INFO BUTTON (FIXED PERSISTENCE & TOGGLING)
     $('body').on('click', '.modal-info-btn', function() { 
         $(this).blur();
         const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); 
@@ -455,5 +474,6 @@ $(document).ready(function () {
     $('body').on('input', '#youtube-search-box', filterYouTubeCards); $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
     $('body').on('input', '#post-search-box', () => window.filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').on('change', '#post-category-filter', () => window.filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').on('change', '#post-keyword-filter', () => window.filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
     $('body').on('input', '#album-search-box', () => window.filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20)); $('body').on('change', '#album-category-filter', () => window.filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20)); $('body').on('change', '#album-keyword-filter', () => window.filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20));
+    $('body').on('input', '#research-search-box', () => window.filterCardsGeneric('#research-card-list', '#research-search-box', '#research-category-filter', '#research-keyword-filter', '#research-no-results', 10)); $('body').on('change', '#research-category-filter', () => window.filterCardsGeneric('#research-card-list', '#research-search-box', '#research-category-filter', '#research-keyword-filter', '#research-no-results', 10)); $('body').on('change', '#research-keyword-filter', () => window.filterCardsGeneric('#research-card-list', '#research-search-box', '#research-category-filter', '#research-keyword-filter', '#research-no-results', 10));
     $('#content-modal').on('click', '.tab-button', function() { $(this).siblings().removeClass('active'); $(this).addClass('active'); const htmlUrl = $(this).data('content-url'); window.loadModalTabContent(htmlUrl, '#research-tab-content-modal'); });
 });
