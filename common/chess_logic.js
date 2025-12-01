@@ -101,7 +101,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 return hasEval || cleanText.length > 0;
             };
 
-            // 3. INJECT CHESS UI HTML (Removed Force Button)
+            // 3. INJECT CHESS UI HTML
             $modalContent.html(`
                 <style id="${styleId}"></style>
                 <div class="chess-container">
@@ -174,14 +174,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
                     /* === FULL SCREEN STYLES === */
                     
-                    body.chess-fullscreen-active .modal-header { 
-                        display: none !important; 
-                    }
-                    
-                    body.chess-fullscreen-active .chess-toolbar { 
-                        display: flex !important; 
-                        z-index: 2147483648 !important;
-                    }
+                    body.chess-fullscreen-active .modal-header { display: none !important; }
+                    body.chess-fullscreen-active .chess-toolbar { display: flex !important; z-index: 2147483648 !important; }
                     
                     body.chess-fullscreen-active .chess-container { 
                         position: fixed !important; top: 0; left: 0;
@@ -192,31 +186,44 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     }
 
                     body.chess-fullscreen-active .chess-main-area { 
-                        flex: 1 !important; 
-                        display: flex !important;
-                        flex-direction: row !important; /* Row to prevent overlap */
-                        justify-content: center !important; 
-                        align-items: center !important;
+                        flex: 1 !important; display: flex !important;
+                        justify-content: center !important; align-items: center !important;
                         width: 100% !important; height: 100% !important;
                         overflow: hidden !important;
-                        position: relative !important;
+                        padding-top: 10px;
                     }
 
                     body.chess-fullscreen-active .chess-white-box { 
-                        display: flex !important; 
-                        justify-content: center !important;
+                        display: flex !important; justify-content: center !important;
                         align-items: center !important;
-                        height: auto !important; 
-                        width: auto !important;
-                        flex: 1 1 auto;
-                        background-color: transparent !important;
+                        height: 100% !important; 
+                        width: 100% !important;
+                        background: transparent !important;
                     }
 
-                    /* Board styles are now handled by JS ApplyDynamicSize when in FullScreen */
+                    /* THE BOARD CONTAINER */
                     body.chess-fullscreen-active #${boardId} { 
-                        margin: auto !important;
+                        margin: 0 auto !important;
                         display: flex !important; justify-content: center !important; align-items: center !important;
-                        background-color: #f0d9b5; /* Fallback color */
+                        background-color: #f0d9b5; /* Fallback */
+                    }
+
+                    /* REFINED FIX: Only target the specific board wrappers, NOT general controls */
+                    body.chess-fullscreen-active #${boardId} .pgnvjs-wrapper,
+                    body.chess-fullscreen-active #${boardId} .cg-board-wrap, 
+                    body.chess-fullscreen-active #${boardId} .board,
+                    body.chess-fullscreen-active #${boardId} .cg-board { 
+                        width: 100% !important; 
+                        height: 100% !important;
+                        background-size: contain !important; /* Changed from cover to contain/auto */
+                    }
+                    
+                    /* Protect buttons/controls from expanding */
+                    body.chess-fullscreen-active #${boardId} .buttons,
+                    body.chess-fullscreen-active #${boardId} .nav,
+                    body.chess-fullscreen-active #${boardId} .control {
+                        width: auto !important;
+                        height: auto !important;
                     }
                 `;
                 $(`#${styleId}`).text(css);
@@ -316,9 +323,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
             };
 
-            // --- CRITICAL FIX: AUTOMATED PIXEL RESIZING ---
-            // This function mimics the "Force 600px" button but calculates the exact 
-            // pixels needed based on the current window size (80vmin or 95vmin).
+            // --- CRITICAL: AUTOMATED PIXEL RESIZING ---
             const applyDynamicSize = () => {
                 const $board = $(`#${boardId}`);
                 if ($board.length === 0) return;
@@ -326,7 +331,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 if ($('body').hasClass('chess-fullscreen-active')) {
                     const w = window.innerWidth;
                     const h = window.innerHeight;
-                    // Calculate pixel size: 80% if moves visible, 95% if not.
+                    // 80% if moves visible, 95% if not.
                     const percentage = movesPanelVisible ? 0.80 : 0.95;
                     const sizePx = Math.floor(Math.min(w, h) * percentage);
                     
@@ -335,26 +340,23 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     // Apply to Board Container
                     $board.attr('style', styleStr);
                     
-                    // Apply to ALL known internal wrappers to prevent 0x0 collapse
+                    // Apply ONLY to specific board wrappers, NOT controls
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').attr('style', styleStr);
                     
-                    // Also find SVG or Canvas elements and force them
+                    // Ensure SVG/Canvas match
                     $board.find('svg, canvas').attr('style', styleStr);
                     
                 } else {
-                    // Remove inline styles when exiting Full Screen to revert to CSS
+                    // Reset
                     $board.removeAttr('style');
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap, svg, canvas').removeAttr('style');
                 }
                 
                 // Trigger library redraw
                 window.dispatchEvent(new Event('resize'));
-                logChessState('Dynamic Size Applied');
             };
 
             // --- LISTENERS ---
-            
-            // Fullscreen Toggle Event
             window.currentChessFSHandler = () => {
                 if (document.fullscreenElement) {
                     $('body').addClass('chess-fullscreen-active');
@@ -363,14 +365,12 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     $('body').removeClass('chess-fullscreen-active');
                     logChessState('Fullscreen EXIT');
                 }
-                // Apply size immediately and after delay
                 applyDynamicSize();
                 setTimeout(applyDynamicSize, 200);
                 setTimeout(applyDynamicSize, 500);
             };
             document.addEventListener('fullscreenchange', window.currentChessFSHandler);
 
-            // Window Resize Event (Handle rotation or window resizing in FS)
             window.currentChessResizeHandler = () => {
                 if ($('body').hasClass('chess-fullscreen-active')) {
                     applyDynamicSize();
@@ -388,7 +388,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     btn.css({ background: '#555', color: '#fff' });
                 }
                 updateChessStyles(); 
-                // Re-calculate size because percentage changes (80% vs 95%)
                 applyDynamicSize();
                 setTimeout(applyDynamicSize, 100);
             });
@@ -438,8 +437,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             $('#chess-close-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 if (document.fullscreenElement) { document.exitFullscreen(); }
-                
-                // Cleanup
                 if (window.currentChessFSHandler) {
                     document.removeEventListener('fullscreenchange', window.currentChessFSHandler);
                     window.removeEventListener('resize', window.currentChessResizeHandler);
