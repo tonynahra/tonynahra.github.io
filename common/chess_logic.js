@@ -129,7 +129,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const movesId = `#${boardId}Moves`;
                 const movesDisplay = movesPanelVisible ? 'block' : 'none';
                 
-                // Normal mode styles
                 const css = `
                     /* --- NORMAL MODE STYLES --- */
                     ${movesId} {
@@ -309,19 +308,26 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
             };
 
-            // --- AUTO PIXEL RESIZING ---
-            // Calculates exact pixels for board to fit in Full Screen
-            // FIX: Does NOT trigger resize event recursively
+            // --- AUTO PIXEL RESIZING (WITH SAFETY CAPS) ---
             const applyDynamicSize = () => {
                 const $board = $(`#${boardId}`);
                 if ($board.length === 0) return;
 
                 if ($('body').hasClass('chess-fullscreen-active')) {
-                    const w = window.innerWidth;
-                    const h = window.innerHeight;
-                    // 80% if moves visible, 95% if not.
-                    const percentage = movesPanelVisible ? 0.80 : 0.95;
-                    const sizePx = Math.floor(Math.min(w, h) * percentage);
+                    // Use client dimensions to avoid scrollbars
+                    const w = document.documentElement.clientWidth;
+                    const h = document.documentElement.clientHeight;
+                    
+                    // Reduced percentages for safety
+                    const percentage = movesPanelVisible ? 0.75 : 0.90;
+                    
+                    // Calculate size based on smallest dimension (Square)
+                    let sizePx = Math.floor(Math.min(w, h) * percentage);
+                    
+                    // CRITICAL SAFETY CAP: Ensure it fits vertically with margin
+                    if (sizePx > (h - 40)) {
+                        sizePx = h - 40;
+                    }
                     
                     const styleStr = `width: ${sizePx}px !important; height: ${sizePx}px !important;`;
                     
@@ -353,14 +359,13 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     logChessState('Fullscreen EXIT');
                 }
                 applyDynamicSize();
-                
-                // Trigger library redraw ONCE after delay, NOT inside applyDynamicSize
-                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 200);
+                setTimeout(applyDynamicSize, 200);
+                setTimeout(applyDynamicSize, 500);
             };
             document.addEventListener('fullscreenchange', window.currentChessFSHandler);
 
             window.currentChessResizeHandler = () => {
-                // Just apply CSS pixels, do NOT trigger event
+                // Just apply CSS pixels, do NOT trigger event manually
                 if ($('body').hasClass('chess-fullscreen-active')) {
                     applyDynamicSize();
                 }
@@ -378,7 +383,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 }
                 updateChessStyles(); 
                 applyDynamicSize();
-                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
+                setTimeout(applyDynamicSize, 100);
             });
 
             $('#chess-comment-btn').off('click').on('click', function(e) {
