@@ -44,7 +44,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 
                 if (board) {
                     console.log(`[CHESS DEBUG] Event: ${trigger}`);
-                    if (screenH) console.log(`- Measured Screen H: ${screenH}px`);
+                    if (screenH) console.log(`- Screen Height: ${screenH}px`);
                     if (sizePx) console.log(`- Applied Size: ${sizePx}px`);
                     console.log(`- Container Size: ${board.offsetWidth}px x ${board.offsetHeight}px`);
                     if(innerBoard) {
@@ -176,7 +176,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
                     /* === FULL SCREEN STYLES === */
                     
-                    /* LOCK HTML/BODY TO PREVENT SCROLLING/OVERFLOW */
+                    /* LOCK HTML/BODY TO PREVENT SCROLLING */
                     body.chess-fullscreen-active, 
                     body.chess-fullscreen-active html {
                         overflow: hidden !important;
@@ -214,13 +214,13 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         background-color: transparent !important;
                     }
 
-                    /* BOARD CONTAINER: Max Size CSS Failsafe (95%) */
+                    /* BOARD CONTAINER: Max Size CSS Failsafe */
                     body.chess-fullscreen-active #${boardId} { 
                         margin: auto !important;
                         display: flex !important; justify-content: center !important; align-items: center !important;
                         background-color: #f0d9b5;
-                        max-height: 95vh !important; /* Absolute max height */
-                        max-width: 95vw !important;  /* Absolute max width */
+                        max-height: 98vh !important; 
+                        max-width: 98vw !important;
                     }
 
                     /* INNER WRAPPERS */
@@ -338,7 +338,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
             };
 
-            // --- STRICT RESIZE LOGIC (ASYNC MEASUREMENT) ---
+            // --- STRICT "RESET -> MEASURE -> APPLY" RESIZING ---
             const applyDynamicSize = () => {
                 const $board = $(`#${boardId}`);
                 if ($board.length === 0) return;
@@ -356,13 +356,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
                         const w = window.visualViewport ? window.visualViewport.width : window.innerWidth;
                         
-                        // 3. CALCULATE TARGET (90% Height)
-                        let sizePx = Math.floor(h * 0.90);
+                        // 3. CALCULATE TARGET 
+                        // SUBTRACT 70px for the toolbar so it doesn't overflow!
+                        const availableHeight = h - 70;
+                        const availableWidth = w;
                         
-                        // 4. WIDTH SAFETY (Fit within width)
-                        if (sizePx > (w - 20)) {
-                            sizePx = w - 20;
-                        }
+                        // Use the SMALLER of the two dimensions to keep it square
+                        // This guarantees it fits both width-wise and height-wise.
+                        let sizePx = Math.floor(Math.min(availableHeight, availableWidth) * 0.95);
                         
                         // 5. APPLY FINAL SIZE
                         const finalStyle = `width: ${sizePx}px !important; height: ${sizePx}px !important;`;
