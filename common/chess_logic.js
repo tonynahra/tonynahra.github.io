@@ -38,12 +38,17 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             const logChessState = (trigger) => {
                 if (!CHESS_DEBUG) return;
                 const board = document.getElementById(boardId);
-                const innerBoard = board ? board.querySelector('.board') : null;
+                // Try finding common internal elements to measure
+                const innerBoard = board ? board.querySelector('.board') || board.querySelector('.cg-board') : null;
                 
                 if (board) {
                     console.log(`[CHESS DEBUG] Event: ${trigger}`);
                     console.log(`- Container Size: ${board.offsetWidth}px x ${board.offsetHeight}px`);
-                    if(innerBoard) console.log(`- Inner Board Size: ${innerBoard.offsetWidth}px x ${innerBoard.offsetHeight}px`);
+                    if(innerBoard) {
+                        console.log(`- Inner Board Size: ${innerBoard.offsetWidth}px x ${innerBoard.offsetHeight}px`);
+                    } else {
+                        console.log(`- Inner Board Element NOT FOUND`);
+                    }
                     console.log(`- Is FullScreen:`, !!document.fullscreenElement);
                 }
             };
@@ -125,7 +130,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const movesId = `#${boardId}Moves`;
                 const movesDisplay = movesPanelVisible ? 'block' : 'none';
                 
-                // Sizing Logic: 95vmin fills screen, 80vmin leaves room for moves
+                // Full Screen Sizing: 80vmin (with moves) vs 95vmin (hidden moves)
                 const fsBoardSize = movesPanelVisible ? '80vmin' : '95vmin';
 
                 const css = `
@@ -171,23 +176,23 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         padding: ${15 + (currentFontSize - 26) * 0.5}px !important;
                     }
 
-                    /* === FULL SCREEN STYLES (PURE CSS) === */
+                    /* === FULL SCREEN STYLES === */
                     
+                    /* 1. HIDE MODAL UI */
                     body.chess-fullscreen-active .modal-header,
                     body.chess-fullscreen-active .chess-toolbar { 
                         display: none !important; 
                     }
                     
-                    /* Main Container: Fixed to viewport */
+                    /* 2. MAXIMIZE CONTAINERS */
                     body.chess-fullscreen-active .chess-container { 
                         position: fixed !important; top: 0; left: 0;
                         width: 100vw !important; height: 100vh !important;
-                        z-index: 2147483647 !important; /* Max Z-Index */
+                        z-index: 2147483647 !important;
                         background: #1a1a1a !important;
                         display: flex; flex-direction: column;
                     }
 
-                    /* Center Content */
                     body.chess-fullscreen-active .chess-main-area { 
                         flex: 1 !important; display: flex !important;
                         justify-content: center !important; align-items: center !important;
@@ -196,36 +201,44 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         padding-top: 10px;
                     }
 
-                    /* Board Wrapper */
                     body.chess-fullscreen-active .chess-white-box { 
                         display: flex !important; justify-content: center !important;
                         align-items: center !important;
-                        height: 100% !important; 
-                        width: 100% !important;
+                        height: 100% !important; width: 100% !important;
                     }
 
-                    /* THE BOARD CONTAINER: Enforce Square using vmin */
+                    /* 3. TARGET THE LIBRARY ROOT (The ID we created) */
                     body.chess-fullscreen-active #${boardId} { 
                         width: ${fsBoardSize} !important; 
                         height: ${fsBoardSize} !important;
-                        max-width: 100vh !important; 
                         margin: 0 auto !important;
                         display: flex !important; justify-content: center !important; align-items: center !important;
-                        background-color: #f0d9b5; /* Fallback wood color */
+                        background-color: #f0d9b5; /* Fallback color */
                     }
 
-                    /* CRITICAL FIX: Force inner elements to fill the container */
+                    /* 4. FORCE INTERNAL LIBRARY ELEMENTS TO EXPAND */
+                    /* This fixes the 0x0 issue by forcing children to fill the #boardId parent */
+                    body.chess-fullscreen-active #${boardId} > * {
+                        width: 100% !important;
+                        height: 100% !important;
+                        max-width: none !important;
+                        max-height: none !important;
+                        display: block !important; /* Ensure they aren't hidden */
+                    }
+
+                    /* Specific overrides for common PGN viewer internal classes */
                     body.chess-fullscreen-active .pgnvjs-wrapper,
                     body.chess-fullscreen-active .cg-board-wrap, 
-                    body.chess-fullscreen-active .board { 
+                    body.chess-fullscreen-active .board,
+                    body.chess-fullscreen-active .cg-board { 
                         width: 100% !important; 
                         height: 100% !important;
                         background-size: cover !important;
                     }
                     
-                    /* Ensure SVG/Canvas scales correctly */
-                    body.chess-fullscreen-active #${boardId} svg, 
-                    body.chess-fullscreen-active #${boardId} canvas {
+                    /* Ensure SVG/Canvas layers are visible */
+                    body.chess-fullscreen-active svg, 
+                    body.chess-fullscreen-active canvas {
                         width: 100% !important;
                         height: 100% !important;
                     }
@@ -328,7 +341,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             };
 
             // --- FULL SCREEN HANDLER ---
-            // Defined inside scope to access boardId for logging
             window.currentChessFSHandler = () => {
                 if (document.fullscreenElement) {
                     $('body').addClass('chess-fullscreen-active');
@@ -338,7 +350,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     logChessState('Fullscreen EXIT');
                 }
                 
-                // Force multiple resize events to make the library redraw squares
+                // Force library redraw by firing window resize events
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 200);
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 500);
@@ -378,12 +390,9 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 updateCommentContent(activeMoveIndex, total);
             });
 
-            // FULL SCREEN BUTTON CLICK
             $('#chess-fs-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 $(this).blur();
-                
-                // REQUEST NATIVE FULL SCREEN IMMEDIATELY ON CLICK
                 const elem = document.documentElement;
                 if (!document.fullscreenElement) {
                     if(elem.requestFullscreen) { elem.requestFullscreen(); }
@@ -398,7 +407,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 }
             });
             
-            // Allow F key to trigger the click logic
             $(document).on('keydown.chessFs', function(e) {
                 if (e.key.toLowerCase() === 'f' && $('#content-modal').hasClass('chess-mode')) {
                     $('#chess-fs-btn').click();
