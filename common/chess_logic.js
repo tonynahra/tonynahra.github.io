@@ -99,12 +99,13 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 return hasEval || cleanText.length > 0;
             };
 
-            // 3. INJECT CHESS UI HTML
+            // 3. INJECT CHESS UI HTML (Added Force 600px Button)
             $modalContent.html(`
                 <style id="${styleId}"></style>
                 <div class="chess-container">
                     <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 8px; background: #1a1a1a; gap: 10px; border-bottom: 1px solid #333;">
                         <select id="chess-game-select" style="flex: 1; max-width: 400px; padding: 5px; background:#000; color:#fff; border:1px solid #444;"></select>
+                        <button id="chess-force-size-btn" class="tab-button" style="color: #000; background: #f1c40f; border: 1px solid #f1c40f; padding: 4px 10px; font-weight: bold;">Force 600px</button>
                         <button id="chess-toggle-moves-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Moves</button>
                         <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Info</button>
                         <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 4px 10px;">Comments: On</button>
@@ -127,7 +128,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const movesId = `#${boardId}Moves`;
                 const movesDisplay = movesPanelVisible ? 'block' : 'none';
                 
-                // 95vmin ensures square fits; 80vmin leaves room for side panel
+                // Normal mode size (flexible)
                 const fsBoardSize = movesPanelVisible ? '80vmin' : '95vmin';
 
                 const css = `
@@ -175,9 +176,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
                     /* === FULL SCREEN STYLES === */
                     
-                    body.chess-fullscreen-active .modal-header,
-                    body.chess-fullscreen-active .chess-toolbar { 
+                    body.chess-fullscreen-active .modal-header { 
                         display: none !important; 
+                    }
+                    
+                    /* WE KEEP TOOLBAR VISIBLE FOR THE RESIZE BUTTON */
+                    body.chess-fullscreen-active .chess-toolbar { 
+                        display: flex !important; 
+                        z-index: 2147483648 !important; /* Above everything */
                     }
                     
                     body.chess-fullscreen-active .chess-container { 
@@ -189,48 +195,41 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     }
 
                     body.chess-fullscreen-active .chess-main-area { 
-                        flex: 1 !important; display: flex !important;
-                        justify-content: center !important; align-items: center !important;
-                        width: 100% !important; height: 100% !important;
+                        flex: 1 !important; 
+                        display: flex !important;
+                        flex-direction: row !important; /* Explicit row to prevent overlap */
+                        justify-content: center !important; 
+                        align-items: center !important;
+                        width: 100% !important; 
+                        height: 100% !important;
                         overflow: hidden !important;
-                        padding-top: 10px;
+                        position: relative !important;
                     }
 
                     body.chess-fullscreen-active .chess-white-box { 
-                        display: flex !important; justify-content: center !important;
+                        display: flex !important; 
+                        justify-content: center !important;
                         align-items: center !important;
-                        height: 100% !important; 
-                        width: 100% !important;
-                        /* Ensure no background color obscures the board */
-                        background: transparent !important;
+                        height: auto !important; 
+                        width: auto !important;
+                        flex: 1 1 auto; /* Allow it to grow/shrink in flex */
                     }
 
-                    /* THE BOARD ROOT: Force size */
+                    /* DEFAULT FS BOARD (Can be overridden by Resize Button) */
                     body.chess-fullscreen-active #${boardId} { 
                         width: ${fsBoardSize} !important; 
                         height: ${fsBoardSize} !important;
-                        margin: 0 auto !important;
                         display: flex !important; justify-content: center !important; align-items: center !important;
-                        /* Removed explicit background-color to let library theme show through */
+                        background-color: #f0d9b5;
                     }
 
-                    /* FIX: Force internal library wrappers to simply fill the parent.
-                       REMOVED: background-size: cover (which distorted squares)
-                       REMOVED: position: absolute (which collapsed layers) */
-                    body.chess-fullscreen-active .pgnvjs-wrapper,
-                    body.chess-fullscreen-active .cg-board-wrap, 
-                    body.chess-fullscreen-active .board,
-                    body.chess-fullscreen-active .cg-board { 
+                    /* Force internal library elements to fit */
+                    body.chess-fullscreen-active #${boardId} .pgnvjs-wrapper,
+                    body.chess-fullscreen-active #${boardId} .cg-board-wrap, 
+                    body.chess-fullscreen-active #${boardId} .board,
+                    body.chess-fullscreen-active #${boardId} .cg-board { 
                         width: 100% !important; 
                         height: 100% !important;
-                    }
-                    
-                    /* Ensure SVG/Canvas scale correctly without distortion */
-                    body.chess-fullscreen-active #${boardId} svg, 
-                    body.chess-fullscreen-active #${boardId} canvas {
-                        width: 100% !important;
-                        height: 100% !important;
-                        display: block !important;
                     }
                 `;
                 $(`#${styleId}`).text(css);
@@ -343,10 +342,25 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 // Force multiple resize events to make the library redraw
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 200);
-                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 500);
             };
 
             document.addEventListener('fullscreenchange', window.currentChessFSHandler);
+
+            // --- NEW: FORCE RESIZE BUTTON ---
+            $('#chess-force-size-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                const $board = $(`#${boardId}`);
+                
+                // Force styles via inline CSS to override everything else
+                $board.attr('style', 'width: 600px !important; height: 600px !important; margin: auto !important;');
+                
+                // Also force internal wrappers commonly used by chess libraries
+                $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').attr('style', 'width: 600px !important; height: 600px !important;');
+                
+                console.log("[CHESS DEBUG] Forcing 600px size...");
+                // Trigger resize so library recalculates squares
+                window.dispatchEvent(new Event('resize'));
+            });
 
             $('#chess-toggle-moves-btn').off('click').on('click', function(e) {
                 e.preventDefault();
