@@ -38,14 +38,15 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             const logChessState = (trigger) => {
                 if (!CHESS_DEBUG) return;
                 const board = document.getElementById(boardId);
-                // Try finding common internal elements to measure
-                const innerBoard = board ? board.querySelector('.board') || board.querySelector('.cg-board') : null;
+                // Search for the specific internal wrapper that usually collapses
+                const innerBoard = board ? (board.querySelector('.board') || board.querySelector('.cg-board') || board.querySelector('div[class*="board"]')) : null;
                 
                 if (board) {
                     console.log(`[CHESS DEBUG] Event: ${trigger}`);
                     console.log(`- Container Size: ${board.offsetWidth}px x ${board.offsetHeight}px`);
                     if(innerBoard) {
                         console.log(`- Inner Board Size: ${innerBoard.offsetWidth}px x ${innerBoard.offsetHeight}px`);
+                        console.log(`- Inner Board Style:`, window.getComputedStyle(innerBoard).height);
                     } else {
                         console.log(`- Inner Board Element NOT FOUND`);
                     }
@@ -130,7 +131,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const movesId = `#${boardId}Moves`;
                 const movesDisplay = movesPanelVisible ? 'block' : 'none';
                 
-                // Full Screen Sizing: 80vmin (with moves) vs 95vmin (hidden moves)
+                // Sizing Logic: 95vmin fills screen, 80vmin leaves room for moves
                 const fsBoardSize = movesPanelVisible ? '80vmin' : '95vmin';
 
                 const css = `
@@ -176,71 +177,71 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         padding: ${15 + (currentFontSize - 26) * 0.5}px !important;
                     }
 
-                    /* === FULL SCREEN STYLES === */
+                    /* === FULL SCREEN STYLES (ABSOLUTE FILL FIX) === */
                     
-                    /* 1. HIDE MODAL UI */
                     body.chess-fullscreen-active .modal-header,
                     body.chess-fullscreen-active .chess-toolbar { 
                         display: none !important; 
                     }
                     
-                    /* 2. MAXIMIZE CONTAINERS */
+                    /* 1. Main Container: Fixed */
                     body.chess-fullscreen-active .chess-container { 
                         position: fixed !important; top: 0; left: 0;
                         width: 100vw !important; height: 100vh !important;
-                        z-index: 2147483647 !important;
+                        z-index: 2147483647 !important; 
                         background: #1a1a1a !important;
                         display: flex; flex-direction: column;
                     }
 
+                    /* 2. Center Content */
                     body.chess-fullscreen-active .chess-main-area { 
                         flex: 1 !important; display: flex !important;
                         justify-content: center !important; align-items: center !important;
                         width: 100% !important; height: 100% !important;
                         overflow: hidden !important;
-                        padding-top: 10px;
+                        position: relative !important;
                     }
 
+                    /* 3. Board Wrapper */
                     body.chess-fullscreen-active .chess-white-box { 
                         display: flex !important; justify-content: center !important;
                         align-items: center !important;
-                        height: 100% !important; width: 100% !important;
+                        height: 100% !important; 
+                        width: 100% !important;
+                        position: relative !important;
                     }
 
-                    /* 3. TARGET THE LIBRARY ROOT (The ID we created) */
+                    /* 4. THE BOARD CONTAINER: Force relative positioning for children */
                     body.chess-fullscreen-active #${boardId} { 
                         width: ${fsBoardSize} !important; 
                         height: ${fsBoardSize} !important;
                         margin: 0 auto !important;
-                        display: flex !important; justify-content: center !important; align-items: center !important;
-                        background-color: #f0d9b5; /* Fallback color */
+                        position: relative !important; /* Anchor for absolute children */
+                        display: block !important;
+                        background-color: #f0d9b5;
                     }
 
-                    /* 4. FORCE INTERNAL LIBRARY ELEMENTS TO EXPAND */
-                    /* This fixes the 0x0 issue by forcing children to fill the #boardId parent */
-                    body.chess-fullscreen-active #${boardId} > * {
-                        width: 100% !important;
+                    /* 5. NUCLEAR OPTION: Force internal elements to fill the parent absolutely */
+                    body.chess-fullscreen-active #${boardId} .pgnvjs-wrapper,
+                    body.chess-fullscreen-active #${boardId} .cg-board-wrap, 
+                    body.chess-fullscreen-active #${boardId} .board,
+                    body.chess-fullscreen-active #${boardId} .cg-board,
+                    body.chess-fullscreen-active #${boardId} > div { 
+                        position: absolute !important;
+                        top: 0 !important; left: 0 !important;
+                        width: 100% !important; 
                         height: 100% !important;
                         max-width: none !important;
                         max-height: none !important;
-                        display: block !important; /* Ensure they aren't hidden */
-                    }
-
-                    /* Specific overrides for common PGN viewer internal classes */
-                    body.chess-fullscreen-active .pgnvjs-wrapper,
-                    body.chess-fullscreen-active .cg-board-wrap, 
-                    body.chess-fullscreen-active .board,
-                    body.chess-fullscreen-active .cg-board { 
-                        width: 100% !important; 
-                        height: 100% !important;
                         background-size: cover !important;
                     }
                     
-                    /* Ensure SVG/Canvas layers are visible */
-                    body.chess-fullscreen-active svg, 
-                    body.chess-fullscreen-active canvas {
+                    /* SVG/Canvas often need explicit 100% too */
+                    body.chess-fullscreen-active #${boardId} svg, 
+                    body.chess-fullscreen-active #${boardId} canvas {
                         width: 100% !important;
                         height: 100% !important;
+                        display: block !important;
                     }
                 `;
                 $(`#${styleId}`).text(css);
@@ -350,7 +351,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     logChessState('Fullscreen EXIT');
                 }
                 
-                // Force library redraw by firing window resize events
+                // Force multiple resize events
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 200);
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 500);
