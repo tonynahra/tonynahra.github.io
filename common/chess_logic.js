@@ -176,7 +176,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
                     /* === FULL SCREEN STYLES === */
                     
-                    /* LOCK HTML/BODY */
+                    /* LOCK HTML/BODY TO PREVENT SCROLLING/OVERFLOW */
                     body.chess-fullscreen-active, 
                     body.chess-fullscreen-active html {
                         overflow: hidden !important;
@@ -214,14 +214,13 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         background-color: transparent !important;
                     }
 
-                    /* BOARD CONTAINER */
+                    /* BOARD CONTAINER: Max Size CSS Failsafe (95%) */
                     body.chess-fullscreen-active #${boardId} { 
                         margin: auto !important;
                         display: flex !important; justify-content: center !important; align-items: center !important;
                         background-color: #f0d9b5;
-                        /* Extra safety limits */
-                        max-height: 98vh !important;
-                        max-width: 98vw !important;
+                        max-height: 95vh !important; /* Absolute max height */
+                        max-width: 95vw !important;  /* Absolute max width */
                     }
 
                     /* INNER WRAPPERS */
@@ -390,6 +389,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     $('body').removeClass('chess-fullscreen-active');
                     logChessState('Fullscreen EXIT');
                 }
+                
+                // Trigger logic sequence
                 applyDynamicSize();
                 setTimeout(applyDynamicSize, 500); // Backup trigger
             };
