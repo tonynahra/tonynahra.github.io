@@ -123,9 +123,9 @@ window.handleModalKeys = function(e) {
 
     switch (e.key) { 
         case "Escape": 
-            if ($('body').hasClass('chess-fullscreen-active')) {
-                $('#chess-fs-btn').click(); 
-            } else {
+            // If in native full screen, browser handles it.
+            // Only close modal if NOT in native full screen.
+            if (!document.fullscreenElement) {
                 $('.modal-close-btn').first().click(); 
             }
             break; 
@@ -227,7 +227,7 @@ window.buildChartModal = function(jsonUrl) {
                 const chartId = 'chart-canvas-' + Date.now();
                 $modalContent.html(`
                     <div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;">
-                        <h2 style="margin-top:0;">${data.title || 'Financial Chart'}</h2>
+                        <h2 style="margin-top:0; color:#333;">${data.title || 'Financial Chart'}</h2>
                         <div class="chart-container" style="flex:1; position:relative;">
                             <canvas id="${chartId}"></canvas>
                         </div>
