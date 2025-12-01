@@ -44,7 +44,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 
                 if (board) {
                     console.log(`[CHESS DEBUG] Event: ${trigger}`);
-                    if (screenH) console.log(`- Screen Height: ${screenH}px`);
+                    if (screenH) console.log(`- Measured Screen H: ${screenH}px`);
                     if (sizePx) console.log(`- Applied Size: ${sizePx}px`);
                     console.log(`- Container Size: ${board.offsetWidth}px x ${board.offsetHeight}px`);
                     if(innerBoard) {
@@ -219,6 +219,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         margin: auto !important;
                         display: flex !important; justify-content: center !important; align-items: center !important;
                         background-color: #f0d9b5;
+                        /* Extra safety limits */
                         max-height: 98vh !important; 
                         max-width: 98vw !important;
                     }
@@ -345,27 +346,29 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
                 if ($('body').hasClass('chess-fullscreen-active')) {
                     
-                    // 1. FORCE RESET TO 800px FIRST (Synchronous)
+                    // 1. FORCE RESET TO 800px FIRST
                     const resetStyle = 'width: 800px !important; height: 800px !important; overflow: hidden !important;';
                     $board.attr('style', resetStyle);
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').attr('style', resetStyle);
                     
-                    // 2. WAIT FOR BROWSER PAINT (Async) before measuring
+                    // 2. WAIT FOR BROWSER PAINT
                     requestAnimationFrame(() => {
-                        // Use visualViewport if available for exact visible pixels
                         const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
                         const w = window.visualViewport ? window.visualViewport.width : window.innerWidth;
                         
-                        // 3. CALCULATE TARGET 
-                        // SUBTRACT 70px for the toolbar so it doesn't overflow!
-                        const availableHeight = h - 70;
-                        const availableWidth = w;
+                        // 3. CALCULATE AVAILABLE HEIGHT
+                        // Subtract ~80px for the toolbar so it doesn't overflow!
+                        const availableHeight = h - 80; 
                         
-                        // Use the SMALLER of the two dimensions to keep it square
-                        // This guarantees it fits both width-wise and height-wise.
-                        let sizePx = Math.floor(Math.min(availableHeight, availableWidth) * 0.95);
+                        // 4. CALCULATE SIZE: 90% of Available Height
+                        let sizePx = Math.floor(availableHeight * 0.90);
                         
-                        // 5. APPLY FINAL SIZE
+                        // 5. WIDTH SAFETY CHECK: Don't overflow width
+                        if (sizePx > (w - 20)) {
+                            sizePx = w - 20;
+                        }
+                        
+                        // 6. APPLY FINAL SIZE
                         const finalStyle = `width: ${sizePx}px !important; height: ${sizePx}px !important;`;
                         
                         $board.attr('style', finalStyle);
@@ -390,10 +393,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     $('body').removeClass('chess-fullscreen-active');
                     logChessState('Fullscreen EXIT');
                 }
-                
-                // Trigger logic sequence
                 applyDynamicSize();
-                setTimeout(applyDynamicSize, 500); // Backup trigger
+                setTimeout(applyDynamicSize, 500); 
             };
             document.addEventListener('fullscreenchange', window.currentChessFSHandler);
 
@@ -451,13 +452,13 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             $('#chess-fs-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 $(this).blur();
-                toggleFullScreen(); // Call native logic directly
+                toggleFullScreen(); 
             });
             
-            // KEYBOARD LISTENER - Calls function directly (fixes user gesture error)
+            // KEYBOARD LISTENER - Calls function directly
             $(document).on('keydown.chessFs', function(e) {
                 if (e.key.toLowerCase() === 'f' && $('#content-modal').hasClass('chess-mode')) {
-                    toggleFullScreen(); // Direct call
+                    toggleFullScreen(); 
                 }
             });
 
