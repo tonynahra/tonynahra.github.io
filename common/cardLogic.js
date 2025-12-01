@@ -75,9 +75,9 @@ function animateModalOpen() {
 function animateModalClose() {
     const $modal = $('#content-modal'); const $content = $modal.find('.modal-content'); $content.removeClass('modal-animate-enter').addClass('modal-animate-leave'); $modal.addClass('fading-out'); 
     
-    // Cleanup full screen state if active
+    // Cleanup Chess Full Screen
     if (document.fullscreenElement) {
-        document.exitFullscreen().catch(err => {});
+        document.exitFullscreen().catch(e => {});
     }
     $('body').removeClass('chess-fullscreen-active');
 
@@ -99,34 +99,33 @@ window.handleModalKeys = function(e) {
     if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; } if ($(e.target).is('input, textarea, select')) return;
     if (isTutorialMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
-    // UPDATED: Check for chess mode to prevent conflict
+    // CHECK FOR CHESS MODE
     const isChessMode = $('#content-modal').hasClass('chess-mode');
 
     switch (e.key) { 
         case "Escape": 
-            // Let native FS handle escape if active, otherwise close modal
+            // If native Full Screen is active, browser handles the exit.
+            // We only close modal if NOT in native full screen.
             if (!document.fullscreenElement) {
                 $('.modal-close-btn').first().click(); 
             }
             break; 
         case "ArrowLeft": 
-            // UPDATED: Do not trigger modal navigation in chess mode
+            // IGNORE in chess mode (let PGN viewer handle it)
             if (!isTutorialMode && !isChessMode) { $('.modal-prev-btn').first().click(); } 
             break; 
         case "ArrowRight": 
-            // UPDATED: Do not trigger modal navigation in chess mode
+            // IGNORE in chess mode
             if (!isTutorialMode && !isChessMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case " ": 
             if(e.preventDefault) e.preventDefault(); 
-            // UPDATED: Allow spacebar for chess next move? Usually space triggers next slide. 
-            // We will disable it for chess to avoid conflict or letting it bubble.
             if (!isTutorialMode && !isChessMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case "i": if(e.preventDefault) e.preventDefault(); $('.modal-info-btn').first().click(); break; 
         case "f": 
             if(e.preventDefault) e.preventDefault(); 
-            // Ignore global F if in chess mode (chess logic handles it specifically)
+            // IGNORE global F in Chess mode (it has its own listener)
             if (!isChessMode) {
                 $('.modal-fullscreen-btn').first().click(); 
             }
@@ -323,7 +322,7 @@ function loadModalContent(index) {
 
     $modal.find('.modal-header').removeAttr('style'); $modal.removeClass('chess-mode research-mode'); $('body').removeClass('chess-mode-active'); $modalOpenLink.hide(); 
     
-    // UPDATED: Hide prev/next buttons for chess
+    // UPDATED: Show prev/next by default, hide ONLY for chess
     $('.modal-prev-btn, .modal-next-btn').show();
     
     isTutorialMode = false; $modalInfoBtn.removeData('manifest-url'); $modalContent.removeClass('summary-view-active'); $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
@@ -392,9 +391,9 @@ function loadModalContent(index) {
     if(window.cardGlobalState.infoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
     if (!title && !desc) $modalInfoBtn.hide();
 
-    // UPDATED: Chess Logic
+    // UPDATED: Hide nav buttons for chess mode
     if (loadType === 'chess') { 
-        $('.modal-prev-btn, .modal-next-btn').hide(); // Hide buttons
+        $('.modal-prev-btn, .modal-next-btn').hide();
         window.loadChessGame(loadUrl, $modal, $modalContent); 
         return; 
     }
@@ -460,7 +459,6 @@ $(document).ready(function () {
     $('body').on('click', '.modal-prev-btn', function() { $(this).blur(); window.stopSlideshow(); if (currentCardIndex > 0) window.loadModalContent(currentCardIndex - 1); });
     $('body').on('click', '.modal-next-btn', function() { $(this).blur(); if (currentCardIndex < currentCardList.length - 1) window.loadModalContent(currentCardIndex + 1); else window.stopSlideshow(); });
     
-    // INFO BUTTON (FIXED PERSISTENCE & TOGGLING)
     $('body').on('click', '.modal-info-btn', function() { 
         $(this).blur();
         const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); 
