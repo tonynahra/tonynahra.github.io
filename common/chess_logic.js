@@ -37,14 +37,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
             // --- DEBUGGER ---
             const CHESS_DEBUG = true; 
-            const logChessState = (trigger) => {
+            const logChessState = (trigger, sizePx) => {
                 if (!CHESS_DEBUG) return;
                 const board = document.getElementById(boardId);
                 const innerBoard = board ? (board.querySelector('.board') || board.querySelector('.cg-board')) : null;
                 
                 if (board) {
                     console.log(`[CHESS DEBUG] Event: ${trigger}`);
-                    console.log(`- Window Size: ${window.innerWidth}px x ${window.innerHeight}px`);
+                    if (sizePx) console.log(`- Calculated Size: ${sizePx}px`);
                     console.log(`- Container Size: ${board.offsetWidth}px x ${board.offsetHeight}px`);
                     if(innerBoard) {
                         console.log(`- Inner Board Size: ${innerBoard.offsetWidth}px x ${innerBoard.offsetHeight}px`);
@@ -130,6 +130,9 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const movesId = `#${boardId}Moves`;
                 const movesDisplay = movesPanelVisible ? 'block' : 'none';
                 
+                // Normal mode fallback (Full screen is handled by JS)
+                const fsBoardSize = movesPanelVisible ? '80vmin' : '95vmin';
+
                 const css = `
                     /* --- NORMAL MODE STYLES --- */
                     ${movesId} {
@@ -212,7 +215,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         background-color: #f0d9b5; /* Fallback */
                     }
 
-                    /* REFINED FIX: Only target the specific board wrappers */
+                    /* Only target the specific board wrappers */
                     body.chess-fullscreen-active #${boardId} .pgnvjs-wrapper,
                     body.chess-fullscreen-active #${boardId} .cg-board-wrap, 
                     body.chess-fullscreen-active #${boardId} .board,
@@ -327,28 +330,25 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
             };
 
-            // --- CRITICAL FIX: STRICT HEIGHT CAP ---
+            // --- AUTO PIXEL RESIZING (Logic: 800px fallback -> 90% of height) ---
             const applyDynamicSize = () => {
                 const $board = $(`#${boardId}`);
                 if ($board.length === 0) return;
 
                 if ($('body').hasClass('chess-fullscreen-active')) {
-                    // Use innerHeight to get actual visible vertical space
                     const w = window.innerWidth;
                     const h = window.innerHeight;
                     
-                    // 1. Calculate safe Max Height (Screen Height - 60px for margins)
-                    const maxH = h - 60;
+                    // 1. Calculate 90% of height
+                    let sizePx = Math.floor(h * 0.90);
                     
-                    // 2. Calculate safe Max Width based on moves panel presence
-                    // If panel is open, we can use about 70% of width. If closed, 95%.
-                    const widthLimit = movesPanelVisible ? (w * 0.70) : (w * 0.95);
+                    // 2. Safety Check: Ensure this size fits within the width (Square)
+                    // If 90% of height is wider than 90% of width, scale down.
+                    if (sizePx > (w * 0.90)) {
+                        sizePx = Math.floor(w * 0.90);
+                    }
                     
-                    // 3. The Board MUST be square. So pick the SMALLER of Max Height or Max Width.
-                    // This ensures it never overflows vertically or horizontally.
-                    const finalSize = Math.floor(Math.min(maxH, widthLimit));
-                    
-                    const styleStr = `width: ${finalSize}px !important; height: ${finalSize}px !important;`;
+                    const styleStr = `width: ${sizePx}px !important; height: ${sizePx}px !important;`;
                     
                     // Apply to Board Container
                     $board.attr('style', styleStr);
@@ -359,13 +359,13 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     // Ensure SVG/Canvas match
                     $board.find('svg, canvas').attr('style', styleStr);
                     
+                    logChessState('Dynamic Size Applied', sizePx);
+                    
                 } else {
                     // Reset
                     $board.removeAttr('style');
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap, svg, canvas').removeAttr('style');
                 }
-                
-                logChessState('Dynamic Size Applied');
             };
 
             // --- LISTENERS ---
@@ -377,13 +377,17 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     $('body').removeClass('chess-fullscreen-active');
                     logChessState('Fullscreen EXIT');
                 }
+                
+                // Calculate and apply size
                 applyDynamicSize();
-                setTimeout(applyDynamicSize, 200);
-                setTimeout(applyDynamicSize, 500);
+                
+                // Trigger event ONCE after delay to update library
+                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 200);
             };
             document.addEventListener('fullscreenchange', window.currentChessFSHandler);
 
             window.currentChessResizeHandler = () => {
+                // Handle window resizing without triggering events loop
                 if ($('body').hasClass('chess-fullscreen-active')) {
                     applyDynamicSize();
                 }
