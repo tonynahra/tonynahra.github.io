@@ -1,13 +1,17 @@
 // This function is designed to be loaded dynamically
 window.startChessGame = function(loadUrl, $modal, $modalContent) {
     
-    // Clean up previous listeners
+    // Clean up previous listeners if any exist
     if (window.currentChessFSHandler) {
         document.removeEventListener('fullscreenchange', window.currentChessFSHandler);
         window.currentChessFSHandler = null;
     }
+    if (window.chessKeyHandler) {
+        document.removeEventListener('keydown', window.chessKeyHandler);
+        window.chessKeyHandler = null;
+    }
 
-    // CORS Fix
+    // CORS Fix for GitHub URLs
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
         loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
     }
@@ -28,111 +32,38 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             const boardId = 'chess-board-' + Date.now();
             const styleId = 'chess-style-' + Date.now();
 
+            // State Variables
             let currentFontSize = 26;
             let commentsEnabled = true;
             let movesPanelVisible = true; 
             let commentMap = {};
-
-            // --- DEBUGGER ---
-            const CHESS_DEBUG = true; 
-            const logChessState = (trigger) => {
-                if (!CHESS_DEBUG) return;
-                const board = document.getElementById(boardId);
-                const innerBoard = board ? (board.querySelector('.board') || board.querySelector('.cg-board')) : null;
-                
-                if (board) {
-                    console.log(`[CHESS DEBUG] Event: ${trigger}`);
-                    console.log(`- Container Size: ${board.offsetWidth}px x ${board.offsetHeight}px`);
-                    if(innerBoard) {
-                        console.log(`- Inner Board Size: ${innerBoard.offsetWidth}px x ${innerBoard.offsetHeight}px`);
-                    }
-                    console.log(`- Is FullScreen:`, !!document.fullscreenElement);
-                }
-            };
-
-            const parseCommentsMap = (pgnText) => {
-                const map = {};
-                let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim();
-                const cleanPGN = (text) => {
-                    let result = "";
-                    let depth = 0;
-                    for (let i = 0; i < text.length; i++) {
-                        if (text[i] === '(') { depth++; continue; }
-                        if (text[i] === ')') { if(depth > 0) depth--; continue; }
-                        if (depth === 0) result += text[i];
-                    }
-                    return result;
-                };
-                body = cleanPGN(body);
-                body = body.replace(/(\r\n|\n|\r)/gm, " ");
-                body = body.replace(/\{/g, " { ").replace(/\}/g, " } ");
-                const tokens = body.split(/\s+/);
-                let moveIndex = 0;
-                let insideComment = false;
-                let currentComment = [];
-                for (let i = 0; i < tokens.length; i++) {
-                    const token = tokens[i].trim();
-                    if (!token) continue;
-                    if (token === '{') { insideComment = true; currentComment = []; continue; }
-                    if (token === '}') {
-                        insideComment = false;
-                        const idx = moveIndex === 0 ? -1 : moveIndex - 1;
-                        map[idx] = currentComment.join(" ");
-                        continue;
-                    }
-                    if (insideComment) {
-                        currentComment.push(token);
-                    } else {
-                        if (/^\d+\.+/.test(token)) continue;
-                        if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
-                        if (token.startsWith('$')) continue;
-                        moveIndex++;
-                    }
-                }
-                return map;
-            };
-
-            const hasCommentary = (moveIndex) => {
-                const text = commentMap[moveIndex] || "";
-                const hasEval = text.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                const cleanText = text.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                return hasEval || cleanText.length > 0;
-            };
-
-            // 3. INJECT CHESS UI HTML (Added Force 600px Button)
-            $modalContent.html(`
-                <style id="${styleId}"></style>
-                <div class="chess-container">
-                    <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 8px; background: #1a1a1a; gap: 10px; border-bottom: 1px solid #333;">
-                        <select id="chess-game-select" style="flex: 1; max-width: 400px; padding: 5px; background:#000; color:#fff; border:1px solid #444;"></select>
-                        <button id="chess-force-size-btn" class="tab-button" style="color: #000; background: #f1c40f; border: 1px solid #f1c40f; padding: 4px 10px; font-weight: bold;">Force 600px</button>
-                        <button id="chess-toggle-moves-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Moves</button>
-                        <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Info</button>
-                        <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 4px 10px;">Comments: On</button>
-                        <div style="flex: 1;"></div>
-                        <button id="chess-fs-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; margin-right: 5px;" title="Full Screen (F)">&#x26F6; Full Screen</button>
-                        <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
-                    </div>
-                    <div class="chess-main-area">
-                        <div class="chess-white-box">
-                            <div id="${boardId}"></div>
-                        </div>
-                        <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
-                        <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
-                    </div>
-                </div>
-            `);
+            let currentBoardPx = null; // null = auto/responsive mode
 
             // --- CSS GENERATOR ---
             const updateChessStyles = () => {
                 const movesId = `#${boardId}Moves`;
                 const movesDisplay = movesPanelVisible ? 'block' : 'none';
                 
-                // Normal mode size (flexible)
-                const fsBoardSize = movesPanelVisible ? '80vmin' : '95vmin';
+                // Determine board dimensions
+                // If currentBoardPx is set, use it. Otherwise use responsive units.
+                let boardWidth, boardHeight;
+                
+                if (currentBoardPx) {
+                    boardWidth = `${currentBoardPx}px`;
+                    boardHeight = `${currentBoardPx}px`;
+                } else {
+                    // Default Responsive Logic
+                    // Fullscreen: 80vmin if moves visible, 95vmin if not
+                    // Windowed: calculated in renderGame initially, but here we can set maxes
+                    boardWidth = movesPanelVisible ? '80vmin' : '95vmin';
+                    boardHeight = movesPanelVisible ? '80vmin' : '95vmin';
+                }
 
+                // If we are NOT in fullscreen and NOT fixed size, we rely on the container constraints
+                // But if we ARE in fullscreen or have a fixed size, we enforce it.
+                
                 const css = `
-                    /* --- NORMAL MODE STYLES --- */
+                    /* --- MOVES PANEL --- */
                     ${movesId} {
                         background-color: #ffffff !important;
                         color: #000000 !important;
@@ -160,6 +91,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     ${movesId} move:hover { background-color: #e0e0e0 !important; }
                     ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
 
+                    /* --- BOARD WRAPPERS --- */
                     #${boardId} .pgnvjs-wrapper {
                         display: flex !important;
                         flex-direction: row !important;
@@ -174,65 +106,118 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         padding: ${15 + (currentFontSize - 26) * 0.5}px !important;
                     }
 
-                    /* === FULL SCREEN STYLES === */
+                    /* === SIZING LOGIC === */
                     
-                    body.chess-fullscreen-active .modal-header { 
-                        display: none !important; 
+                    /* When in FS mode OR when a Fixed Size is set, we strictly enforce dimensions */
+                    body.chess-fullscreen-active #${boardId}, 
+                    .chess-fixed-size #${boardId} { 
+                        width: ${boardWidth} !important; 
+                        height: ${boardHeight} !important;
+                        display: flex !important; justify-content: center !important; align-items: center !important;
+                        background-color: #f0d9b5; /* Fallback/Margin color */
+                    }
+
+                    /* Force internal library elements to match container */
+                    body.chess-fullscreen-active #${boardId} .pgnvjs-wrapper,
+                    body.chess-fullscreen-active #${boardId} .cg-board-wrap, 
+                    body.chess-fullscreen-active #${boardId} .board,
+                    body.chess-fullscreen-active #${boardId} .cg-board,
+                    .chess-fixed-size #${boardId} .pgnvjs-wrapper,
+                    .chess-fixed-size #${boardId} .cg-board-wrap, 
+                    .chess-fixed-size #${boardId} .board,
+                    .chess-fixed-size #${boardId} .cg-board { 
+                        width: 100% !important; 
+                        height: 100% !important;
                     }
                     
-                    /* WE KEEP TOOLBAR VISIBLE FOR THE RESIZE BUTTON */
+                    /* Toolbar Visibility in FS */
+                    body.chess-fullscreen-active .modal-header { display: none !important; }
                     body.chess-fullscreen-active .chess-toolbar { 
                         display: flex !important; 
-                        z-index: 2147483648 !important; /* Above everything */
+                        z-index: 2147483648 !important; 
                     }
-                    
                     body.chess-fullscreen-active .chess-container { 
                         position: fixed !important; top: 0; left: 0;
                         width: 100vw !important; height: 100vh !important;
                         z-index: 2147483647 !important; 
                         background: #1a1a1a !important;
-                        display: flex; flex-direction: column;
-                    }
-
-                    body.chess-fullscreen-active .chess-main-area { 
-                        flex: 1 !important; 
-                        display: flex !important;
-                        flex-direction: row !important; /* Explicit row to prevent overlap */
-                        justify-content: center !important; 
-                        align-items: center !important;
-                        width: 100% !important; 
-                        height: 100% !important;
-                        overflow: hidden !important;
-                        position: relative !important;
-                    }
-
-                    body.chess-fullscreen-active .chess-white-box { 
-                        display: flex !important; 
-                        justify-content: center !important;
-                        align-items: center !important;
-                        height: auto !important; 
-                        width: auto !important;
-                        flex: 1 1 auto; /* Allow it to grow/shrink in flex */
-                    }
-
-                    /* DEFAULT FS BOARD (Can be overridden by Resize Button) */
-                    body.chess-fullscreen-active #${boardId} { 
-                        width: ${fsBoardSize} !important; 
-                        height: ${fsBoardSize} !important;
-                        display: flex !important; justify-content: center !important; align-items: center !important;
-                        background-color: #f0d9b5;
-                    }
-
-                    /* Force internal library elements to fit */
-                    body.chess-fullscreen-active #${boardId} .pgnvjs-wrapper,
-                    body.chess-fullscreen-active #${boardId} .cg-board-wrap, 
-                    body.chess-fullscreen-active #${boardId} .board,
-                    body.chess-fullscreen-active #${boardId} .cg-board { 
-                        width: 100% !important; 
-                        height: 100% !important;
                     }
                 `;
                 $(`#${styleId}`).text(css);
+
+                // Toggle a class on the container to help CSS selector specificity
+                if (currentBoardPx) {
+                    $('.chess-white-box').addClass('chess-fixed-size');
+                } else {
+                    $('.chess-white-box').removeClass('chess-fixed-size');
+                }
+            };
+
+            // 3. INJECT CHESS UI HTML
+            $modalContent.html(`
+                <style id="${styleId}"></style>
+                <div class="chess-container">
+                    <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 8px; background: #1a1a1a; gap: 10px; border-bottom: 1px solid #333;">
+                        <select id="chess-game-select" style="flex: 1; max-width: 300px; padding: 5px; background:#000; color:#fff; border:1px solid #444;"></select>
+                        
+                        <!-- SIZING CONTROLS -->
+                        <div class="chess-size-controls" style="display:flex; gap:0;">
+                            <button id="chess-size-minus" title="Decrease Size" style="background:#333; color:#fff; border:1px solid #555; border-radius:4px 0 0 4px; padding:4px 10px;">-</button>
+                            <button id="chess-size-reset" title="Reset to 800px" style="background:#333; color:#fff; border-top:1px solid #555; border-bottom:1px solid #555; border-left:none; border-right:none; padding:4px 10px;">800px</button>
+                            <button id="chess-size-plus" title="Increase Size" style="background:#333; color:#fff; border:1px solid #555; border-radius:0 4px 4px 0; padding:4px 10px;">+</button>
+                        </div>
+
+                        <button id="chess-toggle-moves-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Moves</button>
+                        <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Info</button>
+                        <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 4px 10px;">Comments: On</button>
+                        
+                        <div style="flex: 1;"></div>
+                        <button id="chess-fs-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; margin-right: 5px;" title="Full Screen (F)">&#x26F6; Full Screen</button>
+                        <button id="chess-close-btn" style="background: #c0392b; color: white; border: none; padding: 6px 16px; font-weight: bold; cursor: pointer; border-radius: 3px;">X Close</button>
+                    </div>
+                    <div class="chess-main-area">
+                        <div class="chess-white-box">
+                            <div id="${boardId}"></div>
+                        </div>
+                        <div id="chess-comment-overlay" class="chess-comment-overlay"></div>
+                        <div id="chess-metadata-${boardId}" class="chess-metadata-overlay"></div>
+                    </div>
+                </div>
+            `);
+
+            // --- HELPER: Parse Comments ---
+            const parseCommentsMap = (pgnText) => {
+                const map = {};
+                let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim();
+                // Basic cleanup
+                body = body.replace(/(\r\n|\n|\r)/gm, " ").replace(/\{/g, " { ").replace(/\}/g, " } ");
+                
+                const tokens = body.split(/\s+/);
+                let moveIndex = 0;
+                let insideComment = false;
+                let currentComment = [];
+                
+                for (let i = 0; i < tokens.length; i++) {
+                    const token = tokens[i].trim();
+                    if (!token) continue;
+                    if (token === '{') { insideComment = true; currentComment = []; continue; }
+                    if (token === '}') {
+                        insideComment = false;
+                        const idx = moveIndex === 0 ? -1 : moveIndex - 1;
+                        map[idx] = currentComment.join(" ");
+                        continue;
+                    }
+                    if (insideComment) {
+                        currentComment.push(token);
+                    } else {
+                        // Skip move numbers and game results
+                        if (/^\d+\.+/.test(token)) continue;
+                        if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
+                        if (token.startsWith('$')) continue;
+                        moveIndex++;
+                    }
+                }
+                return map;
             };
 
             const generateEvalHtml = (rawText) => {
@@ -246,12 +231,10 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 if (evalMatch) {
                     const valStr = evalMatch[1];
                     let rawVal = 0;
-
                     if (valStr.startsWith('#')) {
                         const isBlackMate = valStr.includes('-');
                         moveDisplay = "Mate " + valStr;
-                        moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ?
-                        "#e74c3c" : "#2ecc71";
+                        moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
                         whiteWinPct = isBlackMate ? 0 : 100;
                     } else {
                         rawVal = parseFloat(valStr);
@@ -264,42 +247,18 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
                     }
                 }
-
                 const whiteWinPctFormatted = whiteWinPct.toFixed(1);
                 const blackWinPctFormatted = (100 - whiteWinPct).toFixed(1);
 
                 const evalHtml = `
-                    <div class="eval-row">
-                        <div class="eval-header">
-                            <span>Move Score</span>
-                            <span class="eval-value">${moveDisplay}</span>
-                        </div>
-                        <div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div>
-                    </div>
-                    <div class="eval-row">
-                        <div class="eval-header">
-                            <span>White vs Black</span>
-                            <span class="eval-value">${whiteWinPctFormatted}% / ${blackWinPctFormatted}%</span>
-                        </div>
-                        <div class="win-rate-bar" style="height: 10px; background: #000000; overflow: hidden; border-radius: 3px; border: 1px solid #777;">
-                            <div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #ffffff; float: left;"></div>
-                        </div>
-                    </div>
+                    <div class="eval-row"><div class="eval-header"><span>Score</span><span class="eval-value">${moveDisplay}</span></div><div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div></div>
+                    <div class="eval-row"><div class="eval-header"><span>Win %</span><span class="eval-value">${whiteWinPctFormatted}% W / ${blackWinPctFormatted}% B</span></div><div class="win-rate-bar" style="height: 10px; background: #000; overflow: hidden; border-radius: 3px; border: 1px solid #777;"><div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #fff;"></div></div></div>
                 `;
                 return { html: evalHtml, text: cleanText };
             };
 
             const updateCommentContent = (moveIndex, totalMoves) => {
                 const overlay = document.getElementById('chess-comment-overlay');
-                const btn = $('#chess-comment-btn');
-
-                const hasComment = hasCommentary(moveIndex);
-                if (hasComment) {
-                    btn.css({ background: '#4CAF50', color: '#000', border: '1px solid #4CAF50' });
-                } else {
-                    btn.css({ background: '#1a1a1a', color: '#ccc', border: '1px solid #444' });
-                }
-
                 if (!commentsEnabled) { $(overlay).fadeOut(); return; }
                 $(overlay).fadeIn();
 
@@ -307,126 +266,120 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const parsed = generateEvalHtml(commentText);
                 
                 const zoomFactor = currentFontSize / 26; 
-                const labelFontSize = Math.round(14 * zoomFactor);
-                const contentFontSize = Math.round(18 * zoomFactor);
-                const counterFontSize = Math.round(16 * zoomFactor);
-                
-                let textContent = "";
-                if (parsed.text) {
-                    textContent = `
-                        <h5 style="margin: 0 0 8px 0; color: navy; background: #e0e0e0; font-size: ${labelFontSize}px; padding: 4px 8px; border-radius: 3px; display: inline-block; font-weight: bold;">Game Commentary</h5>
-                        <div style="margin-bottom:12px; font-size: ${contentFontSize}px; color: #2c3e50;">${parsed.text}</div>
-                    `;
-                } else if (moveIndex === -1) {
-                    textContent = `<div style="color:#546e7a; margin-bottom:12px; font-size: ${contentFontSize}px;">Start of Game</div>`;
-                } else {
-                    textContent = `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px; font-size: ${contentFontSize}px;">No commentary.</div>`;
-                }
-                
-                const displayMove = moveIndex === -1 ? "Start" : moveIndex + 1;
-                const displayTotal = totalMoves || '?';
-                
-                overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
+                let textContent = parsed.text ? `<h5 style="margin:0 0 8px 0; color:navy; background:#e0e0e0; font-size:${Math.round(14*zoomFactor)}px; padding:4px 8px; border-radius:3px; display:inline-block; font-weight:bold;">Commentary</h5><div style="margin-bottom:12px; font-size:${Math.round(18*zoomFactor)}px; color:#2c3e50;">${parsed.text}</div>` : `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px; font-size:${Math.round(18*zoomFactor)}px;">No commentary.</div>`;
+                if(moveIndex === -1 && !parsed.text) textContent = `<div style="color:#546e7a; margin-bottom:12px; font-size:${Math.round(18*zoomFactor)}px;">Start of Game</div>`;
+
+                overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size:${Math.round(16*zoomFactor)}px;">Move ${moveIndex === -1 ? "Start" : moveIndex + 1} / ${totalMoves || '?'}</div>`;
             };
 
             // --- FULL SCREEN HANDLER ---
             window.currentChessFSHandler = () => {
                 if (document.fullscreenElement) {
                     $('body').addClass('chess-fullscreen-active');
-                    logChessState('Fullscreen ENTER');
                 } else {
                     $('body').removeClass('chess-fullscreen-active');
-                    logChessState('Fullscreen EXIT');
                 }
-                
-                // Force multiple resize events to make the library redraw
+                // Trigger resize so library recalculates squares
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
-                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 200);
+                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 300);
             };
-
             document.addEventListener('fullscreenchange', window.currentChessFSHandler);
 
-            // --- NEW: FORCE RESIZE BUTTON ---
-            $('#chess-force-size-btn').off('click').on('click', function(e) {
-                e.preventDefault();
-                const $board = $(`#${boardId}`);
-                
-                // Force styles via inline CSS to override everything else
-                $board.attr('style', 'width: 600px !important; height: 600px !important; margin: auto !important;');
-                
-                // Also force internal wrappers commonly used by chess libraries
-                $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').attr('style', 'width: 600px !important; height: 600px !important;');
-                
-                console.log("[CHESS DEBUG] Forcing 600px size...");
-                // Trigger resize so library recalculates squares
+            // --- KEYBOARD NAVIGATION (DIRECT BINDING) ---
+            window.chessKeyHandler = (e) => {
+                // Only act if chess mode is active
+                if (!$('#content-modal').hasClass('chess-mode')) return;
+
+                if (e.key === "ArrowLeft") {
+                    // Try to find the previous button in the PGN viewer
+                    const prevBtn = $(`#${boardId} .prev, #${boardId} .fa-arrow-left`).parent('button');
+                    if (prevBtn.length) prevBtn.click();
+                    // Also try standard selector just in case
+                    else $(`#${boardId} button.prev`).click();
+                } 
+                else if (e.key === "ArrowRight" || e.key === " ") {
+                    const nextBtn = $(`#${boardId} .next, #${boardId} .fa-arrow-right`).parent('button');
+                    if (nextBtn.length) nextBtn.click();
+                    else $(`#${boardId} button.next`).click();
+                    if(e.key === " ") e.preventDefault(); // Prevent scroll
+                }
+                else if (e.key.toLowerCase() === 'f') {
+                    $('#chess-fs-btn').click();
+                }
+            };
+            document.addEventListener('keydown', window.chessKeyHandler);
+
+
+            // --- BUTTON HANDLERS ---
+            
+            // 1. Sizing Buttons
+            const triggerResize = () => {
+                updateChessStyles();
+                // Dispatch resize event to force library to redraw board SVG/Canvas
                 window.dispatchEvent(new Event('resize'));
+            };
+
+            $('#chess-size-plus').on('click', function() {
+                // If not set yet, grab current rendered width or start at 600
+                if (!currentBoardPx) {
+                    const currentWidth = $(`#${boardId} .board`).width();
+                    currentBoardPx = currentWidth ? currentWidth : 600;
+                }
+                currentBoardPx += 100;
+                triggerResize();
             });
 
+            $('#chess-size-minus').on('click', function() {
+                if (!currentBoardPx) {
+                    const currentWidth = $(`#${boardId} .board`).width();
+                    currentBoardPx = currentWidth ? currentWidth : 600;
+                }
+                if (currentBoardPx > 200) currentBoardPx -= 100;
+                triggerResize();
+            });
+
+            $('#chess-size-reset').on('click', function() {
+                currentBoardPx = 800; // Fixed 800px as requested
+                triggerResize();
+            });
+
+            // 2. Toggle Moves
             $('#chess-toggle-moves-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 movesPanelVisible = !movesPanelVisible;
-                const btn = $(this);
-                if (movesPanelVisible) {
-                    btn.css({ background: '#1a1a1a', color: '#ccc' });
-                } else {
-                    btn.css({ background: '#555', color: '#fff' });
-                }
-                updateChessStyles(); 
-                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
+                $(this).css({ background: movesPanelVisible ? '#1a1a1a' : '#555', color: movesPanelVisible ? '#ccc' : '#fff' });
+                triggerResize();
             });
 
+            // 3. Comments Toggle
             $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 commentsEnabled = !commentsEnabled;
-                const btn = $(this);
-                if (commentsEnabled) btn.text('Comments: On'); else btn.text('Comments: Off');
-
+                $(this).text(commentsEnabled ? 'Comments: On' : 'Comments: Off');
+                // Refresh overlay
                 const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
-                let activeMoveIndex = -1;
-                const movesPanel = document.getElementById(boardId + 'Moves');
-                if (movesPanel) {
-                    const activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
-                    if (activeEl) {
-                        const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                        activeMoveIndex = allMoves.indexOf(activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move'));
-                    }
-                }
-                updateCommentContent(activeMoveIndex, total);
+                updateCommentContent(-1, total);
             });
 
+            // 4. Fullscreen
             $('#chess-fs-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 $(this).blur();
-                const elem = document.documentElement;
                 if (!document.fullscreenElement) {
-                    if(elem.requestFullscreen) { elem.requestFullscreen(); }
-                    else if(elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
-                    else if(elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-                    else if(elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+                    document.documentElement.requestFullscreen().catch(e => console.log(e));
                 } else {
-                    if(document.exitFullscreen) { document.exitFullscreen(); }
-                    else if(document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-                    else if(document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-                    else if(document.msExitFullscreen) { document.msExitFullscreen(); }
-                }
-            });
-            
-            $(document).on('keydown.chessFs', function(e) {
-                if (e.key.toLowerCase() === 'f' && $('#content-modal').hasClass('chess-mode')) {
-                    $('#chess-fs-btn').click();
+                    document.exitFullscreen();
                 }
             });
 
+            // 5. Close
             $('#chess-close-btn').off('click').on('click', function(e) {
                 e.preventDefault();
-                if (document.fullscreenElement) { document.exitFullscreen(); }
-                if (window.currentChessFSHandler) {
-                    document.removeEventListener('fullscreenchange', window.currentChessFSHandler);
-                    window.currentChessFSHandler = null;
-                }
+                if (document.fullscreenElement) document.exitFullscreen();
                 $('.modal-close-btn').first().click();
             });
 
+            // Game Select Dropdown Logic
             const $select = $('#chess-game-select');
             rawGames.forEach((gamePgn, idx) => {
                 const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -440,15 +393,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
             function renderGame(index) {
                 if (gameObserver) gameObserver.disconnect();
-
                 const selectedPgn = rawGames[index];
                 commentMap = parseCommentsMap(selectedPgn);
 
+                // Metadata Table
                 const headers = {};
-                const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                 let match;
+                const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
                 while ((match = headerRegex.exec(selectedPgn)) !== null) { headers[match[1]] = match[2]; }
-
                 let infoHtml = '<h4>Game Details</h4><table style="width:100%; border-collapse: collapse;">';
                 for (const [key, val] of Object.entries(headers)) {
                     infoHtml += `<tr><td style="color: var(--text-accent); font-weight:bold; width: 30%;">${key}</td><td style="color: #fff;">${val}</td></tr>`;
@@ -456,33 +408,37 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                 $(`#chess-metadata-${boardId}`).html(infoHtml);
 
+                // Initial Size Calculation for responsive mode
                 const winHeight = $(window).height();
                 const winWidth = $(window).width();
                 const maxWidth = winWidth * 0.90;
                 const maxHeight = winHeight - 250;
-                const boardSize = Math.min(maxWidth, maxHeight);
+                const initialBoardSize = Math.min(maxWidth, maxHeight);
 
                 $(`#${boardId}`).empty();
 
                 if (typeof PGNV !== 'undefined') {
+                    // Render PGN View
                     PGNV.pgnView(boardId, {
                         pgn: selectedPgn,
                         theme: 'brown',
-                        boardSize: boardSize,
+                        boardSize: initialBoardSize, // This is just initial, CSS overrides it
                         layout: 'left',
                         width: '100%',
                         headers: false,
                     });
 
                     updateChessStyles();
-                    const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
-                    updateCommentContent(-1, total);
 
+                    // Observer for Moves Panel (to update comments on move)
                     const checkInterval = setInterval(() => {
                         const movesPanel = document.getElementById(boardId + 'Moves');
                         if (movesPanel) {
                             clearInterval(checkInterval);
                             const totalMoves = movesPanel.querySelectorAll('move').length;
+                            
+                            // Initialize comment
+                            updateCommentContent(-1, totalMoves);
 
                             gameObserver = new MutationObserver(() => {
                                 let activeEl = movesPanel.querySelector('.active') || movesPanel.querySelector('.yellow');
@@ -490,8 +446,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                                     const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
                                     if (activeMove) {
                                         const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                        const index = allMoves.indexOf(activeMove);
-                                        updateCommentContent(index, totalMoves);
+                                        const idx = allMoves.indexOf(activeMove);
+                                        updateCommentContent(idx, totalMoves);
                                         return;
                                     }
                                 }
