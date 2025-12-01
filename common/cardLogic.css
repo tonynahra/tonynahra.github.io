@@ -114,9 +114,8 @@ body.chess-mode-active .modal-header { display: none !important; }
     align-items: center; /* Center vertically and horizontally */
 }
 .chess-white-box { 
-    width: 100%; 
-    height: 100%; 
-    background-color: transparent; /* Changed from white to transparent to blend with dark mode if smaller */
+    /* Important: We rely on flexbox in main-area to center this */
+    /* We don't force width/height here; the JS will force width/height on this if fixed */
     display: flex; 
     justify-content: center; 
     align-items: center; 
