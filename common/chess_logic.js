@@ -38,17 +38,13 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             const logChessState = (trigger) => {
                 if (!CHESS_DEBUG) return;
                 const board = document.getElementById(boardId);
-                // Search for the specific internal wrapper that usually collapses
-                const innerBoard = board ? (board.querySelector('.board') || board.querySelector('.cg-board') || board.querySelector('div[class*="board"]')) : null;
+                const innerBoard = board ? (board.querySelector('.board') || board.querySelector('.cg-board')) : null;
                 
                 if (board) {
                     console.log(`[CHESS DEBUG] Event: ${trigger}`);
                     console.log(`- Container Size: ${board.offsetWidth}px x ${board.offsetHeight}px`);
                     if(innerBoard) {
                         console.log(`- Inner Board Size: ${innerBoard.offsetWidth}px x ${innerBoard.offsetHeight}px`);
-                        console.log(`- Inner Board Style:`, window.getComputedStyle(innerBoard).height);
-                    } else {
-                        console.log(`- Inner Board Element NOT FOUND`);
                     }
                     console.log(`- Is FullScreen:`, !!document.fullscreenElement);
                 }
@@ -131,7 +127,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const movesId = `#${boardId}Moves`;
                 const movesDisplay = movesPanelVisible ? 'block' : 'none';
                 
-                // Sizing Logic: 95vmin fills screen, 80vmin leaves room for moves
+                // 95vmin ensures square fits; 80vmin leaves room for side panel
                 const fsBoardSize = movesPanelVisible ? '80vmin' : '95vmin';
 
                 const css = `
@@ -177,14 +173,13 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         padding: ${15 + (currentFontSize - 26) * 0.5}px !important;
                     }
 
-                    /* === FULL SCREEN STYLES (ABSOLUTE FILL FIX) === */
+                    /* === FULL SCREEN STYLES === */
                     
                     body.chess-fullscreen-active .modal-header,
                     body.chess-fullscreen-active .chess-toolbar { 
                         display: none !important; 
                     }
                     
-                    /* 1. Main Container: Fixed */
                     body.chess-fullscreen-active .chess-container { 
                         position: fixed !important; top: 0; left: 0;
                         width: 100vw !important; height: 100vh !important;
@@ -193,50 +188,44 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         display: flex; flex-direction: column;
                     }
 
-                    /* 2. Center Content */
                     body.chess-fullscreen-active .chess-main-area { 
                         flex: 1 !important; display: flex !important;
                         justify-content: center !important; align-items: center !important;
                         width: 100% !important; height: 100% !important;
                         overflow: hidden !important;
-                        position: relative !important;
+                        padding-top: 10px;
                     }
 
-                    /* 3. Board Wrapper */
                     body.chess-fullscreen-active .chess-white-box { 
                         display: flex !important; justify-content: center !important;
                         align-items: center !important;
                         height: 100% !important; 
                         width: 100% !important;
-                        position: relative !important;
+                        /* Ensure no background color obscures the board */
+                        background: transparent !important;
                     }
 
-                    /* 4. THE BOARD CONTAINER: Force relative positioning for children */
+                    /* THE BOARD ROOT: Force size */
                     body.chess-fullscreen-active #${boardId} { 
                         width: ${fsBoardSize} !important; 
                         height: ${fsBoardSize} !important;
                         margin: 0 auto !important;
-                        position: relative !important; /* Anchor for absolute children */
-                        display: block !important;
-                        background-color: #f0d9b5;
+                        display: flex !important; justify-content: center !important; align-items: center !important;
+                        /* Removed explicit background-color to let library theme show through */
                     }
 
-                    /* 5. NUCLEAR OPTION: Force internal elements to fill the parent absolutely */
-                    body.chess-fullscreen-active #${boardId} .pgnvjs-wrapper,
-                    body.chess-fullscreen-active #${boardId} .cg-board-wrap, 
-                    body.chess-fullscreen-active #${boardId} .board,
-                    body.chess-fullscreen-active #${boardId} .cg-board,
-                    body.chess-fullscreen-active #${boardId} > div { 
-                        position: absolute !important;
-                        top: 0 !important; left: 0 !important;
+                    /* FIX: Force internal library wrappers to simply fill the parent.
+                       REMOVED: background-size: cover (which distorted squares)
+                       REMOVED: position: absolute (which collapsed layers) */
+                    body.chess-fullscreen-active .pgnvjs-wrapper,
+                    body.chess-fullscreen-active .cg-board-wrap, 
+                    body.chess-fullscreen-active .board,
+                    body.chess-fullscreen-active .cg-board { 
                         width: 100% !important; 
                         height: 100% !important;
-                        max-width: none !important;
-                        max-height: none !important;
-                        background-size: cover !important;
                     }
                     
-                    /* SVG/Canvas often need explicit 100% too */
+                    /* Ensure SVG/Canvas scale correctly without distortion */
                     body.chess-fullscreen-active #${boardId} svg, 
                     body.chess-fullscreen-active #${boardId} canvas {
                         width: 100% !important;
@@ -351,7 +340,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     logChessState('Fullscreen EXIT');
                 }
                 
-                // Force multiple resize events
+                // Force multiple resize events to make the library redraw
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 200);
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 500);
