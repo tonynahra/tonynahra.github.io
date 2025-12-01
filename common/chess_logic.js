@@ -176,6 +176,11 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
                     /* === FULL SCREEN STYLES === */
                     
+                    /* Prevents any scrolling in full screen */
+                    body.chess-fullscreen-active {
+                        overflow: hidden !important;
+                    }
+
                     body.chess-fullscreen-active .modal-header { display: none !important; }
                     body.chess-fullscreen-active .chess-toolbar { display: flex !important; z-index: 2147483648 !important; }
                     
@@ -333,25 +338,25 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 if ($board.length === 0) return;
 
                 if ($('body').hasClass('chess-fullscreen-active')) {
-                    // 1. FORCE RESET TO 800px FIRST
-                    // This clears any "huge" styles that might distort the measurement
-                    const resetStyle = 'width: 800px !important; height: 800px !important;';
+                    // 1. FORCE RESET TO SMALL SIZE FIRST (10px)
+                    // This forces the container to shrink, removing any scrollbars or overflow
+                    // so we can get an accurate screen reading.
+                    const resetStyle = 'width: 10px !important; height: 10px !important;';
                     $board.attr('style', resetStyle);
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').attr('style', resetStyle);
                     
-                    // Force a browser reflow to ensure it "sees" the 800px size
+                    // Force Reflow
                     void document.body.offsetHeight;
 
-                    // 2. MEASURE THE SCREEN
-                    // Use innerHeight (Viewport) vs clientHeight (Document). innerHeight is usually correct for FS.
-                    // We take the minimum to be safe against scrollbars.
-                    const h = Math.min(window.innerHeight, document.documentElement.clientHeight);
-                    const w = Math.min(window.innerWidth, document.documentElement.clientWidth);
+                    // 2. MEASURE THE SCREEN (Use visualViewport if available for accuracy)
+                    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                    const w = window.visualViewport ? window.visualViewport.width : window.innerWidth;
                     
-                    // 3. CALCULATE 90% TARGET
+                    // 3. CALCULATE TARGET (90% Height)
                     let sizePx = Math.floor(h * 0.90);
                     
-                    // 4. WIDTH CONSTRAINT (Board must be square and fit horizontally)
+                    // 4. WIDTH CONSTRAINT (Ensure it fits horizontally)
+                    // If 90% of height is wider than width-20px, cap it.
                     if (sizePx > (w - 20)) {
                         sizePx = w - 20;
                     }
