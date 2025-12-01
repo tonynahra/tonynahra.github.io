@@ -100,7 +100,6 @@ window.handleModalKeys = function(e) {
         const keyName = direction === 'prev' ? 'ArrowLeft' : 'ArrowRight';
         const keyCode = direction === 'prev' ? 37 : 39;
         
-        // 1. Try clicking visible buttons first (most reliable if visible)
         const $area = $('#modal-content-area');
         let $btn = direction === 'prev' 
             ? $area.find('.prev, .fa-arrow-left, button[title="Previous"], button[data-id="prev"]') 
@@ -109,13 +108,10 @@ window.handleModalKeys = function(e) {
         if ($btn.length && $btn.is(':visible')) {
             $btn.first().click();
         } else {
-            // 2. Fallback: Dispatch event to the window/document to simulate global key press
             const event = new KeyboardEvent('keydown', {
                 key: keyName, code: keyName, keyCode: keyCode, which: keyCode, bubbles: true, cancelable: true
             });
             window.dispatchEvent(event);
-            
-            // 3. Last Resort: Dispatch to the specific board container
             const board = $area.find('.cg-board, .board, .chess-white-box')[0];
             if (board) board.dispatchEvent(event);
         }
@@ -143,7 +139,14 @@ window.handleModalKeys = function(e) {
             else if (!isTutorialMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case "i": if(e.preventDefault) e.preventDefault(); $('.modal-info-btn').first().click(); break; 
-        case "f": if(e.preventDefault) e.preventDefault(); $('.modal-fullscreen-btn').first().click(); break; 
+        case "f": 
+            if(e.preventDefault) e.preventDefault(); 
+            // CRITICAL FIX: If in chess mode, ignore 'F' here.
+            // Chess logic handles 'F' internally to call specific toggleFullScreen().
+            if (!isChessMode) {
+                $('.modal-fullscreen-btn').first().click(); 
+            }
+            break; 
         case "ArrowUp": if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.add('nav-visible'); } catch(e){} } break;
         case "ArrowDown": if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.remove('nav-visible'); } catch(e){} } break;
     }
@@ -227,7 +230,7 @@ window.buildChartModal = function(jsonUrl) {
                 const chartId = 'chart-canvas-' + Date.now();
                 $modalContent.html(`
                     <div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;">
-                        <h2 style="margin-top:0; color:#333;">${data.title || 'Financial Chart'}</h2>
+                        <h2 style="margin-top:0;">${data.title || 'Financial Chart'}</h2>
                         <div class="chart-container" style="flex:1; position:relative;">
                             <canvas id="${chartId}"></canvas>
                         </div>
