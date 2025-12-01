@@ -75,9 +75,9 @@ function animateModalOpen() {
 function animateModalClose() {
     const $modal = $('#content-modal'); const $content = $modal.find('.modal-content'); $content.removeClass('modal-animate-enter').addClass('modal-animate-leave'); $modal.addClass('fading-out'); 
     
-    // Cleanup Full Screen if active
+    // Clean up chess full screen if active
     if (document.fullscreenElement) {
-        document.exitFullscreen().catch(err => {});
+        document.exitFullscreen().catch(e => {});
     }
     $('body').removeClass('chess-fullscreen-active');
 
@@ -99,34 +99,32 @@ window.handleModalKeys = function(e) {
     if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; } if ($(e.target).is('input, textarea, select')) return;
     if (isTutorialMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
-    // UPDATED: Check if we are in Chess Mode
+    // UPDATED: Check for chess mode
     const isChessMode = $('#content-modal').hasClass('chess-mode');
 
     switch (e.key) { 
         case "Escape": 
-            // If native Full Screen is active, browser handles the exit logic.
-            // We only trigger close if NOT in native full screen.
+            // If in FS, let browser handle it or chess logic handle it.
             if (!document.fullscreenElement) {
                 $('.modal-close-btn').first().click(); 
             }
             break; 
         case "ArrowLeft": 
-            // Don't navigate slides if in Chess Mode (Let PGN viewer handle it)
+            // UPDATED: Do NOT navigate slides in chess mode
             if (!isTutorialMode && !isChessMode) { $('.modal-prev-btn').first().click(); } 
             break; 
         case "ArrowRight": 
-             // Don't navigate slides if in Chess Mode
+            // UPDATED: Do NOT navigate slides in chess mode
             if (!isTutorialMode && !isChessMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case " ": 
             if(e.preventDefault) e.preventDefault(); 
-            // Don't navigate slides if in Chess Mode
             if (!isTutorialMode && !isChessMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case "i": if(e.preventDefault) e.preventDefault(); $('.modal-info-btn').first().click(); break; 
         case "f": 
             if(e.preventDefault) e.preventDefault(); 
-            // If in Chess Mode, ignore global F (Chess logic handles it)
+            // Allow chess logic to handle F key internally
             if (!isChessMode) {
                 $('.modal-fullscreen-btn').first().click(); 
             }
@@ -323,7 +321,7 @@ function loadModalContent(index) {
 
     $modal.find('.modal-header').removeAttr('style'); $modal.removeClass('chess-mode research-mode'); $('body').removeClass('chess-mode-active'); $modalOpenLink.hide(); 
     
-    // UPDATED: Hide buttons for chess
+    // UPDATED: Show buttons by default
     $('.modal-prev-btn, .modal-next-btn').show();
     
     isTutorialMode = false; $modalInfoBtn.removeData('manifest-url'); $modalContent.removeClass('summary-view-active'); $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
@@ -392,9 +390,9 @@ function loadModalContent(index) {
     if(window.cardGlobalState.infoVisible) $modalInfoBtn.addClass('active'); else $modalInfoBtn.removeClass('active');
     if (!title && !desc) $modalInfoBtn.hide();
 
-    // UPDATED: Chess Logic
+    // UPDATED: Chess Logic to hide buttons
     if (loadType === 'chess') { 
-        $('.modal-prev-btn, .modal-next-btn').hide(); // Hide prev/next
+        $('.modal-prev-btn, .modal-next-btn').hide(); 
         window.loadChessGame(loadUrl, $modal, $modalContent); 
         return; 
     }
