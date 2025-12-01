@@ -101,8 +101,27 @@ select.slideshow-speed { background: #333; color: #fff; border: 1px solid #555; 
 body.chess-mode-active .modal-content { height: 98vh !important; width: 98vw !important; margin: 1vh auto !important; border: none !important; background: #111 !important; }
 body.chess-mode-active .modal-header { display: none !important; }
 .chess-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; background: #222; }
-.chess-main-area { flex: 1; width: 100%; overflow: hidden; position: relative; background: #222; display: flex; justify-content: center; align-items: flex-start; }
-.chess-white-box { width: 100%; height: 100%; background-color: #ffffff; display: flex; justify-content: center; align-items: flex-start; padding-top: 10px; padding-left: 40px; }
+
+/* Updated for Flexbox Centering */
+.chess-main-area { 
+    flex: 1; 
+    width: 100%; 
+    overflow: auto; /* Allow scrolling if fixed size is too big */
+    position: relative; 
+    background: #222; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; /* Center vertically and horizontally */
+}
+.chess-white-box { 
+    width: 100%; 
+    height: 100%; 
+    background-color: transparent; /* Changed from white to transparent to blend with dark mode if smaller */
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+}
+
 .chess-comment-overlay { font-size: 1.3rem !important; padding: 15px !important; background: #e3f2fd !important; border: 1px solid #90caf9; border-radius: 8px; color: #2c3e50 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: absolute; bottom: 20px; right: 30px; width: 340px; z-index: 6000 !important; text-align: center; display: flex; flex-direction: column; justify-content: space-between; min-height: 140px; pointer-events: none; }
 .comment-text-content { flex-grow: 1; margin-bottom: 10px; text-align: left; overflow-y: auto; max-height: 250px; }
 .comment-bar-footer { flex-shrink: 0; border-top: 1px solid #90caf9; padding-top: 8px; }
