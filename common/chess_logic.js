@@ -219,7 +219,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         margin: auto !important;
                         display: flex !important; justify-content: center !important; align-items: center !important;
                         background-color: #f0d9b5;
-                        /* Extra safety limits */
                         max-height: 98vh !important; 
                         max-width: 98vw !important;
                     }
@@ -346,27 +345,26 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
                 if ($('body').hasClass('chess-fullscreen-active')) {
                     
-                    // 1. FORCE RESET TO 800px FIRST
+                    // 1. FORCE RESET TO 800px FIRST (Synchronous)
                     const resetStyle = 'width: 800px !important; height: 800px !important; overflow: hidden !important;';
                     $board.attr('style', resetStyle);
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').attr('style', resetStyle);
                     
-                    // 2. WAIT FOR BROWSER PAINT
+                    // 2. WAIT FOR BROWSER PAINT (Async) before measuring
                     requestAnimationFrame(() => {
                         const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
                         const w = window.visualViewport ? window.visualViewport.width : window.innerWidth;
                         
                         // 3. CALCULATE AVAILABLE HEIGHT
-                        // Subtract ~80px for the toolbar so it doesn't overflow!
-                        const availableHeight = h - 80; 
+                        // Subtract ~120px for the toolbar so it doesn't overflow!
+                        const availableHeight = h - 120; 
                         
-                        // 4. CALCULATE SIZE: 90% of Available Height
-                        let sizePx = Math.floor(availableHeight * 0.90);
+                        // 4. DETERMINE PERCENTAGE
+                        // Use 75% if moves visible (leaves horizontal space), 90% if hidden
+                        const percentage = movesPanelVisible ? 0.75 : 0.90;
                         
-                        // 5. WIDTH SAFETY CHECK: Don't overflow width
-                        if (sizePx > (w - 20)) {
-                            sizePx = w - 20;
-                        }
+                        // 5. CALCULATE SIZE: Min of Width or Height * %
+                        let sizePx = Math.floor(Math.min(availableHeight, w) * percentage);
                         
                         // 6. APPLY FINAL SIZE
                         const finalStyle = `width: ${sizePx}px !important; height: ${sizePx}px !important;`;
@@ -393,8 +391,10 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     $('body').removeClass('chess-fullscreen-active');
                     logChessState('Fullscreen EXIT');
                 }
+                
+                // Trigger logic sequence
                 applyDynamicSize();
-                setTimeout(applyDynamicSize, 500); 
+                setTimeout(applyDynamicSize, 500); // Backup trigger
             };
             document.addEventListener('fullscreenchange', window.currentChessFSHandler);
 
@@ -452,7 +452,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             $('#chess-fs-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 $(this).blur();
-                toggleFullScreen(); 
+                toggleFullScreen(); // Call native logic directly
             });
             
             // KEYBOARD LISTENER - Calls function directly
