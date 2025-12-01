@@ -22,6 +22,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
             let currentFontSize = 26;
             let commentsEnabled = true;
+            let movesPanelVisible = true; 
             let commentMap = {};
 
             const parseCommentsMap = (pgnText) => {
@@ -81,9 +82,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 <div class="chess-container">
                     <div class="chess-toolbar" style="flex: 0 0 auto; display: flex; align-items: center; padding: 8px; background: #1a1a1a; gap: 10px; border-bottom: 1px solid #333;">
                         <select id="chess-game-select" style="flex: 1; max-width: 400px; padding: 5px; background:#000; color:#fff; border:1px solid #444;"></select>
+                        <button id="chess-toggle-moves-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Moves</button>
                         <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Info</button>
-                        <button id="chess-font-minus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">-</button>
-                        <button id="chess-font-plus" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; font-weight: bold;">+</button>
                         <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 4px 10px;">Comments: On</button>
                         <div style="flex: 1;"></div>
                         <button id="chess-fs-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; margin-right: 5px;" title="Full Screen (F)">&#x26F6; Full Screen</button>
@@ -101,7 +101,15 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
             const updateChessStyles = () => {
                 const movesId = `#${boardId}Moves`;
+                const movesDisplay = movesPanelVisible ? 'block' : 'none';
+                
+                // Sizing Logic: 
+                // vmin = Percentage of the smallest viewport dimension.
+                // 95vmin ensures it fits on both mobile (width limited) and desktop (height limited).
+                const fsBoardSize = movesPanelVisible ? '80vmin' : '95vmin';
+
                 const css = `
+                    /* --- NORMAL MODE --- */
                     ${movesId} {
                         background-color: #ffffff !important;
                         color: #000000 !important;
@@ -113,7 +121,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         overflow-y: auto !important;
                         width: 360px !important;
                         min-width: 360px !important;
-                        display: block !important;
+                        display: ${movesDisplay} !important;
                     }
                     ${movesId} move {
                         font-size: ${currentFontSize}px !important;
@@ -143,78 +151,48 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         padding: ${15 + (currentFontSize - 26) * 0.5}px !important;
                     }
 
-                    /* === FULL SCREEN STYLES === */
+                    /* === NATIVE FULL SCREEN STYLES === */
                     body.chess-fullscreen-active .modal-header { display: none !important; }
                     body.chess-fullscreen-active .chess-toolbar { display: none !important; }
                     
-                    /* Hide Moves Panel - Absolute to prevent layout collapse */
-                    body.chess-fullscreen-active ${movesId} { 
-                        visibility: hidden !important; 
-                        position: absolute !important; 
-                        pointer-events: none !important;
-                        z-index: -1;
-                    }
-
-                    /* Main Container Expansion */
-                    body.chess-fullscreen-active .modal-content { 
-                        max-width: 100% !important; 
-                        width: 100% !important; 
-                        height: 100% !important; 
-                        border-radius: 0 !important; 
-                        margin: 0 !important; 
-                        padding: 0 !important; 
-                        background: #1a1a1a !important;
-                    }
-                    
+                    /* Main Container fills entire screen */
                     body.chess-fullscreen-active .chess-container { 
-                        position: fixed !important;
-                        top: 0; left: 0; right: 0; bottom: 0;
-                        height: 100vh !important; 
-                        width: 100vw !important; 
-                        padding: 0 !important; 
-                        display: flex; 
-                        justify-content: center; 
-                        align-items: center; 
-                        z-index: 99999;
-                        background: #1a1a1a;
+                        position: fixed !important; top: 0; left: 0;
+                        width: 100vw !important; height: 100vh !important;
+                        z-index: 2147483647 !important; /* Max z-index */
+                        background: #1a1a1a !important;
+                        display: flex; flex-direction: column;
                     }
 
                     body.chess-fullscreen-active .chess-main-area { 
-                        height: 100% !important; 
-                        width: 100% !important; 
-                        padding: 0 !important; 
-                        display: flex; 
-                        justify-content: center; 
-                        align-items: center; 
+                        flex: 1 !important; display: flex !important;
+                        justify-content: center !important; align-items: center !important;
+                        width: 100% !important; height: 100% !important;
+                        overflow: hidden !important;
+                        padding-top: 10px;
                     }
 
-                    /* Board Wrapper - Forces full viewport availability */
+                    /* Wrapper centers the board */
                     body.chess-fullscreen-active .chess-white-box { 
-                        width: 100vw !important; 
-                        height: 100vh !important; 
-                        display: flex; 
-                        justify-content: center; 
-                        align-items: center; 
-                        background: #1a1a1a;
-                    }
-                    
-                    /* The Board Itself - Use vmin to keep it square and maxed out */
-                    body.chess-fullscreen-active #${boardId} { 
-                        width: 95vmin !important; 
-                        height: 95vmin !important; 
-                        max-width: 100vw !important; 
-                        max-height: 100vh !important;
-                        display: flex; 
-                        justify-content: center; 
-                        align-items: center; 
-                    }
-                    
-                    /* Inner library elements override */
-                    body.chess-fullscreen-active .pgnvjs-wrapper,
-                    body.chess-fullscreen-active .cg-board-wrap, 
-                    body.chess-fullscreen-active .board { 
-                        width: 100% !important; 
+                        display: flex !important; justify-content: center !important;
+                        align-items: center !important;
                         height: 100% !important; 
+                        width: 100% !important;
+                    }
+
+                    /* THE BOARD: Forced to fit viewport using vmin */
+                    body.chess-fullscreen-active #${boardId} { 
+                        width: ${fsBoardSize} !important; 
+                        height: ${fsBoardSize} !important;
+                        margin: 0 auto !important;
+                        display: flex !important; justify-content: center !important;
+                    }
+
+                    /* Internal library overrides */
+                    body.chess-fullscreen-active .cg-board-wrap,
+                    body.chess-fullscreen-active .board {
+                         width: 100% !important;
+                         height: 100% !important;
                     }
                 `;
                 $(`#${styleId}`).text(css);
@@ -314,19 +292,44 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size: ${counterFontSize}px;">Move ${displayMove} / ${displayTotal}</div>`;
             };
 
-            // --- FULL SCREEN LOGIC WITH RESIZE TIMER ---
+            // --- NATIVE FULL SCREEN HANDLER ---
             const toggleFullScreen = () => {
-                const $body = $('body');
-                $body.toggleClass('chess-fullscreen-active');
-                
-                // Force multiple resize events to catch transition/rendering delays
-                const triggerResize = () => window.dispatchEvent(new Event('resize'));
-                
-                triggerResize(); // Immediate
-                setTimeout(triggerResize, 100); // Short delay
-                setTimeout(triggerResize, 300); // Medium delay
-                setTimeout(triggerResize, 600); // Long delay to ensure layout is final
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+                    });
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
             };
+
+            // Listener to update UI state when browser enters/exits full screen
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) {
+                    $('body').addClass('chess-fullscreen-active');
+                } else {
+                    $('body').removeClass('chess-fullscreen-active');
+                }
+                // Trigger resize event to force board redraw
+                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 200);
+            });
+
+            $('#chess-toggle-moves-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                movesPanelVisible = !movesPanelVisible;
+                
+                const btn = $(this);
+                if (movesPanelVisible) {
+                    btn.css({ background: '#1a1a1a', color: '#ccc' });
+                } else {
+                    btn.css({ background: '#555', color: '#fff' });
+                }
+                
+                updateChessStyles(); 
+                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
+            });
 
             $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
@@ -361,17 +364,11 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
             $('#chess-close-btn').off('click').on('click', function(e) {
                 e.preventDefault();
+                // Ensure we exit FS first if active
+                if (document.fullscreenElement) {
+                     document.exitFullscreen();
+                }
                 $('.modal-close-btn').first().click();
-            });
-
-            $('#chess-font-minus').off('click').on('click', function(e) {
-                e.preventDefault();
-                if (currentFontSize > 14) { applySizeChange(currentFontSize - 2); }
-            });
-
-            $('#chess-font-plus').off('click').on('click', function(e) {
-                e.preventDefault();
-                if (currentFontSize < 40) { applySizeChange(currentFontSize + 2); }
             });
 
             const $select = $('#chess-game-select');
@@ -424,10 +421,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     updateChessStyles();
                     const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
                     updateCommentContent(-1, total);
-
-                    // Resize Timers for Load
-                    setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 200);
-                    setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 800);
 
                     const checkInterval = setInterval(() => {
                         const movesPanel = document.getElementById(boardId + 'Moves');
