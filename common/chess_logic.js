@@ -32,6 +32,10 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             const boardId = 'chess-board-' + Date.now();
             const styleId = 'chess-style-' + Date.now();
 
+            // --- CONFIGURATION PARAMETERS ---
+            const FS_INIT_WAIT_MS = 200;      // Delay after entering FS before nudging (was 1000)
+            const FS_NUDGE_INTERVAL_MS = 100; // Delay between Right and Left arrow simulation
+
             let currentFontSize = 26;
             let commentsEnabled = true;
             let movesPanelVisible = true; 
@@ -158,14 +162,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 });
                 (focusTarget[0] || document).dispatchEvent(rightEvt);
 
-                // 3. Dispatch ArrowLeft after small delay
+                // 3. Dispatch ArrowLeft after small delay using Configured Interval
                 setTimeout(() => {
                     const leftEvt = new KeyboardEvent('keydown', { 
                         key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37, which: 37, 
                         bubbles: true, cancelable: true, view: window 
                     });
                     (focusTarget[0] || document).dispatchEvent(leftEvt);
-                }, 200);
+                }, FS_NUDGE_INTERVAL_MS);
             };
 
             // --- FULL SCREEN HANDLER ---
@@ -178,8 +182,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     applyBoardSize(null);
                     updateChessStyles();
 
-                    // WAIT 1 SECOND (as requested) then trigger key sequence
-                    setTimeout(delayedKeyNudge, 1000); 
+                    // WAIT configured time then trigger key sequence
+                    setTimeout(delayedKeyNudge, FS_INIT_WAIT_MS); 
                 } else {
                     $('body').removeClass('chess-fullscreen-active');
                     movesPanelVisible = true; 
