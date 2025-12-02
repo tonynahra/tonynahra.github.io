@@ -53,7 +53,7 @@ function updateSocialMeta(title, desc, image) {
     setMeta('twitter:card', 'summary_large_image'); setMeta('twitter:title', cleanTitle); setMeta('twitter:description', cleanDesc); if (cleanImage) setMeta('twitter:image', cleanImage); document.title = cleanTitle;
 }
 
-// === CHESS CLEANUP HELPER (FIX FOR FS ISSUE) ===
+// === CHESS CLEANUP HELPER ===
 function cleanUpChessListeners() {
     if (window.currentChessFSHandler) {
         document.removeEventListener('fullscreenchange', window.currentChessFSHandler);
@@ -64,6 +64,23 @@ function cleanUpChessListeners() {
         window.chessKeyHandler = null;
     }
     $('body').removeClass('chess-fullscreen-active chess-mode-active');
+}
+
+/* === CARD HIGHLIGHTER === */
+function highlightActiveCard(index) {
+    // Remove existing highlights
+    $('.selected-card-highlight').removeClass('selected-card-highlight');
+    
+    if (index >= 0 && index < currentCardList.length) {
+        const $link = currentCardList[index];
+        // The link is usually inside the card-item div
+        const $card = $link.closest('.card-item');
+        if ($card.length) {
+            $card.addClass('selected-card-highlight');
+            // Optional: Smooth scroll to keep the active card in view in the background grid
+            // $('html, body').animate({ scrollTop: $card.offset().top - 150 }, 200);
+        }
+    }
 }
 
 /* === VIEW HELPERS (GLOBAL) === */
@@ -87,11 +104,9 @@ function animateModalOpen() {
 }
 function animateModalClose() {
     const $modal = $('#content-modal'); const $content = $modal.find('.modal-content'); $content.removeClass('modal-animate-enter').addClass('modal-animate-leave'); $modal.addClass('fading-out'); 
-    cleanUpChessListeners(); // CRITICAL FIX: Kill zombie listener
+    cleanUpChessListeners(); 
+    $('.selected-card-highlight').removeClass('selected-card-highlight'); // Clear highlight on close
     
-    // Clear highlight
-    $('.selected-card-highlight').removeClass('selected-card-highlight');
-
     setTimeout(function() { $modal.hide(); $modal.removeClass('fading-out'); $content.removeClass('modal-animate-leave'); $('#modal-content-area').html(''); }, 300); 
 }
 
@@ -110,19 +125,13 @@ window.handleModalKeys = function(e) {
     if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; } if ($(e.target).is('input, textarea, select')) return;
     if (isTutorialMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
-    // --- CHESS MODE DOUBLE-MOVE FIX ---
+    // Check chess mode to avoid double moves
     const isChessMode = $('#content-modal').hasClass('chess-mode');
-    if (isChessMode) {
-        if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ") {
-            return; // Let the Chess library handle it.
-        }
-    }
+    if (isChessMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
     switch (e.key) { 
         case "Escape": 
-            if (!document.fullscreenElement) {
-                $('.modal-close-btn').first().click(); 
-            }
+            if (!document.fullscreenElement) { $('.modal-close-btn').first().click(); }
             break; 
         case "ArrowLeft": 
             if (!isTutorialMode) { $('.modal-prev-btn').first().click(); } 
@@ -149,183 +158,29 @@ function showKeyboardShortcuts() {
     $modalContent.append(helpHtml); $modalContent.find('.help-overlay').fadeIn(200);
 }
 
-/* === ADVANCED TABLE BUILDER (TABULATOR) === */
-window.buildTableModal = function(jsonUrl) {
-    const $modalContent = $('#modal-content-area');
-    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-
-    loadLibrary('https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js', 'js', 'Tabulator')
-        .then(() => {
-            $.getJSON(jsonUrl, function(data) {
-                // FIX: Handle both "data" (new) and "rows" (old) formats
-                let tableData = data.data;
-                if (!tableData && data.rows) {
-                    tableData = data.rows.map(row => {
-                        let obj = {};
-                        data.columns.forEach((col, index) => {
-                             const fieldName = typeof col === 'object' ? col.field : col; 
-                             obj[fieldName] = row[index];
-                        });
-                        return obj;
-                    });
-                }
-                if (!tableData) { 
-                    $modalContent.html('<div class="error-message">Invalid table data format. Expected "data" array or "rows" array.</div>'); 
-                    return; 
-                }
-                const tableId = 'tabulator-table-' + Date.now();
-                const tableHtml = `
-                    <div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;">
-                        <h2 style="margin-top:0; color:#333;">${data.title || 'Data Table'}</h2>
-                        <p style="color:#666; margin-bottom:15px;">${data.description || ''}</p>
-                        <div id="${tableId}" style="flex:1;"></div>
-                    </div>`;
-                $modalContent.html(tableHtml);
-
-                new Tabulator("#" + tableId, {
-                    data: tableData,
-                    layout: "fitColumns",
-                    responsiveLayout: "collapse",
-                    pagination: "local",
-                    paginationSize: 15,
-                    movableColumns: true,
-                    columns: data.columns.map(col => {
-                        if (typeof col === 'string') return { title: col, field: col };
-                        if (col.formatter === "linkButton") {
-                            col.formatter = function(cell, formatterParams, onRendered){
-                                const val = cell.getValue();
-                                if(!val) return "";
-                                const parts = val.split(':'); 
-                                if(parts[0] !== 'link') return val;
-                                return `<button class="table-action-btn" style="padding:4px 10px; background:var(--text-accent); border:none; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="window.openFromTable('${parts[1]}', '${parts[2]}')">${parts[3] || 'Open'}</button>`;
-                            };
-                        }
-                        return col;
-                    }),
-                });
-            }).fail(() => $modalContent.html('<div class="error-message">Error loading JSON data.</div>'));
-        })
-        .catch(() => $modalContent.html('<div class="error-message">Failed to load Tabulator library.</div>'));
-};
-
-/* === ADVANCED CHART BUILDER (CHART.JS) === */
-window.buildChartModal = function(jsonUrl) {
-    const $modalContent = $('#modal-content-area');
-    $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-
-    loadLibrary('https://cdn.jsdelivr.net/npm/chart.js', 'js', 'Chart')
-        .then(() => {
-            $.getJSON(jsonUrl, function(data) {
-                const chartId = 'chart-canvas-' + Date.now();
-                $modalContent.html(`
-                    <div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;">
-                        <h2 style="margin-top:0; color:#333;">${data.title || 'Financial Chart'}</h2>
-                        <div class="chart-container" style="flex:1; position:relative;">
-                            <canvas id="${chartId}"></canvas>
-                        </div>
-                    </div>
-                `);
-                const ctx = document.getElementById(chartId).getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.labels,
-                        datasets: data.datasets.map(ds => {
-                            if (ds.label.includes('Bollinger')) {
-                                ds.borderColor = 'rgba(100, 100, 100, 0.3)';
-                                ds.backgroundColor = 'rgba(100, 100, 100, 0.05)';
-                                ds.fill = ds.label.includes('Lower') ? '-1' : false;
-                                ds.pointRadius = 0;
-                                ds.borderWidth = 1;
-                            } else if (ds.label.includes('SMA') || ds.label.includes('EMA')) {
-                                ds.borderWidth = 2;
-                                ds.pointRadius = 0;
-                            } else if (ds.type === 'bar') {
-                                ds.yAxisID = 'y-volume';
-                                ds.backgroundColor = 'rgba(52, 152, 219, 0.5)';
-                            }
-                            return ds;
-                        })
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
-                        scales: {
-                            y: { type: 'linear', display: true, position: 'right', title: { display:true, text:'Price' } },
-                            'y-volume': { type: 'linear', display: false, position: 'left', min: 0, max: Math.max(...data.datasets.find(d=>d.type==='bar')?.data || [100]) * 4 }
-                        }
-                    }
-                });
-            }).fail(() => $modalContent.html('<div class="error-message">Error loading chart data.</div>'));
-        })
-        .catch(() => $modalContent.html('<div class="error-message">Failed to load Chart.js.</div>'));
-};
-
-window.openFromTable = function(type, id) {
-    const $modal = $('#content-modal');
-    const $modalContent = $('#modal-content-area');
-    if (type === 'chess') {
-        window.loadChessGame(id, $modal, $modalContent);
-    } else if (type === 'tutorial') {
-        isTutorialMode = true;
-        $('.modal-prev-btn, .modal-next-btn').hide();
-        let playerFile = "text_tutorial_player.html"; 
-        if (id.toLowerCase().endsWith('.xml') || id.includes('x-plain')) { playerFile = "tutorial_player.html"; }
-        const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="${playerFile}?manifest=${encodeURIComponent(id)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{const d=this.contentDocument;d.addEventListener('keydown',function(e){window.parent.handleModalKeys({key:e.key});});const s=d.createElement('style');s.innerHTML='body{overflow-x:hidden;margin:0;padding:0;width:100%;}.nav-bar,.controls,footer,.navbar{position:relative!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:0!important;left:0!important;right:0!important;z-index:1000!important;transition:opacity 0.3s!important;opacity:1!important;pointer-events:auto;}body.fs-mode .nav-bar,body.fs-mode .controls,body.fs-mode footer{position:absolute!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;opacity:0!important;pointer-events:none!important;}body.fs-mode.nav-visible .nav-bar,body.fs-mode.nav-visible .controls,body.fs-mode.nav-visible footer{opacity:1!important;pointer-events:auto!important;}';d.head.appendChild(s);}catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;" onclick="window.buildTableModal('${currentTableJsonUrl}')">&times;</button>`;
-        $modalContent.html(playerHtml);
-        $('.tutorial-fs-toggle').remove(); 
-        $('body').append('<button class="tutorial-fs-toggle" title="Toggle Controls" style="display:none;">&#9881;</button>');
-        $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); });
-    }
-};
-
+/* === TABLE & CHART BUILDERS (OMITTED FOR BREVITY - SAME AS BEFORE) === */
+window.buildTableModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>'); loadLibrary('https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js', 'js', 'Tabulator').then(() => { $.getJSON(jsonUrl, function(data) { let tableData = data.data; if (!tableData && data.rows) { tableData = data.rows.map(row => { let obj = {}; data.columns.forEach((col, index) => { const fieldName = typeof col === 'object' ? col.field : col; obj[fieldName] = row[index]; }); return obj; }); } if (!tableData) { $modalContent.html('<div class="error-message">Invalid table data format.</div>'); return; } const tableId = 'tabulator-table-' + Date.now(); const tableHtml = `<div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;"><h2 style="margin-top:0; color:#333;">${data.title || 'Data Table'}</h2><p style="color:#666; margin-bottom:15px;">${data.description || ''}</p><div id="${tableId}" style="flex:1;"></div></div>`; $modalContent.html(tableHtml); new Tabulator("#" + tableId, { data: tableData, layout: "fitColumns", responsiveLayout: "collapse", pagination: "local", paginationSize: 15, movableColumns: true, columns: data.columns.map(col => { if (typeof col === 'string') return { title: col, field: col }; if (col.formatter === "linkButton") { col.formatter = function(cell, formatterParams, onRendered){ const val = cell.getValue(); if(!val) return ""; const parts = val.split(':'); if(parts[0] !== 'link') return val; return `<button class="table-action-btn" style="padding:4px 10px; background:var(--text-accent); border:none; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="window.openFromTable('${parts[1]}', '${parts[2]}')">${parts[3] || 'Open'}</button>`; }; } return col; }), }); }).fail(() => $modalContent.html('<div class="error-message">Error loading JSON data.</div>')); }).catch(() => $modalContent.html('<div class="error-message">Failed to load Tabulator.</div>')); };
+window.buildChartModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>'); loadLibrary('https://cdn.jsdelivr.net/npm/chart.js', 'js', 'Chart').then(() => { $.getJSON(jsonUrl, function(data) { const chartId = 'chart-canvas-' + Date.now(); $modalContent.html(`<div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;"><h2 style="margin-top:0; color:#333;">${data.title || 'Financial Chart'}</h2><div class="chart-container" style="flex:1; position:relative;"><canvas id="${chartId}"></canvas></div></div>`); const ctx = document.getElementById(chartId).getContext('2d'); new Chart(ctx, { type: 'line', data: { labels: data.labels, datasets: data.datasets.map(ds => { if (ds.label.includes('Bollinger')) { ds.borderColor = 'rgba(100, 100, 100, 0.3)'; ds.backgroundColor = 'rgba(100, 100, 100, 0.05)'; ds.fill = ds.label.includes('Lower') ? '-1' : false; ds.pointRadius = 0; ds.borderWidth = 1; } else if (ds.label.includes('SMA') || ds.label.includes('EMA')) { ds.borderWidth = 2; ds.pointRadius = 0; } else if (ds.type === 'bar') { ds.yAxisID = 'y-volume'; ds.backgroundColor = 'rgba(52, 152, 219, 0.5)'; } return ds; }) }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { type: 'linear', display: true, position: 'right', title: { display:true, text:'Price' } }, 'y-volume': { type: 'linear', display: false, position: 'left', min: 0, max: Math.max(...data.datasets.find(d=>d.type==='bar')?.data || [100]) * 4 } } } }); }).fail(() => $modalContent.html('<div class="error-message">Error loading chart data.</div>')); }).catch(() => $modalContent.html('<div class="error-message">Failed to load Chart.js.</div>')); };
+window.openFromTable = function(type, id) { const $modal = $('#content-modal'); const $modalContent = $('#modal-content-area'); if (type === 'chess') { window.loadChessGame(id, $modal, $modalContent); } else if (type === 'tutorial') { isTutorialMode = true; $('.modal-prev-btn, .modal-next-btn').hide(); let playerFile = "text_tutorial_player.html"; if (id.toLowerCase().endsWith('.xml') || id.includes('x-plain')) { playerFile = "tutorial_player.html"; } const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="${playerFile}?manifest=${encodeURIComponent(id)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{const d=this.contentDocument;d.addEventListener('keydown',function(e){window.parent.handleModalKeys({key:e.key});});const s=d.createElement('style');s.innerHTML='body{overflow-x:hidden;margin:0;padding:0;width:100%;}.nav-bar,.controls,footer,.navbar{position:relative!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:0!important;left:0!important;right:0!important;z-index:1000!important;transition:opacity 0.3s!important;opacity:1!important;pointer-events:auto;}body.fs-mode .nav-bar,body.fs-mode .controls,body.fs-mode footer{position:absolute!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;opacity:0!important;pointer-events:none!important;}body.fs-mode.nav-visible .nav-bar,body.fs-mode.nav-visible .controls,body.fs-mode.nav-visible footer{opacity:1!important;pointer-events:auto!important;}';d.head.appendChild(s);}catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;" onclick="window.buildTableModal('${currentTableJsonUrl}')">&times;</button>`; $modalContent.html(playerHtml); $('.tutorial-fs-toggle').remove(); $('body').append('<button class="tutorial-fs-toggle" title="Toggle Controls" style="display:none;">&#9881;</button>'); $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); }); } };
 var currentTableJsonUrl = "";
-
-/* === CHESS LOADER (GLOBAL) === */
-window.loadChessGame = function(loadUrl, $modal, $modalContent) { 
-    // Clean up BEFORE loading a new chess game to be safe
-    cleanUpChessListeners();
-
-    if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) { loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/'); } 
-    $modal.addClass('chess-mode'); $('body').addClass('chess-mode-active'); $modal.find('.modal-header').hide(); 
-    if (typeof window.startChessGame === 'function') {
-        window.startChessGame(loadUrl, $modal, $modalContent);
-    } else {
-        $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
-        $.getScript('common/chess_logic.js').done(function() { window.startChessGame(loadUrl, $modal, $modalContent); })
-         .fail(function() { $modalContent.html('<div class="error-message">Failed to load chess logic.</div>'); });
-    }
-};
-
-/* === RESEARCH LOADER (GLOBAL) === */
+window.loadChessGame = function(loadUrl, $modal, $modalContent) { cleanUpChessListeners(); if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) { loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/'); } $modal.addClass('chess-mode'); $('body').addClass('chess-mode-active'); $modal.find('.modal-header').hide(); if (typeof window.startChessGame === 'function') { window.startChessGame(loadUrl, $modal, $modalContent); } else { $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>'); $.getScript('common/chess_logic.js').done(function() { window.startChessGame(loadUrl, $modal, $modalContent); }).fail(function() { $modalContent.html('<div class="error-message">Failed to load chess logic.</div>'); }); } };
 window.buildResearchModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html(`<div class="tab-nav" id="research-tab-nav-modal"></div><div class="tab-content" id="research-tab-content-modal"><div class="content-loader"><div class="spinner"></div></div></div>`); $.getJSON(jsonUrl, function (data) { $('#content-modal .open-new-window').attr('href', jsonUrl); const $tabNav = $('#research-tab-nav-modal'); $tabNav.empty(); $.each(data.tickers, function(index, ticker) { const $button = $(`<button class="tab-button"></button>`); $button.text(ticker.name); $button.attr('data-content-url', ticker.contentUrl); if (index === 0) { $button.addClass('active'); loadModalTabContent(ticker.contentUrl); } $tabNav.append($button); }); }).fail(function() { $modalContent.html('<div class="error-message">Error loading research data.</div>'); }); }
 window.loadModalTabContent = function(htmlUrl) { $('#content-modal .open-new-window').attr('href', htmlUrl); $('#research-tab-content-modal').html(`<div class="iframe-wrapper"><iframe src="${htmlUrl}" class="loaded-iframe"></iframe></div>`); }
-
 
 /* === MODAL CONTENT LOADER (GLOBAL) === */
 function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) return;
     const $link = currentCardList[index]; if (!$link.length) return;
     
-    // Clean up Chess Zombie Listener if we are switching content
-    cleanUpChessListeners();
-
+    cleanUpChessListeners(); // Safety cleanup
     currentCardIndex = index;
     const $modal = $('#content-modal'); const $modalContent = $('#modal-content-area'); const $modalInfoBtn = $modal.find('.modal-info-btn'); const $modalPlayControls = $modal.find('.slideshow-controls'); const $modalFsBtn = $modal.find('.modal-fullscreen-btn'); const $modalOpenLink = $modal.find('.open-new-window');
 
     $modal.find('.modal-header').removeAttr('style'); $modal.removeClass('chess-mode research-mode'); $('body').removeClass('chess-mode-active'); $modalOpenLink.hide(); 
     $('.modal-prev-btn, .modal-next-btn').show();
     
-    // --- CARD HIGHLIGHTING LOGIC ---
-    $('.selected-card-highlight').removeClass('selected-card-highlight');
-    // $link is the <a> tag. We need the closest .card-item
-    const $activeCard = $link.closest('.card-item');
-    if ($activeCard.length) {
-        $activeCard.addClass('selected-card-highlight');
-        // Optional: Scroll to card if needed (disabled for now to avoid jumpiness)
-        // $('html, body').animate({ scrollTop: $activeCard.offset().top - 100 }, 200);
-    }
+    // Highlight Active Card
+    highlightActiveCard(index);
 
     isTutorialMode = false; $modalInfoBtn.removeData('manifest-url'); $modalContent.removeClass('summary-view-active'); $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
     $('body').off('click.tutorialNav'); $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
@@ -347,7 +202,6 @@ function loadModalContent(index) {
     if (loadType === 'image' || loadType === 'iframe' || loadType === 'markdown' || loadType === 'tutorial') { $modalFsBtn.show(); } else { $modalFsBtn.hide(); }
 
     if (loadType === 'research' && jsonUrl) { $modal.addClass('research-mode'); $modalFsBtn.hide(); $modalInfoBtn.hide(); window.buildResearchModal(jsonUrl); return; } 
-    
     if (loadType === 'table') { $modalFsBtn.hide(); $modalInfoBtn.hide(); currentTableJsonUrl = loadUrl; window.buildTableModal(loadUrl); return; }
     if (loadType === 'chart') { $modalFsBtn.hide(); $modalInfoBtn.hide(); window.buildChartModal(jsonUrl || loadUrl); return; }
 
@@ -392,9 +246,9 @@ function loadModalContent(index) {
         case 'image':
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`); if (infoHtml) { $modalContent.append(infoHtml); }
             applyInfoState(); 
-            // Fix: Cleaned up double click handler for full screen consistency
+            // Fix double click conflict
             $modalContent.find('.image-wrapper').off('dblclick').on('dblclick', function() { 
-                $('.modal-fullscreen-btn').click(); 
+                $('.modal-fullscreen-btn').first().click(); 
             });
             break;
         case 'iframe': let iframeSrc = loadUrl; if (loadUrl.startsWith('http') && !loadUrl.includes('youtube.com') && !loadUrl.includes('youtu.be')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; } $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); break;
@@ -424,24 +278,44 @@ $(document).ready(function () {
     injectModalStyles();
     $('body').append(`<div id="content-modal" class="modal-backdrop"><div class="modal-content"><div class="modal-header"><div class="modal-nav-left"><button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button><button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button><button class="modal-info-btn" title="Toggle Info (I)">Info</button><button class="modal-help-btn" title="Keyboard Shortcuts" onclick="showKeyboardShortcuts()">?</button><div class="slideshow-controls" style="display:none; margin-right:10px;"><button class="modal-play-btn" title="Start Slideshow">&#9658; Play</button><select class="slideshow-speed" title="Slideshow Speed"><option value="3000">3s</option><option value="5000" selected>5s</option><option value="10000">10s</option><option value="20000">20s</option></select></div></div><div class="modal-nav-right"><button class="modal-fullscreen-btn" title="Full Screen" style="display:none; font-size:1.1rem; margin-right:10px;">&#x26F6; Full Screen</button><a href="#" class="open-new-window" style="display:none;" target="_blank" rel="noopener noreferrer"></a><button class="modal-close-btn" title="Close (Esc)">&times; Close</button></div></div><div id="modal-content-area"></div></div></div>`);
 
-    $('body').on('click', '.toggle-card-button', function() { const $button = $(this); const $list = $button.prev('.card-list'); if ($list.length) { showMoreCards($button, $list); } });
-    $('body').on('click', '.card-item, .item', function(e) { const $clickedCard = $(this); const $link = $clickedCard.find('a').first(); if (!$link.length) return; const $clickedLink = $(e.target).closest('a'); if ($clickedLink.length > 0 && !$clickedLink.is($link)) return; e.preventDefault(); e.stopPropagation(); const $cardList = $clickedCard.closest('.card-list'); const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible'); currentCardList = []; $allVisibleCards.each(function() { currentCardList.push($(this).find('a').first()); }); currentCardIndex = $allVisibleCards.index($clickedCard); if (currentCardList.length > 0) { window.loadModalContent(currentCardIndex); window.animateModalOpen(); $(document).on('keydown.modalNav', window.handleModalKeys); } });
-    $('body').on('click', '.modal-close-btn', function() { window.stopSlideshow(); window.animateModalClose(); currentCardList = []; currentCardIndex = 0; isTutorialMode = false; $(document).off('keydown.modalNav'); $('#content-modal').find('.modal-header').removeAttr('style'); });
-    $('body').on('click', '#content-modal', function(e) { if (e.target.id === 'content-modal') { $(this).find('.modal-close-btn').first().click(); } });
+    // FIX: PREVENT DOUBLE BINDING WITH .off()
+    $('body').off('click', '.toggle-card-button').on('click', '.toggle-card-button', function() { const $button = $(this); const $list = $button.prev('.card-list'); if ($list.length) { showMoreCards($button, $list); } });
     
-    // FIX: Blur buttons on click to fix keyboard focus issues
-    $('body').on('click', '.modal-play-btn', function() { 
+    $('body').off('click', '.card-item, .item').on('click', '.card-item, .item', function(e) { 
+        const $clickedCard = $(this); 
+        const $link = $clickedCard.find('a').first(); 
+        if (!$link.length) return; 
+        const $clickedLink = $(e.target).closest('a'); 
+        if ($clickedLink.length > 0 && !$clickedLink.is($link)) return; 
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        
+        const $cardList = $clickedCard.closest('.card-list'); 
+        const $allVisibleCards = $cardList.children('.card-item:visible, .item:visible'); 
+        currentCardList = []; 
+        $allVisibleCards.each(function() { currentCardList.push($(this).find('a').first()); }); 
+        currentCardIndex = $allVisibleCards.index($clickedCard); 
+        
+        if (currentCardList.length > 0) { 
+            window.loadModalContent(currentCardIndex); 
+            window.animateModalOpen(); 
+            $(document).on('keydown.modalNav', window.handleModalKeys); 
+        } 
+    });
+
+    $('body').off('click', '.modal-close-btn').on('click', '.modal-close-btn', function() { window.stopSlideshow(); window.animateModalClose(); currentCardList = []; currentCardIndex = 0; isTutorialMode = false; $(document).off('keydown.modalNav'); $('#content-modal').find('.modal-header').removeAttr('style'); });
+    $('body').off('click', '#content-modal').on('click', '#content-modal', function(e) { if (e.target.id === 'content-modal') { $(this).find('.modal-close-btn').first().click(); } });
+    
+    $('body').off('click', '.modal-play-btn').on('click', '.modal-play-btn', function() { 
         $(this).blur();
         if (slideshowInterval) { window.stopSlideshow(); } else { $(this).html('&#10074;&#10074; Pause'); const speed = parseInt($('.slideshow-speed').val()) || 5000; if (currentCardIndex < currentCardList.length - 1) $('.modal-next-btn').click(); else currentCardIndex = -1; slideshowInterval = setInterval(function() { if (currentCardIndex < currentCardList.length - 1) { $('.modal-next-btn').click(); } else { window.stopSlideshow(); } }, speed); } 
     });
-    $('body').on('change', '.slideshow-speed', function() { if (slideshowInterval) { $('.modal-play-btn').click(); setTimeout(() => { $('.modal-play-btn').click(); }, 100); } });
+    $('body').off('change', '.slideshow-speed').on('change', '.slideshow-speed', function() { if (slideshowInterval) { $('.modal-play-btn').click(); setTimeout(() => { $('.modal-play-btn').click(); }, 100); } });
     
-    // FIX: Full Screen Logic Update
-    $('body').on('click', '.modal-fullscreen-btn', function() {
+    // FIX: Full Screen Logic with Unbind
+    $('body').off('click', '.modal-fullscreen-btn').on('click', '.modal-fullscreen-btn', function() {
         const btn = $(this);
-        // Force blur immediately so the button doesn't trap keyboard events
         btn.blur();
-        
         const wrapper = document.querySelector('#modal-content-area .image-wrapper') || 
                         document.querySelector('#modal-content-area .iframe-wrapper') || 
                         document.querySelector('#modal-content-area .markdown-wrapper'); 
@@ -452,38 +326,28 @@ $(document).ready(function () {
         } else { 
             if (target && target.requestFullscreen) { 
                 target.requestFullscreen().then(() => { 
-                    // AFTER entering FS:
-                    // 1. Tutorial Mode Check
                     if(isTutorialMode) { 
                         const $iframe = $('#modal-content-area iframe'); 
-                        if($iframe.length) { 
-                            try { 
-                                const doc = $iframe[0].contentDocument; 
-                                doc.body.classList.add('fs-mode'); 
-                                $('.tutorial-fs-toggle').fadeIn(); 
-                            } catch(e){} 
-                        } 
+                        if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); $('.tutorial-fs-toggle').fadeIn(); } catch(e){} } 
                     }
-                    // 2. FOCUS CONTENT: Force focus to the content area so keys work globally
-                    // We try to focus the wrapper first, then the content area
                     if (wrapper) wrapper.focus();
                     else if (target) target.focus();
-                    else window.focus(); // Last resort
-                    
+                    else window.focus(); 
                 }).catch(err => console.log(err)); 
             } 
         }
     });
-    $('body').on('click', '.tutorial-fs-toggle', function() { 
+
+    $('body').off('click', '.tutorial-fs-toggle').on('click', '.tutorial-fs-toggle', function() { 
         $(this).blur();
         const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.toggle('nav-visible'); } catch(e) {} } 
     });
     document.addEventListener('fullscreenchange', (event) => { if (!document.fullscreenElement) { $('.tutorial-fs-toggle').hide(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.remove('fs-mode', 'nav-visible'); } catch(e){} } } });
 
-    $('body').on('click', '.modal-prev-btn', function() { $(this).blur(); window.stopSlideshow(); if (currentCardIndex > 0) window.loadModalContent(currentCardIndex - 1); });
-    $('body').on('click', '.modal-next-btn', function() { $(this).blur(); if (currentCardIndex < currentCardList.length - 1) window.loadModalContent(currentCardIndex + 1); else window.stopSlideshow(); });
+    $('body').off('click', '.modal-prev-btn').on('click', '.modal-prev-btn', function() { $(this).blur(); window.stopSlideshow(); if (currentCardIndex > 0) window.loadModalContent(currentCardIndex - 1); });
+    $('body').off('click', '.modal-next-btn').on('click', '.modal-next-btn', function() { $(this).blur(); if (currentCardIndex < currentCardList.length - 1) window.loadModalContent(currentCardIndex + 1); else window.stopSlideshow(); });
     
-    $('body').on('click', '.modal-info-btn', function() { 
+    $('body').off('click', '.modal-info-btn').on('click', '.modal-info-btn', function() { 
         $(this).blur();
         const $infoBtn = $(this); const manifestUrl = $infoBtn.data('manifest-url'); 
         if (manifestUrl) { window.buildTutorialSummary(manifestUrl, $('#modal-content-area')); } 
@@ -493,8 +357,8 @@ $(document).ready(function () {
         } 
     });
 
-    $('body').on('input', '#youtube-search-box', filterYouTubeCards); $('body').on('change', '#youtube-keyword-filter', filterYouTubeCards);
-    $('body').on('input', '#post-search-box', () => window.filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').on('change', '#post-category-filter', () => window.filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').on('change', '#post-keyword-filter', () => window.filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
-    $('body').on('input', '#album-search-box', () => window.filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20)); $('body').on('change', '#album-category-filter', () => window.filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20)); $('body').on('change', '#album-keyword-filter', () => window.filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20));
-    $('#content-modal').on('click', '.tab-button', function() { $(this).siblings().removeClass('active'); $(this).addClass('active'); const htmlUrl = $(this).data('content-url'); window.loadModalTabContent(htmlUrl, '#research-tab-content-modal'); });
+    $('body').off('input', '#youtube-search-box').on('input', '#youtube-search-box', filterYouTubeCards); $('body').off('change', '#youtube-keyword-filter').on('change', '#youtube-keyword-filter', filterYouTubeCards);
+    $('body').off('input', '#post-search-box').on('input', '#post-search-box', () => window.filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').off('change', '#post-category-filter').on('change', '#post-category-filter', () => window.filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10)); $('body').off('change', '#post-keyword-filter').on('change', '#post-keyword-filter', () => window.filterCardsGeneric('#posts-card-list', '#post-search-box', '#post-category-filter', '#post-keyword-filter', '#posts-no-results', 10));
+    $('body').off('input', '#album-search-box').on('input', '#album-search-box', () => window.filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20)); $('body').off('change', '#album-category-filter').on('change', '#album-category-filter', () => window.filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20)); $('body').off('change', '#album-keyword-filter').on('change', '#album-keyword-filter', () => window.filterCardsGeneric('#photo-album-list', '#album-search-box', '#album-category-filter', '#album-keyword-filter', '#album-no-results', 20));
+    $('#content-modal').off('click', '.tab-button').on('click', '.tab-button', function() { $(this).siblings().removeClass('active'); $(this).addClass('active'); const htmlUrl = $(this).data('content-url'); window.loadModalTabContent(htmlUrl, '#research-tab-content-modal'); });
 });
