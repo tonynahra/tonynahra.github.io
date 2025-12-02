@@ -94,9 +94,6 @@ window.handleModalKeys = function(e) {
     if (isTutorialMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
     // --- CHESS MODE DOUBLE-MOVE FIX ---
-    // If we are in chess mode, STOP processing arrow keys here. 
-    // The Chess library (PGNV/Chessground) listens to document/window keys independently.
-    // If we process them here too, we get two moves per keypress.
     const isChessMode = $('#content-modal').hasClass('chess-mode');
     if (isChessMode) {
         if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ") {
@@ -104,48 +101,20 @@ window.handleModalKeys = function(e) {
         }
     }
     
-    // UPDATED CHESS NAV: Uses window dispatch to ensure it works even if buttons are hidden in FS mode
-    const triggerChessMove = (direction) => {
-        // ... (This function remains but is effectively unused for arrows in Chess Mode now)
-        const keyName = direction === 'prev' ? 'ArrowLeft' : 'ArrowRight';
-        const keyCode = direction === 'prev' ? 37 : 39;
-        
-        const $area = $('#modal-content-area');
-        let $btn = direction === 'prev' 
-            ? $area.find('.prev, .fa-arrow-left, button[title="Previous"], button[data-id="prev"]') 
-            : $area.find('.next, .fa-arrow-right, button[title="Next"], button[data-id="next"]');
-
-        if ($btn.length && $btn.is(':visible')) {
-            $btn.first().click();
-        } else {
-            const event = new KeyboardEvent('keydown', {
-                key: keyName, code: keyName, keyCode: keyCode, which: keyCode, bubbles: true, cancelable: true
-            });
-            window.dispatchEvent(event);
-            const board = $area.find('.cg-board, .board, .chess-white-box')[0];
-            if (board) board.dispatchEvent(event);
-        }
-    };
-
     switch (e.key) { 
         case "Escape": 
-            // If in native full screen, browser handles it.
-            // Only close modal if NOT in native full screen.
             if (!document.fullscreenElement) {
                 $('.modal-close-btn').first().click(); 
             }
             break; 
         case "ArrowLeft": 
-            // isChessMode check moved up
             if (!isTutorialMode) { $('.modal-prev-btn').first().click(); } 
             break; 
         case "ArrowRight": 
-            // isChessMode check moved up
             if (!isTutorialMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case " ": 
             if(e.preventDefault) e.preventDefault(); 
-            // isChessMode check moved up
             if (!isTutorialMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case "i": if(e.preventDefault) e.preventDefault(); $('.modal-info-btn').first().click(); break; 
@@ -390,7 +359,10 @@ function loadModalContent(index) {
         case 'image':
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`); if (infoHtml) { $modalContent.append(infoHtml); }
             applyInfoState(); 
-            $modalContent.find('.image-wrapper').on('dblclick', function() { if (document.fullscreenElement) { document.exitFullscreen(); } else { const el = this; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } });
+            // Fix: Cleaned up double click handler for full screen consistency
+            $modalContent.find('.image-wrapper').off('dblclick').on('dblclick', function() { 
+                $('.modal-fullscreen-btn').click(); 
+            });
             break;
         case 'iframe': let iframeSrc = loadUrl; if (loadUrl.startsWith('http') && !loadUrl.includes('youtube.com') && !loadUrl.includes('youtu.be')) { iframeSrc = `https://mediamaze.com/p/?url=${encodeURIComponent(loadUrl)}`; } $modalContent.html(`<div class="iframe-wrapper"><iframe src="${iframeSrc}" class="loaded-iframe" style="height: ${customHeight};"></iframe></div>`); if (infoHtml) { $modalContent.append(infoHtml); } applyInfoState(); break;
         case 'blocked': $modalContent.html('<div class="error-message">This site blocks embedding. Please use "Open in new window".</div>'); break;
@@ -431,10 +403,43 @@ $(document).ready(function () {
     });
     $('body').on('change', '.slideshow-speed', function() { if (slideshowInterval) { $('.modal-play-btn').click(); setTimeout(() => { $('.modal-play-btn').click(); }, 100); } });
     
+    // FIX: Full Screen Logic Update
     $('body').on('click', '.modal-fullscreen-btn', function() {
-        $(this).blur();
-        const wrapper = document.querySelector('#modal-content-area .image-wrapper') || document.querySelector('#modal-content-area .iframe-wrapper') || document.querySelector('#modal-content-area .markdown-wrapper'); const target = wrapper || document.getElementById('modal-content-area');
-        if (document.fullscreenElement) { document.exitFullscreen(); } else { if (target && target.requestFullscreen) { target.requestFullscreen().then(() => { if(isTutorialMode) { const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); $('.tutorial-fs-toggle').fadeIn(); } catch(e){} } } }).catch(err => console.log(err)); } }
+        const btn = $(this);
+        // Force blur immediately so the button doesn't trap keyboard events
+        btn.blur();
+        
+        const wrapper = document.querySelector('#modal-content-area .image-wrapper') || 
+                        document.querySelector('#modal-content-area .iframe-wrapper') || 
+                        document.querySelector('#modal-content-area .markdown-wrapper'); 
+        const target = wrapper || document.getElementById('modal-content-area');
+        
+        if (document.fullscreenElement) { 
+            document.exitFullscreen(); 
+        } else { 
+            if (target && target.requestFullscreen) { 
+                target.requestFullscreen().then(() => { 
+                    // AFTER entering FS:
+                    // 1. Tutorial Mode Check
+                    if(isTutorialMode) { 
+                        const $iframe = $('#modal-content-area iframe'); 
+                        if($iframe.length) { 
+                            try { 
+                                const doc = $iframe[0].contentDocument; 
+                                doc.body.classList.add('fs-mode'); 
+                                $('.tutorial-fs-toggle').fadeIn(); 
+                            } catch(e){} 
+                        } 
+                    }
+                    // 2. FOCUS CONTENT: Force focus to the content area so keys work globally
+                    // We try to focus the wrapper first, then the content area
+                    if (wrapper) wrapper.focus();
+                    else if (target) target.focus();
+                    else window.focus(); // Last resort
+                    
+                }).catch(err => console.log(err)); 
+            } 
+        }
     });
     $('body').on('click', '.tutorial-fs-toggle', function() { 
         $(this).blur();
