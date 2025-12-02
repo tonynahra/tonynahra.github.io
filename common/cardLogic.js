@@ -53,32 +53,37 @@ function updateSocialMeta(title, desc, image) {
     setMeta('twitter:card', 'summary_large_image'); setMeta('twitter:title', cleanTitle); setMeta('twitter:description', cleanDesc); if (cleanImage) setMeta('twitter:image', cleanImage); document.title = cleanTitle;
 }
 
-// === CHESS CLEANUP HELPER ===
+// === CHESS CLEANUP HELPER (DEBUGGED) ===
 function cleanUpChessListeners() {
+    console.log("[DEBUG] cleanUpChessListeners called.");
     if (window.currentChessFSHandler) {
+        console.log("[DEBUG] Removing window.currentChessFSHandler listener.");
         document.removeEventListener('fullscreenchange', window.currentChessFSHandler);
         window.currentChessFSHandler = null;
+    } else {
+        console.log("[DEBUG] No currentChessFSHandler found to remove.");
     }
+    
     if (window.chessKeyHandler) {
+        console.log("[DEBUG] Removing window.chessKeyHandler listener.");
         document.removeEventListener('keydown', window.chessKeyHandler);
         window.chessKeyHandler = null;
     }
+    
+    // Force remove global listener just in case it's lingering anonymously (unlikely but safe)
+    // Note: Can't remove anonymous listeners, but we can verify classes are gone
     $('body').removeClass('chess-fullscreen-active chess-mode-active');
+    console.log("[DEBUG] Removed chess classes from body.");
 }
 
 /* === CARD HIGHLIGHTER === */
 function highlightActiveCard(index) {
-    // Remove existing highlights
     $('.selected-card-highlight').removeClass('selected-card-highlight');
-    
     if (index >= 0 && index < currentCardList.length) {
         const $link = currentCardList[index];
-        // The link is usually inside the card-item div
         const $card = $link.closest('.card-item');
         if ($card.length) {
             $card.addClass('selected-card-highlight');
-            // Optional: Smooth scroll to keep the active card in view in the background grid
-            // $('html, body').animate({ scrollTop: $card.offset().top - 150 }, 200);
         }
     }
 }
@@ -105,8 +110,7 @@ function animateModalOpen() {
 function animateModalClose() {
     const $modal = $('#content-modal'); const $content = $modal.find('.modal-content'); $content.removeClass('modal-animate-enter').addClass('modal-animate-leave'); $modal.addClass('fading-out'); 
     cleanUpChessListeners(); 
-    $('.selected-card-highlight').removeClass('selected-card-highlight'); // Clear highlight on close
-    
+    $('.selected-card-highlight').removeClass('selected-card-highlight'); 
     setTimeout(function() { $modal.hide(); $modal.removeClass('fading-out'); $content.removeClass('modal-animate-leave'); $('#modal-content-area').html(''); }, 300); 
 }
 
@@ -125,7 +129,7 @@ window.handleModalKeys = function(e) {
     if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; } if ($(e.target).is('input, textarea, select')) return;
     if (isTutorialMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
-    // Check chess mode to avoid double moves
+    // Double-check chess mode
     const isChessMode = $('#content-modal').hasClass('chess-mode');
     if (isChessMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
@@ -158,7 +162,7 @@ function showKeyboardShortcuts() {
     $modalContent.append(helpHtml); $modalContent.find('.help-overlay').fadeIn(200);
 }
 
-/* === TABLE & CHART BUILDERS (OMITTED FOR BREVITY - SAME AS BEFORE) === */
+/* === TABLE & CHART BUILDERS === */
 window.buildTableModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>'); loadLibrary('https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js', 'js', 'Tabulator').then(() => { $.getJSON(jsonUrl, function(data) { let tableData = data.data; if (!tableData && data.rows) { tableData = data.rows.map(row => { let obj = {}; data.columns.forEach((col, index) => { const fieldName = typeof col === 'object' ? col.field : col; obj[fieldName] = row[index]; }); return obj; }); } if (!tableData) { $modalContent.html('<div class="error-message">Invalid table data format.</div>'); return; } const tableId = 'tabulator-table-' + Date.now(); const tableHtml = `<div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;"><h2 style="margin-top:0; color:#333;">${data.title || 'Data Table'}</h2><p style="color:#666; margin-bottom:15px;">${data.description || ''}</p><div id="${tableId}" style="flex:1;"></div></div>`; $modalContent.html(tableHtml); new Tabulator("#" + tableId, { data: tableData, layout: "fitColumns", responsiveLayout: "collapse", pagination: "local", paginationSize: 15, movableColumns: true, columns: data.columns.map(col => { if (typeof col === 'string') return { title: col, field: col }; if (col.formatter === "linkButton") { col.formatter = function(cell, formatterParams, onRendered){ const val = cell.getValue(); if(!val) return ""; const parts = val.split(':'); if(parts[0] !== 'link') return val; return `<button class="table-action-btn" style="padding:4px 10px; background:var(--text-accent); border:none; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="window.openFromTable('${parts[1]}', '${parts[2]}')">${parts[3] || 'Open'}</button>`; }; } return col; }), }); }).fail(() => $modalContent.html('<div class="error-message">Error loading JSON data.</div>')); }).catch(() => $modalContent.html('<div class="error-message">Failed to load Tabulator.</div>')); };
 window.buildChartModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>'); loadLibrary('https://cdn.jsdelivr.net/npm/chart.js', 'js', 'Chart').then(() => { $.getJSON(jsonUrl, function(data) { const chartId = 'chart-canvas-' + Date.now(); $modalContent.html(`<div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;"><h2 style="margin-top:0; color:#333;">${data.title || 'Financial Chart'}</h2><div class="chart-container" style="flex:1; position:relative;"><canvas id="${chartId}"></canvas></div></div>`); const ctx = document.getElementById(chartId).getContext('2d'); new Chart(ctx, { type: 'line', data: { labels: data.labels, datasets: data.datasets.map(ds => { if (ds.label.includes('Bollinger')) { ds.borderColor = 'rgba(100, 100, 100, 0.3)'; ds.backgroundColor = 'rgba(100, 100, 100, 0.05)'; ds.fill = ds.label.includes('Lower') ? '-1' : false; ds.pointRadius = 0; ds.borderWidth = 1; } else if (ds.label.includes('SMA') || ds.label.includes('EMA')) { ds.borderWidth = 2; ds.pointRadius = 0; } else if (ds.type === 'bar') { ds.yAxisID = 'y-volume'; ds.backgroundColor = 'rgba(52, 152, 219, 0.5)'; } return ds; }) }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { type: 'linear', display: true, position: 'right', title: { display:true, text:'Price' } }, 'y-volume': { type: 'linear', display: false, position: 'left', min: 0, max: Math.max(...data.datasets.find(d=>d.type==='bar')?.data || [100]) * 4 } } } }); }).fail(() => $modalContent.html('<div class="error-message">Error loading chart data.</div>')); }).catch(() => $modalContent.html('<div class="error-message">Failed to load Chart.js.</div>')); };
 window.openFromTable = function(type, id) { const $modal = $('#content-modal'); const $modalContent = $('#modal-content-area'); if (type === 'chess') { window.loadChessGame(id, $modal, $modalContent); } else if (type === 'tutorial') { isTutorialMode = true; $('.modal-prev-btn, .modal-next-btn').hide(); let playerFile = "text_tutorial_player.html"; if (id.toLowerCase().endsWith('.xml') || id.includes('x-plain')) { playerFile = "tutorial_player.html"; } const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="${playerFile}?manifest=${encodeURIComponent(id)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{const d=this.contentDocument;d.addEventListener('keydown',function(e){window.parent.handleModalKeys({key:e.key});});const s=d.createElement('style');s.innerHTML='body{overflow-x:hidden;margin:0;padding:0;width:100%;}.nav-bar,.controls,footer,.navbar{position:relative!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:0!important;left:0!important;right:0!important;z-index:1000!important;transition:opacity 0.3s!important;opacity:1!important;pointer-events:auto;}body.fs-mode .nav-bar,body.fs-mode .controls,body.fs-mode footer{position:absolute!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;opacity:0!important;pointer-events:none!important;}body.fs-mode.nav-visible .nav-bar,body.fs-mode.nav-visible .controls,body.fs-mode.nav-visible footer{opacity:1!important;pointer-events:auto!important;}';d.head.appendChild(s);}catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;" onclick="window.buildTableModal('${currentTableJsonUrl}')">&times;</button>`; $modalContent.html(playerHtml); $('.tutorial-fs-toggle').remove(); $('body').append('<button class="tutorial-fs-toggle" title="Toggle Controls" style="display:none;">&#9881;</button>'); $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); }); } };
@@ -246,7 +250,7 @@ function loadModalContent(index) {
         case 'image':
             $modalContent.html(`<div class="image-wrapper"><img src="${loadUrl}" class="loaded-image" alt="Loaded content"></div>`); if (infoHtml) { $modalContent.append(infoHtml); }
             applyInfoState(); 
-            // Fix double click conflict
+            // Fix: Cleaned up double click handler for full screen consistency
             $modalContent.find('.image-wrapper').off('dblclick').on('dblclick', function() { 
                 $('.modal-fullscreen-btn').first().click(); 
             });
@@ -314,6 +318,7 @@ $(document).ready(function () {
     
     // FIX: Full Screen Logic with Unbind
     $('body').off('click', '.modal-fullscreen-btn').on('click', '.modal-fullscreen-btn', function() {
+        console.log("--- DEBUG: FS BUTTON CLICKED ---");
         const btn = $(this);
         btn.blur();
         const wrapper = document.querySelector('#modal-content-area .image-wrapper') || 
@@ -321,11 +326,16 @@ $(document).ready(function () {
                         document.querySelector('#modal-content-area .markdown-wrapper'); 
         const target = wrapper || document.getElementById('modal-content-area');
         
+        console.log("Current FS Element:", document.fullscreenElement);
+        
         if (document.fullscreenElement) { 
+            console.log("Exiting FS...");
             document.exitFullscreen(); 
         } else { 
+            console.log("Requesting FS for:", target);
             if (target && target.requestFullscreen) { 
                 target.requestFullscreen().then(() => { 
+                    console.log("FS Request Success");
                     if(isTutorialMode) { 
                         const $iframe = $('#modal-content-area iframe'); 
                         if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); $('.tutorial-fs-toggle').fadeIn(); } catch(e){} } 
@@ -333,7 +343,7 @@ $(document).ready(function () {
                     if (wrapper) wrapper.focus();
                     else if (target) target.focus();
                     else window.focus(); 
-                }).catch(err => console.log(err)); 
+                }).catch(err => console.log("FS Request Error:", err)); 
             } 
         }
     });
@@ -342,7 +352,18 @@ $(document).ready(function () {
         $(this).blur();
         const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.toggle('nav-visible'); } catch(e) {} } 
     });
-    document.addEventListener('fullscreenchange', (event) => { if (!document.fullscreenElement) { $('.tutorial-fs-toggle').hide(); const $iframe = $('#modal-content-area iframe'); if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.remove('fs-mode', 'nav-visible'); } catch(e){} } } });
+    
+    // Global listener - careful with duplicates here too
+    // We cannot easily 'off' an anonymous listener on document, but this one is benign
+    // Adding debug logging to see if it fires inappropriately
+    document.addEventListener('fullscreenchange', (event) => { 
+        console.log("--- DEBUG: GLOBAL FS CHANGE EVENT FIRED ---", document.fullscreenElement);
+        if (!document.fullscreenElement) { 
+            $('.tutorial-fs-toggle').hide(); 
+            const $iframe = $('#modal-content-area iframe'); 
+            if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.remove('fs-mode', 'nav-visible'); } catch(e){} } 
+        } 
+    });
 
     $('body').off('click', '.modal-prev-btn').on('click', '.modal-prev-btn', function() { $(this).blur(); window.stopSlideshow(); if (currentCardIndex > 0) window.loadModalContent(currentCardIndex - 1); });
     $('body').off('click', '.modal-next-btn').on('click', '.modal-next-btn', function() { $(this).blur(); if (currentCardIndex < currentCardList.length - 1) window.loadModalContent(currentCardIndex + 1); else window.stopSlideshow(); });
