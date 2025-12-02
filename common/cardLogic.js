@@ -60,9 +60,7 @@ function cleanUpChessListeners() {
         console.log("[DEBUG] Removing window.currentChessFSHandler listener.");
         document.removeEventListener('fullscreenchange', window.currentChessFSHandler);
         window.currentChessFSHandler = null;
-    } else {
-        console.log("[DEBUG] No currentChessFSHandler found to remove.");
-    }
+    } 
     
     if (window.chessKeyHandler) {
         console.log("[DEBUG] Removing window.chessKeyHandler listener.");
@@ -70,10 +68,7 @@ function cleanUpChessListeners() {
         window.chessKeyHandler = null;
     }
     
-    // Force remove global listener just in case it's lingering anonymously (unlikely but safe)
-    // Note: Can't remove anonymous listeners, but we can verify classes are gone
     $('body').removeClass('chess-fullscreen-active chess-mode-active');
-    console.log("[DEBUG] Removed chess classes from body.");
 }
 
 /* === CARD HIGHLIGHTER === */
@@ -129,7 +124,6 @@ window.handleModalKeys = function(e) {
     if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; } if ($(e.target).is('input, textarea, select')) return;
     if (isTutorialMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
-    // Double-check chess mode
     const isChessMode = $('#content-modal').hasClass('chess-mode');
     if (isChessMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
@@ -162,7 +156,7 @@ function showKeyboardShortcuts() {
     $modalContent.append(helpHtml); $modalContent.find('.help-overlay').fadeIn(200);
 }
 
-/* === TABLE & CHART BUILDERS === */
+/* === TABLE & CHART BUILDERS (OMITTED FOR BREVITY - SAME AS BEFORE) === */
 window.buildTableModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>'); loadLibrary('https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js', 'js', 'Tabulator').then(() => { $.getJSON(jsonUrl, function(data) { let tableData = data.data; if (!tableData && data.rows) { tableData = data.rows.map(row => { let obj = {}; data.columns.forEach((col, index) => { const fieldName = typeof col === 'object' ? col.field : col; obj[fieldName] = row[index]; }); return obj; }); } if (!tableData) { $modalContent.html('<div class="error-message">Invalid table data format.</div>'); return; } const tableId = 'tabulator-table-' + Date.now(); const tableHtml = `<div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;"><h2 style="margin-top:0; color:#333;">${data.title || 'Data Table'}</h2><p style="color:#666; margin-bottom:15px;">${data.description || ''}</p><div id="${tableId}" style="flex:1;"></div></div>`; $modalContent.html(tableHtml); new Tabulator("#" + tableId, { data: tableData, layout: "fitColumns", responsiveLayout: "collapse", pagination: "local", paginationSize: 15, movableColumns: true, columns: data.columns.map(col => { if (typeof col === 'string') return { title: col, field: col }; if (col.formatter === "linkButton") { col.formatter = function(cell, formatterParams, onRendered){ const val = cell.getValue(); if(!val) return ""; const parts = val.split(':'); if(parts[0] !== 'link') return val; return `<button class="table-action-btn" style="padding:4px 10px; background:var(--text-accent); border:none; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="window.openFromTable('${parts[1]}', '${parts[2]}')">${parts[3] || 'Open'}</button>`; }; } return col; }), }); }).fail(() => $modalContent.html('<div class="error-message">Error loading JSON data.</div>')); }).catch(() => $modalContent.html('<div class="error-message">Failed to load Tabulator.</div>')); };
 window.buildChartModal = function(jsonUrl) { const $modalContent = $('#modal-content-area'); $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>'); loadLibrary('https://cdn.jsdelivr.net/npm/chart.js', 'js', 'Chart').then(() => { $.getJSON(jsonUrl, function(data) { const chartId = 'chart-canvas-' + Date.now(); $modalContent.html(`<div class="markdown-wrapper" style="padding:20px; background:#fff; display:flex; flex-direction:column; height:100%;"><h2 style="margin-top:0; color:#333;">${data.title || 'Financial Chart'}</h2><div class="chart-container" style="flex:1; position:relative;"><canvas id="${chartId}"></canvas></div></div>`); const ctx = document.getElementById(chartId).getContext('2d'); new Chart(ctx, { type: 'line', data: { labels: data.labels, datasets: data.datasets.map(ds => { if (ds.label.includes('Bollinger')) { ds.borderColor = 'rgba(100, 100, 100, 0.3)'; ds.backgroundColor = 'rgba(100, 100, 100, 0.05)'; ds.fill = ds.label.includes('Lower') ? '-1' : false; ds.pointRadius = 0; ds.borderWidth = 1; } else if (ds.label.includes('SMA') || ds.label.includes('EMA')) { ds.borderWidth = 2; ds.pointRadius = 0; } else if (ds.type === 'bar') { ds.yAxisID = 'y-volume'; ds.backgroundColor = 'rgba(52, 152, 219, 0.5)'; } return ds; }) }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { type: 'linear', display: true, position: 'right', title: { display:true, text:'Price' } }, 'y-volume': { type: 'linear', display: false, position: 'left', min: 0, max: Math.max(...data.datasets.find(d=>d.type==='bar')?.data || [100]) * 4 } } } }); }).fail(() => $modalContent.html('<div class="error-message">Error loading chart data.</div>')); }).catch(() => $modalContent.html('<div class="error-message">Failed to load Chart.js.</div>')); };
 window.openFromTable = function(type, id) { const $modal = $('#content-modal'); const $modalContent = $('#modal-content-area'); if (type === 'chess') { window.loadChessGame(id, $modal, $modalContent); } else if (type === 'tutorial') { isTutorialMode = true; $('.modal-prev-btn, .modal-next-btn').hide(); let playerFile = "text_tutorial_player.html"; if (id.toLowerCase().endsWith('.xml') || id.includes('x-plain')) { playerFile = "tutorial_player.html"; } const playerHtml = `<div class="iframe-wrapper" style="height:100%; width:100%; position:relative;"><iframe src="${playerFile}?manifest=${encodeURIComponent(id)}" class="loaded-iframe" style="border:none; width:100%; height:100%;" onload="try{const d=this.contentDocument;d.addEventListener('keydown',function(e){window.parent.handleModalKeys({key:e.key});});const s=d.createElement('style');s.innerHTML='body{overflow-x:hidden;margin:0;padding:0;width:100%;}.nav-bar,.controls,footer,.navbar{position:relative!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin:0!important;left:0!important;right:0!important;z-index:1000!important;transition:opacity 0.3s!important;opacity:1!important;pointer-events:auto;}body.fs-mode .nav-bar,body.fs-mode .controls,body.fs-mode footer{position:absolute!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;opacity:0!important;pointer-events:none!important;}body.fs-mode.nav-visible .nav-bar,body.fs-mode.nav-visible .controls,body.fs-mode.nav-visible footer{opacity:1!important;pointer-events:auto!important;}';d.head.appendChild(s);}catch(e){}"></iframe></div><button class="tutorial-custom-close-btn" style="position:absolute; top:10px; right:10px; z-index:2000; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:1.2rem;" onclick="window.buildTableModal('${currentTableJsonUrl}')">&times;</button>`; $modalContent.html(playerHtml); $('.tutorial-fs-toggle').remove(); $('body').append('<button class="tutorial-fs-toggle" title="Toggle Controls" style="display:none;">&#9881;</button>'); $modalContent.find('.iframe-wrapper').on('dblclick', function() { if (document.fullscreenElement) document.exitFullscreen(); }); } };
@@ -316,10 +310,22 @@ $(document).ready(function () {
     });
     $('body').off('change', '.slideshow-speed').on('change', '.slideshow-speed', function() { if (slideshowInterval) { $('.modal-play-btn').click(); setTimeout(() => { $('.modal-play-btn').click(); }, 100); } });
     
-    // FIX: Full Screen Logic with Unbind
-    $('body').off('click', '.modal-fullscreen-btn').on('click', '.modal-fullscreen-btn', function() {
-        console.log("--- DEBUG: FS BUTTON CLICKED ---");
+    // FIX: Full Screen Logic with Unbind and Debounce
+    $('body').off('click', '.modal-fullscreen-btn').on('click', '.modal-fullscreen-btn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         const btn = $(this);
+        
+        // DEBOUNCE CHECK
+        if (btn.data('is-processing')) {
+            console.log("--- DEBUG: FS Click Ignored (Debounce) ---");
+            return;
+        }
+        btn.data('is-processing', true);
+        setTimeout(() => btn.data('is-processing', false), 1000); // 1s cooldown
+
+        console.log("--- DEBUG: FS BUTTON CLICKED ---");
         btn.blur();
         const wrapper = document.querySelector('#modal-content-area .image-wrapper') || 
                         document.querySelector('#modal-content-area .iframe-wrapper') || 
