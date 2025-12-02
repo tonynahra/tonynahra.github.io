@@ -53,6 +53,19 @@ function updateSocialMeta(title, desc, image) {
     setMeta('twitter:card', 'summary_large_image'); setMeta('twitter:title', cleanTitle); setMeta('twitter:description', cleanDesc); if (cleanImage) setMeta('twitter:image', cleanImage); document.title = cleanTitle;
 }
 
+// === CHESS CLEANUP HELPER (FIX FOR FS ISSUE) ===
+function cleanUpChessListeners() {
+    if (window.currentChessFSHandler) {
+        document.removeEventListener('fullscreenchange', window.currentChessFSHandler);
+        window.currentChessFSHandler = null;
+    }
+    if (window.chessKeyHandler) {
+        document.removeEventListener('keydown', window.chessKeyHandler);
+        window.chessKeyHandler = null;
+    }
+    $('body').removeClass('chess-fullscreen-active chess-mode-active');
+}
+
 /* === VIEW HELPERS (GLOBAL) === */
 function handleCardView($scope, initialLoadOverride, incrementOverride) {
     $scope.find('.card-list').each(function() {
@@ -74,7 +87,11 @@ function animateModalOpen() {
 }
 function animateModalClose() {
     const $modal = $('#content-modal'); const $content = $modal.find('.modal-content'); $content.removeClass('modal-animate-enter').addClass('modal-animate-leave'); $modal.addClass('fading-out'); 
-    $('body').removeClass('chess-fullscreen-active'); 
+    cleanUpChessListeners(); // CRITICAL FIX: Kill zombie listener
+    
+    // Clear highlight
+    $('.selected-card-highlight').removeClass('selected-card-highlight');
+
     setTimeout(function() { $modal.hide(); $modal.removeClass('fading-out'); $content.removeClass('modal-animate-leave'); $('#modal-content-area').html(''); }, 300); 
 }
 
@@ -267,6 +284,9 @@ var currentTableJsonUrl = "";
 
 /* === CHESS LOADER (GLOBAL) === */
 window.loadChessGame = function(loadUrl, $modal, $modalContent) { 
+    // Clean up BEFORE loading a new chess game to be safe
+    cleanUpChessListeners();
+
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) { loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/'); } 
     $modal.addClass('chess-mode'); $('body').addClass('chess-mode-active'); $modal.find('.modal-header').hide(); 
     if (typeof window.startChessGame === 'function') {
@@ -288,12 +308,25 @@ function loadModalContent(index) {
     if (index < 0 || index >= currentCardList.length) return;
     const $link = currentCardList[index]; if (!$link.length) return;
     
+    // Clean up Chess Zombie Listener if we are switching content
+    cleanUpChessListeners();
+
     currentCardIndex = index;
     const $modal = $('#content-modal'); const $modalContent = $('#modal-content-area'); const $modalInfoBtn = $modal.find('.modal-info-btn'); const $modalPlayControls = $modal.find('.slideshow-controls'); const $modalFsBtn = $modal.find('.modal-fullscreen-btn'); const $modalOpenLink = $modal.find('.open-new-window');
 
     $modal.find('.modal-header').removeAttr('style'); $modal.removeClass('chess-mode research-mode'); $('body').removeClass('chess-mode-active'); $modalOpenLink.hide(); 
     $('.modal-prev-btn, .modal-next-btn').show();
     
+    // --- CARD HIGHLIGHTING LOGIC ---
+    $('.selected-card-highlight').removeClass('selected-card-highlight');
+    // $link is the <a> tag. We need the closest .card-item
+    const $activeCard = $link.closest('.card-item');
+    if ($activeCard.length) {
+        $activeCard.addClass('selected-card-highlight');
+        // Optional: Scroll to card if needed (disabled for now to avoid jumpiness)
+        // $('html, body').animate({ scrollTop: $activeCard.offset().top - 100 }, 200);
+    }
+
     isTutorialMode = false; $modalInfoBtn.removeData('manifest-url'); $modalContent.removeClass('summary-view-active'); $modalContent.find('.tutorial-summary-overlay, .modal-photo-info').remove(); 
     $('body').off('click.tutorialNav'); $modalContent.html('<div class="content-loader"><div class="spinner"></div></div>');
     
