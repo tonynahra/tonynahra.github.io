@@ -6,8 +6,10 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
         document.removeEventListener('fullscreenchange', window.currentChessFSHandler);
         window.currentChessFSHandler = null;
     }
-    // Note: We removed the local key handler here to prevent conflicts.
-    // We also updated cardLogic.js to stop handling keys in chess mode.
+    if (window.chessKeyHandler) {
+        document.removeEventListener('keydown', window.chessKeyHandler);
+        window.chessKeyHandler = null;
+    }
 
     // CORS Fix
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -79,7 +81,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     #${boardId} .pgnvjs-wrapper {
                         display: flex !important;
                         flex-direction: row !important;
-                        align-items: center !important; /* Centering fix */
+                        align-items: center !important;
                         width: 100% !important;
                         justify-content: center !important;
                     }
@@ -128,10 +130,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             const applyBoardSize = (sizePx) => {
                 const $board = $(`#${boardId}`);
                 if (sizePx) {
-                    // Added margin auto and flex centering props
                     const styleString = `width: ${sizePx}px !important; height: ${sizePx}px !important; margin: auto !important; flex: 0 0 auto !important; display: flex !important; justify-content: center !important; align-items: center !important;`;
                     $board.attr('style', styleString);
-                    // Force ALL potential internal wrappers to match
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').attr('style', styleString);
                 } else {
                     $board.removeAttr('style');
@@ -140,23 +140,34 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
             };
 
-            // --- SIMULATE INTERACTION (Global Key Dispatch) ---
+            // --- SMART CLICK NUDGE ---
             const nudgeBoard = () => {
-                console.log("[CHESS] Simulating Arrow Keys to redraw board...");
+                const nextBtn = $(`#${boardId} button.next`);
+                const prevBtn = $(`#${boardId} button.prev`);
                 
-                // Dispatch ArrowRight (Next)
-                const rightEvent = new KeyboardEvent('keydown', {
-                    key: 'ArrowRight', code: 'ArrowRight', keyCode: 39, which: 39, bubbles: true, cancelable: true
-                });
-                window.dispatchEvent(rightEvent);
+                console.log("[CHESS] Nudging board via Clicks...");
 
-                // Dispatch ArrowLeft (Prev) after a short delay
-                setTimeout(() => {
-                    const leftEvent = new KeyboardEvent('keydown', {
-                        key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37, which: 37, bubbles: true, cancelable: true
-                    });
-                    window.dispatchEvent(leftEvent);
-                }, 150); // Small delay to let the library process the first move
+                // Set focus to Next button to activate keyboard shortcuts immediately
+                if (nextBtn.length) nextBtn.focus();
+                else if (prevBtn.length) prevBtn.focus();
+
+                // Direct Click Simulation (Robust)
+                // 1. Next then Prev (Standard Fix)
+                if (nextBtn.length && !nextBtn.hasClass('disabled') && !nextBtn.prop('disabled')) {
+                    nextBtn[0].click(); 
+                    setTimeout(() => { 
+                        if (prevBtn.length) prevBtn[0].click(); 
+                    }, 100);
+                } 
+                // 2. Fallback: If at end of game, try Prev then Next
+                else if (prevBtn.length && !prevBtn.hasClass('disabled') && !prevBtn.prop('disabled')) {
+                    prevBtn[0].click(); 
+                    setTimeout(() => { 
+                        if (nextBtn.length) nextBtn[0].click(); 
+                    }, 100);
+                } else {
+                    window.dispatchEvent(new Event('resize'));
+                }
             };
 
             // --- FULL SCREEN HANDLER ---
@@ -164,18 +175,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 if (document.fullscreenElement) {
                     $('body').addClass('chess-fullscreen-active');
                     
-                    // 1. Hide Moves Panel
                     movesPanelVisible = false;
-                    
-                    // 2. Reset Manual Size to Responsive (let it fill)
                     currentBoardPx = null; 
                     applyBoardSize(null);
-                    
                     updateChessStyles();
 
-                    // 3. FORCE REDRAW via Simulated Keys
-                    setTimeout(nudgeBoard, 500); // Wait for transition
-                    setTimeout(nudgeBoard, 1200); // Second attempt for slower browsers
+                    // CRITICAL: Aggressive Nudging to ensure visibility
+                    setTimeout(nudgeBoard, 300); 
+                    setTimeout(nudgeBoard, 800); 
                 } else {
                     $('body').removeClass('chess-fullscreen-active');
                     movesPanelVisible = true; 
@@ -184,6 +191,48 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 }
             };
             document.addEventListener('fullscreenchange', window.currentChessFSHandler);
+
+            // --- SMART KEYBOARD LISTENER ---
+            // This fixes the "Double Move" vs "No Move" conflict.
+            window.chessKeyHandler = (e) => {
+                if (!$('#content-modal').hasClass('chess-mode')) return;
+
+                const isArrowLeft = (e.key === "ArrowLeft");
+                const isArrowRight = (e.key === "ArrowRight" || e.key === " ");
+                
+                if (!isArrowLeft && !isArrowRight && e.key.toLowerCase() !== 'f') return;
+
+                // 1. CHECK FOCUS: Is the browser already focused on the chess controls?
+                // If the active element is inside the board, the Library's listener will handle it.
+                // WE MUST NOT interfere, or we get a Double Move.
+                const focused = document.activeElement;
+                const isChessFocus = focused && ($(focused).closest(`#${boardId}`).length > 0);
+
+                if (isChessFocus) {
+                    // console.log("Focus is on chess board - letting library handle it.");
+                    // DO NOTHING. Library handles this.
+                    return; 
+                }
+
+                // 2. NO FOCUS: We must manually trigger the buttons.
+                // console.log("No focus on board - manually clicking.");
+                
+                if (isArrowLeft) {
+                    const prevBtn = $(`#${boardId} button.prev`);
+                    if (prevBtn.length) prevBtn[0].click(); 
+                } 
+                else if (isArrowRight) {
+                    const nextBtn = $(`#${boardId} button.next`);
+                    if (nextBtn.length) {
+                        nextBtn[0].click(); 
+                        if(e.key === " ") e.preventDefault();
+                    }
+                }
+                else if (e.key.toLowerCase() === 'f') {
+                    $('#chess-fs-btn').click();
+                }
+            };
+            document.addEventListener('keydown', window.chessKeyHandler);
 
             // --- BUTTON HANDLERS ---
             $('#chess-size-plus').on('click', function(e) {
@@ -218,13 +267,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 e.preventDefault();
                 movesPanelVisible = !movesPanelVisible;
                 updateChessStyles();
-                // Nudge on toggle too, just in case
                 setTimeout(nudgeBoard, 100);
             });
-
-            // --- LISTENERS ---
-            // Note: We are relying on the Library's global listener for keys.
-            // cardLogic.js has been updated to IGNORE chess keys, so no double moves.
 
             $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
@@ -357,6 +401,11 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         pgn: selectedPgn, theme: 'brown', boardSize: initialBoardSize, layout: 'left', width: '100%', headers: false,
                     });
                     updateChessStyles();
+
+                    // Initial Focus & Nudge
+                    setTimeout(() => {
+                        nudgeBoard();
+                    }, 500);
 
                     const checkInterval = setInterval(() => {
                         const movesPanel = document.getElementById(boardId + 'Moves');
