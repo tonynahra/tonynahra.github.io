@@ -38,7 +38,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             let commentMap = {};
             let currentBoardPx = null; // null = responsive mode
 
-            // --- CSS GENERATOR (Only for non-sizing styles now) ---
+            // --- CSS GENERATOR ---
             const updateChessStyles = () => {
                 const movesId = `#${boardId}Moves`;
                 const movesDisplay = movesPanelVisible ? 'block' : 'none';
@@ -121,39 +121,52 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 </div>
             `);
 
-            // --- CRITICAL: SIZING LOGIC USING INLINE STYLES ---
+            // --- SIZING LOGIC ---
             const applyBoardSize = (sizePx) => {
                 const $board = $(`#${boardId}`);
                 
                 if (sizePx) {
-                    // This imitates the "Force 600px" logic exactly: 
-                    // Direct inline styles with !important
-                    const styleString = `width: ${sizePx}px !important; height: ${sizePx}px !important;`;
+                    // Added "margin: auto !important" to ensure centering in flex container
+                    const styleString = `width: ${sizePx}px !important; height: ${sizePx}px !important; margin: auto !important; flex: 0 0 auto !important;`;
                     
-                    // 1. Apply to main container
                     $board.attr('style', styleString);
-                    
-                    // 2. Apply to internal wrappers (CRITICAL for alignment)
-                    // We target every possible wrapper the library might generate
+                    // Force internal wrappers to match
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').attr('style', styleString);
                     
-                    console.log(`[CHESS LOGIC] Applied fixed size: ${sizePx}px`);
                 } else {
                     // Reset to responsive
                     $board.removeAttr('style');
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').removeAttr('style');
-                    console.log(`[CHESS LOGIC] Reset to responsive mode`);
                 }
                 
-                // 3. Force library redraw
-                setTimeout(() => window.dispatchEvent(new Event('resize')), 10);
-                setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+                // Force Redraw Sequence
+                window.dispatchEvent(new Event('resize'));
+                setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
             };
+
+            // --- FULL SCREEN HANDLER ---
+            window.currentChessFSHandler = () => {
+                if (document.fullscreenElement) {
+                    $('body').addClass('chess-fullscreen-active');
+                } else {
+                    $('body').removeClass('chess-fullscreen-active');
+                }
+                
+                // CRITICAL: Bootstrap visibility on fullscreen switch
+                // We re-apply the current size (or responsive default) and FORCE multiple resize events
+                // to catch the browser finishing its fullscreen animation.
+                applyBoardSize(currentBoardPx);
+                
+                // Aggressive redraw sequence for visibility
+                setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+                setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
+                setTimeout(() => window.dispatchEvent(new Event('resize')), 500);
+            };
+            document.addEventListener('fullscreenchange', window.currentChessFSHandler);
 
             // --- BUTTON HANDLERS ---
             $('#chess-size-plus').on('click', function(e) {
                 e.preventDefault();
-                // If not set yet, grab current width or start at 600
                 if (!currentBoardPx) {
                     const currentWidth = $(`#${boardId} .board`).width();
                     currentBoardPx = currentWidth ? Math.round(currentWidth) : 600;
@@ -180,101 +193,15 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 applyBoardSize(800);
             });
 
+            $('#chess-toggle-moves-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                movesPanelVisible = !movesPanelVisible;
+                $(this).css({ background: movesPanelVisible ? '#1a1a1a' : '#555', color: movesPanelVisible ? '#ccc' : '#fff' });
+                updateChessStyles();
+                window.dispatchEvent(new Event('resize'));
+            });
 
-            // --- HELPER: Parse Comments ---
-            const parseCommentsMap = (pgnText) => {
-                const map = {};
-                let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim();
-                body = body.replace(/(\r\n|\n|\r)/gm, " ").replace(/\{/g, " { ").replace(/\}/g, " } ");
-                const tokens = body.split(/\s+/);
-                let moveIndex = 0;
-                let insideComment = false;
-                let currentComment = [];
-                for (let i = 0; i < tokens.length; i++) {
-                    const token = tokens[i].trim();
-                    if (!token) continue;
-                    if (token === '{') { insideComment = true; currentComment = []; continue; }
-                    if (token === '}') {
-                        insideComment = false;
-                        const idx = moveIndex === 0 ? -1 : moveIndex - 1;
-                        map[idx] = currentComment.join(" ");
-                        continue;
-                    }
-                    if (insideComment) {
-                        currentComment.push(token);
-                    } else {
-                        if (/^\d+\.+/.test(token)) continue;
-                        if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
-                        if (token.startsWith('$')) continue;
-                        moveIndex++;
-                    }
-                }
-                return map;
-            };
-
-            const generateEvalHtml = (rawText) => {
-                const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim();
-
-                let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888";
-                let whiteWinPct = 50;
-
-                if (evalMatch) {
-                    const valStr = evalMatch[1];
-                    let rawVal = 0;
-                    if (valStr.startsWith('#')) {
-                        const isBlackMate = valStr.includes('-');
-                        moveDisplay = "Mate " + valStr;
-                        moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
-                        whiteWinPct = isBlackMate ? 0 : 100;
-                    } else {
-                        rawVal = parseFloat(valStr);
-                        moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
-                        const absMove = Math.min(Math.abs(rawVal), 10);
-                        moveWidth = (absMove / 10) * 50;
-                        if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; }
-                        else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
-                        whiteWinPct = 50 + (rawVal * 8);
-                        whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
-                    }
-                }
-                const whiteWinPctFormatted = whiteWinPct.toFixed(1);
-                const blackWinPctFormatted = (100 - whiteWinPct).toFixed(1);
-
-                const evalHtml = `<div class="eval-row"><div class="eval-header"><span>Score</span><span class="eval-value">${moveDisplay}</span></div><div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div></div><div class="eval-row"><div class="eval-header"><span>Win %</span><span class="eval-value">${whiteWinPctFormatted}% W / ${blackWinPctFormatted}% B</span></div><div class="win-rate-bar" style="height: 10px; background: #000; overflow: hidden; border-radius: 3px; border: 1px solid #777;"><div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #fff;"></div></div></div>`;
-                return { html: evalHtml, text: cleanText };
-            };
-
-            const updateCommentContent = (moveIndex, totalMoves) => {
-                const overlay = document.getElementById('chess-comment-overlay');
-                if (!commentsEnabled) { $(overlay).fadeOut(); return; }
-                $(overlay).fadeIn();
-
-                const commentText = commentMap[moveIndex] || "";
-                const parsed = generateEvalHtml(commentText);
-                
-                const zoomFactor = currentFontSize / 26; 
-                let textContent = parsed.text ? `<h5 style="margin:0 0 8px 0; color:navy; background:#e0e0e0; font-size:${Math.round(14*zoomFactor)}px; padding:4px 8px; border-radius:3px; display:inline-block; font-weight:bold;">Commentary</h5><div style="margin-bottom:12px; font-size:${Math.round(18*zoomFactor)}px; color:#2c3e50;">${parsed.text}</div>` : `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px; font-size:${Math.round(18*zoomFactor)}px;">No commentary.</div>`;
-                if(moveIndex === -1 && !parsed.text) textContent = `<div style="color:#546e7a; margin-bottom:12px; font-size:${Math.round(18*zoomFactor)}px;">Start of Game</div>`;
-
-                overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size:${Math.round(16*zoomFactor)}px;">Move ${moveIndex === -1 ? "Start" : moveIndex + 1} / ${totalMoves || '?'}</div>`;
-            };
-
-            // --- FULL SCREEN HANDLER ---
-            window.currentChessFSHandler = () => {
-                if (document.fullscreenElement) {
-                    $('body').addClass('chess-fullscreen-active');
-                    // In fullscreen, we might want to ensure a certain size or let the user decide
-                    // For now, we keep whatever currentBoardPx is set to, or let it be responsive
-                } else {
-                    $('body').removeClass('chess-fullscreen-active');
-                }
-                applyBoardSize(currentBoardPx); // Re-apply current preference
-            };
-            document.addEventListener('fullscreenchange', window.currentChessFSHandler);
-
-            // --- KEYBOARD NAVIGATION ---
+            // --- KEYBOARD ---
             window.chessKeyHandler = (e) => {
                 if (!$('#content-modal').hasClass('chess-mode')) return;
 
@@ -295,15 +222,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             };
             document.addEventListener('keydown', window.chessKeyHandler);
 
-            // --- MISC BUTTON HANDLERS ---
-            $('#chess-toggle-moves-btn').off('click').on('click', function(e) {
-                e.preventDefault();
-                movesPanelVisible = !movesPanelVisible;
-                $(this).css({ background: movesPanelVisible ? '#1a1a1a' : '#555', color: movesPanelVisible ? '#ccc' : '#fff' });
-                updateChessStyles();
-                window.dispatchEvent(new Event('resize'));
-            });
-
+            // ... (Rest of handlers: Comment, Close, etc. - preserved)
             $('#chess-comment-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 commentsEnabled = !commentsEnabled;
@@ -328,7 +247,73 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 $('.modal-close-btn').first().click();
             });
 
-            // Game Select
+            // --- HELPER FUNCTIONS ---
+            const parseCommentsMap = (pgnText) => {
+                const map = {};
+                let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim();
+                body = body.replace(/(\r\n|\n|\r)/gm, " ").replace(/\{/g, " { ").replace(/\}/g, " } ");
+                const tokens = body.split(/\s+/);
+                let moveIndex = 0; let insideComment = false; let currentComment = [];
+                for (let i = 0; i < tokens.length; i++) {
+                    const token = tokens[i].trim();
+                    if (!token) continue;
+                    if (token === '{') { insideComment = true; currentComment = []; continue; }
+                    if (token === '}') {
+                        insideComment = false;
+                        const idx = moveIndex === 0 ? -1 : moveIndex - 1;
+                        map[idx] = currentComment.join(" ");
+                        continue;
+                    }
+                    if (insideComment) { currentComment.push(token); } 
+                    else {
+                        if (/^\d+\.+/.test(token)) continue;
+                        if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
+                        if (token.startsWith('$')) continue;
+                        moveIndex++;
+                    }
+                }
+                return map;
+            };
+
+            const generateEvalHtml = (rawText) => {
+                const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
+                let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
+                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim();
+                let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888"; let whiteWinPct = 50;
+                if (evalMatch) {
+                    const valStr = evalMatch[1];
+                    let rawVal = 0;
+                    if (valStr.startsWith('#')) {
+                        const isBlackMate = valStr.includes('-');
+                        moveDisplay = "Mate " + valStr;
+                        moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
+                        whiteWinPct = isBlackMate ? 0 : 100;
+                    } else {
+                        rawVal = parseFloat(valStr);
+                        moveDisplay = Math.round(rawVal) > 0 ? `+${Math.round(rawVal)}` : Math.round(rawVal);
+                        const absMove = Math.min(Math.abs(rawVal), 10);
+                        moveWidth = (absMove / 10) * 50;
+                        if (rawVal > 0) { moveLeft = 50; moveColor = "#2ecc71"; } else { moveLeft = 50 - moveWidth; moveColor = "#e74c3c"; }
+                        whiteWinPct = 50 + (rawVal * 8);
+                        whiteWinPct = Math.max(5, Math.min(95, whiteWinPct));
+                    }
+                }
+                return { html: `<div class="eval-row"><div class="eval-header"><span>Score</span><span class="eval-value">${moveDisplay}</span></div><div class="eval-track"><div class="eval-center-line"></div><div class="eval-fill" style="left: ${moveLeft}%; width: ${moveWidth}%; background-color: ${moveColor};"></div></div></div><div class="eval-row"><div class="eval-header"><span>Win %</span><span class="eval-value">${whiteWinPct.toFixed(1)}% W / ${(100 - whiteWinPct).toFixed(1)}% B</span></div><div class="win-rate-bar" style="height: 10px; background: #000; overflow: hidden; border-radius: 3px; border: 1px solid #777;"><div class="win-white" style="width: ${whiteWinPct}%; height: 100%; background: #fff;"></div></div></div>`, text: cleanText };
+            };
+
+            const updateCommentContent = (moveIndex, totalMoves) => {
+                const overlay = document.getElementById('chess-comment-overlay');
+                if (!commentsEnabled) { $(overlay).fadeOut(); return; }
+                $(overlay).fadeIn();
+                const commentText = commentMap[moveIndex] || "";
+                const parsed = generateEvalHtml(commentText);
+                const zoomFactor = currentFontSize / 26; 
+                let textContent = parsed.text ? `<h5 style="margin:0 0 8px 0; color:navy; background:#e0e0e0; font-size:${Math.round(14*zoomFactor)}px; padding:4px 8px; border-radius:3px; display:inline-block; font-weight:bold;">Commentary</h5><div style="margin-bottom:12px; font-size:${Math.round(18*zoomFactor)}px; color:#2c3e50;">${parsed.text}</div>` : `<div style="color:#90a4ae; font-style:italic; margin-bottom:12px; font-size:${Math.round(18*zoomFactor)}px;">No commentary.</div>`;
+                if(moveIndex === -1 && !parsed.text) textContent = `<div style="color:#546e7a; margin-bottom:12px; font-size:${Math.round(18*zoomFactor)}px;">Start of Game</div>`;
+                overlay.innerHTML = `<div class="comment-text-content">${textContent}</div>` + parsed.html + `<div class="move-counter" style="font-size:${Math.round(16*zoomFactor)}px;">Move ${moveIndex === -1 ? "Start" : moveIndex + 1} / ${totalMoves || '?'}</div>`;
+            };
+
+            // --- INIT RENDER ---
             const $select = $('#chess-game-select');
             rawGames.forEach((gamePgn, idx) => {
                 const white = (gamePgn.match(/\[White "(.*?)"\]/) || [])[1] || '?';
@@ -339,7 +324,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             if (rawGames.length <= 1) $select.hide();
 
             let gameObserver = null;
-
             function renderGame(index) {
                 if (gameObserver) gameObserver.disconnect();
                 const selectedPgn = rawGames[index];
@@ -357,24 +341,18 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                 $(`#chess-metadata-${boardId}`).html(infoHtml);
 
+                // Responsive Init Size
                 const winHeight = $(window).height();
                 const winWidth = $(window).width();
                 const maxWidth = winWidth * 0.90;
                 const maxHeight = winHeight - 250;
                 const initialBoardSize = Math.min(maxWidth, maxHeight);
-
                 $(`#${boardId}`).empty();
 
                 if (typeof PGNV !== 'undefined') {
                     PGNV.pgnView(boardId, {
-                        pgn: selectedPgn,
-                        theme: 'brown',
-                        boardSize: initialBoardSize,
-                        layout: 'left',
-                        width: '100%',
-                        headers: false,
+                        pgn: selectedPgn, theme: 'brown', boardSize: initialBoardSize, layout: 'left', width: '100%', headers: false,
                     });
-
                     updateChessStyles();
 
                     const checkInterval = setInterval(() => {
@@ -404,11 +382,9 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     $('.modal-close-btn').first().click();
                 }
             }
-
             renderGame(0);
             $select.off('change').on('change', function() { renderGame($(this).val()); });
             $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
-
         },
         error: function() {
             $modal.removeClass('chess-mode');
