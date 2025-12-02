@@ -1,27 +1,25 @@
 // This function is designed to be loaded dynamically
 window.startChessGame = function(loadUrl, $modal, $modalContent) {
     
-    // Clean up previous listeners
-    if (window.currentChessFSHandler) {
-        document.removeEventListener('fullscreenchange', window.currentChessFSHandler);
-        window.currentChessFSHandler = null;
-    }
-    if (window.chessKeyHandler) {
-        document.removeEventListener('keydown', window.chessKeyHandler);
-        window.chessKeyHandler = null;
-    }
+    // 1. FORCE CLEANUP (Zombie Nuke)
+    // We use jQuery .off() with namespaces to kill ANY lingering listeners from previous sessions
+    $(document).off('fullscreenchange.chessMode webkitfullscreenchange.chessMode mozfullscreenchange.chessMode MSFullscreenChange.chessMode');
+    $(document).off('keydown.chessKeys');
+
+    if (window.currentChessFSHandler) window.currentChessFSHandler = null;
+    if (window.chessKeyHandler) window.chessKeyHandler = null;
 
     // CORS Fix
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
         loadUrl = loadUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
     }
 
-    // 1. ENTER CHESS MODE UI STATE
+    // 2. ENTER CHESS MODE UI STATE
     $modal.addClass('chess-mode');
     $('body').addClass('chess-mode-active');
     $modal.find('.modal-header').hide();
 
-    // 2. FETCH PGN CONTENT
+    // 3. FETCH PGN CONTENT
     $.ajax({
         url: loadUrl,
         dataType: 'text',
@@ -32,21 +30,20 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             const boardId = 'chess-board-' + Date.now();
             const styleId = 'chess-style-' + Date.now();
 
-            // --- CONFIGURATION PARAMETERS ---
-            const FS_INIT_WAIT_MS = 15;      // Delay after entering FS before nudging
-            const FS_NUDGE_INTERVAL_MS = 2; // Delay between Right and Left arrow simulation
+            // --- CONFIGURATION PARAMETERS (User Adjustable) ---
+            const FS_INIT_WAIT_MS = 200;      // Delay after entering FS before nudging
+            const FS_NUDGE_INTERVAL_MS = 100; // Delay between Right and Left arrow simulation
 
             let currentFontSize = 26;
             let commentsEnabled = true;
             let movesPanelVisible = true; 
             let commentMap = {};
-            let currentBoardPx = null; // null = responsive mode
+            let currentBoardPx = null; 
 
             // --- CSS GENERATOR ---
             const updateChessStyles = () => {
                 const movesId = `#${boardId}Moves`;
                 const movesDisplay = movesPanelVisible ? 'block' : 'none';
-                
                 const movesBtn = $('#chess-toggle-moves-btn');
                 if (movesPanelVisible) {
                     movesBtn.css({ background: '#1a1a1a', color: '#ccc' });
@@ -99,7 +96,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 $(`#${styleId}`).text(css);
             };
 
-            // 3. INJECT CHESS UI HTML
+            // 4. INJECT CHESS UI HTML
             $modalContent.html(`
                 <style id="${styleId}"></style>
                 <div class="chess-container">
@@ -133,8 +130,11 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             // --- SIZING LOGIC ---
             const applyBoardSize = (sizePx) => {
                 const $board = $(`#${boardId}`);
+                const styleString = sizePx 
+                    ? `width: ${sizePx}px !important; height: ${sizePx}px !important; margin: auto !important; flex: 0 0 auto !important; display: flex !important; justify-content: center !important; align-items: center !important;`
+                    : ''; // Empty string removes style
+                
                 if (sizePx) {
-                    const styleString = `width: ${sizePx}px !important; height: ${sizePx}px !important; margin: auto !important; flex: 0 0 auto !important; display: flex !important; justify-content: center !important; align-items: center !important;`;
                     $board.attr('style', styleString);
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').attr('style', styleString);
                 } else {
@@ -146,43 +146,36 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
             // --- DELAYED KEY SIMULATION (Nudge) ---
             const delayedKeyNudge = () => {
-                console.log("[CHESS] Executing delayed key nudge (Right -> Left)...");
-                
+                console.log("[CHESS] Executing delayed key nudge...");
                 const $board = $(`#${boardId}`);
                 let focusTarget = $board.find('button.next');
                 if (!focusTarget.length) focusTarget = $board;
-                
-                // 1. Ensure Focus so keys are caught
                 focusTarget.focus();
 
-                // 2. Dispatch ArrowRight
-                const rightEvt = new KeyboardEvent('keydown', { 
-                    key: 'ArrowRight', code: 'ArrowRight', keyCode: 39, which: 39, 
-                    bubbles: true, cancelable: true, view: window 
-                });
+                const rightEvt = new KeyboardEvent('keydown', { key: 'ArrowRight', code: 'ArrowRight', keyCode: 39, which: 39, bubbles: true, cancelable: true, view: window });
                 (focusTarget[0] || document).dispatchEvent(rightEvt);
 
-                // 3. Dispatch ArrowLeft after small delay using Configured Interval
                 setTimeout(() => {
-                    const leftEvt = new KeyboardEvent('keydown', { 
-                        key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37, which: 37, 
-                        bubbles: true, cancelable: true, view: window 
-                    });
+                    const leftEvt = new KeyboardEvent('keydown', { key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37, which: 37, bubbles: true, cancelable: true, view: window });
                     (focusTarget[0] || document).dispatchEvent(leftEvt);
                 }, FS_NUDGE_INTERVAL_MS);
             };
 
-            // --- FULL SCREEN HANDLER ---
-            window.currentChessFSHandler = () => {
+            // --- FULL SCREEN HANDLER (NAMESPACED) ---
+            // We use jQuery .on() so we can .off() it safely later
+            $(document).on('fullscreenchange.chessMode webkitfullscreenchange.chessMode mozfullscreenchange.chessMode MSFullscreenChange.chessMode', function() {
+                // GUARD: Strictly abort if we are NOT in chess mode
+                if (!$('body').hasClass('chess-mode-active')) {
+                    // console.log("[CHESS] Ignoring FS event (Not in chess mode)");
+                    return;
+                }
+
                 if (document.fullscreenElement) {
                     $('body').addClass('chess-fullscreen-active');
-                    
                     movesPanelVisible = false;
                     currentBoardPx = null; 
                     applyBoardSize(null);
                     updateChessStyles();
-
-                    // WAIT configured time then trigger key sequence
                     setTimeout(delayedKeyNudge, FS_INIT_WAIT_MS); 
                 } else {
                     $('body').removeClass('chess-fullscreen-active');
@@ -190,20 +183,17 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     updateChessStyles();
                     setTimeout(() => window.dispatchEvent(new Event('resize')), 200);
                 }
-            };
-            document.addEventListener('fullscreenchange', window.currentChessFSHandler);
+            });
 
-            // --- SMART KEYBOARD LISTENER ---
-            window.chessKeyHandler = (e) => {
+            // --- KEYBOARD LISTENER (NAMESPACED) ---
+            $(document).on('keydown.chessKeys', function(e) {
                 if (!$('#content-modal').hasClass('chess-mode')) return;
-                
-                // Prevent interfering with inputs if ever present
                 if ($(e.target).is('input, textarea')) return;
 
                 const k = e.key;
                 const lowerK = k.toLowerCase();
 
-                // --- UI SHORTCUTS ---
+                // UI Shortcuts
                 if (lowerK === 'm') { $('#chess-toggle-moves-btn').click(); return; }
                 if (lowerK === 'c') { $('#chess-comment-btn').click(); return; }
                 if (lowerK === 'i') { $('#chess-info-btn').click(); return; }
@@ -211,97 +201,49 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 if (k === '+' || k === '=') { $('#chess-size-plus').click(); return; }
                 if (lowerK === 'f') { $('#chess-fs-btn').click(); return; }
 
-                // --- NAVIGATION SHORTCUTS ---
+                // Nav Shortcuts - Only if not already focused on board
                 const isArrowLeft = (k === "ArrowLeft");
                 const isArrowRight = (k === "ArrowRight" || k === " ");
-                
                 if (!isArrowLeft && !isArrowRight) return;
 
-                // CHECK FOCUS: Only manually click if focus IS NOT on the board/buttons
                 const focused = document.activeElement;
                 const isChessFocus = focused && ($(focused).closest(`#${boardId}`).length > 0 || $(focused).hasClass('chess-container'));
+                if (isChessFocus) return; 
 
-                if (isChessFocus) {
-                    return; // Let library handle it
-                }
-
-                // NO FOCUS: Manually Trigger Buttons
                 const nextBtn = $(`#${boardId} button.next`);
                 const prevBtn = $(`#${boardId} button.prev`);
 
-                if (isArrowLeft) {
-                    if (prevBtn.length) prevBtn[0].click(); 
-                } 
-                else if (isArrowRight) {
-                    if (nextBtn.length) {
-                        nextBtn[0].click(); 
-                        if(k === " ") e.preventDefault();
-                    }
-                }
-            };
-            document.addEventListener('keydown', window.chessKeyHandler);
+                if (isArrowLeft && prevBtn.length) prevBtn[0].click(); 
+                else if (isArrowRight && nextBtn.length) { nextBtn[0].click(); if(k === " ") e.preventDefault(); }
+            });
 
             // --- BUTTON HANDLERS ---
             $('#chess-size-plus').on('click', function(e) {
                 e.preventDefault();
-                if (!currentBoardPx) {
-                    const currentWidth = $(`#${boardId} .board`).width();
-                    currentBoardPx = currentWidth ? Math.round(currentWidth) : 600;
-                }
-                currentBoardPx += 100;
-                applyBoardSize(currentBoardPx);
+                if (!currentBoardPx) { const w = $(`#${boardId} .board`).width(); currentBoardPx = w ? Math.round(w) : 600; }
+                currentBoardPx += 100; applyBoardSize(currentBoardPx);
             });
-
             $('#chess-size-minus').on('click', function(e) {
                 e.preventDefault();
-                if (!currentBoardPx) {
-                    const currentWidth = $(`#${boardId} .board`).width();
-                    currentBoardPx = currentWidth ? Math.round(currentWidth) : 600;
-                }
-                if (currentBoardPx > 200) {
-                    currentBoardPx -= 100;
-                    applyBoardSize(currentBoardPx);
-                }
+                if (!currentBoardPx) { const w = $(`#${boardId} .board`).width(); currentBoardPx = w ? Math.round(w) : 600; }
+                if (currentBoardPx > 200) { currentBoardPx -= 100; applyBoardSize(currentBoardPx); }
             });
-
-            $('#chess-size-reset').on('click', function(e) {
-                e.preventDefault();
-                currentBoardPx = 800;
-                applyBoardSize(800);
+            $('#chess-size-reset').on('click', function(e) { e.preventDefault(); currentBoardPx = 800; applyBoardSize(800); });
+            $('#chess-toggle-moves-btn').on('click', function(e) { e.preventDefault(); movesPanelVisible = !movesPanelVisible; updateChessStyles(); setTimeout(delayedKeyNudge, 100); });
+            $('#chess-comment-btn').on('click', function(e) { e.preventDefault(); commentsEnabled = !commentsEnabled; $(this).text(commentsEnabled ? 'Comments: On' : 'Comments: Off'); updateCommentContent(-1, 0); });
+            
+            $('#chess-fs-btn').on('click', function(e) {
+                e.preventDefault(); $(this).blur();
+                if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(e => console.log(e));
+                else document.exitFullscreen();
             });
-
-            $('#chess-toggle-moves-btn').off('click').on('click', function(e) {
-                e.preventDefault();
-                movesPanelVisible = !movesPanelVisible;
-                updateChessStyles();
-                setTimeout(delayedKeyNudge, 100);
-            });
-
-            $('#chess-comment-btn').off('click').on('click', function(e) {
-                e.preventDefault();
-                commentsEnabled = !commentsEnabled;
-                $(this).text(commentsEnabled ? 'Comments: On' : 'Comments: Off');
-                const total = document.getElementById(boardId + 'Moves') ? document.getElementById(boardId + 'Moves').querySelectorAll('move').length : 0;
-                updateCommentContent(-1, total);
-            });
-
-            $('#chess-fs-btn').off('click').on('click', function(e) {
-                e.preventDefault();
-                $(this).blur();
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().catch(e => console.log(e));
-                } else {
-                    document.exitFullscreen();
-                }
-            });
-
-            $('#chess-close-btn').off('click').on('click', function(e) {
+            $('#chess-close-btn').on('click', function(e) {
                 e.preventDefault();
                 if (document.fullscreenElement) document.exitFullscreen();
                 $('.modal-close-btn').first().click();
             });
 
-            // --- HELPER FUNCTIONS ---
+            // --- HELPER FUNCTIONS (Parsing, Eval, Comments) ---
             const parseCommentsMap = (pgnText) => {
                 const map = {};
                 let body = pgnText.replace(/\[(?!%)[^\]]*\]/g, "").trim();
@@ -312,34 +254,22 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     const token = tokens[i].trim();
                     if (!token) continue;
                     if (token === '{') { insideComment = true; currentComment = []; continue; }
-                    if (token === '}') {
-                        insideComment = false;
-                        const idx = moveIndex === 0 ? -1 : moveIndex - 1;
-                        map[idx] = currentComment.join(" ");
-                        continue;
-                    }
+                    if (token === '}') { insideComment = false; const idx = moveIndex === 0 ? -1 : moveIndex - 1; map[idx] = currentComment.join(" "); continue; }
                     if (insideComment) { currentComment.push(token); } 
-                    else {
-                        if (/^\d+\.+/.test(token)) continue;
-                        if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue;
-                        if (token.startsWith('$')) continue;
-                        moveIndex++;
-                    }
+                    else { if (/^\d+\.+/.test(token)) continue; if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(token)) continue; if (token.startsWith('$')) continue; moveIndex++; }
                 }
                 return map;
             };
 
             const generateEvalHtml = (rawText) => {
                 const evalMatch = rawText.match(/\[%eval\s+([+-]?\d+\.?\d*|#[+-]?\d+)\]/);
-                let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim();
-                cleanText = cleanText.replace(/\[%[^\]]+\]/g, '').trim();
+                let cleanText = rawText.replace(/\[%eval\s+[^\]]+\]/g, '').trim().replace(/\[%[^\]]+\]/g, '').trim();
                 let moveDisplay = "0"; let moveWidth = 0; let moveLeft = 50; let moveColor = "#888"; let whiteWinPct = 50;
                 if (evalMatch) {
                     const valStr = evalMatch[1];
                     let rawVal = 0;
                     if (valStr.startsWith('#')) {
-                        const isBlackMate = valStr.includes('-');
-                        moveDisplay = "Mate " + valStr;
+                        const isBlackMate = valStr.includes('-'); moveDisplay = "Mate " + valStr;
                         moveWidth = 50; moveLeft = isBlackMate ? 0 : 50; moveColor = isBlackMate ? "#e74c3c" : "#2ecc71";
                         whiteWinPct = isBlackMate ? 0 : 100;
                     } else {
@@ -383,7 +313,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const selectedPgn = rawGames[index];
                 commentMap = parseCommentsMap(selectedPgn);
 
-                // Metadata
                 const headers = {};
                 let match;
                 const headerRegex = /\[([A-Za-z0-9_]+)\s+"(.*?)"\]/g;
@@ -395,7 +324,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 infoHtml += '</table><br><button class="overlay-close-btn" onclick="$(this).parent().fadeOut()" style="background: #e74c3c; color: white; border: none; padding: 5px 15px; float: right; cursor: pointer;">Close</button>';
                 $(`#chess-metadata-${boardId}`).html(infoHtml);
 
-                // Responsive Init Size
                 const winHeight = $(window).height();
                 const winWidth = $(window).width();
                 const maxWidth = winWidth * 0.90;
@@ -408,11 +336,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         pgn: selectedPgn, theme: 'brown', boardSize: initialBoardSize, layout: 'left', width: '100%', headers: false,
                     });
                     updateChessStyles();
-
-                    // Initial Focus & Nudge
-                    setTimeout(() => {
-                        delayedKeyNudge();
-                    }, 500);
+                    setTimeout(() => { delayedKeyNudge(); }, 500);
 
                     const checkInterval = setInterval(() => {
                         const movesPanel = document.getElementById(boardId + 'Moves');
@@ -427,8 +351,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                                     const activeMove = activeEl.tagName === 'MOVE' ? activeEl : activeEl.closest('move');
                                     if (activeMove) {
                                         const allMoves = Array.from(movesPanel.querySelectorAll('move'));
-                                        const idx = allMoves.indexOf(activeMove);
-                                        updateCommentContent(idx, totalMoves);
+                                        const index = allMoves.indexOf(activeMove);
+                                        updateCommentContent(index, totalMoves);
                                         return;
                                     }
                                 }
