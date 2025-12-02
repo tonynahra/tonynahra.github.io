@@ -6,10 +6,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
         document.removeEventListener('fullscreenchange', window.currentChessFSHandler);
         window.currentChessFSHandler = null;
     }
-    if (window.chessKeyHandler) {
-        document.removeEventListener('keydown', window.chessKeyHandler);
-        window.chessKeyHandler = null;
-    }
+    // REMOVED: window.chessKeyHandler to prevent double-move issue.
+    // We now rely solely on the global cardLogic.js handler which clicks the buttons.
 
     // CORS Fix
     if (loadUrl.includes('github.com') && loadUrl.includes('/blob/')) {
@@ -141,23 +139,28 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
             };
 
-            // --- SIMULATE INTERACTION (THE FIX) ---
+            // --- SIMULATE INTERACTION (NEXT -> PREV) ---
             const nudgeBoard = () => {
-                // Find buttons
                 const nextBtn = $(`#${boardId} button.next`);
                 const prevBtn = $(`#${boardId} button.prev`);
                 
-                console.log("[CHESS] Nudging board layout...");
+                console.log("[CHESS] Nudging board via Next -> Prev...");
 
-                // Strategy: Try to move Next then Back. If impossible, Move Back then Next.
+                // 1. Try Next then Prev (Standard Fix)
                 if (nextBtn.length && !nextBtn.hasClass('disabled') && !nextBtn.prop('disabled')) {
-                    nextBtn.click();
-                    setTimeout(() => { if (prevBtn.length) prevBtn.click(); }, 50);
-                } else if (prevBtn.length && !prevBtn.hasClass('disabled') && !prevBtn.prop('disabled')) {
+                    nextBtn.click(); 
+                    setTimeout(() => { 
+                        if (prevBtn.length) prevBtn.click(); 
+                    }, 100);
+                } 
+                // 2. Fallback: If at end of game, try Prev then Next
+                else if (prevBtn.length && !prevBtn.hasClass('disabled') && !prevBtn.prop('disabled')) {
                     prevBtn.click();
-                    setTimeout(() => { if (nextBtn.length) nextBtn.click(); }, 50);
+                    setTimeout(() => { 
+                        if (nextBtn.length) nextBtn.click(); 
+                    }, 100);
                 } else {
-                    // Fallback if both disabled (empty game?) or not found: Trigger resize
+                    // 3. Last Resort: Just resize
                     window.dispatchEvent(new Event('resize'));
                 }
             };
@@ -169,16 +172,16 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     
                     // AUTOMATION: Hide Moves Panel & Reset to Responsive Size
                     movesPanelVisible = false;
-                    currentBoardPx = null; // Reset fixed size to let it fill screen
+                    currentBoardPx = null; // Reset fixed size
                     applyBoardSize(null);
                     updateChessStyles();
 
-                    // CRITICAL: Wait for browser transition, then Nudge
+                    // Trigger the Nudge Logic
                     setTimeout(nudgeBoard, 300); 
-                    setTimeout(nudgeBoard, 800); // Double tap to be sure
+                    setTimeout(nudgeBoard, 800); 
                 } else {
                     $('body').removeClass('chess-fullscreen-active');
-                    movesPanelVisible = true; // Show moves again on exit?
+                    movesPanelVisible = true; 
                     updateChessStyles();
                     setTimeout(() => window.dispatchEvent(new Event('resize')), 200);
                 }
@@ -218,30 +221,10 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 e.preventDefault();
                 movesPanelVisible = !movesPanelVisible;
                 updateChessStyles();
-                // Nudge to ensure board fills/shrinks to space
                 setTimeout(nudgeBoard, 100);
             });
 
-            // --- KEYBOARD ---
-            window.chessKeyHandler = (e) => {
-                if (!$('#content-modal').hasClass('chess-mode')) return;
-
-                if (e.key === "ArrowLeft") {
-                    const prevBtn = $(`#${boardId} .prev, #${boardId} .fa-arrow-left`).parent('button');
-                    if (prevBtn.length) prevBtn.click();
-                    else $(`#${boardId} button.prev`).click();
-                } 
-                else if (e.key === "ArrowRight" || e.key === " ") {
-                    const nextBtn = $(`#${boardId} .next, #${boardId} .fa-arrow-right`).parent('button');
-                    if (nextBtn.length) nextBtn.click();
-                    else $(`#${boardId} button.next`).click();
-                    if(e.key === " ") e.preventDefault();
-                }
-                else if (e.key.toLowerCase() === 'f') {
-                    $('#chess-fs-btn').click();
-                }
-            };
-            document.addEventListener('keydown', window.chessKeyHandler);
+            // Note: Keyboard handler removed to use global one (fixes double move)
 
             // ... (Rest of handlers: Comment, Close, etc. - preserved)
             $('#chess-comment-btn').off('click').on('click', function(e) {
