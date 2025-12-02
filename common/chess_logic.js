@@ -33,8 +33,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             const styleId = 'chess-style-' + Date.now();
 
             // --- CONFIGURATION PARAMETERS ---
-            const FS_INIT_WAIT_MS = 20;      // Delay after entering FS before nudging (was 1000)
-            const FS_NUDGE_INTERVAL_MS = 3; // Delay between Right and Left arrow simulation
+            const FS_INIT_WAIT_MS = 15;      // Delay after entering FS before nudging
+            const FS_NUDGE_INTERVAL_MS = 2; // Delay between Right and Left arrow simulation
 
             let currentFontSize = 26;
             let commentsEnabled = true;
@@ -107,14 +107,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         <select id="chess-game-select" style="flex: 1; max-width: 300px; padding: 5px; background:#000; color:#fff; border:1px solid #444;"></select>
                         
                         <div class="chess-size-controls" style="display:flex; gap:0;">
-                            <button id="chess-size-minus" title="Decrease Size" style="background:#333; color:#fff; border:1px solid #555; border-radius:4px 0 0 4px; padding:4px 10px; font-weight:bold;">-</button>
+                            <button id="chess-size-minus" title="Decrease Size (-)" style="background:#333; color:#fff; border:1px solid #555; border-radius:4px 0 0 4px; padding:4px 10px; font-weight:bold;">-</button>
                             <button id="chess-size-reset" title="Reset to 800px" style="background:#333; color:#fff; border-top:1px solid #555; border-bottom:1px solid #555; border-left:none; border-right:none; padding:4px 10px; font-size: 0.9em;">800px</button>
-                            <button id="chess-size-plus" title="Increase Size" style="background:#333; color:#fff; border:1px solid #555; border-radius:0 4px 4px 0; padding:4px 10px; font-weight:bold;">+</button>
+                            <button id="chess-size-plus" title="Increase Size (+)" style="background:#333; color:#fff; border:1px solid #555; border-radius:0 4px 4px 0; padding:4px 10px; font-weight:bold;">+</button>
                         </div>
 
-                        <button id="chess-toggle-moves-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Moves</button>
-                        <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;">Info</button>
-                        <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 4px 10px;">Comments: On</button>
+                        <button id="chess-toggle-moves-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;" title="Toggle Moves (M)">Moves</button>
+                        <button id="chess-info-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px;" title="Toggle Info (I)">Info</button>
+                        <button id="chess-comment-btn" class="tab-button" style="color: #000; background: var(--text-accent); border: 1px solid var(--text-accent); padding: 4px 10px;" title="Toggle Comments (C)">Comments: On</button>
                         
                         <div style="flex: 1;"></div>
                         <button id="chess-fs-btn" class="tab-button" style="color: #ccc; border: 1px solid #444; padding: 4px 10px; margin-right: 5px;" title="Full Screen (F)">&#x26F6; Full Screen</button>
@@ -196,11 +196,26 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             // --- SMART KEYBOARD LISTENER ---
             window.chessKeyHandler = (e) => {
                 if (!$('#content-modal').hasClass('chess-mode')) return;
-
-                const isArrowLeft = (e.key === "ArrowLeft");
-                const isArrowRight = (e.key === "ArrowRight" || e.key === " ");
                 
-                if (!isArrowLeft && !isArrowRight && e.key.toLowerCase() !== 'f') return;
+                // Prevent interfering with inputs if ever present
+                if ($(e.target).is('input, textarea')) return;
+
+                const k = e.key;
+                const lowerK = k.toLowerCase();
+
+                // --- UI SHORTCUTS ---
+                if (lowerK === 'm') { $('#chess-toggle-moves-btn').click(); return; }
+                if (lowerK === 'c') { $('#chess-comment-btn').click(); return; }
+                if (lowerK === 'i') { $('#chess-info-btn').click(); return; }
+                if (k === '-' || k === '_') { $('#chess-size-minus').click(); return; }
+                if (k === '+' || k === '=') { $('#chess-size-plus').click(); return; }
+                if (lowerK === 'f') { $('#chess-fs-btn').click(); return; }
+
+                // --- NAVIGATION SHORTCUTS ---
+                const isArrowLeft = (k === "ArrowLeft");
+                const isArrowRight = (k === "ArrowRight" || k === " ");
+                
+                if (!isArrowLeft && !isArrowRight) return;
 
                 // CHECK FOCUS: Only manually click if focus IS NOT on the board/buttons
                 const focused = document.activeElement;
@@ -220,11 +235,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 else if (isArrowRight) {
                     if (nextBtn.length) {
                         nextBtn[0].click(); 
-                        if(e.key === " ") e.preventDefault();
+                        if(k === " ") e.preventDefault();
                     }
-                }
-                else if (e.key.toLowerCase() === 'f') {
-                    $('#chess-fs-btn').click();
                 }
             };
             document.addEventListener('keydown', window.chessKeyHandler);
