@@ -43,6 +43,14 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const movesId = `#${boardId}Moves`;
                 const movesDisplay = movesPanelVisible ? 'block' : 'none';
                 
+                // Update the Moves Button State UI
+                const movesBtn = $('#chess-toggle-moves-btn');
+                if (movesPanelVisible) {
+                    movesBtn.css({ background: '#1a1a1a', color: '#ccc' });
+                } else {
+                    movesBtn.css({ background: '#555', color: '#fff' });
+                }
+
                 const css = `
                     ${movesId} {
                         background-color: #ffffff !important;
@@ -71,7 +79,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     ${movesId} move:hover { background-color: #e0e0e0 !important; }
                     ${movesId} move.active { background-color: #FFD700 !important; color: #000 !important; }
                     
-                    /* Wrapper Flex Logic */
                     #${boardId} .pgnvjs-wrapper {
                         display: flex !important;
                         flex-direction: row !important;
@@ -80,7 +87,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                         justify-content: center !important;
                     }
                     
-                    /* Comment Overlay Size */
                     #chess-comment-overlay {
                         width: ${250 + (currentFontSize - 26) * 6}px !important;
                         min-width: 250px !important;
@@ -124,43 +130,58 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             // --- SIZING LOGIC ---
             const applyBoardSize = (sizePx) => {
                 const $board = $(`#${boardId}`);
-                
                 if (sizePx) {
-                    // Added "margin: auto !important" to ensure centering in flex container
                     const styleString = `width: ${sizePx}px !important; height: ${sizePx}px !important; margin: auto !important; flex: 0 0 auto !important;`;
-                    
                     $board.attr('style', styleString);
-                    // Force internal wrappers to match
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').attr('style', styleString);
-                    
                 } else {
-                    // Reset to responsive
                     $board.removeAttr('style');
                     $board.find('.board, .cg-board, .pgnvjs-wrapper, .cg-board-wrap').removeAttr('style');
                 }
-                
-                // Force Redraw Sequence
-                window.dispatchEvent(new Event('resize'));
                 setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+            };
+
+            // --- SIMULATE INTERACTION (THE FIX) ---
+            const nudgeBoard = () => {
+                // Find buttons
+                const nextBtn = $(`#${boardId} button.next`);
+                const prevBtn = $(`#${boardId} button.prev`);
+                
+                console.log("[CHESS] Nudging board layout...");
+
+                // Strategy: Try to move Next then Back. If impossible, Move Back then Next.
+                if (nextBtn.length && !nextBtn.hasClass('disabled') && !nextBtn.prop('disabled')) {
+                    nextBtn.click();
+                    setTimeout(() => { if (prevBtn.length) prevBtn.click(); }, 50);
+                } else if (prevBtn.length && !prevBtn.hasClass('disabled') && !prevBtn.prop('disabled')) {
+                    prevBtn.click();
+                    setTimeout(() => { if (nextBtn.length) nextBtn.click(); }, 50);
+                } else {
+                    // Fallback if both disabled (empty game?) or not found: Trigger resize
+                    window.dispatchEvent(new Event('resize'));
+                }
             };
 
             // --- FULL SCREEN HANDLER ---
             window.currentChessFSHandler = () => {
                 if (document.fullscreenElement) {
                     $('body').addClass('chess-fullscreen-active');
+                    
+                    // AUTOMATION: Hide Moves Panel & Reset to Responsive Size
+                    movesPanelVisible = false;
+                    currentBoardPx = null; // Reset fixed size to let it fill screen
+                    applyBoardSize(null);
+                    updateChessStyles();
+
+                    // CRITICAL: Wait for browser transition, then Nudge
+                    setTimeout(nudgeBoard, 300); 
+                    setTimeout(nudgeBoard, 800); // Double tap to be sure
                 } else {
                     $('body').removeClass('chess-fullscreen-active');
+                    movesPanelVisible = true; // Show moves again on exit?
+                    updateChessStyles();
+                    setTimeout(() => window.dispatchEvent(new Event('resize')), 200);
                 }
-                
-                // CRITICAL: Bootstrap visibility on fullscreen switch
-                // We re-apply the current size (or responsive default) and FORCE multiple resize events
-                // to catch the browser finishing its fullscreen animation.
-                applyBoardSize(currentBoardPx);
-                
-                // Aggressive redraw sequence for visibility
-                setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
-                setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
-                setTimeout(() => window.dispatchEvent(new Event('resize')), 500);
             };
             document.addEventListener('fullscreenchange', window.currentChessFSHandler);
 
@@ -196,9 +217,9 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             $('#chess-toggle-moves-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 movesPanelVisible = !movesPanelVisible;
-                $(this).css({ background: movesPanelVisible ? '#1a1a1a' : '#555', color: movesPanelVisible ? '#ccc' : '#fff' });
                 updateChessStyles();
-                window.dispatchEvent(new Event('resize'));
+                // Nudge to ensure board fills/shrinks to space
+                setTimeout(nudgeBoard, 100);
             });
 
             // --- KEYBOARD ---
