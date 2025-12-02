@@ -122,6 +122,14 @@ body.chess-mode-active .modal-header { display: none !important; }
     flex-wrap: wrap; /* Ensure if it gets too small it wraps, though usually just one item */
 }
 
+/* Ensure any internal fixed container respects the flex centering */
+.chess-white-box > div, 
+.chess-white-box .pgnvjs-wrapper,
+.chess-white-box .cg-board-wrap {
+    margin: auto !important; 
+    flex: 0 0 auto !important;
+}
+
 .chess-comment-overlay { font-size: 1.3rem !important; padding: 15px !important; background: #e3f2fd !important; border: 1px solid #90caf9; border-radius: 8px; color: #2c3e50 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: absolute; bottom: 20px; right: 30px; width: 340px; z-index: 6000 !important; text-align: center; display: flex; flex-direction: column; justify-content: space-between; min-height: 140px; pointer-events: none; }
 .comment-text-content { flex-grow: 1; margin-bottom: 10px; text-align: left; overflow-y: auto; max-height: 250px; }
 .comment-bar-footer { flex-shrink: 0; border-top: 1px solid #90caf9; padding-top: 8px; }
