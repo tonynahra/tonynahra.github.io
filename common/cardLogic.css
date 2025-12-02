@@ -120,6 +120,7 @@ body.chess-mode-active .modal-header { display: none !important; }
     justify-content: center; 
     align-items: center; 
     flex-wrap: wrap; /* Ensure if it gets too small it wraps, though usually just one item */
+    background-color: transparent; /* Changed from white to transparent to blend with dark mode if smaller */
 }
 
 /* Ensure any internal fixed container respects the flex centering */
