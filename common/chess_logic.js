@@ -140,47 +140,32 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
             };
 
-            // --- CRITICAL FIX: FOCUS & NUDGE ---
-            const focusAndNudge = () => {
+            // --- DELAYED KEY SIMULATION (Nudge) ---
+            const delayedKeyNudge = () => {
+                console.log("[CHESS] Executing delayed key nudge (Right -> Left)...");
+                
                 const $board = $(`#${boardId}`);
+                let focusTarget = $board.find('button.next');
+                if (!focusTarget.length) focusTarget = $board;
                 
-                // 1. LOCATE BUTTONS
-                // PGNV usually creates buttons with specific classes inside the wrapper
-                let nextBtn = $board.find('button.next');
-                let prevBtn = $board.find('button.prev');
-                
-                // Fallback selectors if library classes differ
-                if (!nextBtn.length) nextBtn = $board.find('.fa-arrow-right').closest('button');
-                if (!prevBtn.length) prevBtn = $board.find('.fa-arrow-left').closest('button');
+                // 1. Ensure Focus so keys are caught
+                focusTarget.focus();
 
-                console.log(`[CHESS DEBUG] Nudging. NextBtn found: ${nextBtn.length}, PrevBtn found: ${prevBtn.length}`);
+                // 2. Dispatch ArrowRight
+                const rightEvt = new KeyboardEvent('keydown', { 
+                    key: 'ArrowRight', code: 'ArrowRight', keyCode: 39, which: 39, 
+                    bubbles: true, cancelable: true, view: window 
+                });
+                (focusTarget[0] || document).dispatchEvent(rightEvt);
 
-                // 2. FORCE FOCUS (Fixes keyboard shortcuts)
-                // We focus the 'Next' button if available, or the board container itself
-                if (nextBtn.length) {
-                    nextBtn.focus();
-                } else {
-                    $board.attr('tabindex', '0').focus();
-                }
-
-                // 3. EXECUTE CLICK NUDGE (Fixes visibility)
-                // We use native .click() to ensure the library event fires
-                if (nextBtn.length && !nextBtn.prop('disabled') && !nextBtn.hasClass('disabled')) {
-                    nextBtn[0].click();
-                    setTimeout(() => {
-                        if (prevBtn.length) prevBtn[0].click();
-                    }, 150);
-                } 
-                else if (prevBtn.length && !prevBtn.prop('disabled') && !prevBtn.hasClass('disabled')) {
-                    // If at end of game, go back then forward
-                    prevBtn[0].click();
-                    setTimeout(() => {
-                        if (nextBtn.length) nextBtn[0].click();
-                    }, 150);
-                } else {
-                    // Just trigger resize if buttons fail
-                    window.dispatchEvent(new Event('resize'));
-                }
+                // 3. Dispatch ArrowLeft after small delay
+                setTimeout(() => {
+                    const leftEvt = new KeyboardEvent('keydown', { 
+                        key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37, which: 37, 
+                        bubbles: true, cancelable: true, view: window 
+                    });
+                    (focusTarget[0] || document).dispatchEvent(leftEvt);
+                }, 200);
             };
 
             // --- FULL SCREEN HANDLER ---
@@ -193,10 +178,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                     applyBoardSize(null);
                     updateChessStyles();
 
-                    // WAIT for transition, then FOCUS & NUDGE
-                    // We try twice to handle different rendering speeds
-                    setTimeout(focusAndNudge, 400); 
-                    setTimeout(focusAndNudge, 1000); 
+                    // WAIT 1 SECOND (as requested) then trigger key sequence
+                    setTimeout(delayedKeyNudge, 1000); 
                 } else {
                     $('body').removeClass('chess-fullscreen-active');
                     movesPanelVisible = true; 
@@ -220,11 +203,10 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const isChessFocus = focused && ($(focused).closest(`#${boardId}`).length > 0 || $(focused).hasClass('chess-container'));
 
                 if (isChessFocus) {
-                    // Focus is good, let library handle it.
-                    return; 
+                    return; // Let library handle it
                 }
 
-                // NO FOCUS: Manually Trigger
+                // NO FOCUS: Manually Trigger Buttons
                 const nextBtn = $(`#${boardId} button.next`);
                 const prevBtn = $(`#${boardId} button.prev`);
 
@@ -276,7 +258,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 e.preventDefault();
                 movesPanelVisible = !movesPanelVisible;
                 updateChessStyles();
-                setTimeout(focusAndNudge, 100); // Re-focus on toggle
+                setTimeout(delayedKeyNudge, 100);
             });
 
             $('#chess-comment-btn').off('click').on('click', function(e) {
@@ -413,7 +395,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
                     // Initial Focus & Nudge
                     setTimeout(() => {
-                        focusAndNudge();
+                        delayedKeyNudge();
                     }, 500);
 
                     const checkInterval = setInterval(() => {
