@@ -33,8 +33,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             const styleId = 'chess-style-' + Date.now();
 
             // --- CONFIGURATION PARAMETERS ---
-            const FS_INIT_WAIT_MS = 80;      // Delay after entering FS before nudging (was 1000)
-            const FS_NUDGE_INTERVAL_MS = 30; // Delay between Right and Left arrow simulation
+            const FS_INIT_WAIT_MS = 40;      // Delay after entering FS before nudging (was 1000)
+            const FS_NUDGE_INTERVAL_MS = 10; // Delay between Right and Left arrow simulation
 
             let currentFontSize = 26;
             let commentsEnabled = true;
