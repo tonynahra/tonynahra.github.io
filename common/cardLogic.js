@@ -93,14 +93,23 @@ window.handleModalKeys = function(e) {
     if (!$('#content-modal').is(':visible')) { $(document).off('keydown.modalNav'); return; } if ($(e.target).is('input, textarea, select')) return;
     if (isTutorialMode && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ")) { return; }
     
+    // --- CHESS MODE DOUBLE-MOVE FIX ---
+    // If we are in chess mode, STOP processing arrow keys here. 
+    // The Chess library (PGNV/Chessground) listens to document/window keys independently.
+    // If we process them here too, we get two moves per keypress.
     const isChessMode = $('#content-modal').hasClass('chess-mode');
+    if (isChessMode) {
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === " ") {
+            return; // Let the Chess library handle it.
+        }
+    }
     
     // UPDATED CHESS NAV: Uses window dispatch to ensure it works even if buttons are hidden in FS mode
     const triggerChessMove = (direction) => {
+        // ... (This function remains but is effectively unused for arrows in Chess Mode now)
         const keyName = direction === 'prev' ? 'ArrowLeft' : 'ArrowRight';
         const keyCode = direction === 'prev' ? 37 : 39;
         
-        // 1. Try clicking visible buttons first (most reliable if visible)
         const $area = $('#modal-content-area');
         let $btn = direction === 'prev' 
             ? $area.find('.prev, .fa-arrow-left, button[title="Previous"], button[data-id="prev"]') 
@@ -109,13 +118,10 @@ window.handleModalKeys = function(e) {
         if ($btn.length && $btn.is(':visible')) {
             $btn.first().click();
         } else {
-            // 2. Fallback: Dispatch event to the window/document to simulate global key press
             const event = new KeyboardEvent('keydown', {
                 key: keyName, code: keyName, keyCode: keyCode, which: keyCode, bubbles: true, cancelable: true
             });
             window.dispatchEvent(event);
-            
-            // 3. Last Resort: Dispatch to the specific board container
             const board = $area.find('.cg-board, .board, .chess-white-box')[0];
             if (board) board.dispatchEvent(event);
         }
@@ -130,17 +136,17 @@ window.handleModalKeys = function(e) {
             }
             break; 
         case "ArrowLeft": 
-            if (isChessMode) { triggerChessMove('prev'); }
-            else if (!isTutorialMode) { $('.modal-prev-btn').first().click(); } 
+            // isChessMode check moved up
+            if (!isTutorialMode) { $('.modal-prev-btn').first().click(); } 
             break; 
         case "ArrowRight": 
-            if (isChessMode) { triggerChessMove('next'); }
-            else if (!isTutorialMode) { $('.modal-next-btn').first().click(); } 
+            // isChessMode check moved up
+            if (!isTutorialMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case " ": 
             if(e.preventDefault) e.preventDefault(); 
-            if (isChessMode) { triggerChessMove('next'); }
-            else if (!isTutorialMode) { $('.modal-next-btn').first().click(); } 
+            // isChessMode check moved up
+            if (!isTutorialMode) { $('.modal-next-btn').first().click(); } 
             break; 
         case "i": if(e.preventDefault) e.preventDefault(); $('.modal-info-btn').first().click(); break; 
         case "f": if(e.preventDefault) e.preventDefault(); $('.modal-fullscreen-btn').first().click(); break; 
