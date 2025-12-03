@@ -2,7 +2,6 @@
 window.startChessGame = function(loadUrl, $modal, $modalContent) {
     
     // 1. FORCE CLEANUP (Zombie Nuke)
-    // We use jQuery .off() with namespaces to kill ANY lingering listeners from previous sessions
     $(document).off('fullscreenchange.chessMode webkitfullscreenchange.chessMode mozfullscreenchange.chessMode MSFullscreenChange.chessMode');
     $(document).off('keydown.chessKeys');
 
@@ -132,7 +131,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 const $board = $(`#${boardId}`);
                 const styleString = sizePx 
                     ? `width: ${sizePx}px !important; height: ${sizePx}px !important; margin: auto !important; flex: 0 0 auto !important; display: flex !important; justify-content: center !important; align-items: center !important;`
-                    : ''; // Empty string removes style
+                    : ''; 
                 
                 if (sizePx) {
                     $board.attr('style', styleString);
@@ -146,7 +145,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
 
             // --- DELAYED KEY SIMULATION (Nudge) ---
             const delayedKeyNudge = () => {
-                console.log("[CHESS] Executing delayed key nudge...");
                 const $board = $(`#${boardId}`);
                 let focusTarget = $board.find('button.next');
                 if (!focusTarget.length) focusTarget = $board;
@@ -162,13 +160,8 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             };
 
             // --- FULL SCREEN HANDLER (NAMESPACED) ---
-            // We use jQuery .on() so we can .off() it safely later
             $(document).on('fullscreenchange.chessMode webkitfullscreenchange.chessMode mozfullscreenchange.chessMode MSFullscreenChange.chessMode', function() {
-                // GUARD: Strictly abort if we are NOT in chess mode
-                if (!$('body').hasClass('chess-mode-active')) {
-                    // console.log("[CHESS] Ignoring FS event (Not in chess mode)");
-                    return;
-                }
+                if (!$('body').hasClass('chess-mode-active')) { return; }
 
                 if (document.fullscreenElement) {
                     $('body').addClass('chess-fullscreen-active');
@@ -201,7 +194,7 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
                 if (k === '+' || k === '=') { $('#chess-size-plus').click(); return; }
                 if (lowerK === 'f') { $('#chess-fs-btn').click(); return; }
 
-                // Nav Shortcuts - Only if not already focused on board
+                // Nav Shortcuts
                 const isArrowLeft = (k === "ArrowLeft");
                 const isArrowRight = (k === "ArrowRight" || k === " ");
                 if (!isArrowLeft && !isArrowRight) return;
@@ -232,9 +225,10 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             $('#chess-toggle-moves-btn').on('click', function(e) { e.preventDefault(); movesPanelVisible = !movesPanelVisible; updateChessStyles(); setTimeout(delayedKeyNudge, 100); });
             $('#chess-comment-btn').on('click', function(e) { e.preventDefault(); commentsEnabled = !commentsEnabled; $(this).text(commentsEnabled ? 'Comments: On' : 'Comments: Off'); updateCommentContent(-1, 0); });
             
-            // INFO BUTTON FIX: Direct toggle, no fade animation
+            // INFO BUTTON FIX: Robust Toggle
             $('#chess-info-btn').off('click').on('click', function(e) { 
                 e.preventDefault();
+                e.stopImmediatePropagation();
                 const $meta = $(`#chess-metadata-${boardId}`);
                 if ($meta.is(':visible')) {
                     $meta.hide();
