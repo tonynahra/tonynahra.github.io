@@ -232,6 +232,17 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             $('#chess-toggle-moves-btn').on('click', function(e) { e.preventDefault(); movesPanelVisible = !movesPanelVisible; updateChessStyles(); setTimeout(delayedKeyNudge, 100); });
             $('#chess-comment-btn').on('click', function(e) { e.preventDefault(); commentsEnabled = !commentsEnabled; $(this).text(commentsEnabled ? 'Comments: On' : 'Comments: Off'); updateCommentContent(-1, 0); });
             
+            // INFO BUTTON FIX: Direct toggle, no fade animation
+            $('#chess-info-btn').off('click').on('click', function(e) { 
+                e.preventDefault();
+                const $meta = $(`#chess-metadata-${boardId}`);
+                if ($meta.is(':visible')) {
+                    $meta.hide();
+                } else {
+                    $meta.show();
+                }
+            });
+            
             $('#chess-fs-btn').on('click', function(e) {
                 e.preventDefault(); $(this).blur();
                 if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(e => console.log(e));
@@ -367,7 +378,6 @@ window.startChessGame = function(loadUrl, $modal, $modalContent) {
             }
             renderGame(0);
             $select.off('change').on('change', function() { renderGame($(this).val()); });
-            $('#chess-info-btn').off('click').on('click', function() { $(`#chess-metadata-${boardId}`).fadeToggle(); });
         },
         error: function() {
             $modal.removeClass('chess-mode');
