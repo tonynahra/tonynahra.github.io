@@ -131,7 +131,12 @@ window.handleModalKeys = function(e) {
         case "ArrowLeft": if (!window.isTutorialMode) { $('.modal-prev-btn').first().click(); } break; 
         case "ArrowRight": if (!window.isTutorialMode) { $('.modal-next-btn').first().click(); } break; 
         case " ": if(e.preventDefault) e.preventDefault(); if (!window.isTutorialMode) { $('.modal-next-btn').first().click(); } break; 
-        case "i": if(e.preventDefault) e.preventDefault(); $('.modal-info-btn').first().click(); break; 
+        case "i": 
+            if(e.preventDefault) e.preventDefault(); 
+            // Direct Info Toggle Fallback
+            window.cardGlobalState.infoVisible = !window.cardGlobalState.infoVisible;
+            window.applyInfoState();
+            break; 
         case "f": if(e.preventDefault) e.preventDefault(); $('.modal-fullscreen-btn').first().click(); break; 
         case "ArrowUp": if(window.isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.add('nav-visible'); } catch(e){} } break;
         case "ArrowDown": if(window.isTutorialMode) { const $iframe = $('#modal-content-area iframe'); try { $iframe[0].contentDocument.body.classList.remove('nav-visible'); } catch(e){} } break;
