@@ -304,21 +304,13 @@ $(document).ready(function () {
     });
     $('body').off('change', '.slideshow-speed').on('change', '.slideshow-speed', function() { if (window.slideshowInterval) { $('.modal-play-btn').click(); setTimeout(() => { $('.modal-play-btn').click(); }, 100); } });
     
-    // FIX: Full Screen Logic with Unbind and Debounce
-    $('body').off('click', '.modal-fullscreen-btn').on('click', '.modal-fullscreen-btn', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
+    // FIX: Full Screen Logic with Unbind
+    $('body').off('click', '.modal-fullscreen-btn').on('click', '.modal-fullscreen-btn', function() {
         const btn = $(this);
-        if (btn.data('is-processing')) return;
-        btn.data('is-processing', true);
-        setTimeout(() => btn.data('is-processing', false), 1000);
-
         btn.blur();
-        const wrapper = document.querySelector('#modal-content-area .image-wrapper') || 
-                        document.querySelector('#modal-content-area .iframe-wrapper') || 
-                        document.querySelector('#modal-content-area .markdown-wrapper'); 
-        const target = wrapper || document.getElementById('modal-content-area');
+        
+        // Changed target to modal-content-area to keep structure
+        const target = document.getElementById('modal-content-area');
         
         if (document.fullscreenElement) { 
             document.exitFullscreen(); 
@@ -329,9 +321,7 @@ $(document).ready(function () {
                         const $iframe = $('#modal-content-area iframe'); 
                         if($iframe.length) { try { const doc = $iframe[0].contentDocument; doc.body.classList.add('fs-mode'); $('.tutorial-fs-toggle').fadeIn(); } catch(e){} } 
                     }
-                    if (wrapper) wrapper.focus();
-                    else if (target) target.focus();
-                    else window.focus(); 
+                    target.focus();
                 }).catch(err => console.log(err)); 
             } 
         }
