@@ -270,7 +270,7 @@ $(document).ready(function () {
     window.injectModalStyles();
     $('body').append(`<div id="content-modal" class="modal-backdrop"><div class="modal-content"><div class="modal-header"><div class="modal-nav-left"><button class="modal-prev-btn" title="Previous (Left Arrow)">&larr; Prev</button><button class="modal-next-btn" title="Next (Right Arrow/Spacebar)">Next &rarr;</button><button class="modal-info-btn" title="Toggle Info (I)">Info</button><button class="modal-help-btn" title="Keyboard Shortcuts" onclick="showKeyboardShortcuts()">?</button><div class="slideshow-controls" style="display:none; margin-right:10px;"><button class="modal-play-btn" title="Start Slideshow">&#9658; Play</button><select class="slideshow-speed" title="Slideshow Speed"><option value="3000">3s</option><option value="5000" selected>5s</option><option value="10000">10s</option><option value="20000">20s</option></select></div></div><div class="modal-nav-right"><button class="modal-fullscreen-btn" title="Full Screen" style="display:none; font-size:1.1rem; margin-right:10px;">&#x26F6; Full Screen</button><a href="#" class="open-new-window" style="display:none;" target="_blank" rel="noopener noreferrer"></a><button class="modal-close-btn" title="Close (Esc)">&times; Close</button></div></div><div id="modal-content-area"></div></div></div>`);
 
-    // Use .off() to prevent duplicate bindings if script reloads
+    // FIX: PREVENT DOUBLE BINDING WITH .off()
     $('body').off('click', '.toggle-card-button').on('click', '.toggle-card-button', function() { const $button = $(this); const $list = $button.prev('.card-list'); if ($list.length) { window.showMoreCards($button, $list); } });
     
     $('body').off('click', '.card-item, .item').on('click', '.card-item, .item', function(e) { 
@@ -304,7 +304,7 @@ $(document).ready(function () {
     });
     $('body').off('change', '.slideshow-speed').on('change', '.slideshow-speed', function() { if (window.slideshowInterval) { $('.modal-play-btn').click(); setTimeout(() => { $('.modal-play-btn').click(); }, 100); } });
     
-    // FULL SCREEN HANDLER (Fixed with Debounce & Event Stop)
+    // FIX: Full Screen Logic with Unbind and Debounce
     $('body').off('click', '.modal-fullscreen-btn').on('click', '.modal-fullscreen-btn', function(e) {
         e.preventDefault();
         e.stopPropagation();
