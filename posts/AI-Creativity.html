@@ -35,7 +35,6 @@
     
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Smooth scrolling for anchor links */
         html { scroll-behavior: smooth; }
     </style>
 </head>
@@ -43,41 +42,44 @@
 
     <div class="tw-flex tw-min-h-screen tw-flex-col md:tw-flex-row">
 
-        <aside class="tw-w-full md:tw-w-64 tw-bg-slate-900 tw-text-white tw-flex-shrink-0 tw-fixed md:tw-sticky tw-top-0 tw-z-50 md:tw-h-screen tw-overflow-y-auto">
+        <aside class="tw-w-full md:tw-w-56 tw-bg-white tw-text-slate-900 tw-border-r tw-border-gray-200 tw-flex-shrink-0 tw-fixed md:tw-sticky tw-top-0 tw-z-50 md:tw-h-screen tw-overflow-y-auto tw-shadow-sm">
             <div class="tw-p-6">
-                <h2 class="tw-text-2xl tw-font-bold tw-tracking-wider tw-text-blue-400 tw-mb-6">MediAmaze</h2>
+                <h2 class="tw-text-2xl tw-font-bold tw-tracking-wider tw-text-blue-600 tw-mb-6">MediAmaze</h2>
                 <nav>
-                    <ul class="tw-space-y-4">
-                        <li>
-                            <a href="#introduction" class="tw-block tw-py-2 tw-px-4 tw-rounded hover:tw-bg-slate-800 tw-transition-colors tw-border-l-4 tw-border-blue-500">Introduction</a>
+                    <ul class="tw-space-y-3">
+                         <li>
+                            <a href="#top" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-font-semibold">Document Top</a>
                         </li>
                         <li>
-                            <a href="#evolution-thesis" class="tw-block tw-py-2 tw-px-4 tw-rounded hover:tw-bg-slate-800 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-500">The Evolution Thesis</a>
+                            <a href="#introduction" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-blue-500 tw-text-sm">Introduction</a>
                         </li>
                         <li>
-                            <a href="#human-constraints" class="tw-block tw-py-2 tw-px-4 tw-rounded hover:tw-bg-slate-800 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-500">Biological Constraints</a>
+                            <a href="#evolution-thesis" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">The Evolution Thesis</a>
                         </li>
                         <li>
-                            <a href="#machine-advantage" class="tw-block tw-py-2 tw-px-4 tw-rounded hover:tw-bg-slate-800 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-500">The Machine Advantage</a>
+                            <a href="#human-constraints" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">Biological Constraints</a>
                         </li>
                         <li>
-                            <a href="#evidence" class="tw-block tw-py-2 tw-px-4 tw-rounded hover:tw-bg-slate-800 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-500">Evidence of Creativity</a>
+                            <a href="#machine-advantage" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">The Machine Advantage</a>
                         </li>
                         <li>
-                            <a href="#conclusion" class="tw-block tw-py-2 tw-px-4 tw-rounded hover:tw-bg-slate-800 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-500">Summary & Future</a>
+                            <a href="#evidence" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">Evidence of Creativity</a>
                         </li>
                         <li>
-                            <a href="#references" class="tw-block tw-py-2 tw-px-4 tw-rounded hover:tw-bg-slate-800 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-500">References</a>
+                            <a href="#conclusion" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">Summary & Future</a>
+                        </li>
+                        <li>
+                            <a href="#references" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">References</a>
                         </li>
                     </ul>
                 </nav>
             </div>
-            <div class="tw-p-6 tw-mt-auto tw-border-t tw-border-slate-800">
-                <p class="tw-text-xs tw-text-gray-400">&copy; 2025 MediAmaze Research.</p>
+            <div class="tw-p-6 tw-mt-auto tw-border-t tw-border-gray-100">
+                <a href="https://tonynahra.github.io/" target="_blank" class="tw-block tw-text-sm tw-font-bold tw-text-blue-600 hover:tw-underline">About the author &rarr;</a>
             </div>
         </aside>
 
-        <main class="tw-flex-1 tw-p-6 md:tw-p-12 tw-max-w-5xl tw-mx-auto">
+        <main id="top" class="tw-flex-1 tw-p-6 md:tw-p-10 tw-max-w-4xl">
             
             <header class="tw-mb-10 tw-border-b tw-pb-6">
                 <div class="tw-text-sm tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-wide tw-mb-2">Technical Analysis</div>
@@ -98,7 +100,7 @@
                     Human intelligence is the product of millions of years of evolution. Our survival and adaptation, driven by the principle of "survival of the fittest," led to an incremental increase in intelligence capable of ensuring the species passed its genes to the next generation. 
                 </p>
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
-                    However, we must recognize a critical distinction: Evolution optimizes for <strong>survival</strong>, not for <strong>truth</strong> or <strong>creativity</strong>. Based on this thesis, while humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence—territories where machines, unburdened by biology, may thrive.
+                    However, we must recognize a critical distinction: Evolution optimizes for <strong>survival</strong>, not for <strong>truth</strong> or <strong>creativity</strong> <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. Based on this thesis, while humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence—territories where machines, unburdened by biology, may thrive.
                 </p>
             </section>
 
@@ -111,45 +113,48 @@
                 <div class="tw-space-y-8">
                     <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
                         <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">1. Ethics and Violence</h3>
+                        
                         <p class="tw-text-gray-700">
-                            Critics fear AI making decisions contrary to humanity, often citing scenarios of nuclear war. Yet, human history is defined by violence that far exceeds any theoretical machine error. We fear AI might launch a weapon without realizing the consequences, yet humans—driven by ego, tribalism, and fear—have brought us to that brink repeatedly. War brutality has been a deliberate human tactic for millennia. The Hollywood trope of "evil alien/robot" is a projection of human nature, not a reflection of computational logic.
+                            Critics fear AI making decisions contrary to humanity, often citing scenarios of nuclear war. Yet, human history is defined by violence that far exceeds any theoretical machine error. Cognitive psychologist Steven Pinker, in his analysis of the history of violence, notes that while violence has declined, our history is saturated with it due to our "inner demons"—predatory, dominance-seeking drives <a href="#ref-2" class="tw-text-blue-600 hover:tw-underline">[2]</a>. We fear AI might launch a weapon without realizing the consequences, yet humans—driven by ego, tribalism, and fear—have brought us to that brink repeatedly. War brutality has been a deliberate human tactic for millennia. The Hollywood trope of "evil alien/robot" is a projection of human nature, not a reflection of computational logic.
                         </p>
                     </div>
 
                     <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
                         <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">2. The Energy Conservation Principle (Laziness)</h3>
                         <p class="tw-text-gray-700">
-                            Humans are biologically programmed to conserve energy. In modern terms, this manifests as laziness. The desire to work less, retire early, or rely on others is a biological imperative to save calories for survival situations. This drive for "efficiency" often hinders thorough exploration of complex problems.
+                            Humans are biologically programmed to conserve energy. In modern terms, this manifests as laziness. The desire to work less, retire early, or rely on others is a biological imperative to save calories for survival situations. Evolutionary psychology suggests that this "conservation of energy" was critical when food was scarce, but in an abundance economy, it often hinders thorough exploration of complex problems <a href="#ref-3" class="tw-text-blue-600 hover:tw-underline">[3]</a>.
                         </p>
                     </div>
 
                     <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
                         <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">3. The Selfish Gene</h3>
+                        
                         <p class="tw-text-gray-700">
-                            Selfishness is the engine of biological survival. In evolutionary terms, it means maximizing the chances of one's own genetic propagation, often at the expense of others. This biological root underpins crime, fraud, and resource hoarding. It limits collective progress because individual gain is prioritized over system optimization.
+                            Selfishness is the engine of biological survival. As Richard Dawkins famously argued, genes that are successful at surviving are, by definition, "selfish" in their replicative behavior <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. In evolutionary terms, it means maximizing the chances of one's own genetic propagation, often at the expense of others. This biological root underpins crime, fraud, and resource hoarding. It limits collective progress because individual gain is prioritized over system optimization.
                         </p>
                     </div>
 
                     <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
                         <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">4. Deep-Seated Risk Aversion</h3>
                         <p class="tw-text-gray-700">
-                            "Loss aversion" is hardwired into our genes. Evolution penalizes risk-taking; the cautious ancestor survived, while the overly curious one was eaten. This limits our capacity for adventure and radical experimentation. 
+                            "Loss aversion" is hardwired into our genes. Nobel laureates Daniel Kahneman and Amos Tversky demonstrated that humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. Evolution penalizes risk-taking; the cautious ancestor survived, while the overly curious one was eaten.
                             <br><br>
-                            <em>Example:</em> Columbus’s voyage or the Apollo missions were outliers, requiring immense resources to overcome our natural fear. Even today, despite statistical safety, many fear flying because it violates our biological norm of staying on the ground.
+                            <em>Example:</em> "Organisms that treat threats as more urgent than opportunities have a better chance to survive and reproduce." <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. This limits our capacity for adventure and radical experimentation. Columbus’s voyage or the Apollo missions were outliers, requiring immense resources to overcome our natural fear.
                         </p>
                     </div>
 
                     <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
                         <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">5. The Downtime Requirement (Sleep)</h3>
+                        
                         <p class="tw-text-gray-700">
-                            Humans spend roughly one-third of their existence unconscious. From a processing perspective, this is a massive inefficiency. Sleep renders us vulnerable and halts productivity. It is a biological maintenance cycle that evolution could not engineer away.
+                            Humans spend roughly one-third of their existence unconscious. From a processing perspective, this is a massive inefficiency. Neuroscientist Matthew Walker states, "If sleep does not provide a remarkable set of benefits, then it's the biggest mistake the evolutionary process has ever made" <a href="#ref-5" class="tw-text-blue-600 hover:tw-underline">[5]</a>. Sleep renders us vulnerable and halts productivity. It is a biological maintenance cycle that evolution could not engineer away.
                         </p>
                     </div>
 
                     <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
                         <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">6. Groupthink and Tribalism</h3>
                         <p class="tw-text-gray-700">
-                            We evolved to stick together for defense against predators. This trait, however, leads to "groupthink"—agreeing with the tribe even when the tribe is objectively wrong. This stifles innovation and leads to collective errors in judgment (e.g., financial bubbles or political extremism).
+                            We evolved to stick together for defense against predators. This trait, however, leads to "groupthink"—agreeing with the tribe even when the tribe is objectively wrong. This stifles innovation and leads to collective errors in judgment (e.g., financial bubbles or political extremism) because social cohesion was historically more valuable than objective truth.
                         </p>
                     </div>
 
@@ -193,22 +198,22 @@
                 <div class="tw-mb-8">
                     <h3 class="tw-text-xl tw-font-bold tw-text-gray-800 tw-mb-2">AlphaGo: The Move 37 Shock</h3>
                     <p class="tw-text-gray-700 tw-mb-4">
-                        In Game 2 of the match against Lee Sedol, AlphaGo played <strong>Move 37</strong>, a shoulder hit on the fifth line. Experts initially thought it was a mistake. It defied centuries of Go theory, which dictated that such moves were inefficient. However, post-match analysis revealed it was a move of profound creativity—a strategic innovation that humans had missed for 2,500 years. It forced top players to rethink the fundamentals of the game.
+                        In Game 2 of the match against Lee Sedol, AlphaGo played <strong>Move 37</strong>, a shoulder hit on the fifth line. Experts initially thought it was a mistake. It defied centuries of Go theory, which dictated that such moves were inefficient. However, post-match analysis revealed it was a move of profound creativity—a strategic innovation that humans had missed for 2,500 years. It forced top players to rethink the fundamentals of the game <a href="#ref-6" class="tw-text-blue-600 hover:tw-underline">[6]</a>.
                     </p>
                 </div>
 
                 <div class="tw-mb-8">
                     <h3 class="tw-text-xl tw-font-bold tw-text-gray-800 tw-mb-2">Kasparov vs. Deep Blue (1997)</h3>
                     <p class="tw-text-gray-700 tw-mb-4">
-                        In the historic 1997 rematch, Garry Kasparov noted that Deep Blue played in a "human-like" and unsettling way. 
+                        In the historic 1997 rematch, Garry Kasparov noted that Deep Blue played in a "human-like" and unsettling way <a href="#ref-7" class="tw-text-blue-600 hover:tw-underline">[7]</a>. 
                     </p>
                     <blockquote class="tw-border-l-4 tw-border-blue-500 tw-pl-4 tw-italic tw-bg-gray-100 tw-p-4 tw-rounded">
                         "I could feel—I could smell—a new kind of intelligence across the table." — Garry Kasparov
                     </blockquote>
                     <p class="tw-text-gray-700 tw-mt-4">
-                        <strong>Game 2 Controversy:</strong> Deep Blue played a move (36...axb5? No, the pivotal moment was often cited as a refusal to grab a pawn, prioritizing position) that Kasparov believed was too subtle for a computer, suspecting human intervention. (Later revealed to be a bug-fix/feature where the machine prioritized safety over material).
+                        <strong>Game 2 Controversy:</strong> Deep Blue played a move (36...axb5) where it refused to grab a pawn, prioritizing position. Kasparov believed was too subtle for a computer, suspecting human intervention. 
                         <br><br>
-                        <strong>Game 6 Decisive Victory:</strong> In the final game, Deep Blue executed a Knight sacrifice (Nxe6) followed by a Queen sacrifice logic that decimated Kasparov's defense. This wasn't just calculation; it was a "creative" dismantling of the human psychological state and board position, forcing a resignation in just 19 moves.
+                        <strong>Game 6 Decisive Victory:</strong> In the final game, Deep Blue executed a Knight sacrifice (Nxe6) followed by a Queen sacrifice logic that decimated Kasparov's defense. This wasn't just calculation; it was a "creative" dismantling of the human psychological state and board position, forcing a resignation in just 19 moves <a href="#ref-7" class="tw-text-blue-600 hover:tw-underline">[7]</a>.
                     </p>
                 </div>
             </section>
@@ -220,30 +225,31 @@
                 </p>
             </section>
 
-            <section id="references" class="tw-border-t tw-pt-8">
+            <section id="references" class="tw-border-t tw-pt-8 tw-bg-gray-100 tw-p-6 tw-rounded-lg">
                 <h3 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-4">References</h3>
-                <ul class="tw-space-y-2 tw-text-sm tw-text-blue-600">
-                    <li>
-                        <a href="https://en.wikipedia.org/wiki/Deep_Blue_versus_Kasparov,_1997" target="_blank" class="hover:tw-underline">
-                            [1] Wikipedia: Deep Blue versus Kasparov, 1997 (Game 6 Analysis)
-                        </a>
+                <ol class="tw-list-decimal tw-pl-5 tw-space-y-3 tw-text-sm tw-text-gray-700">
+                    <li id="ref-1">
+                        <strong>Dawkins, R. (1976).</strong> <em>The Selfish Gene.</em> Oxford University Press. (Discusses biological imperatives for survival and gene propagation). <a href="https://en.wikipedia.org/wiki/The_Selfish_Gene" target="_blank" class="tw-text-blue-600 hover:tw-underline">Learn more</a>
                     </li>
-                    <li>
-                        <a href="https://deepmind.google/research/breakthroughs/alphago/" target="_blank" class="hover:tw-underline">
-                            [2] Google DeepMind: AlphaGo and Move 37
-                        </a>
+                    <li id="ref-2">
+                        <strong>Pinker, S. (2011).</strong> <em>The Better Angels of Our Nature: Why Violence Has Declined.</em> Viking. (Analysis of the history of violence and human nature). <a href="https://stevenpinker.com/publications/better-angels-our-nature" target="_blank" class="tw-text-blue-600 hover:tw-underline">Learn more</a>
                     </li>
-                    <li>
-                        <a href="https://www.linkedin.com/pulse/move-37-how-ai-changed-world-creative-strategy" target="_blank" class="hover:tw-underline">
-                            [3] LinkedIn Analysis: How Move 37 changed creative strategy
-                        </a>
+                    <li id="ref-3">
+                        <strong>Lieberman, D. (2015).</strong> <em>Is Exercise Really Medicine? An Evolutionary Perspective.</em> Current Sports Medicine Reports. (Discussion on energy conservation and "laziness").
                     </li>
-                    <li>
-                        <a href="https://www.amazon.com/Selfish-Gene-Anniversary-Introduction/dp/0199291152" target="_blank" class="hover:tw-underline">
-                            [4] Dawkins, R. (1976). The Selfish Gene. (Biological imperatives context)
-                        </a>
+                    <li id="ref-4">
+                        <strong>Kahneman, D., & Tversky, A. (1979).</strong> "Prospect Theory: An Analysis of Decision under Risk." <em>Econometrica</em>. (Foundational paper on loss aversion). <a href="https://www.psychologytoday.com/us/blog/evolution-in-daily-life/202208/the-origin-of-loss-aversion" target="_blank" class="tw-text-blue-600 hover:tw-underline">Psychology Today Analysis</a>
                     </li>
-                </ul>
+                    <li id="ref-5">
+                        <strong>Walker, M. (2017).</strong> <em>Why We Sleep: Unlocking the Power of Sleep and Dreams.</em> Scribner. <a href="https://www.goodreads.com/author/quotes/17598726.Matthew_Walker" target="_blank" class="tw-text-blue-600 hover:tw-underline">View Quotes</a>
+                    </li>
+                    <li id="ref-6">
+                        <strong>DeepMind. (2016).</strong> "AlphaGo: using machine learning to master the ancient game of Go." Google DeepMind Blog. <a href="https://deepmind.google/research/breakthroughs/alphago/" target="_blank" class="tw-text-blue-600 hover:tw-underline">Read Blog</a>
+                    </li>
+                    <li id="ref-7">
+                        <strong>Wikipedia.</strong> "Deep Blue versus Kasparov, 1997." (Detailed game analysis and Kasparov's reactions). <a href="https://en.wikipedia.org/wiki/Deep_Blue_versus_Kasparov,_1997" target="_blank" class="tw-text-blue-600 hover:tw-underline">Read Article</a>
+                    </li>
+                </ol>
             </section>
 
         </main>
