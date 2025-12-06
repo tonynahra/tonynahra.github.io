@@ -11,7 +11,7 @@
     <meta property="og:title" content="Evolution vs. Algorithms: Is AI Capable of True Creativity?">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://www.mediamaze.com/ai-creativity">
-    <meta property="og:image" content="https://www.mediamaze.com/images/ai-evolution-banner.jpg">
+    <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/b/be/Deep_Blue.jpg">
     <meta property="og:description" content="Are humans the pinnacle of intelligence, or are we held back by our own survival instincts? A look at how AI might outperform biological evolution.">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -45,11 +45,23 @@
             color: #1e293b; /* text-slate-900 */
             font-weight: 600;
         }
-        /* Adjust scroll margin to account for sticky headers if necessary, 
-           though current layout doesn't have a top fixed header obscuring content.
-           Adding a small buffer for aesthetics. */
         section {
             scroll-margin-top: 2rem;
+        }
+        /* Image styling */
+        figure {
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        figcaption {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-size: 0.875rem;
+            padding: 0.75rem;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
         }
     </style>
 </head>
@@ -59,8 +71,7 @@
 
         <aside class="tw-w-full md:tw-w-64 tw-bg-white tw-text-slate-700 tw-border-r tw-border-gray-200 tw-flex-shrink-0 tw-sticky tw-top-0 tw-h-screen tw-overflow-y-auto tw-z-50">
             <div class="tw-p-6">
-                <h2 class="tw-text-2xl tw-font-bold tw-tracking-wider tw-text-blue-700 tw-mb-6">MediAmaze</h2>
-                <nav>
+                <nav class="tw-mt-2">
                     <ul class="tw-space-y-2">
                          <li>
                             <a href="#top" id="link-top" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-all tw-border-l-4 tw-border-transparent tw-font-semibold">Document Top</a>
@@ -103,7 +114,6 @@
             </header>
 
             <section id="introduction" class="tw-mb-16 track-section">
-                
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-6 tw-mt-6">
                     A prevailing skepticism suggests that Artificial Intelligence can never be truly creative—that it is merely a "stochastic parrot" capable only of repeating and imitating human intelligence. This view comforts us, placing a moat around the last bastion of human uniqueness. But is this assertion grounded in reality, or is it a psychological defense mechanism of our own biology?
                 </p>
@@ -111,6 +121,12 @@
 
             <section id="evolution-thesis" class="tw-mb-16 track-section">
                 <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Evolution Thesis: Optimization for Survival, Not Truth</h2>
+                
+                <figure class="tw-w-full">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/Charles_Darwin_seated_crop.jpg" alt="Charles Darwin" class="tw-w-full tw-h-96 tw-object-cover tw-object-top">
+                    <figcaption>Charles Darwin. His theory of natural selection explains survival, not necessarily the optimization of abstract intelligence. (Source: Wikimedia Commons)</figcaption>
+                </figure>
+
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
                     Human intelligence is the product of millions of years of evolution. Our survival and adaptation, driven by the principle of "survival of the fittest," led to an incremental increase in intelligence capable of ensuring the species passed its genes to the next generation. 
                 </p>
@@ -129,6 +145,11 @@
                     <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
                         <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">1. Ethics and Violence</h3>
                         
+                        <figure>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Apotheose_des_Krieges.jpg/1280px-Apotheose_des_Krieges.jpg" alt="The Apotheosis of War by Vasily Vereshchagin" class="tw-w-full tw-h-auto">
+                            <figcaption>"The Apotheosis of War" by Vasily Vereshchagin (1871). A stark reminder that human history is defined by brutality, not just rationality. (Source: Tretyakov Gallery/Wikimedia)</figcaption>
+                        </figure>
+
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
                             Critics fear AI might make decisions contrary to humanity, often citing scenarios of accidental nuclear war. Yet, human history is saturated with violence driven by ego, tribalism, and fear—traits absent in machines. Cognitive psychologist Steven Pinker notes that while violence has declined, our history is defined by our "inner demons" of dominance and revenge <a href="#ref-2" class="tw-text-blue-600 hover:tw-underline">[2]</a>. We fear an AI might launch a weapon due to a bug, yet humans have brought the world to the brink repeatedly out of pride or miscalculation. The Hollywood trope of the "evil robot" is a projection of human nature, not computational logic.
                         </p>
@@ -136,63 +157,34 @@
 
                     <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
                         <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">2. The Energy Conservation Principle (Laziness)</h3>
-                        
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
                             Humans are biologically programmed to conserve energy. In modern terms, this manifests as "laziness" or cognitive miserliness. The deep desire to work less or rely on others is a biological imperative to save calories for scarce times. Evolutionary psychology suggests this "conservation of energy" often hinders thorough exploration of complex solution spaces <a href="#ref-3" class="tw-text-blue-600 hover:tw-underline">[3]</a>. We settle for the first plausible answer to avoid the caloric expense of deep thought.
                         </p>
                     </div>
 
                     <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">3. The Selfish Gene</h3>
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">3. The Selfish Gene & Risk Aversion</h3>
+                         <figure class="tw-float-right tw-ml-6 tw-mb-4 tw-w-full md:tw-w-1/3">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Apollo_11_Launch_-_GPN-2000-000630.jpg/640px-Apollo_11_Launch_-_GPN-2000-000630.jpg" alt="Apollo 11 Launch" class="tw-rounded tw-shadow-md">
+                            <figcaption class="tw-text-xs">Space exploration (Apollo 11) is an outlier in human behavior, requiring massive effort to overcome natural risk aversion.</figcaption>
+                        </figure>
                         <p class="tw-text-gray-700 tw-leading-relaxed">
-                            Selfishness is the engine of biological survival. As Richard Dawkins argued, genes successful at surviving are, by definition, "selfish" in their replicative behavior <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. In evolutionary terms, this means maximizing one's own genetic propagation, often at the expense of others. This biological root limits collective progress because individual gain is frequently prioritized over system optimization.
-                        </p>
-                    </div>
-
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">4. Deep-Seated Risk Aversion</h3>
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
-                            "Loss aversion" is hardwired into our genes. Nobel laureates Daniel Kahneman and Amos Tversky demonstrated that humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. Evolution penalizes risk-taking; the cautious ancestor survived, while the overly curious one was eaten. This limits our capacity for radical experimentation. Columbus’s voyage or space exploration are statistical outliers requiring immense resources to overcome natural human fear.
+                            Selfishness is the engine of biological survival. As Richard Dawkins argued, genes successful at surviving are, by definition, "selfish" in their replicative behavior <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. 
+                            <br><br>
+                            Furthermore, "Loss aversion" is hardwired into our genes. Nobel laureates Daniel Kahneman and Amos Tversky demonstrated that humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. Evolution penalizes risk-taking; the cautious ancestor survived, while the overly curious one was eaten. This limits our capacity for radical experimentation.
                         </p>
                     </div>
 
                     <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
                         <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">5. The Downtime Requirement (Sleep)</h3>
                         
+                        <figure>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Flaming_June%2C_by_Frederic_Lord_Leighton_%281830-1896%29.jpg/1280px-Flaming_June%2C_by_Frederic_Lord_Leighton_%281830-1896%29.jpg" alt="Flaming June by Frederic Leighton" class="tw-w-full tw-h-auto">
+                            <figcaption>"Flaming June" (1895). Humans spend roughly one-third of their existence unconscious, a massive inefficiency for intelligence processing. (Source: Wikimedia Commons)</figcaption>
+                        </figure>
+
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
-                            Humans spend roughly one-third of their existence unconscious. From a processing perspective, this is a massive inefficiency. Neuroscientist Matthew Walker states, "If sleep does not provide a remarkable set of benefits, then it's the biggest mistake the evolutionary process has ever made" <a href="#ref-5" class="tw-text-blue-600 hover:tw-underline">[5]</a>. Sleep renders us vulnerable and halts productivity. It is a biological maintenance cycle that evolution could not engineer away.
-                        </p>
-                    </div>
-
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">6. Groupthink and Tribalism</h3>
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
-                            We evolved to stick together for defense against predators. This trait leads to "groupthink"—agreeing with the tribe even when objectively wrong. This stifles innovation and leads to collective errors.
-                            <br><br>
-                            <em>Example:</em> The 1986 Challenger space shuttle disaster is a classic case study where engineers suppressed their own data about faulty O-rings due to pressure to conform to management's desire to launch <a href="#ref-8" class="tw-text-blue-600 hover:tw-underline">[8]</a>. Social cohesion was historically more valuable for survival than objective truth.
-                        </p>
-                    </div>
-
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">7. Emotional vs. Rational Processing</h3>
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
-                            Humans frequently think with the "heart" (amygdala/limbic system) rather than the "brain" (prefrontal cortex). We are susceptible to short-term desires—sugar, comfort, anger—even when intellectually aware they are harmful long-term.
-                            <br><br>
-                            <em>Example:</em> Stock market crashes are rarely driven by data changes, but by panic selling—an emotional contagion that overrides rational financial analysis.
-                        </p>
-                    </div>
-
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">8. The Mortality Data Loss</h3>
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
-                            The oldest known story, the <em>Epic of Gilgamesh</em>, centers on the tragedy of human mortality. A human spends decades learning, only to die and take that unique neural configuration with them. The next generation must start from scratch, reading books to "upload" knowledge slowly via language. This cycle limits the exponential accumulation of wisdom.
-                        </p>
-                    </div>
-
-                     <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">9. Cognitive Load Limitations</h3>
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
-                            The human brain has severe limitations on working memory. Often cited as "Miller's Law," the average human can only hold about seven (plus or minus two) objects in their working memory at once <a href="#ref-9" class="tw-text-blue-600 hover:tw-underline">[9]</a>. This makes it incredibly difficult for humans to mentally model complex systems with dozens of interacting variables, such as global climate patterns or intricate protein folding.
+                            Neuroscientist Matthew Walker states, "If sleep does not provide a remarkable set of benefits, then it's the biggest mistake the evolutionary process has ever made" <a href="#ref-5" class="tw-text-blue-600 hover:tw-underline">[5]</a>. Sleep renders us vulnerable and halts productivity. It is a biological maintenance cycle that evolution could not engineer away, but machines function 24/7 without cognitive decline.
                         </p>
                     </div>
                 </div>
@@ -201,6 +193,11 @@
             <section id="machine-advantage" class="tw-mb-16 track-section">
                 <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Machine Advantage: A Clean Slate</h2>
                 
+                <figure>
+                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Titan_supercomputer_at_Oak_Ridge_National_Laboratory.jpg/1280px-Titan_supercomputer_at_Oak_Ridge_National_Laboratory.jpg" alt="Titan Supercomputer" class="tw-w-full tw-h-auto">
+                     <figcaption>The Titan Supercomputer. Machines do not experience fatigue, tribalism, or biological fear. (Source: Oak Ridge National Laboratory/Wikimedia)</figcaption>
+                </figure>
+
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-6 tw-mt-6">
                     Machines are not burdened by these evolutionary flaws. They possess a architecture designed for optimization, not just survival:
                 </p>
@@ -209,7 +206,6 @@
                     <li><strong>Relentless Execution:</strong> Machines do not experience fatigue, boredom, or laziness. They do not sleep.</li>
                     <li><strong>Risk Optimization:</strong> Machines take calculated risks based on raw probability, unhindered by biological fear responses or loss aversion.</li>
                     <li><strong>Networked Intelligence:</strong> Instead of "groupthink," machines utilize networking to share data instantly without ego. If one self-driving car learns to avoid a new type of obstacle, the entire fleet learns it simultaneously.</li>
-                    <li><strong>Massive Context Windows:</strong> Unlike the human limit of ~7 items in working memory, modern AI models have massive context windows, allowing them to "hold" and analyze millions of pieces of information simultaneously.</li>
                     <li><strong>Knowledge Immortality:</strong> A machine does not die. Its "weights" (knowledge) can be copied instantly to the next generation hardware.</li>
                 </ul>
             </section>
@@ -223,30 +219,41 @@
                 <div class="tw-space-y-12">
                     <div>
                         <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">AlphaGo: The Move 37 Shock</h3>
-                        
+                        <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6 tw-mb-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Go_board_part.jpg/1024px-Go_board_part.jpg" alt="Go Board" class="tw-w-full tw-rounded tw-shadow">
+                            <figcaption>The game of Go, known for its immense complexity, was dominated by AI using moves humans considered "wrong".</figcaption>
+                        </figure>
                         <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
                             In Game 2 of the match against Lee Sedol, AlphaGo played <strong>Move 37</strong>, a shoulder hit on the fifth line. Experts initially thought it was a mistake. It defied centuries of Go theory, which dictated that such moves were inefficient. However, post-match analysis revealed it was a move of profound creativity—a strategic innovation that humans had missed for 2,500 years because it looked "wrong" to human intuition. It forced top players to rethink the fundamentals of the game <a href="#ref-6" class="tw-text-blue-600 hover:tw-underline">[6]</a>.
                         </p>
                     </div>
+                    <div class="tw-clear-both"></div>
 
-                    <div>
+                    <div class="tw-mt-8">
                         <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Kasparov vs. Deep Blue (1997)</h3>
                         
-
-[Image of Garry Kasparov playing against Deep Blue]
+                        <figure>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Deep_Blue.jpg" alt="IBM Deep Blue" class="tw-w-full tw-h-auto">
+                            <figcaption>IBM's Deep Blue. Garry Kasparov felt "a new kind of intelligence" across the board. (Source: Wikimedia Commons)</figcaption>
+                        </figure>
 
                         <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
                             In the historic 1997 rematch, Garry Kasparov noted that IBM's Deep Blue played in a "human-like" and unsettling way <a href="#ref-7" class="tw-text-blue-600 hover:tw-underline">[7]</a>. In the decisive final game, Deep Blue executed a Knight sacrifice (Nxe6) followed by a Queen sacrifice logic that decimated Kasparov's defense. This wasn't just calculation; it was a "creative" dismantling of the board position that psychologically broke the world champion, forcing a resignation in just 19 moves.
                         </p>
                     </div>
 
-                     <div>
+                     <div class="tw-mt-8">
                         <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Beyond Games: AI in Scientific Discovery (Halicin)</h3>
+                        <figure class="tw-w-full md:tw-w-1/3 tw-float-left md:tw-mr-6 tw-mb-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Halicin_structure.svg/640px-Halicin_structure.svg.png" alt="Halicin Chemical Structure" class="tw-w-full tw-rounded tw-shadow tw-p-4 tw-bg-white tw-border">
+                            <figcaption>The chemical structure of Halicin, an antibiotic discovered by AI that is structurally divergent from traditional antibiotics.</figcaption>
+                        </figure>
                         <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed">
                             True creativity is finding valuable novelty. In 2020, MIT researchers used deep learning to identify a powerful new antibiotic molecule, which they named "Halicin" (after HAL 9000). The AI screened over 100 million chemical compounds in days. Critically, Halicin is structurally divergent from conventional antibiotics; human chemists likely would never have investigated it because it didn't look like what we *thought* an antibiotic should look like <a href="#ref-10" class="tw-text-blue-600 hover:tw-underline">[10]</a>. The AI, lacking human preconceptions, found a creative solution hidden in plain sight.
                         </p>
                     </div>
                 </div>
+                <div class="tw-clear-both"></div>
             </section>
 
             <section id="conclusion" class="tw-bg-blue-50 tw-p-10 tw-rounded-2xl tw-border tw-border-blue-100 tw-mb-16 track-section">
@@ -281,7 +288,7 @@
                         <strong>Wikipedia.</strong> "Deep Blue versus Kasparov, 1997." (Detailed game analysis and Kasparov's reactions). <a href="https://en.wikipedia.org/wiki/Deep_Blue_versus_Kasparov,_1997" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Article</a>
                     </li>
                      <li id="ref-8">
-                        <strong>Vaughan, D. (1996).</strong> <em>The Challenger Launch Decision: Risky Technology, Culture, and Deviance at NASA.</em> University of Chicago Press. (Case study on groupthink and normalized deviance).
+                        <strong>Vaughan, D. (1996).</strong> <em>The Challenger Launch Decision: Risky Technology, Culture, and Deviance at NASA.</em> University of Chicago Press.
                     </li>
                     <li id="ref-9">
                         <strong>Miller, G. A. (1956).</strong> "The magical number seven, plus or minus two: Some limits on our capacity for processing information." <em>Psychological Review</em>.
@@ -323,7 +330,6 @@
             };
 
             const observer = new IntersectionObserver((entries) => {
-                // Don't switch active state if the user just clicked a link
                 if (isManualScroll) return;
 
                 entries.forEach(entry => {
@@ -343,23 +349,19 @@
                     isManualScroll = true;
                     clearTimeout(scrollTimeout);
                     
-                    // Find the target ID from the href (e.g., #introduction -> introduction)
                     const targetId = e.currentTarget.getAttribute("href").substring(1);
                     setActiveLink(targetId);
 
-                    // Re-enable observer after scroll finishes roughly
                     scrollTimeout = setTimeout(() => {
                         isManualScroll = false;
                     }, 1000);
                 });
             });
 
-            // Set initial active state based on URL hash or default to top
             const initialHash = window.location.hash.substring(1);
             if (initialHash) {
                  setActiveLink(initialHash);
             } else {
-                 // Default to Introduction if no hash, as it's the first real section
                  setActiveLink('introduction');
             }
         });
