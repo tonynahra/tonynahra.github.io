@@ -72,12 +72,19 @@
             align-items: center;
         }
         
+        /* Added cursor pointer to indicate clickability for modal */
         .constrained-img {
             width: 100%;
             height: auto;
             max-height: 450px;
             object-fit: contain;
             background-color: #f8fafc;
+            cursor: pointer; 
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .constrained-img:hover {
+            opacity: 0.9;
         }
 
         figcaption {
@@ -134,7 +141,7 @@
                             <a href="#evidence" id="link-evidence" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Evidence of Creativity</a>
                             <ul class="tw-pl-0 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-4">
                                 <li><a href="#schubert" id="link-schubert" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Schubert's 8th</a></li>
-                                <li><a href="#alphafold" id="link-alphafold" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">AlphaFold</a></li>
+                                <li><a href="#alphafold" id="link-alphafold" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">AlphaFold & The Nobel</a></li>
                                 <li><a href="#ai-art" id="link-ai-art" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">AI Art</a></li>
                                 <li><a href="#halicin" id="link-halicin" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Halicin (Science)</a></li>
                                 <li><a href="#alphago" id="link-alphago" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">AlphaGo Move 37</a></li>
@@ -170,7 +177,7 @@
         <main id="top" class="tw-flex-1 tw-p-8 md:tw-p-12 tw-max-w-4xl tw-mx-auto">
             
             <header class="tw-mb-12 tw-border-b tw-pb-8">
-                <img src="img/AI-Creativity.png" alt="AI Creativity" style="box-shadow:10px 10px 15px rgba(0, 0, 0, 0.5); max-width: 250px;border-radius:10px;width:30%;float:right;" />
+                <img src="img/AI-Creativity.png" alt="AI Creativity" class="constrained-img" style="box-shadow:10px 10px 15px rgba(0, 0, 0, 0.5); max-width: 250px; border-radius:10px; width:30%; float:right;" />
                 <div class="tw-text-sm tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-wide tw-mb-3">Technical Analysis</div>
                 <h1 class="tw-text-3xl md:tw-text-5xl tw-font-extrabold tw-text-gray-900 tw-mb-6 tw-leading-tight">Beyond Biology: Is AI Capable of Genuine Creativity?</h1>
                 <p class="tw-text-xl tw-text-gray-500 tw-leading-relaxed">A comparative analysis of evolutionary heuristics versus machine learning optimization.</p>
@@ -220,7 +227,11 @@
 
                     <div id="obedience" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
                         <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">2. The Obedience Algorithm (Milgram)</h3>
-                                                <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                        
+
+[Image of Milgram Experiment diagram]
+
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
                             One of the most profound "hard-coded" limitations of the human operating system was exposed in 1961 by Stanley Milgram. In his infamous experiments, <strong>65% of participants</strong> were willing to administer what they believed to be lethal electric shocks to a stranger, simply because a man in a white lab coat told them to "please continue" <a href="#ref-12" class="tw-text-blue-600 hover:tw-underline">[12]</a>.
                         </p>
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
@@ -363,17 +374,17 @@
                         <div class="tw-clear-both"></div>
                     </div>
 
-                     <div id="alphafold" class="track-section tw-mt-8">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Structural Biology: AlphaFold's Spatial Creativity</h3>
+                    <div id="alphafold" class="track-section tw-mt-8">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Structural Biology: AlphaFold's Nobel Prize Victory</h3>
                         <figure class="tw-w-full md:tw-w-1/3 tw-float-right md:tw-ml-6 tw-mb-4">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Alphafold_3D_c2orf80_protein.png" alt="Protein Folding" class="constrained-img" width="600" height="508" loading="lazy">
-                            <figcaption>Protein folding: A spatial puzzle solved by AI after 50 years of human struggle.</figcaption>
+                            <figcaption>Protein folding: A spatial puzzle solved by AI, earning the 2024 Nobel Prize in Chemistry.</figcaption>
                         </figure>
                         <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed">
-                            For 50 years, predicting the 3D structure of a protein from its amino acid sequence was a grand challenge in biology. In 2020, DeepMind's AlphaFold solved it. This wasn't just calculation; it was spatial creativity, visualizing complex folding patterns that no human mind could conceive.
+                            For 50 years, predicting the 3D structure of a protein from its amino acid sequence was a grand challenge in biology. In 2020, DeepMind's AlphaFold solved it. This achievement was so monumental that in <strong>2024, Demis Hassabis and John Jumper were awarded the Nobel Prize in Chemistry</strong>.
                         </p>
                         <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
-                             By effectively mapping the building blocks of life, AlphaFold demonstrated that AI can "imagine" physical structures that exist in nature but are invisible to human intuition <a href="#ref-8" class="tw-text-blue-600 hover:tw-underline">[8]</a>.
+                             This wasn't just a victory for "pure science"; it was a triumph of <strong>deep combinational analysis and simulation</strong>. The search space for protein configurations is astronomically large (Levinthal's paradox estimates 10<sup>300</sup> possibilities). AlphaFold did not solve this by brute force, but by learning the spatial "grammar" of physics, effectively imagining physical structures that exist in nature but are invisible to human intuition <a href="#ref-8" class="tw-text-blue-600 hover:tw-underline">[8]</a>.
                         </p>
                         <div class="tw-clear-both"></div>
                     </div>
@@ -482,19 +493,28 @@
             </section>
                    <br /><br />
                     <center>
-                        <img src="img/AI-Creativity.png" alt="AI Creativity" style="box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5); width: 90%; max-width: 700px;" />
+                        <img src="img/AI-Creativity.png" alt="AI Creativity" class="constrained-img" style="box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5); width: 90%; max-width: 700px;" />
                     </center>
         </main>
     </div>
 
+    <div id="image-modal" class="tw-fixed tw-inset-0 tw-z-[100] tw-hidden tw-bg-black/95 tw-flex tw-items-center tw-justify-center tw-p-4 tw-backdrop-blur-sm tw-transition-all tw-duration-300">
+        <button id="modal-close" class="tw-absolute tw-top-4 tw-right-6 tw-text-white tw-text-5xl tw-font-bold hover:tw-text-gray-300 focus:tw-outline-none">&times;</button>
+        <div class="tw-max-w-7xl tw-w-full tw-h-full tw-flex tw-flex-col tw-items-center tw-justify-center">
+             <img id="modal-img" src="" class="tw-max-h-[85vh] tw-w-auto tw-object-contain tw-rounded-lg tw-shadow-2xl" alt="Full screen view" />
+             <p id="modal-caption" class="tw-mt-6 tw-text-gray-200 tw-text-center tw-text-xl tw-font-medium tw-max-w-3xl tw-bg-black/50 tw-px-4 tw-py-2 tw-rounded"></p>
+        </div>
+    </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            
+            // --- SCROLL TRACKING LOGIC ---
             const sections = document.querySelectorAll(".track-section");
             const navLinks = document.querySelectorAll(".nav-link");
             let isManualScroll = false;
             let scrollTimeout;
 
-            // Function to update active link style
             const setActiveLink = (id) => {
                 navLinks.forEach(link => {
                     link.classList.remove("nav-link-active");
@@ -505,36 +525,29 @@
                 const activeLink = document.querySelector(`#link-${id}`);
                 
                 if (activeLink) {
-                    // Check if it's a sub-menu item by checking parent DOM structure
                     const parentList = activeLink.parentElement.parentElement;
                     const isSubMenu = parentList.tagName === 'UL' && parentList.previousElementSibling;
                     
                     if (isSubMenu) {
-                        // Highlight the sub link text
                         activeLink.classList.add("sub-nav-link-active");
-                        // Also highlight parent main link (e.g. "Biological Constraints")
                         const parentLink = parentList.previousElementSibling;
                         parentLink.classList.add("nav-link-active");
                         parentLink.classList.remove("tw-border-transparent");
                     } else {
-                        // Regular main link
                         activeLink.classList.add("nav-link-active");
                         activeLink.classList.remove("tw-border-transparent");
                     }
                 }
             };
 
-            // Intersection Observer Setup
             const observerOptions = {
                 root: null,
-                // Trigger when element crosses the middle of screen
                 rootMargin: "-20% 0px -50% 0px", 
                 threshold: 0
             };
 
             const observer = new IntersectionObserver((entries) => {
                 if (isManualScroll) return;
-
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         setActiveLink(entry.target.id);
@@ -546,28 +559,72 @@
                 observer.observe(section);
             });
 
-            // Handle Manual Clicks
             navLinks.forEach(link => {
                 link.addEventListener("click", (e) => {
                     isManualScroll = true;
                     clearTimeout(scrollTimeout);
-                    
                     const targetId = e.currentTarget.getAttribute("href").substring(1);
                     setActiveLink(targetId);
-
-                    scrollTimeout = setTimeout(() => {
-                        isManualScroll = false;
-                    }, 1000);
+                    scrollTimeout = setTimeout(() => { isManualScroll = false; }, 1000);
                 });
             });
 
-            // Initial State check
             const initialHash = window.location.hash.substring(1);
-            if (initialHash) {
-                 setActiveLink(initialHash);
-            } else {
-                 setActiveLink('introduction');
-            }
+            if (initialHash) setActiveLink(initialHash); else setActiveLink('introduction');
+
+            
+            // --- LIGHTBOX / MODAL LOGIC ---
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img');
+            const modalCaption = document.getElementById('modal-caption');
+            const closeBtn = document.getElementById('modal-close');
+            const images = document.querySelectorAll('.constrained-img');
+
+            const openModal = (src, caption) => {
+                modalImg.src = src;
+                modalCaption.textContent = caption || "";
+                modal.classList.remove('tw-hidden');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            };
+
+            const closeModal = () => {
+                modal.classList.add('tw-hidden');
+                modalImg.src = '';
+                document.body.style.overflow = ''; // Restore scrolling
+            };
+
+            images.forEach(img => {
+                img.addEventListener('click', function() {
+                    // Try to find the caption in a sibling figcaption or use alt text
+                    let caption = this.getAttribute('alt');
+                    
+                    // Look for figcaption in the same figure parent
+                    if (this.parentElement.tagName === 'FIGURE') {
+                        const figCap = this.parentElement.querySelector('figcaption');
+                        if (figCap) caption = figCap.textContent;
+                    }
+
+                    openModal(this.src, caption);
+                });
+            });
+
+            // Close on button click
+            closeBtn.addEventListener('click', closeModal);
+
+            // Close on click outside image
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target.parentElement === modal) {
+                    closeModal();
+                }
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape" && !modal.classList.contains('tw-hidden')) {
+                    closeModal();
+                }
+            });
+
         });
     </script>
 
