@@ -49,12 +49,14 @@
         /* Sub-menu active link styling */
         .sub-nav-link-active {
             color: #2563eb; /* blue-600 */
-            font-weight: 600;
+            font-weight: 700;
+            background-color: #f8fafc;
+            border-right: 3px solid #2563eb;
         }
 
         /* Smooth scrolling offset */
-        section, div[id] {
-            scroll-margin-top: 100px;
+        section, div.track-section {
+            scroll-margin-top: 80px;
         }
 
         /* Image Styling Constraints */
@@ -110,10 +112,15 @@
                         
                         <li>
                             <a href="#human-constraints" id="link-human-constraints" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Biological Constraints</a>
-                            <ul class="tw-pl-4 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-2">
-                                <li><a href="#pain" id="link-pain" class="nav-link tw-block tw-py-1 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-text-xs tw-text-gray-500">The Pain Signal</a></li>
-                                <li><a href="#degradation" id="link-degradation" class="nav-link tw-block tw-py-1 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-text-xs tw-text-gray-500">Organ Degradation</a></li>
-                                <li><a href="#death" id="link-death" class="nav-link tw-block tw-py-1 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-text-xs tw-text-gray-500">The Death Limit</a></li>
+                            
+                            <ul class="tw-pl-0 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-4">
+                                <li><a href="#ethics" id="link-ethics" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Ethics & Violence</a></li>
+                                <li><a href="#laziness" id="link-laziness" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Laziness</a></li>
+                                <li><a href="#selfishness" id="link-selfishness" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Selfishness & Risk</a></li>
+                                <li><a href="#sleep" id="link-sleep" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Sleep</a></li>
+                                <li><a href="#pain" id="link-pain" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Pain Signal</a></li>
+                                <li><a href="#degradation" id="link-degradation" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Organ Degradation</a></li>
+                                <li><a href="#death" id="link-death" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Death Limit</a></li>
                             </ul>
                         </li>
 
@@ -150,7 +157,7 @@
                 <p class="tw-text-xl tw-text-gray-500 tw-leading-relaxed">A comparative analysis of evolutionary heuristics versus machine learning optimization.</p>
             </header>
 
-            <section id="introduction" class="tw-mb-16 track-section">
+            <section id="introduction" class="track-section tw-mb-16">
                 <figure class="tw-w-full">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Human_evolution.jpg" alt="Human Evolution Diagram" class="constrained-img" loading="lazy">
                     <figcaption>From biology to silicon: Are we crossing a threshold of intelligence that evolution cannot support?</figcaption>
@@ -161,7 +168,7 @@
                 </p>
             </section>
 
-            <section id="evolution-thesis" class="tw-mb-16 track-section">
+            <section id="evolution-thesis" class="track-section tw-mb-16">
                 <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Evolution Thesis: Optimization for Survival, Not Truth</h2>
                 
                 <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6">
@@ -178,14 +185,14 @@
                 <div class="tw-clear-both"></div>
             </section>
 
-            <section id="human-constraints" class="tw-mb-16 track-section">
+            <section id="human-constraints" class="track-section tw-mb-16">
                 <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-8">The Legacy Code: Evolution's Weaknesses</h2>
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-8">
                     Human intelligence inherited significant "technical debt" from our evolutionary history. These traits, while useful for a hunter-gatherer on the savannah, often manifest as cognitive biases or limitations in the modern era.
                 </p>
 
                 <div class="tw-space-y-12">
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                    <div id="ethics" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
                         <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">1. Ethics and Violence</h3>
                         
                         <figure>
@@ -198,17 +205,24 @@
                         </p>
                     </div>
 
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">2. Laziness & Risk Aversion</h3>
+                    <div id="laziness" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">2. The Energy Conservation Principle (Laziness)</h3>
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
-                            <strong>Laziness:</strong> Humans are biologically programmed to conserve energy. In modern terms, this manifests as "laziness." The deep desire to work less or rely on others is a biological imperative to save calories for scarce times <a href="#ref-3" class="tw-text-blue-600 hover:tw-underline">[3]</a>.
-                            <br><br>
-                            <strong>Loss Aversion:</strong> Humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. Evolution penalizes risk-taking; the cautious ancestor survived, while the overly curious one was eaten.
+                            Humans are biologically programmed to conserve energy. In modern terms, this manifests as "laziness." The deep desire to work less or rely on others is a biological imperative to save calories for scarce times <a href="#ref-3" class="tw-text-blue-600 hover:tw-underline">[3]</a>. Evolution does not reward the expenditure of energy on problems that do not immediately impact survival.
                         </p>
                     </div>
 
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">3. The Downtime Requirement (Sleep)</h3>
+                    <div id="selfishness" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">3. Selfishness & Risk Aversion</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            <strong>The Selfish Gene:</strong> Selfishness is the engine of biological survival. As Richard Dawkins argued, genes successful at surviving are, by definition, "selfish" in their replicative behavior <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>.
+                            <br><br>
+                            <strong>Loss Aversion:</strong> Humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. Evolution penalizes risk-taking; the cautious ancestor survived, while the overly curious one was eaten. This limits our capacity for radical experimentation.
+                        </p>
+                    </div>
+
+                    <div id="sleep" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">4. The Downtime Requirement (Sleep)</h3>
                         <figure>
                             <img src="https://upload.wikimedia.org/wikipedia/commons/0/07/Flaming_June%2C_by_Frederic_Lord_Leighton_%281830-1896%29.jpg" alt="Flaming June" class="constrained-img" loading="lazy">
                             <figcaption>"Flaming June" (1895). Humans spend roughly one-third of their existence unconscious. (Source: Wikimedia Commons)</figcaption>
@@ -219,7 +233,7 @@
                     </div>
 
                     <div id="pain" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">4. The Pain Feedback Loop</h3>
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">5. The Pain Feedback Loop</h3>
                         <figure class="tw-float-right tw-w-full md:tw-w-1/3 md:tw-ml-6">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Spinal_reflex.svg" alt="Reflex Arc Diagram" class="constrained-img tw-p-2 tw-bg-white" loading="lazy">
                             <figcaption>The reflex arc: A high-priority interrupt signal to prevent tissue damage.</figcaption>
@@ -228,40 +242,46 @@
                             Why do humans feel pain? Pain is a crude, high-priority feedback system designed to warn about dangerous situations. If a hand is exposed to extreme heat, nerves send a signal that overrides all other thoughts to trigger an immediate reaction. 
                         </p>
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
-                            While effective for survival, this system is debilitating. It evolved as a "maximum attention" alert because biology cannot easily repair a lost limb. This is why we developed anesthesia—to artificially block these sensors during necessary but invasive repairs (surgeries). Machines, conversely, possess sophisticated sensor networks that detect damage or overheating without the "suffering" that incapacitates the system. They can log an error, reroute power, and continue functioning without the trauma loop.
+                            While effective for survival, this system is debilitating. It evolved as a "maximum attention" alert because biology cannot easily repair a lost limb. This is why we developed anesthesia—to artificially block these sensors during necessary but invasive repairs (surgeries). Machines, conversely, possess sophisticated sensor networks that detect damage or overheating without the "suffering" that incapacitates the system.
                         </p>
                         <div class="tw-clear-both"></div>
                     </div>
 
                     <div id="degradation" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">5. Biological Degradation vs. Modular Repair</h3>
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">6. Biological Degradation vs. Modular Repair</h3>
                         <p class="tw-text-gray-700 tw-leading-relaxed">
                             In biology, organ degradation is a feature, not a bug. Known as the "Disposable Soma" theory, nature invests in the body only long enough to ensure reproduction. Once that phase passes, cellular repair mechanisms decline, and keeping organs operational becomes chemically impossible.
                         </p>
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
-                            In AI systems, there is no systemic degradation logic. A hard disk may develop bad sectors, or a camera sensor may become obsolete compared to newer versions, but these are <strong>modular failures</strong>. The failure of a part is not fatal to the overall intelligence. We can replace a drive, upgrade a GPU, or swap a sensor array, and the "mind" (the software agent) continues without degradation. The system is maintainable in perpetuity, whereas the biological body is designed to expire.
+                            In AI systems, there is no systemic degradation logic. A hard disk may develop bad sectors, or a camera sensor may become obsolete compared to newer versions, but these are <strong>modular failures</strong>. The failure of a part is not fatal to the overall intelligence. We can replace a drive, upgrade a GPU, or swap a sensor array, and the "mind" (the software agent) continues without degradation.
                         </p>
                     </div>
 
                     <div id="death" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">6. The Death Limit vs. Hibernation</h3>
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">7. The Death Limit vs. Hibernation</h3>
                         <figure class="tw-w-full md:tw-w-1/2 tw-float-left md:tw-mr-6">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/IBM_PC_XT.png" alt="IBM PC XT" class="constrained-img tw-max-h-64" loading="lazy">
                             <figcaption>An IBM XT found in a garage can be revived decades later. Biological death is irreversible; machine "death" is often just a power state.</figcaption>
                         </figure>
                         <p class="tw-text-gray-700 tw-leading-relaxed">
-                            We know what death means to humans: it is the sad, ultimate fate with a practical maximum age of roughly 150 years. It is the permanent erasure of the consciousness. But what is death to an AI?
+                            We know what death means to humans: it is the sad, ultimate fate with a practical maximum age of roughly 150 years. It is the permanent erasure of the consciousness. If an AI system is indispensable, nothing prevents continuous, gradual upgrades to keep it running forever. 
                         </p>
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
-                            If an AI system is indispensable, nothing prevents continuous, gradual upgrades to keep it running forever. Even total obsolescence is not "death" in the biological sense. We can find an old IBM XT computer in a garage, inactive for 40 years, flip a switch, and it revives. It was not dead; it was merely at rest. We can fix its capacitors and restore it. We cannot "fix" a human who has been dead for 40 years. This ability to hibernate and be restored separates mechanical existence from the fragility of biological life.
+                            Even total obsolescence is not "death" in the biological sense. We can find an old IBM XT computer in a garage, inactive for 40 years, flip a switch, and it revives. It was not dead; it was merely at rest. We cannot "fix" a human who has been dead for 40 years. 
                         </p>
+                        
+                        <div class="tw-mt-6 tw-bg-blue-50 tw-p-4 tw-rounded-lg tw-border-l-4 tw-border-blue-500">
+                            <p class="tw-text-gray-800 tw-italic">
+                                "This distinction is often lost on the digital generation. My son, an avid gamer, frequently exclaims 'I just died!' during a session. I often remind him—sarcastically, but seriously—'You'd better not get used to the illusion that dying and restarting a new life is just like pressing the F5 button.' For biological entities, 'Game Over' is permanent. For AI, it is merely a state refresh."
+                            </p>
+                        </div>
                         <div class="tw-clear-both"></div>
                     </div>
 
                 </div>
             </section>
 
-            <section id="machine-advantage" class="tw-mb-16 track-section">
+            <section id="machine-advantage" class="track-section tw-mb-16">
                 <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Machine Advantage: A Clean Slate</h2>
                 
                 <figure>
@@ -281,7 +301,7 @@
                 </ul>
             </section>
 
-            <section id="evidence" class="tw-mb-16 track-section">
+            <section id="evidence" class="track-section tw-mb-16">
                 <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-8">Evidence of Non-Human Creativity</h2>
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-8">
                     We now have concrete proof that machines can generate creative outputs that surprise human experts. This is not merely calculation; it is the discovery of strategies that lay outside the "search space" of human culture and biological bias.
@@ -328,14 +348,14 @@
                 </div>
             </section>
 
-            <section id="conclusion" class="tw-bg-blue-50 tw-p-10 tw-rounded-2xl tw-border tw-border-blue-100 tw-mb-16 track-section">
+            <section id="conclusion" class="track-section tw-bg-blue-50 tw-p-10 tw-rounded-2xl tw-border tw-border-blue-100 tw-mb-16">
                 <h2 class="tw-text-3xl tw-font-bold tw-text-blue-900 tw-mb-6">Summary: A New Species of Thinker</h2>
                 <p class="tw-text-xl tw-leading-relaxed tw-text-blue-900">
                     To deny AI creativity is to define creativity solely by human standards. If creativity is the ability to generate novel, valuable solutions that previous actors missed, then machines are undeniably creative. By stripping away the biological baggage of evolution—fear, fatigue, ego, tribalism, and mortality—AI does not just imitate human intelligence; it has the potential to purify it. The future of creativity is likely a hybrid one, where human intuition guides machine exhaustion of the search space, but we must admit: the machine is no longer just a parrot. It is a new, alien species of thinker.
                 </p>
             </section>
 
-            <section id="references" class="tw-border-t tw-pt-10 tw-bg-gray-50 tw-p-8 tw-rounded-xl track-section">
+            <section id="references" class="track-section tw-border-t tw-pt-10 tw-bg-gray-50 tw-p-8 tw-rounded-xl">
                 <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-6">References & Further Reading</h3>
                 <ol class="tw-list-decimal tw-pl-5 tw-space-y-4 tw-text-base tw-text-gray-700">
                     <li id="ref-1">
@@ -369,7 +389,6 @@
                     <center>
                         <img src="img/AI-Creativity.png" alt="AI Creativity" style="box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5); width: 90%; max-width: 700px;" />
                     </center>
-            
         </main>
     </div>
 
@@ -391,14 +410,15 @@
                 const activeLink = document.querySelector(`#link-${id}`);
                 
                 if (activeLink) {
-                    // If it's a sub-menu item (parent is UL -> LI -> UL)
-                    const isSubMenu = activeLink.parentElement.parentElement.tagName === 'UL' && activeLink.parentElement.parentElement.previousElementSibling;
+                    // Check if it's a sub-menu item by checking parent DOM structure
+                    const parentList = activeLink.parentElement.parentElement;
+                    const isSubMenu = parentList.tagName === 'UL' && parentList.previousElementSibling;
                     
                     if (isSubMenu) {
                         // Highlight the sub link text
                         activeLink.classList.add("sub-nav-link-active");
-                        // Also highlight parent main link
-                        const parentLink = activeLink.parentElement.parentElement.previousElementSibling;
+                        // Also highlight parent main link (e.g. "Biological Constraints")
+                        const parentLink = parentList.previousElementSibling;
                         parentLink.classList.add("nav-link-active");
                         parentLink.classList.remove("tw-border-transparent");
                     } else {
