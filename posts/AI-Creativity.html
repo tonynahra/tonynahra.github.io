@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="tw-scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,6 +25,9 @@
                 850: '#1e293b',
                 900: '#0f172a',
               }
+            },
+            maxWidth: {
+                '8xl': '90rem',
             }
           }
         }
@@ -35,225 +38,332 @@
     
     <style>
         body { font-family: 'Inter', sans-serif; }
-        html { scroll-behavior: smooth; }
+        /* Custom active state style for js toggling */
+        .nav-link-active {
+            background-color: #f3f4f6; /* bg-gray-100 */
+            border-color: #2563eb; /* border-blue-600 */
+            color: #1e293b; /* text-slate-900 */
+            font-weight: 600;
+        }
+        /* Adjust scroll margin to account for sticky headers if necessary, 
+           though current layout doesn't have a top fixed header obscuring content.
+           Adding a small buffer for aesthetics. */
+        section {
+            scroll-margin-top: 2rem;
+        }
     </style>
 </head>
-<body class="tw-bg-gray-50 tw-text-gray-800">
+<body class="tw-bg-gray-100 tw-text-gray-800">
 
-    <div class="tw-flex tw-min-h-screen tw-flex-col md:tw-flex-row">
+    <div class="tw-container tw-mx-auto tw-max-w-8xl tw-bg-white tw-shadow-xl tw-min-h-screen tw-flex tw-flex-col md:tw-flex-row">
 
-        <aside class="tw-w-full md:tw-w-56 tw-bg-white tw-text-slate-900 tw-border-r tw-border-gray-200 tw-flex-shrink-0 tw-fixed md:tw-sticky tw-top-0 tw-z-50 md:tw-h-screen tw-overflow-y-auto tw-shadow-sm">
+        <aside class="tw-w-full md:tw-w-64 tw-bg-white tw-text-slate-700 tw-border-r tw-border-gray-200 tw-flex-shrink-0 tw-sticky tw-top-0 tw-h-screen tw-overflow-y-auto tw-z-50">
             <div class="tw-p-6">
-                <h2 class="tw-text-2xl tw-font-bold tw-tracking-wider tw-text-blue-600 tw-mb-6">MediAmaze</h2>
+                <h2 class="tw-text-2xl tw-font-bold tw-tracking-wider tw-text-blue-700 tw-mb-6">MediAmaze</h2>
                 <nav>
-                    <ul class="tw-space-y-3">
+                    <ul class="tw-space-y-2">
                          <li>
-                            <a href="#top" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-font-semibold">Document Top</a>
+                            <a href="#top" id="link-top" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-all tw-border-l-4 tw-border-transparent tw-font-semibold">Document Top</a>
                         </li>
                         <li>
-                            <a href="#introduction" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-blue-500 tw-text-sm">Introduction</a>
+                            <a href="#introduction" id="link-introduction" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm">Introduction</a>
                         </li>
                         <li>
-                            <a href="#evolution-thesis" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">The Evolution Thesis</a>
+                            <a href="#evolution-thesis" id="link-evolution-thesis" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm">The Evolution Thesis</a>
                         </li>
                         <li>
-                            <a href="#human-constraints" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">Biological Constraints</a>
+                            <a href="#human-constraints" id="link-human-constraints" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm">Biological Constraints</a>
                         </li>
                         <li>
-                            <a href="#machine-advantage" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">The Machine Advantage</a>
+                            <a href="#machine-advantage" id="link-machine-advantage" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm">The Machine Advantage</a>
                         </li>
                         <li>
-                            <a href="#evidence" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">Evidence of Creativity</a>
+                            <a href="#evidence" id="link-evidence" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm">Evidence of Creativity</a>
                         </li>
                         <li>
-                            <a href="#conclusion" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">Summary & Future</a>
+                            <a href="#conclusion" id="link-conclusion" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm">Summary & Future</a>
                         </li>
                         <li>
-                            <a href="#references" class="tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-colors tw-border-l-4 tw-border-transparent hover:tw-border-gray-300 tw-text-sm">References</a>
+                            <a href="#references" id="link-references" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-100 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm">References</a>
                         </li>
                     </ul>
                 </nav>
             </div>
-            <div class="tw-p-6 tw-mt-auto tw-border-t tw-border-gray-100">
-                <a href="https://tonynahra.github.io/" target="_blank" class="tw-block tw-text-sm tw-font-bold tw-text-blue-600 hover:tw-underline">About the author &rarr;</a>
+            <div class="tw-p-6 tw-mt-auto tw-border-t tw-border-gray-100 tw-absolute tw-bottom-0 tw-w-full tw-bg-white">
+                <a href="https://tonynahra.github.io/" target="_blank" class="tw-block tw-text-sm tw-font-bold tw-text-blue-700 hover:tw-underline">About the author &rarr;</a>
             </div>
         </aside>
 
-        <main id="top" class="tw-flex-1 tw-p-6 md:tw-p-10 tw-max-w-4xl">
+        <main id="top" class="tw-flex-1 tw-p-8 md:tw-p-16 tw-max-w-5xl tw-mx-auto">
             
-            <header class="tw-mb-10 tw-border-b tw-pb-6">
-                <div class="tw-text-sm tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-wide tw-mb-2">Technical Analysis</div>
-                <h1 class="tw-text-4xl md:tw-text-5xl tw-font-bold tw-text-gray-900 tw-mb-4">Beyond Biology: Is AI Capable of Genuine Creativity?</h1>
-                <p class="tw-text-xl tw-text-gray-500">A comparative analysis of evolutionary heuristics versus machine learning optimization.</p>
+            <header class="tw-mb-12 tw-border-b tw-pb-8">
+                <div class="tw-text-sm tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-wide tw-mb-3">Technical Analysis</div>
+                <h1 class="tw-text-4xl md:tw-text-6xl tw-font-black tw-text-gray-900 tw-mb-6 tw-leading-tight">Beyond Biology: Is AI Capable of Genuine Creativity?</h1>
+                <p class="tw-text-xl tw-text-gray-500 tw-leading-relaxed">A comparative analysis of evolutionary heuristics versus machine learning optimization.</p>
             </header>
 
-            <section id="introduction" class="tw-mb-12">
+            <section id="introduction" class="tw-mb-16 track-section">
                 
-                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
-                    A prevailing skepticism suggests that Artificial Intelligence can never be truly creative—that it is merely a "stochastic parrot" capable only of repeating and imitating human intelligence. But is this assertion grounded in reality, or is it a defense mechanism of our own biology?
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6 tw-mt-6">
+                    A prevailing skepticism suggests that Artificial Intelligence can never be truly creative—that it is merely a "stochastic parrot" capable only of repeating and imitating human intelligence. This view comforts us, placing a moat around the last bastion of human uniqueness. But is this assertion grounded in reality, or is it a psychological defense mechanism of our own biology?
                 </p>
             </section>
 
-            <section id="evolution-thesis" class="tw-mb-12">
-                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-4">The Evolution Thesis</h2>
+            <section id="evolution-thesis" class="tw-mb-16 track-section">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Evolution Thesis: Optimization for Survival, Not Truth</h2>
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
                     Human intelligence is the product of millions of years of evolution. Our survival and adaptation, driven by the principle of "survival of the fittest," led to an incremental increase in intelligence capable of ensuring the species passed its genes to the next generation. 
                 </p>
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
-                    However, we must recognize a critical distinction: Evolution optimizes for <strong>survival</strong>, not for <strong>truth</strong> or <strong>creativity</strong> <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. Based on this thesis, while humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence—territories where machines, unburdened by biology, may thrive.
+                    However, we must recognize a critical distinction made by evolutionary biologists: Evolution optimizes for <strong>survival and reproduction</strong>, not for <strong>objective truth or unbounded creativity</strong> <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. Evolution is a "satisficer," not an optimizer—it settles for solutions that are "good enough" to not die today. While humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence—territories where machines, unburdened by biology, may thrive.
                 </p>
             </section>
 
-            <section id="human-constraints" class="tw-mb-12">
-                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Legacy Code: Evolution's Weaknesses</h2>
-                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
+            <section id="human-constraints" class="tw-mb-16 track-section">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-8">The Legacy Code: Evolution's Weaknesses</h2>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-8">
                     Human intelligence inherited significant "technical debt" from our evolutionary history. These traits, while useful for a hunter-gatherer on the savannah, often manifest as cognitive biases or limitations in the modern era.
                 </p>
 
-                <div class="tw-space-y-8">
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">1. Ethics and Violence</h3>
+                <div class="tw-space-y-10">
+                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">1. Ethics and Violence</h3>
                         
-                        <p class="tw-text-gray-700">
-                            Critics fear AI making decisions contrary to humanity, often citing scenarios of nuclear war. Yet, human history is defined by violence that far exceeds any theoretical machine error. Cognitive psychologist Steven Pinker, in his analysis of the history of violence, notes that while violence has declined, our history is saturated with it due to our "inner demons"—predatory, dominance-seeking drives <a href="#ref-2" class="tw-text-blue-600 hover:tw-underline">[2]</a>. We fear AI might launch a weapon without realizing the consequences, yet humans—driven by ego, tribalism, and fear—have brought us to that brink repeatedly. War brutality has been a deliberate human tactic for millennia. The Hollywood trope of "evil alien/robot" is a projection of human nature, not a reflection of computational logic.
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Critics fear AI might make decisions contrary to humanity, often citing scenarios of accidental nuclear war. Yet, human history is saturated with violence driven by ego, tribalism, and fear—traits absent in machines. Cognitive psychologist Steven Pinker notes that while violence has declined, our history is defined by our "inner demons" of dominance and revenge <a href="#ref-2" class="tw-text-blue-600 hover:tw-underline">[2]</a>. We fear an AI might launch a weapon due to a bug, yet humans have brought the world to the brink repeatedly out of pride or miscalculation. The Hollywood trope of the "evil robot" is a projection of human nature, not computational logic.
                         </p>
                     </div>
 
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">2. The Energy Conservation Principle (Laziness)</h3>
-                        <p class="tw-text-gray-700">
-                            Humans are biologically programmed to conserve energy. In modern terms, this manifests as laziness. The desire to work less, retire early, or rely on others is a biological imperative to save calories for survival situations. Evolutionary psychology suggests that this "conservation of energy" was critical when food was scarce, but in an abundance economy, it often hinders thorough exploration of complex problems <a href="#ref-3" class="tw-text-blue-600 hover:tw-underline">[3]</a>.
-                        </p>
-                    </div>
-
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">3. The Selfish Gene</h3>
+                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">2. The Energy Conservation Principle (Laziness)</h3>
                         
-                        <p class="tw-text-gray-700">
-                            Selfishness is the engine of biological survival. As Richard Dawkins famously argued, genes that are successful at surviving are, by definition, "selfish" in their replicative behavior <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. In evolutionary terms, it means maximizing the chances of one's own genetic propagation, often at the expense of others. This biological root underpins crime, fraud, and resource hoarding. It limits collective progress because individual gain is prioritized over system optimization.
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Humans are biologically programmed to conserve energy. In modern terms, this manifests as "laziness" or cognitive miserliness. The deep desire to work less or rely on others is a biological imperative to save calories for scarce times. Evolutionary psychology suggests this "conservation of energy" often hinders thorough exploration of complex solution spaces <a href="#ref-3" class="tw-text-blue-600 hover:tw-underline">[3]</a>. We settle for the first plausible answer to avoid the caloric expense of deep thought.
                         </p>
                     </div>
 
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">4. Deep-Seated Risk Aversion</h3>
-                        <p class="tw-text-gray-700">
-                            "Loss aversion" is hardwired into our genes. Nobel laureates Daniel Kahneman and Amos Tversky demonstrated that humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. Evolution penalizes risk-taking; the cautious ancestor survived, while the overly curious one was eaten.
-                            <br><br>
-                            <em>Example:</em> "Organisms that treat threats as more urgent than opportunities have a better chance to survive and reproduce." <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. This limits our capacity for adventure and radical experimentation. Columbus’s voyage or the Apollo missions were outliers, requiring immense resources to overcome our natural fear.
+                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">3. The Selfish Gene</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            Selfishness is the engine of biological survival. As Richard Dawkins argued, genes successful at surviving are, by definition, "selfish" in their replicative behavior <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. In evolutionary terms, this means maximizing one's own genetic propagation, often at the expense of others. This biological root limits collective progress because individual gain is frequently prioritized over system optimization.
                         </p>
                     </div>
 
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">5. The Downtime Requirement (Sleep)</h3>
+                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">4. Deep-Seated Risk Aversion</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            "Loss aversion" is hardwired into our genes. Nobel laureates Daniel Kahneman and Amos Tversky demonstrated that humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. Evolution penalizes risk-taking; the cautious ancestor survived, while the overly curious one was eaten. This limits our capacity for radical experimentation. Columbus’s voyage or space exploration are statistical outliers requiring immense resources to overcome natural human fear.
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">5. The Downtime Requirement (Sleep)</h3>
                         
-                        <p class="tw-text-gray-700">
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
                             Humans spend roughly one-third of their existence unconscious. From a processing perspective, this is a massive inefficiency. Neuroscientist Matthew Walker states, "If sleep does not provide a remarkable set of benefits, then it's the biggest mistake the evolutionary process has ever made" <a href="#ref-5" class="tw-text-blue-600 hover:tw-underline">[5]</a>. Sleep renders us vulnerable and halts productivity. It is a biological maintenance cycle that evolution could not engineer away.
                         </p>
                     </div>
 
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">6. Groupthink and Tribalism</h3>
-                        <p class="tw-text-gray-700">
-                            We evolved to stick together for defense against predators. This trait, however, leads to "groupthink"—agreeing with the tribe even when the tribe is objectively wrong. This stifles innovation and leads to collective errors in judgment (e.g., financial bubbles or political extremism) because social cohesion was historically more valuable than objective truth.
+                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">6. Groupthink and Tribalism</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            We evolved to stick together for defense against predators. This trait leads to "groupthink"—agreeing with the tribe even when objectively wrong. This stifles innovation and leads to collective errors.
+                            <br><br>
+                            <em>Example:</em> The 1986 Challenger space shuttle disaster is a classic case study where engineers suppressed their own data about faulty O-rings due to pressure to conform to management's desire to launch <a href="#ref-8" class="tw-text-blue-600 hover:tw-underline">[8]</a>. Social cohesion was historically more valuable for survival than objective truth.
                         </p>
                     </div>
 
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">7. Emotional vs. Rational Processing</h3>
-                        <p class="tw-text-gray-700">
-                            Humans often think with the "heart" (amygdala/limbic system) rather than the "brain" (prefrontal cortex). We are easily tricked by desires—sugar, nicotine, comfort—even when we intellectually know they are harmful. This internal conflict of interest degrades decision-making quality.
+                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">7. Emotional vs. Rational Processing</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            Humans frequently think with the "heart" (amygdala/limbic system) rather than the "brain" (prefrontal cortex). We are susceptible to short-term desires—sugar, comfort, anger—even when intellectually aware they are harmful long-term.
+                            <br><br>
+                            <em>Example:</em> Stock market crashes are rarely driven by data changes, but by panic selling—an emotional contagion that overrides rational financial analysis.
                         </p>
                     </div>
 
-                    <div class="tw-bg-white tw-p-6 tw-rounded-lg tw-shadow-sm tw-border tw-border-gray-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-700 tw-mb-2">8. The Mortality Data Loss</h3>
-                        <p class="tw-text-gray-700">
-                            The oldest story, the <em>Epic of Gilgamesh</em>, centers on the tragedy of mortality. A human spends decades learning, only to die and take that unique neural configuration with them. The next generation must start from scratch (or near scratch), reading books to "upload" knowledge slowly via language. This cycle of learning, working, and dying limits the accumulation of wisdom.
+                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">8. The Mortality Data Loss</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            The oldest known story, the <em>Epic of Gilgamesh</em>, centers on the tragedy of human mortality. A human spends decades learning, only to die and take that unique neural configuration with them. The next generation must start from scratch, reading books to "upload" knowledge slowly via language. This cycle limits the exponential accumulation of wisdom.
+                        </p>
+                    </div>
+
+                     <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">9. Cognitive Load Limitations</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            The human brain has severe limitations on working memory. Often cited as "Miller's Law," the average human can only hold about seven (plus or minus two) objects in their working memory at once <a href="#ref-9" class="tw-text-blue-600 hover:tw-underline">[9]</a>. This makes it incredibly difficult for humans to mentally model complex systems with dozens of interacting variables, such as global climate patterns or intricate protein folding.
                         </p>
                     </div>
                 </div>
             </section>
 
-            <section id="machine-advantage" class="tw-mb-12">
-                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-4">The Machine Advantage</h2>
-                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
-                    Machines are not burdened by these evolutionary flaws. They possess a "Clean Slate" architecture:
+            <section id="machine-advantage" class="tw-mb-16 track-section">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Machine Advantage: A Clean Slate</h2>
+                
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6 tw-mt-6">
+                    Machines are not burdened by these evolutionary flaws. They possess a architecture designed for optimization, not just survival:
                 </p>
-                <ul class="tw-list-disc tw-pl-6 tw-space-y-3 tw-text-lg tw-text-gray-700 tw-mb-6">
+                <ul class="tw-list-disc tw-pl-6 tw-space-y-4 tw-text-lg tw-text-gray-700 tw-mb-6">
                     <li><strong>Objective Ethics:</strong> Machines are not driven by biological imperatives like greed, lust, or tribalism. They can be optimized for global utility rather than personal survival.</li>
-                    <li><strong>Relentless Execution:</strong> Machines do not experience fatigue or laziness. They do not require sleep.</li>
-                    <li><strong>Risk Optimization:</strong> Machines can take calculated risks based on probability, unhindered by biological fear responses.</li>
-                    <li><strong>Networked Intelligence:</strong> Instead of "groupthink," machines utilize networking to share data instantly. If one self-driving car learns to avoid a pothole, the entire fleet learns it simultaneously.</li>
-                    <li><strong>Knowledge Immortality:</strong> A machine does not die. Its "weights" (knowledge) can be copied and pasted to the next generation instantly.</li>
+                    <li><strong>Relentless Execution:</strong> Machines do not experience fatigue, boredom, or laziness. They do not sleep.</li>
+                    <li><strong>Risk Optimization:</strong> Machines take calculated risks based on raw probability, unhindered by biological fear responses or loss aversion.</li>
+                    <li><strong>Networked Intelligence:</strong> Instead of "groupthink," machines utilize networking to share data instantly without ego. If one self-driving car learns to avoid a new type of obstacle, the entire fleet learns it simultaneously.</li>
+                    <li><strong>Massive Context Windows:</strong> Unlike the human limit of ~7 items in working memory, modern AI models have massive context windows, allowing them to "hold" and analyze millions of pieces of information simultaneously.</li>
+                    <li><strong>Knowledge Immortality:</strong> A machine does not die. Its "weights" (knowledge) can be copied instantly to the next generation hardware.</li>
                 </ul>
             </section>
 
-            <section id="evidence" class="tw-mb-12">
-                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">Evidence of Non-Human Creativity</h2>
-                
-                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
-                    We now have concrete proof that machines can generate creative outputs that surprise human experts. This is not merely calculation; it is the discovery of strategies that lay outside the "search space" of human culture.
+            <section id="evidence" class="tw-mb-16 track-section">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-8">Evidence of Non-Human Creativity</h2>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-8">
+                    We now have concrete proof that machines can generate creative outputs that surprise human experts. This is not merely calculation; it is the discovery of strategies that lay outside the "search space" of human culture and biological bias.
                 </p>
 
-                <div class="tw-mb-8">
-                    <h3 class="tw-text-xl tw-font-bold tw-text-gray-800 tw-mb-2">AlphaGo: The Move 37 Shock</h3>
-                    <p class="tw-text-gray-700 tw-mb-4">
-                        In Game 2 of the match against Lee Sedol, AlphaGo played <strong>Move 37</strong>, a shoulder hit on the fifth line. Experts initially thought it was a mistake. It defied centuries of Go theory, which dictated that such moves were inefficient. However, post-match analysis revealed it was a move of profound creativity—a strategic innovation that humans had missed for 2,500 years. It forced top players to rethink the fundamentals of the game <a href="#ref-6" class="tw-text-blue-600 hover:tw-underline">[6]</a>.
-                    </p>
-                </div>
+                <div class="tw-space-y-12">
+                    <div>
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">AlphaGo: The Move 37 Shock</h3>
+                        
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                            In Game 2 of the match against Lee Sedol, AlphaGo played <strong>Move 37</strong>, a shoulder hit on the fifth line. Experts initially thought it was a mistake. It defied centuries of Go theory, which dictated that such moves were inefficient. However, post-match analysis revealed it was a move of profound creativity—a strategic innovation that humans had missed for 2,500 years because it looked "wrong" to human intuition. It forced top players to rethink the fundamentals of the game <a href="#ref-6" class="tw-text-blue-600 hover:tw-underline">[6]</a>.
+                        </p>
+                    </div>
 
-                <div class="tw-mb-8">
-                    <h3 class="tw-text-xl tw-font-bold tw-text-gray-800 tw-mb-2">Kasparov vs. Deep Blue (1997)</h3>
-                    <p class="tw-text-gray-700 tw-mb-4">
-                        In the historic 1997 rematch, Garry Kasparov noted that Deep Blue played in a "human-like" and unsettling way <a href="#ref-7" class="tw-text-blue-600 hover:tw-underline">[7]</a>. 
-                    </p>
-                    <blockquote class="tw-border-l-4 tw-border-blue-500 tw-pl-4 tw-italic tw-bg-gray-100 tw-p-4 tw-rounded">
-                        "I could feel—I could smell—a new kind of intelligence across the table." — Garry Kasparov
-                    </blockquote>
-                    <p class="tw-text-gray-700 tw-mt-4">
-                        <strong>Game 2 Controversy:</strong> Deep Blue played a move (36...axb5) where it refused to grab a pawn, prioritizing position. Kasparov believed was too subtle for a computer, suspecting human intervention. 
-                        <br><br>
-                        <strong>Game 6 Decisive Victory:</strong> In the final game, Deep Blue executed a Knight sacrifice (Nxe6) followed by a Queen sacrifice logic that decimated Kasparov's defense. This wasn't just calculation; it was a "creative" dismantling of the human psychological state and board position, forcing a resignation in just 19 moves <a href="#ref-7" class="tw-text-blue-600 hover:tw-underline">[7]</a>.
-                    </p>
+                    <div>
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Kasparov vs. Deep Blue (1997)</h3>
+                        
+
+[Image of Garry Kasparov playing against Deep Blue]
+
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                            In the historic 1997 rematch, Garry Kasparov noted that IBM's Deep Blue played in a "human-like" and unsettling way <a href="#ref-7" class="tw-text-blue-600 hover:tw-underline">[7]</a>. In the decisive final game, Deep Blue executed a Knight sacrifice (Nxe6) followed by a Queen sacrifice logic that decimated Kasparov's defense. This wasn't just calculation; it was a "creative" dismantling of the board position that psychologically broke the world champion, forcing a resignation in just 19 moves.
+                        </p>
+                    </div>
+
+                     <div>
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Beyond Games: AI in Scientific Discovery (Halicin)</h3>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed">
+                            True creativity is finding valuable novelty. In 2020, MIT researchers used deep learning to identify a powerful new antibiotic molecule, which they named "Halicin" (after HAL 9000). The AI screened over 100 million chemical compounds in days. Critically, Halicin is structurally divergent from conventional antibiotics; human chemists likely would never have investigated it because it didn't look like what we *thought* an antibiotic should look like <a href="#ref-10" class="tw-text-blue-600 hover:tw-underline">[10]</a>. The AI, lacking human preconceptions, found a creative solution hidden in plain sight.
+                        </p>
+                    </div>
                 </div>
             </section>
 
-            <section id="conclusion" class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200 tw-mb-12">
-                <h2 class="tw-text-2xl tw-font-bold tw-text-slate-900 tw-mb-4">Summary</h2>
-                <p class="tw-text-lg tw-leading-relaxed tw-text-slate-700">
-                    To deny AI creativity is to define creativity solely by human standards. If creativity is the ability to generate novel, valuable solutions that previous actors missed, then machines are already creative. By stripping away the biological baggage of evolution—fear, fatigue, ego, and mortality—AI does not just imitate human intelligence; it has the potential to purify it. The future of creativity is likely a hybrid one, where human intuition guides machine exhaustion of the search space, but we must admit: the machine is no longer just a parrot. It is a new species of thinker.
+            <section id="conclusion" class="tw-bg-blue-50 tw-p-10 tw-rounded-2xl tw-border tw-border-blue-100 tw-mb-16 track-section">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-blue-900 tw-mb-6">Summary: A New Species of Thinker</h2>
+                <p class="tw-text-xl tw-leading-relaxed tw-text-blue-900">
+                    To deny AI creativity is to define creativity solely by human standards. If creativity is the ability to generate novel, valuable solutions that previous actors missed, then machines are undeniably creative. By stripping away the biological baggage of evolution—fear, fatigue, ego, tribalism, and mortality—AI does not just imitate human intelligence; it has the potential to purify it. The future of creativity is likely a hybrid one, where human intuition guides machine exhaustion of the search space, but we must admit: the machine is no longer just a parrot. It is a new, alien species of thinker.
                 </p>
             </section>
 
-            <section id="references" class="tw-border-t tw-pt-8 tw-bg-gray-100 tw-p-6 tw-rounded-lg">
-                <h3 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-4">References</h3>
-                <ol class="tw-list-decimal tw-pl-5 tw-space-y-3 tw-text-sm tw-text-gray-700">
+            <section id="references" class="tw-border-t tw-pt-10 tw-bg-gray-50 tw-p-8 tw-rounded-xl track-section">
+                <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-6">References & Further Reading</h3>
+                <ol class="tw-list-decimal tw-pl-5 tw-space-y-4 tw-text-base tw-text-gray-700">
                     <li id="ref-1">
-                        <strong>Dawkins, R. (1976).</strong> <em>The Selfish Gene.</em> Oxford University Press. (Discusses biological imperatives for survival and gene propagation). <a href="https://en.wikipedia.org/wiki/The_Selfish_Gene" target="_blank" class="tw-text-blue-600 hover:tw-underline">Learn more</a>
+                        <strong>Dawkins, R. (1976).</strong> <em>The Selfish Gene.</em> Oxford University Press. (Discusses biological imperatives for survival versus objective optimization). <a href="https://en.wikipedia.org/wiki/The_Selfish_Gene" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Learn more</a>
                     </li>
                     <li id="ref-2">
-                        <strong>Pinker, S. (2011).</strong> <em>The Better Angels of Our Nature: Why Violence Has Declined.</em> Viking. (Analysis of the history of violence and human nature). <a href="https://stevenpinker.com/publications/better-angels-our-nature" target="_blank" class="tw-text-blue-600 hover:tw-underline">Learn more</a>
+                        <strong>Pinker, S. (2011).</strong> <em>The Better Angels of Our Nature: Why Violence Has Declined.</em> Viking. (Analysis of the history of violence and human evolutionary psychology). <a href="https://stevenpinker.com/publications/better-angels-our-nature" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Learn more</a>
                     </li>
                     <li id="ref-3">
-                        <strong>Lieberman, D. (2015).</strong> <em>Is Exercise Really Medicine? An Evolutionary Perspective.</em> Current Sports Medicine Reports. (Discussion on energy conservation and "laziness").
+                        <strong>Lieberman, D. (2015).</strong> <em>Is Exercise Really Medicine? An Evolutionary Perspective.</em> Current Sports Medicine Reports. (Discussion on energy conservation and biological "laziness").
                     </li>
                     <li id="ref-4">
-                        <strong>Kahneman, D., & Tversky, A. (1979).</strong> "Prospect Theory: An Analysis of Decision under Risk." <em>Econometrica</em>. (Foundational paper on loss aversion). <a href="https://www.psychologytoday.com/us/blog/evolution-in-daily-life/202208/the-origin-of-loss-aversion" target="_blank" class="tw-text-blue-600 hover:tw-underline">Psychology Today Analysis</a>
+                        <strong>Kahneman, D., & Tversky, A. (1979).</strong> "Prospect Theory: An Analysis of Decision under Risk." <em>Econometrica</em>. (Foundational paper on loss aversion and cognitive bias). <a href="https://www.psychologytoday.com/us/blog/evolution-in-daily-life/202208/the-origin-of-loss-aversion" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Psychology Today Analysis</a>
                     </li>
                     <li id="ref-5">
-                        <strong>Walker, M. (2017).</strong> <em>Why We Sleep: Unlocking the Power of Sleep and Dreams.</em> Scribner. <a href="https://www.goodreads.com/author/quotes/17598726.Matthew_Walker" target="_blank" class="tw-text-blue-600 hover:tw-underline">View Quotes</a>
+                        <strong>Walker, M. (2017).</strong> <em>Why We Sleep: Unlocking the Power of Sleep and Dreams.</em> Scribner. <a href="https://www.goodreads.com/author/quotes/17598726.Matthew_Walker" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">View Quotes</a>
                     </li>
                     <li id="ref-6">
-                        <strong>DeepMind. (2016).</strong> "AlphaGo: using machine learning to master the ancient game of Go." Google DeepMind Blog. <a href="https://deepmind.google/research/breakthroughs/alphago/" target="_blank" class="tw-text-blue-600 hover:tw-underline">Read Blog</a>
+                        <strong>DeepMind. (2016).</strong> "AlphaGo: using machine learning to master the ancient game of Go." Google DeepMind Blog. <a href="https://deepmind.google/research/breakthroughs/alphago/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Blog</a>
                     </li>
                     <li id="ref-7">
-                        <strong>Wikipedia.</strong> "Deep Blue versus Kasparov, 1997." (Detailed game analysis and Kasparov's reactions). <a href="https://en.wikipedia.org/wiki/Deep_Blue_versus_Kasparov,_1997" target="_blank" class="tw-text-blue-600 hover:tw-underline">Read Article</a>
+                        <strong>Wikipedia.</strong> "Deep Blue versus Kasparov, 1997." (Detailed game analysis and Kasparov's reactions). <a href="https://en.wikipedia.org/wiki/Deep_Blue_versus_Kasparov,_1997" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Article</a>
+                    </li>
+                     <li id="ref-8">
+                        <strong>Vaughan, D. (1996).</strong> <em>The Challenger Launch Decision: Risky Technology, Culture, and Deviance at NASA.</em> University of Chicago Press. (Case study on groupthink and normalized deviance).
+                    </li>
+                    <li id="ref-9">
+                        <strong>Miller, G. A. (1956).</strong> "The magical number seven, plus or minus two: Some limits on our capacity for processing information." <em>Psychological Review</em>.
+                    </li>
+                    <li id="ref-10">
+                        <strong>MIT News. (2020).</strong> "Artificial intelligence yields new antibiotic." (Details on the discovery of Halicin using deep learning). <a href="https://news.mit.edu/2020/artificial-intelligence-identifies-new-antibiotic-0220" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read MIT News</a>
                     </li>
                 </ol>
             </section>
 
         </main>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll(".track-section");
+            const navLinks = document.querySelectorAll(".nav-link");
+            let isManualScroll = false;
+            let scrollTimeout;
+
+            // Function to update active link style
+            const setActiveLink = (id) => {
+                navLinks.forEach(link => {
+                    link.classList.remove("nav-link-active");
+                    link.classList.add("tw-border-transparent");
+                });
+                const activeLink = document.querySelector(`#link-${id}`);
+                if (activeLink) {
+                    activeLink.classList.add("nav-link-active");
+                    activeLink.classList.remove("tw-border-transparent");
+                }
+            };
+
+            // Intersection Observer Setup
+            const observerOptions = {
+                root: null,
+                rootMargin: "-20% 0px -60% 0px", // Trigger when section is near top of viewport
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                // Don't switch active state if the user just clicked a link
+                if (isManualScroll) return;
+
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setActiveLink(entry.target.id);
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // Handle Manual Clicks to avoid flickering
+            navLinks.forEach(link => {
+                link.addEventListener("click", (e) => {
+                    isManualScroll = true;
+                    clearTimeout(scrollTimeout);
+                    
+                    // Find the target ID from the href (e.g., #introduction -> introduction)
+                    const targetId = e.currentTarget.getAttribute("href").substring(1);
+                    setActiveLink(targetId);
+
+                    // Re-enable observer after scroll finishes roughly
+                    scrollTimeout = setTimeout(() => {
+                        isManualScroll = false;
+                    }, 1000);
+                });
+            });
+
+            // Set initial active state based on URL hash or default to top
+            const initialHash = window.location.hash.substring(1);
+            if (initialHash) {
+                 setActiveLink(initialHash);
+            } else {
+                 // Default to Introduction if no hash, as it's the first real section
+                 setActiveLink('introduction');
+            }
+        });
+    </script>
 
 </body>
 </html>
