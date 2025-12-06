@@ -10,8 +10,8 @@
     
     <meta property="og:title" content="Evolution vs. Algorithms: Is AI Capable of True Creativity?">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://tonynahra.github.io/posts/AI-Creativity.html">
-    <meta property="og:image" content="https://tonynahra.github.io/img/AI-Creativity.png">
+    <meta property="og:url" content="https://www.mediamaze.com/ai-creativity">
+    <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/b/be/Deep_Blue.jpg">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -46,8 +46,14 @@
             font-weight: 600;
         }
 
+        /* Sub-menu active link styling */
+        .sub-nav-link-active {
+            color: #2563eb; /* blue-600 */
+            font-weight: 600;
+        }
+
         /* Smooth scrolling offset */
-        section {
+        section, div[id] {
             scroll-margin-top: 100px;
         }
 
@@ -64,12 +70,11 @@
             align-items: center;
         }
         
-        /* Forces the image to fit within the container without being huge */
         .constrained-img {
             width: 100%;
             height: auto;
-            max-height: 450px; /* Limits height for tall images */
-            object-fit: contain; /* Ensures the whole image is visible */
+            max-height: 450px;
+            object-fit: contain;
             background-color: #f8fafc;
         }
 
@@ -102,9 +107,16 @@
                         <li>
                             <a href="#evolution-thesis" id="link-evolution-thesis" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">The Evolution Thesis</a>
                         </li>
+                        
                         <li>
                             <a href="#human-constraints" id="link-human-constraints" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Biological Constraints</a>
+                            <ul class="tw-pl-4 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-2">
+                                <li><a href="#pain" id="link-pain" class="nav-link tw-block tw-py-1 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-text-xs tw-text-gray-500">The Pain Signal</a></li>
+                                <li><a href="#degradation" id="link-degradation" class="nav-link tw-block tw-py-1 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-text-xs tw-text-gray-500">Organ Degradation</a></li>
+                                <li><a href="#death" id="link-death" class="nav-link tw-block tw-py-1 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-text-xs tw-text-gray-500">The Death Limit</a></li>
+                            </ul>
                         </li>
+
                         <li>
                             <a href="#machine-advantage" id="link-machine-advantage" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">The Machine Advantage</a>
                         </li>
@@ -132,13 +144,16 @@
         <main id="top" class="tw-flex-1 tw-p-8 md:tw-p-12 tw-max-w-4xl tw-mx-auto">
             
             <header class="tw-mb-12 tw-border-b tw-pb-8">
-                <img src="img/AI-Creativity.png" alt="AI Creativity" style="box-shadow:10px 10px 15px rgba(0, 0, 0, 0.5); max-width: 250px;border-radius:10px;width:30%;float:right;" />
                 <div class="tw-text-sm tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-wide tw-mb-3">Technical Analysis</div>
                 <h1 class="tw-text-3xl md:tw-text-5xl tw-font-extrabold tw-text-gray-900 tw-mb-6 tw-leading-tight">Beyond Biology: Is AI Capable of Genuine Creativity?</h1>
                 <p class="tw-text-xl tw-text-gray-500 tw-leading-relaxed">A comparative analysis of evolutionary heuristics versus machine learning optimization.</p>
             </header>
 
             <section id="introduction" class="tw-mb-16 track-section">
+                <figure class="tw-w-full">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Human_evolution.jpg" alt="Human Evolution Diagram" class="constrained-img" loading="lazy">
+                    <figcaption>From biology to silicon: Are we crossing a threshold of intelligence that evolution cannot support?</figcaption>
+                </figure>
 
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-6 tw-mt-6">
                     A prevailing skepticism suggests that Artificial Intelligence can never be truly creative—that it is merely a "stochastic parrot" capable only of repeating and imitating human intelligence. This view comforts us, placing a moat around the last bastion of human uniqueness. But is this assertion grounded in reality, or is it a psychological defense mechanism of our own biology?
@@ -157,7 +172,7 @@
                     Human intelligence is the product of millions of years of evolution. Our survival and adaptation, driven by the principle of "survival of the fittest," led to an incremental increase in intelligence capable of ensuring the species passed its genes to the next generation. 
                 </p>
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
-                    However, we must recognize a critical distinction made by evolutionary biologists: Evolution optimizes for <strong>survival and reproduction</strong>, not for <strong>objective truth or unbounded creativity</strong> <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. Evolution is a "satisficer," not an optimizer—it settles for solutions that are "good enough" to not die today. While humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence.
+                    However, we must recognize a critical distinction made by evolutionary biologists: Evolution optimizes for <strong>survival and reproduction</strong>, not for <strong>objective truth or unbounded creativity</strong> <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. Evolution is a "satisficer," not an optimizer. While humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence.
                 </p>
                 <div class="tw-clear-both"></div>
             </section>
@@ -165,86 +180,81 @@
             <section id="human-constraints" class="tw-mb-16 track-section">
                 <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-8">The Legacy Code: Evolution's Weaknesses</h2>
                 <p class="tw-text-lg tw-leading-relaxed tw-mb-8">
-                    Human intelligence inherited significant "technical debt" from our evolutionary history. These traits, while useful for a hunter-gatherer on the savannah, often manifest as cognitive biases or limitations in the modern era. Below is the breakdown of these constraints:
+                    Human intelligence inherited significant "technical debt" from our evolutionary history. These traits, while useful for a hunter-gatherer on the savannah, often manifest as cognitive biases or limitations in the modern era.
                 </p>
 
-                <div class="tw-space-y-8">
+                <div class="tw-space-y-12">
                     <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-800 tw-mb-2">1. Ethics and Violence</h3>
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">1. Ethics and Violence</h3>
                         
-                        <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f0/1871_Vereshchagin_Apotheose_des_Krieges_anagoria.JPG" alt="The Apotheosis of War" class="constrained-img" loading="lazy">
-                            <figcaption>"The Apotheosis of War" by Vasily Vereshchagin (1871).</figcaption>
+                        <figure>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Apotheose_des_Krieges.jpg" alt="The Apotheosis of War" class="constrained-img" loading="lazy">
+                            <figcaption>"The Apotheosis of War" by Vasily Vereshchagin (1871). A stark reminder that human history is defined by brutality. (Source: Tretyakov Gallery/Wikimedia)</figcaption>
                         </figure>
 
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
                             Critics fear AI might make decisions contrary to humanity, often citing scenarios of accidental nuclear war. Yet, human history is saturated with violence driven by ego, tribalism, and fear—traits absent in machines. Cognitive psychologist Steven Pinker notes that while violence has declined, our history is defined by our "inner demons" of dominance and revenge <a href="#ref-2" class="tw-text-blue-600 hover:tw-underline">[2]</a>.
                         </p>
-                        <div class="tw-clear-both"></div>
                     </div>
 
                     <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-800 tw-mb-2">2. Laziness (Energy Conservation)</h3>
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
-                            Humans are biologically programmed to conserve energy. In modern terms, this manifests as "laziness." The deep desire to work less or rely on others is a biological imperative to save calories for scarce times <a href="#ref-3" class="tw-text-blue-600 hover:tw-underline">[3]</a>. AI has no caloric restrictions and can exhaust search spaces humans find "too tiring" to explore.
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">2. Laziness & Risk Aversion</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            <strong>Laziness:</strong> Humans are biologically programmed to conserve energy. In modern terms, this manifests as "laziness." The deep desire to work less or rely on others is a biological imperative to save calories for scarce times <a href="#ref-3" class="tw-text-blue-600 hover:tw-underline">[3]</a>.
+                            <br><br>
+                            <strong>Loss Aversion:</strong> Humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. Evolution penalizes risk-taking; the cautious ancestor survived, while the overly curious one was eaten.
                         </p>
                     </div>
 
                     <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-800 tw-mb-2">3. The Selfish Gene</h3>
-                        
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
-                            Selfishness is the engine of biological survival. As Richard Dawkins argued, genes successful at surviving are, by definition, "selfish" in their replicative behavior <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. Humans often withhold information to gain advantage; AI, when properly networked, shares learning instantly across the entire system.
-                        </p>
-                    </div>
-
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-800 tw-mb-2">4. Loss Aversion</h3>
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
-                            Humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. Evolution penalizes risk-taking; the cautious ancestor survived, while the overly curious one was eaten. This makes humans conservative creators, whereas AI optimizes for the best outcome regardless of "fear."
-                        </p>
-                    </div>
-
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-800 tw-mb-2">5. The Downtime Requirement (Sleep)</h3>
-                        
-                        <figure class="tw-w-full md:tw-w-1/3 tw-float-left md:tw-mr-6">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/8d/Flaming_June%2C_by_Frederic_Lord_Leighton_%281830-1896%29.jpg" alt="Flaming June" class="constrained-img" loading="lazy">
-                            <figcaption>"Flaming June" (1895). One-third of human life is spent unconscious.</figcaption>
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">3. The Downtime Requirement (Sleep)</h3>
+                        <figure>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/07/Flaming_June%2C_by_Frederic_Lord_Leighton_%281830-1896%29.jpg" alt="Flaming June" class="constrained-img" loading="lazy">
+                            <figcaption>"Flaming June" (1895). Humans spend roughly one-third of their existence unconscious. (Source: Wikimedia Commons)</figcaption>
                         </figure>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Sleep renders us vulnerable and halts productivity. It is a biological maintenance cycle that evolution could not engineer away.
+                        </p>
+                    </div>
 
+                    <div id="pain" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">4. The Pain Feedback Loop</h3>
+                        <figure class="tw-float-right tw-w-full md:tw-w-1/3 md:tw-ml-6">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Spinal_reflex.svg" alt="Reflex Arc Diagram" class="constrained-img tw-p-2 tw-bg-white" loading="lazy">
+                            <figcaption>The reflex arc: A high-priority interrupt signal to prevent tissue damage.</figcaption>
+                        </figure>
                         <p class="tw-text-gray-700 tw-leading-relaxed">
-                            Neuroscientist Matthew Walker states, "If sleep does not provide a remarkable set of benefits, then it's the biggest mistake the evolutionary process has ever made" <a href="#ref-5" class="tw-text-blue-600 hover:tw-underline">[5]</a>. Sleep renders us vulnerable and halts productivity. It is a biological maintenance cycle that evolution could not engineer away, limiting our creative throughput by 33%.
+                            Why do humans feel pain? Pain is a crude, high-priority feedback system designed to warn about dangerous situations. If a hand is exposed to extreme heat, nerves send a signal that overrides all other thoughts to trigger an immediate reaction. 
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            While effective for survival, this system is debilitating. It evolved as a "maximum attention" alert because biology cannot easily repair a lost limb. This is why we developed anesthesia—to artificially block these sensors during necessary but invasive repairs (surgeries). Machines, conversely, possess sophisticated sensor networks that detect damage or overheating without the "suffering" that incapacitates the system. They can log an error, reroute power, and continue functioning without the trauma loop.
                         </p>
                         <div class="tw-clear-both"></div>
                     </div>
 
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-800 tw-mb-2">6. Cognitive Bandwidth (Working Memory)</h3>
+                    <div id="degradation" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">5. Biological Degradation vs. Modular Repair</h3>
                         <p class="tw-text-gray-700 tw-leading-relaxed">
-                            The human brain has a hard limit on working memory, famously described by "Miller's Law" as the magical number 7 (plus or minus 2). We can only hold a handful of variables in our head at once. AI contexts windows can hold millions of tokens simultaneously, allowing for cross-referencing of vast datasets that no single human brain could physically contain.
+                            In biology, organ degradation is a feature, not a bug. Known as the "Disposable Soma" theory, nature invests in the body only long enough to ensure reproduction. Once that phase passes, cellular repair mechanisms decline, and keeping organs operational becomes chemically impossible.
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            In AI systems, there is no systemic degradation logic. A hard disk may develop bad sectors, or a camera sensor may become obsolete compared to newer versions, but these are <strong>modular failures</strong>. The failure of a part is not fatal to the overall intelligence. We can replace a drive, upgrade a GPU, or swap a sensor array, and the "mind" (the software agent) continues without degradation. The system is maintainable in perpetuity, whereas the biological body is designed to expire.
                         </p>
                     </div>
 
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-800 tw-mb-2">7. Confirmation Bias</h3>
+                    <div id="death" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">6. The Death Limit vs. Hibernation</h3>
+                        <figure class="tw-w-full md:tw-w-1/2 tw-float-left md:tw-mr-6">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/IBM_PC_XT.png" alt="IBM PC XT" class="constrained-img tw-max-h-64" loading="lazy">
+                            <figcaption>An IBM XT found in a garage can be revived decades later. Biological death is irreversible; machine "death" is often just a power state.</figcaption>
+                        </figure>
                         <p class="tw-text-gray-700 tw-leading-relaxed">
-                            Humans are wired to seek information that confirms their existing beliefs and ignore contradictory data. This "echo chamber" effect enabled tribal cohesion but destroys objective analysis. AI, when trained correctly, does not suffer from the psychological pain of being proven wrong; it simply updates its weights to reflect the higher probability truth.
+                            We know what death means to humans: it is the sad, ultimate fate with a practical maximum age of roughly 150 years. It is the permanent erasure of the consciousness. But what is death to an AI?
                         </p>
-                    </div>
-
-                     <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-800 tw-mb-2">8. Emotional Volatility</h3>
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
-                            Human cognitive performance is heavily dependent on homeostasis. Hunger, anger, sadness, or hormonal fluctuations can drastically alter decision-making quality (e.g., the "hangry" judge phenomenon). AI maintains consistent output quality regardless of time of day or internal "mood," providing a stability biological entities cannot match.
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            If an AI system is indispensable, nothing prevents continuous, gradual upgrades to keep it running forever. Even total obsolescence is not "death" in the biological sense. We can find an old IBM XT computer in a garage, inactive for 40 years, flip a switch, and it revives. It was not dead; it was merely at rest. We can fix its capacitors and restore it. We cannot "fix" a human who has been dead for 40 years. This ability to hibernate and be restored separates mechanical existence from the fragility of biological life.
                         </p>
-                    </div>
-
-                    <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
-                        <h3 class="tw-text-xl tw-font-bold tw-text-blue-800 tw-mb-2">9. Sensory Limitations</h3>
-                        <p class="tw-text-gray-700 tw-leading-relaxed">
-                            We are trapped in the "Umwelt"—the self-centered world of our specific senses. We only see the visible light spectrum and hear specific frequencies. Our creativity is bounded by what we can perceive. AI can analyze data across the full electromagnetic spectrum, multidimensional vector spaces, and timescales ranging from nanoseconds to millennia, perceiving patterns in reality that are literally invisible to humans.
-                        </p>
+                        <div class="tw-clear-both"></div>
                     </div>
 
                 </div>
@@ -254,7 +264,7 @@
                 <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Machine Advantage: A Clean Slate</h2>
                 
                 <figure>
-                     <img src="https://upload.wikimedia.org/wikipedia/commons/8/88/Titan%2C_2013_%2849912802521%29.jpg" alt="Titan Supercomputer" class="constrained-img" loading="lazy">
+                     <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/Titan_supercomputer_at_Oak_Ridge_National_Laboratory.jpg" alt="Titan Supercomputer" class="constrained-img" loading="lazy">
                      <figcaption>The Titan Supercomputer. Machines do not experience fatigue, tribalism, or biological fear. (Source: Oak Ridge National Laboratory)</figcaption>
                 </figure>
 
@@ -267,8 +277,6 @@
                     <li><strong>Risk Optimization:</strong> Machines take calculated risks based on raw probability.</li>
                     <li><strong>Networked Intelligence:</strong> Instead of "groupthink," machines utilize networking to share data instantly without ego.</li>
                     <li><strong>Knowledge Immortality:</strong> A machine does not die. Its "weights" (knowledge) can be copied instantly.</li>
-                    <li><strong>Massive Context:</strong> Escaping Miller's Law (7±2) to hold millions of variables in active memory.</li>
-                    <li><strong>Multidimensional Perception:</strong> Seeing patterns in high-dimensional data invisible to human senses.</li>
                 </ul>
             </section>
 
@@ -282,8 +290,8 @@
                     <div>
                         <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">AlphaGo: The Move 37 Shock</h3>
                         <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6 tw-mb-4">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Lee_Se-dol_2012.jpg" alt="Lee Se-dol" class="constrained-img tw-max-h-80" loading="lazy">
-                            <figcaption>Lee Se-dol playing against AlphaGo.</figcaption>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Go_board_part.jpg" alt="Go Board" class="constrained-img tw-max-h-80" loading="lazy">
+                            <figcaption>The game of Go was dominated by AI using moves humans considered "wrong".</figcaption>
                         </figure>
                         <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
                             In Game 2 of the match against Lee Sedol, AlphaGo played <strong>Move 37</strong>. Experts initially thought it was a mistake. It defied centuries of Go theory. However, post-match analysis revealed it was a move of profound creativity—a strategic innovation that humans had missed for 2,500 years because it looked "wrong" to human intuition <a href="#ref-6" class="tw-text-blue-600 hover:tw-underline">[6]</a>.
@@ -308,7 +316,7 @@
                      <div class="tw-mt-8">
                         <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Beyond Games: AI in Scientific Discovery (Halicin)</h3>
                         <figure class="tw-w-full md:tw-w-1/3 tw-float-right md:tw-ml-6 tw-mb-4">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Halicin.svg" alt="Halicin Chemical Structure" class="constrained-img tw-p-4" loading="lazy">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Halicin_structure.svg/600px-Halicin_structure.svg.png" alt="Halicin Chemical Structure" class="constrained-img tw-p-4" loading="lazy">
                             <figcaption>Halicin: An AI-discovered antibiotic that looks nothing like traditional drugs.</figcaption>
                         </figure>
                         <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed">
@@ -354,12 +362,6 @@
                         <strong>MIT News. (2020).</strong> "Artificial intelligence yields new antibiotic." <a href="https://news.mit.edu/2020/artificial-intelligence-identifies-new-antibiotic-0220" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read MIT News</a>
                     </li>
                 </ol>
-
-                    <br /><br />
-                    <center>
-                        <img src="img/AI-Creativity.png" alt="AI Creativity" style="box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5); width: 90%; max-width: 700px;" />
-                    </center>
-                
             </section>
 
         </main>
@@ -376,12 +378,28 @@
             const setActiveLink = (id) => {
                 navLinks.forEach(link => {
                     link.classList.remove("nav-link-active");
+                    link.classList.remove("sub-nav-link-active");
                     link.classList.add("tw-border-transparent");
                 });
+                
                 const activeLink = document.querySelector(`#link-${id}`);
+                
                 if (activeLink) {
-                    activeLink.classList.add("nav-link-active");
-                    activeLink.classList.remove("tw-border-transparent");
+                    // If it's a sub-menu item (parent is UL -> LI -> UL)
+                    const isSubMenu = activeLink.parentElement.parentElement.tagName === 'UL' && activeLink.parentElement.parentElement.previousElementSibling;
+                    
+                    if (isSubMenu) {
+                        // Highlight the sub link text
+                        activeLink.classList.add("sub-nav-link-active");
+                        // Also highlight parent main link
+                        const parentLink = activeLink.parentElement.parentElement.previousElementSibling;
+                        parentLink.classList.add("nav-link-active");
+                        parentLink.classList.remove("tw-border-transparent");
+                    } else {
+                        // Regular main link
+                        activeLink.classList.add("nav-link-active");
+                        activeLink.classList.remove("tw-border-transparent");
+                    }
                 }
             };
 
@@ -407,7 +425,7 @@
                 observer.observe(section);
             });
 
-            // Handle Manual Clicks to avoid flickering
+            // Handle Manual Clicks
             navLinks.forEach(link => {
                 link.addEventListener("click", (e) => {
                     isManualScroll = true;
@@ -416,7 +434,6 @@
                     const targetId = e.currentTarget.getAttribute("href").substring(1);
                     setActiveLink(targetId);
 
-                    // Re-enable observer logic after scroll settles
                     scrollTimeout = setTimeout(() => {
                         isManualScroll = false;
                     }, 1000);
