@@ -1,1 +1,146 @@
-A collection of articles that Tony and family published
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Insights | Tony Nahra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            prefix: 'tw-',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', // Modern Blue
+                        secondary: '#1e293b', // Slate Dark
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom font for a more technical/modern look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="tw-bg-gray-50 tw-text-gray-800">
+
+    <header class="tw-bg-white tw-border-b tw-border-gray-200 tw-sticky tw-top-0 tw-z-50">
+        <div class="tw-max-w-6xl tw-mx-auto tw-px-4 tw-py-6 tw-flex tw-justify-between tw-items-center">
+            <div>
+                <h1 class="tw-text-2xl tw-font-bold tw-text-secondary">Tech<span class="tw-text-primary">Evolution</span></h1>
+                <p class="tw-text-sm tw-text-gray-500 tw-mt-1">History, Evolution, and Future of Tech</p>
+            </div>
+            <div class="tw-hidden md:tw-flex tw-space-x-4">
+                <a href="#" class="tw-text-gray-400 hover:tw-text-blue-600 tw-transition-colors"><span class="sr-only">LinkedIn</span>LinkedIn</a>
+                <a href="#" class="tw-text-gray-400 hover:tw-text-orange-500 tw-transition-colors"><span class="sr-only">Blogger</span>Blogger</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="tw-max-w-6xl tw-mx-auto tw-px-4 tw-py-12">
+        
+        <div class="tw-mb-10 tw-flex tw-justify-between tw-items-center tw-flex-wrap tw-gap-4">
+            <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900">Latest Articles</h2>
+            <div class="tw-relative">
+                <input type="text" placeholder="Search articles..." class="tw-pl-4 tw-pr-10 tw-py-2 tw-border tw-border-gray-300 tw-rounded-lg tw-focus:tw-outline-none tw-focus:tw-ring-2 tw-focus:tw-ring-blue-500 tw-focus:tw-border-transparent tw-w-64">
+                <svg class="tw-w-5 tw-h-5 tw-text-gray-400 tw-absolute tw-right-3 tw-top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+        </div>
+
+        <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-8">
+
+            <article class="tw-bg-white tw-rounded-xl tw-shadow-sm hover:tw-shadow-xl tw-border tw-border-gray-100 tw-transition-all tw-duration-300 tw-overflow-hidden tw-flex tw-flex-col">
+                <div class="tw-h-2 tw-bg-blue-600"></div> <div class="tw-p-6 tw-flex-1 tw-flex tw-flex-col">
+                    <div class="tw-text-xs tw-font-semibold tw-tracking-wide tw-text-blue-600 tw-uppercase tw-mb-2">Artificial Intelligence</div>
+                    <h3 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-3">
+                        <a href="GeminiWinner.html" class="hover:tw-text-blue-600 tw-transition-colors">Google's AI Dominance</a>
+                    </h3>
+                    <p class="tw-text-gray-600 tw-mb-4 tw-flex-1">
+                        An analysis of Google's strategic position in the AI landscape and the capabilities of Gemini.
+                    </p>
+                    <div class="tw-mt-auto tw-flex tw-items-center tw-justify-between tw-pt-4 tw-border-t tw-border-gray-100">
+                        <span class="tw-text-sm tw-text-gray-500">Dec 2024</span>
+                        <a href="GeminiWinner.html" class="tw-inline-flex tw-items-center tw-text-sm tw-font-medium tw-text-blue-600 hover:tw-text-blue-800">
+                            Read Article <svg class="tw-w-4 tw-h-4 tw-ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="tw-bg-white tw-rounded-xl tw-shadow-sm hover:tw-shadow-xl tw-border tw-border-gray-100 tw-transition-all tw-duration-300 tw-overflow-hidden tw-flex tw-flex-col">
+                <div class="tw-h-2 tw-bg-green-500"></div>
+                <div class="tw-p-6 tw-flex-1 tw-flex tw-flex-col">
+                    <div class="tw-text-xs tw-font-semibold tw-tracking-wide tw-text-green-600 tw-uppercase tw-mb-2">Market Analysis</div>
+                    <h3 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-3">
+                        <a href="AI-not-a-Bubble.html" class="hover:tw-text-green-600 tw-transition-colors">AI is Not a Bubble</a>
+                    </h3>
+                    <p class="tw-text-gray-600 tw-mb-4 tw-flex-1">
+                        Why the current surge in Artificial Intelligence represents a fundamental shift rather than a temporary market trend.
+                    </p>
+                    <div class="tw-mt-auto tw-flex tw-items-center tw-justify-between tw-pt-4 tw-border-t tw-border-gray-100">
+                        <span class="tw-text-sm tw-text-gray-500">Nov 2024</span>
+                        <a href="AI-not-a-Bubble.html" class="tw-inline-flex tw-items-center tw-text-sm tw-font-medium tw-text-green-600 hover:tw-text-green-800">
+                            Read Article <svg class="tw-w-4 tw-h-4 tw-ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="tw-bg-white tw-rounded-xl tw-shadow-sm hover:tw-shadow-xl tw-border tw-border-gray-100 tw-transition-all tw-duration-300 tw-overflow-hidden tw-flex tw-flex-col">
+                <div class="tw-h-2 tw-bg-purple-600"></div>
+                <div class="tw-p-6 tw-flex-1 tw-flex tw-flex-col">
+                    <div class="tw-text-xs tw-font-semibold tw-tracking-wide tw-text-purple-600 tw-uppercase tw-mb-2">History of Tech</div>
+                    <h3 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-3">
+                        <a href="ProgrammingEvolution.html" class="hover:tw-text-purple-600 tw-transition-colors">Programming Evolution</a>
+                    </h3>
+                    <p class="tw-text-gray-600 tw-mb-4 tw-flex-1">
+                        Tracing the history of coding from assembly language to modern high-level frameworks and AI-assisted development.
+                    </p>
+                    <div class="tw-mt-auto tw-flex tw-items-center tw-justify-between tw-pt-4 tw-border-t tw-border-gray-100">
+                        <span class="tw-text-sm tw-text-gray-500">Oct 2024</span>
+                        <a href="ProgrammingEvolution.html" class="tw-inline-flex tw-items-center tw-text-sm tw-font-medium tw-text-purple-600 hover:tw-text-purple-800">
+                            Read Article <svg class="tw-w-4 tw-h-4 tw-ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="tw-bg-white tw-rounded-xl tw-shadow-sm hover:tw-shadow-xl tw-border tw-border-gray-100 tw-transition-all tw-duration-300 tw-overflow-hidden tw-flex tw-flex-col">
+                <div class="tw-h-2 tw-bg-pink-500"></div>
+                <div class="tw-p-6 tw-flex-1 tw-flex tw-flex-col">
+                    <div class="tw-text-xs tw-font-semibold tw-tracking-wide tw-text-pink-600 tw-uppercase tw-mb-2">Generative AI</div>
+                    <h3 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-3">
+                        <a href="AI-Creativity.html" class="hover:tw-text-pink-600 tw-transition-colors">AI Creativity</a>
+                    </h3>
+                    <p class="tw-text-gray-600 tw-mb-4 tw-flex-1">
+                        Can machines truly be creative? Exploring the boundaries of generative art, writing, and innovation.
+                    </p>
+                    <div class="tw-mt-auto tw-flex tw-items-center tw-justify-between tw-pt-4 tw-border-t tw-border-gray-100">
+                        <span class="tw-text-sm tw-text-gray-500">Oct 2024</span>
+                        <a href="AI-Creativity.html" class="tw-inline-flex tw-items-center tw-text-sm tw-font-medium tw-text-pink-600 hover:tw-text-pink-800">
+                            Read Article <svg class="tw-w-4 tw-h-4 tw-ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            </div>
+        
+        <div class="tw-mt-12 tw-text-center">
+            <button class="tw-px-8 tw-py-3 tw-bg-white tw-border tw-border-gray-300 tw-text-gray-700 tw-rounded-full tw-font-semibold hover:tw-bg-gray-50 hover:tw-text-primary tw-transition-colors tw-shadow-sm">
+                Load More Articles
+            </button>
+        </div>
+
+    </main>
+
+    <footer class="tw-bg-white tw-border-t tw-border-gray-200 tw-mt-12">
+        <div class="tw-max-w-6xl tw-mx-auto tw-px-4 tw-py-8 tw-text-center tw-text-gray-500 tw-text-sm">
+            &copy; 2024 Tony Nahra. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+</html>
