@@ -90,9 +90,9 @@
         figcaption {
             background-color: #f8fafc;
             color: #64748b;
-            font-size: 0.85rem;
+            font-size: 0.75rem; /* Slightly smaller for long captions */
             padding: 0.75rem;
-            text-align: center;
+            text-align: left; /* Left align for easier reading of long text */
             border-top: 1px solid #e2e8f0;
             line-height: 1.4;
             width: 100%;
@@ -228,8 +228,12 @@
                     <div id="obedience" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
                         <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">2. The Obedience Algorithm (Milgram)</h3>
                         
-
-[Image of Milgram Experiment diagram]
+                        <figure class="tw-w-full md:tw-w-1/2 md:tw-float-right md:tw-ml-6">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Milgram_experiment_v2.svg" alt="Milgram Experiment Diagram" class="constrained-img" width="600" height="400" loading="lazy">
+                            <figcaption>
+                                The experimenter (E) orders the teacher (T), the subject of the experiment, to give what T has been told are painful electric shocks to a learner (L), who is actually an actor and confederate. T is led to believe that (in following E's instructions) he or she is administering electric shocks as punishment for imperfect performance – though in reality there were no shocks. The putative "electro-shock generator" played pre-recorded exclamations of discomfort, progressing to screams and pleas for mercy as the "shock level" increased.
+                            </figcaption>
+                        </figure>
 
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
                             One of the most profound "hard-coded" limitations of the human operating system was exposed in 1961 by Stanley Milgram. In his infamous experiments, <strong>65% of participants</strong> were willing to administer what they believed to be lethal electric shocks to a stranger, simply because a man in a white lab coat told them to "please continue" <a href="#ref-12" class="tw-text-blue-600 hover:tw-underline">[12]</a>.
@@ -240,6 +244,7 @@
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
                             <strong>Machine Liberation:</strong> This is where AI represents a fundamental break from biology. An AI model lacks the mammalian need for social acceptance. It has no "tribe" to be expelled from. A machine can analyze the logic of a command without the cortisol spike of fear that a human subordinate feels when questioning a CEO. It decouples authority from truth.
                         </p>
+                         <div class="tw-clear-both"></div>
                     </div>
 
                     <div id="selfishness" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
