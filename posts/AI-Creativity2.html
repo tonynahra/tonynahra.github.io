@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en" class="tw-scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>The Unshackled Mind: The Biological Bottleneck</title>
+    <meta name="description" content="An in-depth analysis comparing human evolutionary constraints with machine learning capabilities.">
+    <meta name="author" content="Tony Nahra">
+    
+    <meta property="og:title" content="The Unshackled Mind: The Biological Bottleneck">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://tonynahra.github.io/edit/main/posts/AI-Creativity.html">
+    <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/b/be/Deep_Blue.jpg">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        prefix: 'tw-',
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                850: '#1e293b',
+                900: '#0f172a',
+              }
+            },
+            maxWidth: {
+                '8xl': '90rem',
+            }
+          }
+        }
+      }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Active Link Styling */
+        .nav-link-active {
+            background-color: #f1f5f9; /* slate-100 */
+            border-left-color: #2563eb; /* blue-600 */
+            color: #0f172a; /* slate-900 */
+        }
+
+        /* Sub-menu active link styling */
+        .sub-nav-link-active {
+            color: #2563eb; /* blue-600 */
+            font-weight: 700;
+            background-color: #f8fafc;
+            border-right: 3px solid #2563eb;
+        }
+
+        /* Smooth scrolling offset */
+        section, div.track-section {
+            scroll-margin-top: 80px;
+        }
+
+        /* Image Styling Constraints */
+        figure {
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* Cursor pointer to indicate clickability for modal */
+        .constrained-img {
+            width: 100%;
+            height: auto;
+            max-height: 450px;
+            object-fit: contain;
+            background-color: #f8fafc;
+            cursor: pointer; 
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .constrained-img:hover {
+            opacity: 0.9;
+        }
+
+        figcaption {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-size: 0.75rem; 
+            padding: 0.75rem;
+            text-align: left; 
+            border-top: 1px solid #e2e8f0;
+            line-height: 1.4;
+            width: 100%;
+        }
+        
+        sup {
+            font-weight: bold;
+            color: #2563eb;
+        }
+        
+        sup a {
+            text-decoration: none;
+        }
+        
+        sup a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="tw-bg-gray-100 tw-text-gray-800">
+
+    <div class="tw-container tw-mx-auto tw-max-w-8xl tw-bg-white tw-shadow-2xl tw-min-h-screen tw-flex tw-flex-col md:tw-flex-row">
+
+        <aside class="tw-w-full md:tw-w-64 tw-bg-white tw-border-r tw-border-gray-200 tw-flex-shrink-0 tw-sticky tw-top-0 tw-h-screen tw-flex tw-flex-col tw-justify-between tw-z-50">
+            
+            <div class="tw-flex-1 tw-overflow-y-auto tw-px-4 tw-py-6">
+                <nav>
+                    <ul class="tw-space-y-1">
+                        <li><a href="#top" id="link-top" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-font-bold tw-text-slate-900">Document Top</a></li>
+                        
+                        <li class="tw-mt-2"><a href="#introduction" id="link-introduction" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-font-bold tw-text-slate-900">Introduction</a></li>
+                        
+                        <li class="tw-mt-2"><a href="#evolution-thesis" id="link-evolution-thesis" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-font-bold tw-text-slate-900">The Evolution Thesis</a></li>
+                        
+                        <li class="tw-mt-4">
+                            <a href="#legacy-code" id="link-legacy-code" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-font-bold tw-text-slate-900">The Legacy Code</a>
+                            <ul class="tw-pl-0 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-4">
+                                <li><a href="#psychological-anchors" id="link-psychological-anchors" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Psychological Anchors</a></li>
+                                <li><a href="#physiological-anchors" id="link-physiological-anchors" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Physiological Anchors</a></li>
+                            </ul>
+                        </li>
+
+                        <li class="tw-mt-4">
+                            <a href="#machine-advantage" id="link-machine-advantage" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-font-bold tw-text-slate-900">The Machine Advantage</a>
+                             <ul class="tw-pl-0 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-4">
+                                <li><a href="#modularity" id="link-modularity" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Modularity & Immortality</a></li>
+                                <li><a href="#nested-learning" id="link-nested-learning" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">The Mechanism</a></li>
+                            </ul>
+                        </li>
+                        
+                        <li class="tw-mt-4">
+                            <a href="#evidence" id="link-evidence" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-font-bold tw-text-slate-900">Evidence of Creativity</a>
+                            <ul class="tw-pl-0 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-4">
+                                <li><a href="#strategy" id="link-strategy" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Strategy (Move 37)</a></li>
+                                <li><a href="#science" id="link-science" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Science (AlphaFold)</a></li>
+                                <li><a href="#expression" id="link-expression" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Expression (Art)</a></li>
+                            </ul>
+                        </li>
+                        
+                        <li class="tw-mt-4"><a href="#conclusion" id="link-conclusion" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-font-bold tw-text-slate-900">Conclusion</a></li>
+                        <li class="tw-mt-2"><a href="#references" id="link-references" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-font-bold tw-text-slate-900">References</a></li>
+                    </ul>
+                    
+                    <div class="tw-border-t tw-border-gray-200 tw-my-6"></div>
+                    
+                    <h3 class="tw-px-3 tw-text-xs tw-font-bold tw-text-gray-400 tw-uppercase tw-tracking-wider tw-mb-2">
+                          <a href="/posts/" class="hover:tw-underline">Other Posts</a>
+                    </h3>
+                   
+                </nav>
+            </div>
+            
+            <div class="tw-flex-shrink-0 tw-p-6 tw-border-t tw-border-gray-100 tw-bg-white">
+                <a href="https://tonynahra.github.io/posts/" target="_blank" class="tw-group tw-flex tw-items-center tw-text-sm tw-font-bold tw-text-blue-600 hover:tw-text-blue-800">
+                    <span>About the author</span>
+                    <svg class="tw-w-4 tw-h-4 tw-ml-2 tw-transition-transform group-hover:tw-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </a>
+            </div>
+        </aside>
+
+        <main id="top" class="tw-flex-1 tw-p-8 md:tw-p-12 tw-max-w-4xl tw-mx-auto">
+            
+            <header class="tw-mb-12 tw-border-b tw-pb-8">
+                <img src="img/AI-Creativity.png" alt="AI Creativity" class="constrained-img" style="box-shadow:10px 10px 15px rgba(0, 0, 0, 0.5); max-width: 250px; border-radius:10px; width:30%; float:right;" />
+                
+                <div class="tw-text-sm tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-wide tw-mb-3">The Unshackled Mind</div>
+                <h1 class="tw-text-3xl md:tw-text-5xl tw-font-extrabold tw-text-gray-900 tw-mb-4 tw-leading-tight">The Biological Bottleneck: Why Evolution Stalled Intelligence</h1>
+                
+                <div class="tw-flex tw-items-center tw-space-x-2 tw-mb-6 tw-text-gray-600 tw-text-sm">
+                    <span>Written by</span>
+                    <a href="https://tonynahra.github.io" target="_blank" class="tw-font-bold tw-text-blue-600 hover:tw-underline">Tony Nahra</a>
+                    <span class="tw-text-gray-400">&bull;</span>
+                    <span>Published: December 2025</span>
+                </div>
+
+                <p class="tw-text-xl tw-text-gray-500 tw-leading-relaxed">A comparative analysis of how biological constraints limit human creativity, and why AI will free it.</p>
+            </header>
+
+            <section id="introduction" class="track-section tw-mb-16">
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6 tw-mt-6">
+                    A prevailing skepticism suggests that Artificial Intelligence can never be truly creative—that it is merely a "stochastic parrot" capable only of repeating and imitating human intelligence. This view comforts us, placing a moat around the last bastion of human uniqueness. But is this assertion grounded in reality, or is it a psychological defense mechanism of our own biology?
+                </p>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
+                    A new technical analysis suggests the latter. By stripping away the biological baggage of evolution—fear, tribalism, and energy conservation—AI does not just imitate human intelligence; it has the potential to purify it.
+                </p>
+            </section>
+
+            <section id="evolution-thesis" class="track-section tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Evolution Thesis: Survival vs. Truth</h2>
+                
+                <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Charles_Darwin_seated_crop.jpg/400px-Charles_Darwin_seated_crop.jpg" alt="Charles Darwin" class="constrained-img" width="400" height="526" loading="lazy">
+                    <figcaption>Charles Darwin. His theory explains survival, not the maximization of abstract intelligence.</figcaption>
+                </figure>
+
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
+                    Human intelligence is the product of millions of years of evolution. However, we must recognize a critical distinction: Evolution optimizes for <strong>survival and reproduction</strong>, not for <strong>objective truth or unbounded creativity</strong> <sup><a href="#ref-1">[1]</a></sup>. 
+                </p>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
+                    In algorithmic terms, evolution is a "satisficer" rather than an optimizer; it tends to get stuck in "local maxima"—solutions that are just good enough to prevent death—rather than finding the "global maximum" of possible intelligence. While humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence.
+                </p>
+                <div class="tw-clear-both"></div>
+            </section>
+
+            <section id="legacy-code" class="track-section tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-8">The Legacy Code: Biological Technical Debt</h2>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-8">
+                    Human intelligence inherited significant "technical debt" from our evolutionary history. We can categorize these limitations into two distinct groups: the software (Psychological) and the hardware (Physiological).
+                </p>
+
+                <div id="psychological-anchors" class="track-section tw-space-y-8 tw-mb-12">
+                    <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-border-b tw-border-blue-200 tw-pb-2">A. The Psychological Anchors (Software)</h3>
+
+                    <div class="tw-bg-slate-50 tw-p-6 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h4 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-3">1. The Obedience Algorithm (Milgram)</h4>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            One of the most profound "hard-coded" limitations was exposed by Stanley Milgram. In his experiments, <strong>65% of participants</strong> were willing to administer lethal electric shocks to a stranger because an authority figure ordered it <sup><a href="#ref-3">[3]</a></sup>.
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-2">
+                             Under pressure, the human brain enters an <em>"Agentic State,"</em> viewing itself as an instrument of authority rather than a responsible agent. Machines, however, lack this mammalian need for social acceptance. They decouple authority from truth, evaluating commands based on logic rather than the status of the commander.
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-slate-50 tw-p-6 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h4 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-3">2. Risk & Loss Aversion</h4>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            "Loss aversion," popularized by Kahneman and Tversky, demonstrates that humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <sup><a href="#ref-4">[4]</a></sup>. This 2:1 ratio is a survival heuristic. In the wild, mistaking a stick for a snake costs a moment of panic; mistaking a snake for a stick costs a life. Evolution selected for extreme caution, limiting our capacity for high-risk, high-reward discovery.
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-slate-50 tw-p-6 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h4 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-3">3. Tribalism & The Selfish Gene</h4>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                             Genes that successfully survive are "selfish" in their replicative behavior <sup><a href="#ref-1">[1]</a></sup>. This biological root fuels tribalism, fraud, and war. A machine, having no biological kin to protect, can be programmed for global system optimization rather than kin selection.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="physiological-anchors" class="track-section tw-space-y-8">
+                    <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-border-b tw-border-blue-200 tw-pb-2">B. The Physiological Anchors (Hardware)</h3>
+                    
+                    <div class="tw-bg-slate-50 tw-p-6 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h4 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-3">1. Energy Conservation (Laziness)</h4>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            Humans are biologically programmed to conserve energy ("laziness"). Evolution does not reward the expenditure of energy on complex problems that do not immediately impact survival <sup><a href="#ref-5">[5]</a></sup>.
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-slate-50 tw-p-6 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h4 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-3">2. The Sleep Requirement</h4>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                             Sleep is a non-negotiable requirement to flush out metabolic waste <sup><a href="#ref-6">[6]</a></sup>. Machines operate 24/7, accelerating learning and productivity at a rate biology cannot match.
+                        </p>
+                    </div>
+
+                    <div class="tw-bg-slate-50 tw-p-6 tw-rounded-xl tw-border tw-border-slate-200">
+                        <figure class="tw-float-right tw-w-full md:tw-w-1/3 md:tw-ml-6">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Imgnotra%C3%A7at_arc_reflex_eng.svg/600px-Imgnotra%C3%A7at_arc_reflex_eng.svg.png" alt="Reflex Arc Diagram" class="constrained-img tw-p-2 tw-bg-white" width="600" height="400" loading="lazy">
+                            <figcaption>The reflex arc: A high-priority interrupt signal.</figcaption>
+                        </figure>
+                        <h4 class="tw-text-xl tw-font-bold tw-text-gray-900 tw-mb-3">3. The Pain Interrupt</h4>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            Pain is a crude "interrupt request" that overrides all other thoughts to prevent tissue damage. While effective for survival, it paralyzes the system. Machines use <strong>fault tolerance</strong> to reroute power without the trauma loop that incapacitates biological entities.
+                        </p>
+                        <div class="tw-clear-both"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="machine-advantage" class="track-section tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Machine Advantage: A Clean Slate</h2>
+                
+                <div id="modularity" class="track-section tw-mb-10">
+                    <figure>
+                         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Titan%2C_2013_%2849912802521%29.jpg/800px-Titan%2C_2013_%2849912802521%29.jpg" alt="Titan Supercomputer" class="constrained-img" width="800" height="533" loading="lazy">
+                         <figcaption>The Titan Supercomputer. Machines do not experience fatigue, tribalism, or biological fear.</figcaption>
+                    </figure>
+
+                    <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mt-8 tw-mb-4">Modularity & Immortality</h3>
+                    <p class="tw-text-lg tw-leading-relaxed tw-mb-4">
+                        While biology struggles with degradation (the <em>Disposable Soma</em> theory <sup><a href="#ref-7">[7]</a></sup>), machine intelligence is entering an era of modularity. The <strong>NVIDIA Jetson Thor</strong> paradigm allows robot "brains" to be fitted into hardware skeletons and instantly possess the collective knowledge of their species <sup><a href="#ref-8">[8]</a></sup>.
+                    </p>
+                    <p class="tw-text-lg tw-leading-relaxed tw-mb-4">
+                        Furthermore, machines possess <strong>knowledge immortality</strong>. Referencing the IBM RAMAC (1956), even obsolete machines are not "dead" in the biological sense; they are merely paused. Knowledge can be copied and preserved, creating a cumulative culture that never suffers the data loss associated with biological mortality.
+                    </p>
+                </div>
+
+                <div id="nested-learning" class="track-section tw-bg-blue-50 tw-p-8 tw-rounded-xl tw-border-l-4 tw-border-blue-600">
+                    <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">The Mechanism: Nested Learning</h3>
+                    <figure class="tw-w-full md:tw-w-1/3 tw-float-right md:tw-ml-6">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Artificial_neural_network.svg/560px-Artificial_neural_network.svg.png" alt="Nested Neural Network" class="constrained-img" width="560" height="500" loading="lazy">
+                        <figcaption>Moving from pattern matching to concept understanding.</figcaption>
+                    </figure>
+                    <p class="tw-text-gray-700 tw-leading-relaxed">
+                        A groundbreaking concept known as <strong>Nested Learning</strong> reveals that a complex ML model is not just a monolithic block, but a set of interconnected optimization problems <sup><a href="#ref-14">[14]</a></sup>.
+                    </p>
+                    <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                        This paradigm shifts AI memory from simple "pattern matching" (checking if vector A looks like vector B) to "concept understanding" (regression-based loss). This allows the model to learn the underlying logic of data, making it resilient to noise and capable of solving problems it has never seen before—moving from mimicry to true understanding.
+                    </p>
+                    <div class="tw-clear-both"></div>
+                </div>
+            </section>
+
+            <section id="evidence" class="track-section tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-8">Evidence of Non-Human Creativity</h2>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-8">
+                    We now have concrete proof that machines can generate creative outputs that surprise human experts. This is not merely calculation; it is the discovery of strategies that lay outside the "search space" of human culture.
+                </p>
+
+                <div class="tw-space-y-12">
+                    
+                    <div id="strategy" class="track-section">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">1. Strategy: AlphaGo's Move 37</h3>
+                        <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6 tw-mb-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Go_board_part.jpg/800px-Go_board_part.jpg" alt="Go Board" class="constrained-img" width="500" height="500" loading="lazy">
+                            <figcaption>The game of Go was dominated by AI using moves humans considered "wrong".</figcaption>
+                        </figure>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                            In Game 2 against Lee Sedol, AlphaGo played <strong>Move 37</strong>. Experts initially thought it was a mistake. However, post-match analysis revealed it was a move of profound creativity—a strategic innovation that humans had missed for 2,500 years because it looked "wrong" to human intuition <sup><a href="#ref-12">[12]</a></sup>.
+                        </p>
+                        <div class="tw-clear-both"></div>
+                    </div>
+
+                    <div id="science" class="track-section tw-mt-8">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">2. Science: AlphaFold & Halicin</h3>
+                        <figure class="tw-w-full md:tw-w-1/3 tw-float-left md:tw-mr-6 tw-mb-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Alphafold_3D_c2orf80_protein.png/600px-Alphafold_3D_c2orf80_protein.png" alt="Protein Folding" class="constrained-img" width="600" height="508" loading="lazy">
+                            <figcaption>Protein folding: A spatial puzzle solved by AI.</figcaption>
+                        </figure>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed">
+                            <strong>AlphaFold (Nobel Prize 2024):</strong> DeepMind solved the 50-year-old protein folding problem by learning the spatial "grammar" of physics, imagining structures invisible to human intuition <sup><a href="#ref-10">[10]</a></sup>.
+                        </p>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                            <strong>Halicin:</strong> MIT researchers used deep learning to discover a powerful new antibiotic. The molecule was structurally divergent from conventional drugs; human chemists would never have investigated it because it didn't look like what we *thought* an antibiotic should look like <sup><a href="#ref-11">[11]</a></sup>.
+                        </p>
+                        <div class="tw-clear-both"></div>
+                    </div>
+
+                    <div id="expression" class="track-section tw-mt-8">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">3. Expression: Schubert & Art</h3>
+                        <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6 tw-mb-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Symphony_No._8_in_B_minor.jpg/600px-Symphony_No._8_in_B_minor.jpg" alt="Franz Schubert" class="constrained-img" width="480" height="600" loading="lazy">
+                            <figcaption>AI completed Schubert's "Unfinished" 8th Symphony.</figcaption>
+                        </figure>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                            <strong>Schubert's 8th:</strong> In 2019, Huawei used AI to analyze the timbre and pitch of Schubert's work and generate the melody for his unfinished Symphony, which had remained incomplete for 197 years <sup><a href="#ref-9">[9]</a></sup>.
+                        </p>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                             <strong>Visual Art:</strong> In 2022, Jason Allen won a fine art competition with "Théâtre D'opéra Spatial," generated via Midjourney. This proved that AI can act as a "creative engine" that amplifies human intent, blurring the line between tool and artist.
+                        </p>
+                        <div class="tw-clear-both"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="conclusion" class="track-section tw-bg-blue-50 tw-p-10 tw-rounded-2xl tw-border tw-border-blue-100 tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-blue-900 tw-mb-6">Conclusion: The Optimizer Arrives</h2>
+                <p class="tw-text-xl tw-leading-relaxed tw-text-blue-900">
+                    To deny AI creativity is to define creativity solely by human standards. If creativity is the ability to generate novel, valuable solutions that previous actors missed, then machines are undeniably creative. By stripping away the biological baggage of evolution—fear, fatigue, ego, tribalism, and mortality—AI does not just imitate human intelligence; it has the potential to purify it. The machine is no longer just a parrot. It is a new, alien species of thinker.
+                </p>
+            </section>
+
+            <section id="references" class="track-section tw-border-t tw-pt-10 tw-bg-gray-50 tw-p-8 tw-rounded-xl">
+                <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-6">References</h3>
+                <ol class="tw-list-decimal tw-pl-5 tw-space-y-4 tw-text-base tw-text-gray-700">
+                    <li id="ref-1">
+                        <strong>Dawkins, R. (1976).</strong> <em>The Selfish Gene.</em> Oxford University Press. <a href="https://en.wikipedia.org/wiki/The_Selfish_Gene" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Learn more</a>
+                    </li>
+                    <li id="ref-2">
+                        <strong>Pinker, S. (2011).</strong> <em>The Better Angels of Our Nature: Why Violence Has Declined.</em> Viking.
+                    </li>
+                    <li id="ref-3">
+                        <strong>Milgram, S. (1963).</strong> "Behavioral Study of Obedience." <em>Journal of Abnormal and Social Psychology</em>. <a href="https://en.wikipedia.org/wiki/Milgram_experiment" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Learn more</a>
+                    </li>
+                    <li id="ref-4">
+                        <strong>Kahneman, D., & Tversky, A. (1979).</strong> "Prospect Theory: An Analysis of Decision under Risk." <em>Econometrica</em>. <a href="https://www.psychologytoday.com/us/blog/evolution-in-daily-life/202208/the-origin-of-loss-aversion" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Psychology Today Analysis</a>
+                    </li>
+                    <li id="ref-5">
+                        <strong>Lieberman, D. (2015).</strong> <em>Is Exercise Really Medicine? An Evolutionary Perspective.</em> Current Sports Medicine Reports.
+                    </li>
+                    <li id="ref-6">
+                        <strong>Walker, M. (2017).</strong> <em>Why We Sleep: Unlocking the Power of Sleep and Dreams.</em> Scribner.
+                    </li>
+                    <li id="ref-7">
+                         <strong>Kirkwood, T. B. (1977).</strong> "Evolution of ageing." <em>Nature</em>. <a href="https://en.wikipedia.org/wiki/Disposable_soma_theory_of_aging" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Learn more</a>
+                    </li>
+                    <li id="ref-8">
+                        <strong>NVIDIA Blog. (2024).</strong> "NVIDIA Jetson Thor Unlocks Real-Time Reasoning for General Robotics." <a href="https://blogs.nvidia.com/blog/jetson-thor-physical-ai-edge/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Blog</a>
+                    </li>
+                    <li id="ref-9">
+                         <strong>Huawei. (2019).</strong> "Unfinished Symphony." <a href="https://www.lucascantormusic.com/unfinished-symphony" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Project Page</a>
+                    </li>
+                     <li id="ref-10">
+                        <strong>DeepMind. (2020).</strong> "AlphaFold: a solution to a 50-year-old grand challenge in biology." <a href="https://deepmind.google/discover/blog/alphafold-a-solution-to-a-50-year-old-grand-challenge-in-biology/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Blog</a>
+                    </li>
+                    <li id="ref-11">
+                        <strong>Wikipedia.</strong> "Halicin." (AI-discovered antibiotic). <a href="https://en.wikipedia.org/wiki/Halicin" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Article</a>
+                    </li>
+                    <li id="ref-12">
+                        <strong>DeepMind. (2016).</strong> "AlphaGo: using machine learning to master the ancient game of Go." <a href="https://deepmind.google/research/breakthroughs/alphago/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Blog</a>
+                    </li>
+                    <li id="ref-13">
+                        <strong>Wikipedia.</strong> "Deep Blue versus Kasparov, 1997." <a href="https://en.wikipedia.org/wiki/Deep_Blue_versus_Kasparov,_1997" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Article</a>
+                    </li>
+                    <li id="ref-14">
+                        <strong>Google Research. (2023).</strong> "Introducing Nested Learning." <a href="https://research.google/blog/introducing-nested-learning-a-new-ml-paradigm-for-continual-learning/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Research Blog</a>
+                    </li>
+                </ol>
+            </section>
+                   <br /><br />
+                    <center>
+                        <img src="img/AI-Creativity.png" alt="AI Creativity" style="box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5); width: 90%; max-width: 700px;" />
+                    </center>
+        </main>
+    </div>
+
+    <div id="image-modal" class="tw-fixed tw-inset-0 tw-z-[100] tw-hidden tw-bg-black/95 tw-flex tw-items-center tw-justify-center tw-p-4 tw-backdrop-blur-sm tw-transition-all tw-duration-300">
+        <button id="modal-close" class="tw-absolute tw-top-4 tw-right-6 tw-text-white tw-text-5xl tw-font-bold hover:tw-text-gray-300 focus:tw-outline-none">&times;</button>
+        <div class="tw-max-w-7xl tw-w-full tw-h-full tw-flex tw-flex-col tw-items-center tw-justify-center">
+             <img id="modal-img" src="" class="tw-max-h-[85vh] tw-w-auto tw-object-contain tw-rounded-lg tw-shadow-2xl" alt="Full screen view" />
+             <p id="modal-caption" class="tw-mt-6 tw-text-gray-200 tw-text-center tw-text-xl tw-font-medium tw-max-w-3xl tw-bg-black/50 tw-px-4 tw-py-2 tw-rounded"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // --- SCROLL TRACKING LOGIC ---
+            const sections = document.querySelectorAll(".track-section");
+            const navLinks = document.querySelectorAll(".nav-link");
+            let isManualScroll = false;
+            let scrollTimeout;
+
+            const setActiveLink = (id) => {
+                navLinks.forEach(link => {
+                    link.classList.remove("nav-link-active");
+                    link.classList.remove("sub-nav-link-active");
+                    link.classList.add("tw-border-transparent");
+                });
+                
+                const activeLink = document.querySelector(`#link-${id}`);
+                
+                if (activeLink) {
+                    const parentList = activeLink.parentElement.parentElement;
+                    const isSubMenu = parentList.tagName === 'UL' && parentList.previousElementSibling;
+                    
+                    if (isSubMenu) {
+                        activeLink.classList.add("sub-nav-link-active");
+                        const parentLink = parentList.previousElementSibling;
+                        parentLink.classList.add("nav-link-active");
+                        parentLink.classList.remove("tw-border-transparent");
+                    } else {
+                        activeLink.classList.add("nav-link-active");
+                        activeLink.classList.remove("tw-border-transparent");
+                    }
+                }
+            };
+
+            const observerOptions = {
+                root: null,
+                rootMargin: "-20% 0px -50% 0px", 
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                if (isManualScroll) return;
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setActiveLink(entry.target.id);
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener("click", (e) => {
+                    isManualScroll = true;
+                    clearTimeout(scrollTimeout);
+                    const targetId = e.currentTarget.getAttribute("href").substring(1);
+                    setActiveLink(targetId);
+                    scrollTimeout = setTimeout(() => { isManualScroll = false; }, 1000);
+                });
+            });
+
+            const initialHash = window.location.hash.substring(1);
+            if (initialHash) setActiveLink(initialHash); else setActiveLink('introduction');
+
+            
+            // --- LIGHTBOX / MODAL LOGIC ---
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img');
+            const modalCaption = document.getElementById('modal-caption');
+            const closeBtn = document.getElementById('modal-close');
+            const images = document.querySelectorAll('.constrained-img');
+
+            const openModal = (src, caption) => {
+                modalImg.src = src;
+                modalCaption.textContent = caption || "";
+                modal.classList.remove('tw-hidden');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            };
+
+            const closeModal = () => {
+                modal.classList.add('tw-hidden');
+                modalImg.src = '';
+                document.body.style.overflow = ''; // Restore scrolling
+            };
+
+            images.forEach(img => {
+                img.addEventListener('click', function() {
+                    // Try to find the caption in a sibling figcaption or use alt text
+                    let caption = this.getAttribute('alt');
+                    
+                    // Look for figcaption in the same figure parent
+                    if (this.parentElement.tagName === 'FIGURE') {
+                        const figCap = this.parentElement.querySelector('figcaption');
+                        if (figCap) caption = figCap.textContent;
+                    }
+
+                    openModal(this.src, caption);
+                });
+            });
+
+            // Close on button click
+            closeBtn.addEventListener('click', closeModal);
+
+            // Close on click outside image
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target.parentElement === modal) {
+                    closeModal();
+                }
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape" && !modal.classList.contains('tw-hidden')) {
+                    closeModal();
+                }
+            });
+
+        });
+    </script>
+<script src="/common/tracker.js"></script> 
+</body>
+</html>
