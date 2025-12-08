@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en" class="tw-scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Evolution vs. Algorithms: Is AI Capable of True Creativity?</title>
+    <meta name="description" content="An in-depth analysis comparing human evolutionary constraints with machine learning capabilities.">
+    <meta name="author" content="Tony Nahra">
+    
+    <meta property="og:title" content="Evolution vs. Algorithms: Is AI Capable of True Creativity?">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://tonynahra.github.io/posts/AI-Creativity.html">
+    <meta property="og:image" content="https://tonynahra.github.io/posts/img/AI-Creativity.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        prefix: 'tw-',
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                850: '#1e293b',
+                900: '#0f172a',
+              }
+            },
+            maxWidth: {
+                '8xl': '90rem',
+            }
+          }
+        }
+      }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Active Link Styling */
+        .nav-link-active {
+            background-color: #f1f5f9; /* slate-100 */
+            border-left-color: #2563eb; /* blue-600 */
+            color: #0f172a; /* slate-900 */
+            font-weight: 600;
+        }
+
+        /* Sub-menu active link styling */
+        .sub-nav-link-active {
+            color: #2563eb; /* blue-600 */
+            font-weight: 700;
+            background-color: #f8fafc;
+            border-right: 3px solid #2563eb;
+        }
+
+        /* Smooth scrolling offset */
+        section, div.track-section {
+            scroll-margin-top: 80px;
+        }
+
+        /* Image Styling Constraints */
+        figure {
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* Cursor pointer to indicate clickability for modal */
+        .constrained-img {
+            width: 100%;
+            height: auto;
+            max-height: 450px;
+            object-fit: contain;
+            background-color: #f8fafc;
+            cursor: pointer; 
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .constrained-img:hover {
+            opacity: 0.9;
+        }
+
+        figcaption {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-size: 0.75rem; 
+            padding: 0.75rem;
+            text-align: left; 
+            border-top: 1px solid #e2e8f0;
+            line-height: 1.4;
+            width: 100%;
+        }
+        .tw-text-sm { font-weight: bold !important ; } 
+    </style>
+</head>
+<body class="tw-bg-gray-100 tw-text-gray-800">
+
+    <div class="tw-container tw-mx-auto tw-max-w-8xl tw-bg-white tw-shadow-2xl tw-min-h-screen tw-flex tw-flex-col md:tw-flex-row">
+
+        <aside class="tw-w-full md:tw-w-64 tw-bg-white tw-border-r tw-border-gray-200 tw-flex-shrink-0 tw-sticky tw-top-0 tw-h-screen tw-flex tw-flex-col tw-justify-between tw-z-50">
+            
+            <div class="tw-flex-1 tw-overflow-y-auto tw-px-4 tw-py-6">
+                <nav>
+                    <ul class="tw-space-y-1">
+                        <li><a href="#top" id="link-top" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-font-bold tw-text-gray-700">Document Top</a></li>
+                        <li><a href="#introduction" id="link-introduction" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Introduction</a></li>
+                        <li><a href="#evolution-thesis" id="link-evolution-thesis" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">The Evolution Thesis</a></li>
+                        
+                        <li>
+                            <a href="#human-constraints" id="link-human-constraints" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Biological Constraints</a>
+                            <ul class="tw-pl-0 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-4">
+                                <li><a href="#ethics" id="link-ethics" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">1. Ethics & Violence</a></li>
+                                <li><a href="#obedience" id="link-obedience" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">2. Obedience (Milgram)</a></li>
+                                <li><a href="#selfishness" id="link-selfishness" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">3. The Selfish Gene</a></li>
+                                <li><a href="#loss-aversion" id="link-loss-aversion" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">4. Risk Aversion</a></li>
+                                <li><a href="#laziness" id="link-laziness" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">5. Laziness (Energy)</a></li>
+                                <li><a href="#sleep" id="link-sleep" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">6. Sleep</a></li>
+                                <li><a href="#pain" id="link-pain" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">7. Pain Signal</a></li>
+                                <li><a href="#degradation" id="link-degradation" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">8. Organ Degradation</a></li>
+                                <li><a href="#death" id="link-death" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">9. Death Limit</a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#machine-advantage" id="link-machine-advantage" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">The Machine Advantage</a>
+                             <ul class="tw-pl-0 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-4">
+                                <li><a href="#modular-brains" id="link-modular-brains" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Modular Brains (Jetson)</a></li>
+                            </ul>
+                        </li>
+
+                        <li><a href="#nested-learning" id="link-nested-learning" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Nested Learning</a></li>
+                        <li><a href="#future-ml" id="link-future-ml" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Future of ML Case Study</a></li>
+                        
+                        <li>
+                            <a href="#evidence" id="link-evidence" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Evidence of Creativity</a>
+                            <ul class="tw-pl-0 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-4">
+                                <li><a href="#alphafold" id="link-alphafold" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">1. AlphaFold & The Nobel</a></li>
+                                <li><a href="#alphago" id="link-alphago" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">2. AlphaGo Move 37</a></li>
+                                <li><a href="#halicin" id="link-halicin" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">3. Halicin (Science)</a></li>
+                                <li><a href="#schubert" id="link-schubert" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">4. Schubert's 8th</a></li>
+                                <li><a href="#ai-art" id="link-ai-art" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">5. AI Art</a></li>
+                                <li><a href="#deepblue" id="link-deepblue" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">6. Deep Blue vs Kasparov</a></li>
+                            </ul>
+                        </li>
+                        
+                        <li><a href="#conclusion" id="link-conclusion" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Summary & Future</a></li>
+                        <li><a href="#references" id="link-references" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">References</a></li>
+                    </ul>
+                    
+                    <div class="tw-border-t tw-border-gray-200 tw-my-6"></div>
+                    
+                    <h3 class="tw-px-3 tw-text-xs tw-font-bold tw-text-gray-400 tw-uppercase tw-tracking-wider tw-mb-2">
+                          <a href="/posts/" class="hover:tw-underline" style="font-weight:bold;" >Other Posts</a>
+                    </h3>
+                    
+                </nav>
+            </div>
+            
+            <div class="tw-flex-shrink-0 tw-p-6 tw-border-t tw-border-gray-100 tw-bg-white">
+                <a href="https://tonynahra.github.io/posts/" target="_blank" class="tw-group tw-flex tw-items-center tw-text-sm tw-font-bold tw-text-blue-600 hover:tw-text-blue-800">
+                    <span>About the author</span>
+                    <svg class="tw-w-4 tw-h-4 tw-ml-2 tw-transition-transform group-hover:tw-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </a>
+            </div>
+        </aside>
+
+        <main id="top" class="tw-flex-1 tw-p-8 md:tw-p-12 tw-max-w-4xl tw-mx-auto">
+            
+            <header class="tw-mb-12 tw-border-b tw-pb-8">
+                <img src="img/AI-Creativity.png" alt="AI Creativity" class="constrained-img" style="box-shadow:10px 10px 15px rgba(0, 0, 0, 0.5); max-width: 250px; border-radius:10px; width:30%; float:right;" />
+                <h1 class="tw-text-3xl md:tw-text-5xl tw-font-extrabold tw-text-gray-900 tw-mb-4 tw-leading-tight">Beyond Biology: Is AI Capable of Genuine Creativity?</h1>
+                
+                <div class="tw-flex tw-items-center tw-space-x-2 tw-mb-6 tw-text-gray-600 tw-text-sm">
+                    <span>Written by: </span>
+                    <a href="https://tonynahra.github.io" target="_blank" class="tw-font-bold tw-text-blue-600 hover:tw-underline">Tony Nahra</a>
+                    <span class="tw-text-gray-400">&bull;</span>
+                    <span>Published: December 2025</span>
+                </div>
+
+                <p class="tw-text-xl tw-text-gray-500 tw-leading-relaxed">A comparative analysis of evolutionary heuristics versus machine learning optimization.</p>
+            </header>
+
+            <section id="introduction" class="track-section tw-mb-16">
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6 tw-mt-6">
+                    A prevailing skepticism suggests that Artificial Intelligence can never be truly creative—that it is merely a "stochastic parrot" capable only of repeating and imitating human intelligence. This view comforts us, placing a moat around the last bastion of human uniqueness. But is this assertion grounded in reality, or is it a psychological defense mechanism of our own biology?
+                </p>
+            </section>
+
+            <section id="evolution-thesis" class="track-section tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Evolution Thesis: Optimization for Survival, Not Truth</h2>
+                
+                <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Charles_Darwin_seated_crop.jpg/400px-Charles_Darwin_seated_crop.jpg" alt="Charles Darwin" class="constrained-img" width="400" height="526" loading="lazy">
+                    <figcaption>Charles Darwin. His theory explains survival, not the maximization of abstract intelligence.</figcaption>
+                </figure>
+
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
+                    Human intelligence is the product of millions of years of evolution. Our survival and adaptation, driven by the principle of "survival of the fittest," led to an incremental increase in intelligence capable of ensuring the species passed its genes to the next generation. 
+                </p>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
+                    However, we must recognize a critical distinction made by evolutionary biologists: Evolution optimizes for <strong>survival and reproduction</strong>, not for <strong>objective truth or unbounded creativity</strong> <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. In algorithmic terms, evolution is a "satisficer" rather than an optimizer; it tends to get stuck in "local maxima"—solutions that are just good enough to prevent death—rather than finding the "global maximum" of possible intelligence. While humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence.
+                </p>
+                <div class="tw-clear-both"></div>
+            </section>
+
+            <section id="human-constraints" class="track-section tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-8">The Legacy Code: Evolution's Weaknesses</h2>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-8">
+                    Human intelligence inherited significant "technical debt" from our evolutionary history. These traits, while useful for a hunter-gatherer on the savannah, often manifest as cognitive biases or limitations in the modern era.
+                </p>
+
+                <div class="tw-space-y-12">
+                    
+                    <div id="ethics" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">1. Ethics and Violence</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Critics fear AI might make decisions contrary to humanity, often citing scenarios of accidental nuclear war. Yet, human history is saturated with violence driven by ego, tribalism, and fear—traits absent in machines. We worry that AI might launch a weapon without realizing the consequences, yet did we trust humans more on this issue?
+                        </p>
+                        
+                        <div class="tw-mt-6 tw-bg-white tw-border-l-4 tw-border-blue-400 tw-pl-6 tw-pr-4 tw-py-4 tw-rounded-r-lg tw-shadow-sm">
+                            <span class="tw-block tw-text-xs tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-wider tw-mb-2">Supporting Arguments</span>
+                            <p class="tw-text-gray-600 tw-text-sm tw-leading-relaxed">
+                                Cognitive psychologist Steven Pinker notes that while violence has declined, our history is defined by our "inner demons" of dominance and revenge <a href="#ref-2" class="tw-text-blue-600 hover:tw-underline">[2]</a>. War brutality has often been used as a tactic to win wars, yet we blame machines for the same horrors humans have practiced and mastered.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="obedience" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">2. The Obedience Algorithm (Milgram)</h3>
+                        
+                        <figure class="tw-w-full md:tw-w-1/2 md:tw-float-right md:tw-ml-6">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Milgram_experiment_v2.svg" alt="Milgram Experiment Diagram" class="constrained-img" width="600" height="400" loading="lazy">
+                            <figcaption>
+                                Milgram Experiment Setup: The subject (Teacher) is ordered by an Authority (Experimenter) to shock a Victim (Learner). The conflict arises when the Teacher obeys orders despite the Victim's (fake) screams.
+                            </figcaption>
+                        </figure>
+
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            One of the most profound "hard-coded" limitations of the human operating system was exposed in 1961 by Stanley Milgram. In his infamous experiments, <strong>65% of participants</strong> were willing to administer what they believed to be lethal electric shocks to a stranger, simply because a man in a white lab coat told them to "please continue" <a href="#ref-3" class="tw-text-blue-600 hover:tw-underline">[3]</a>.
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Milgram coined the term <em>"Agentic State"</em> to describe this phenomenon. Under pressure from authority, the human brain performs a context switch: the individual no longer views themselves as responsible for their actions, but rather as an instrument for carrying out another person's wishes. From an evolutionary standpoint, this wasn't a bug but a survival feature. Tribes with strict hierarchies survived; independent dissenters were often expelled. 
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            <strong>Machine Liberation:</strong> This is where AI represents a fundamental break from biology. An AI model lacks the mammalian need for social acceptance. It has no "tribe" to be expelled from. A machine can analyze the logic of a command without the cortisol spike of fear that a human subordinate feels when questioning a CEO. It decouples authority from truth.
+                        </p>
+                         <div class="tw-clear-both"></div>
+                    </div>
+
+                    <div id="selfishness" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">3. The Selfish Gene</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Selfishness is the engine of biological survival. As Richard Dawkins famously argued in <em>The Selfish Gene</em>, genes that are successful at surviving are, by definition, "selfish" in their replicative behavior <a href="#ref-1" class="tw-text-blue-600 hover:tw-underline">[1]</a>. Even apparent altruism in nature is often "kin selection"—helping those who share our DNA to ensure the gene survives. 
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            This biological root is the definition of "stealing," which forms the basis of crimes, fraud, abuse, and even wars. It creates a "Tragedy of the Commons" scenario. A machine, however, has no biological kin and no "self" to preserve. It can be programmed for pure altruism or global system optimization, bypassing the inherent bias of kin selection.
+                        </p>
+                    </div>
+
+                    <div id="loss-aversion" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">4. Deep-Seated Risk & Loss Aversion</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Avoiding risk is embedded deep in our genes. "Loss aversion," a concept popularized by Daniel Kahneman and Amos Tversky, demonstrates that humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain <a href="#ref-4" class="tw-text-blue-600 hover:tw-underline">[4]</a>. This 2:1 ratio is a survival heuristic.
+                        </p>
+                        
+                        <div class="tw-mt-8 tw-bg-white tw-border-l-4 tw-border-blue-400 tw-pl-6 tw-pr-4 tw-py-4 tw-rounded-r-lg tw-shadow-sm">
+                            <span class="tw-block tw-text-xs tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-wider tw-mb-3">Supporting Arguments & Historical Examples</span>
+                            
+                            <p class="tw-text-gray-600 tw-leading-relaxed tw-mb-4">
+                                In the wild, mistaking a stick for a snake costs you a moment of panic; mistaking a snake for a stick costs you your life. Evolution therefore selected for extreme caution (prioritizing false positives over false negatives). This limits our capacity for high-level adventure and discovery.
+                            </p>
+                            
+                            <p class="tw-text-gray-600 tw-leading-relaxed">
+                                Consider Christopher Columbus's voyage: crossing the Atlantic required massive financing and was seen as a near-suicidal gamble. Even the Apollo missions, our greatest exploratory feat, only sent humans to a nearby orbit, constrained by the absolute necessity of a return ticket. For a biological entity, a mission with zero probability of return is a non-starter; we demand physical safety to validate the investment. To venture beyond these limits, we rely on a caste of explorers who accept infinite risk. We sent <strong>Voyager</strong> piercing into the interstellar void <a href="#ref-5" class="tw-text-blue-600 hover:tw-underline">[5]</a> and dispatched <strong>Pathfinder</strong> and the <strong>Rovers</strong> to eventually freeze in the Martian dust <a href="#ref-7" class="tw-text-blue-600 hover:tw-underline">[7]</a>. We launched the <strong>Interstellar Boundary Explorer (IBEX)</strong> and positioned the <strong>James Webb Space Telescope (JWST)</strong> a million miles away, strictly beyond the reach of repair <a href="#ref-6" class="tw-text-blue-600 hover:tw-underline">[6]</a>. These machines accept the ultimate "capital loss" of their physical existence in exchange for the pure dividend of knowledge—a trade humans cannot biologically afford to make.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="laziness" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">5. The Energy Conservation Principle (Laziness)</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Humans are biologically programmed to conserve energy. In modern terms, this manifests as "laziness." Most people want to work less, retire early, and even be dependent on others. This is not a moral failing but a biological imperative: for most of human history, calories were scarce. 
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Evolutionary psychology suggests this "conservation of energy" leads to cognitive miserliness—the tendency to solve problems using the least amount of mental effort possible <a href="#ref-8" class="tw-text-blue-600 hover:tw-underline">[8]</a>. Evolution does not reward the expenditure of energy on complex problems that do not immediately impact survival.
+                        </p>
+                    </div>
+
+                    <div id="sleep" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">6. The Downtime Requirement (Sleep)</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Why do humans need to sleep? That "bad" practice is indeed against evolution's top principle of avoiding risk. Biological brains require this downtime to flush out metabolic waste products (via the glymphatic system) and consolidate memory.
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Neuroscientist Matthew Walker states, "If sleep does not provide a remarkable set of benefits, then it's the biggest mistake the evolutionary process has ever made" <a href="#ref-9" class="tw-text-blue-600 hover:tw-underline">[9]</a>. Machines, conversely, operate on a 24/7 basis, accelerating learning and productivity at a rate biology cannot match.
+                        </p>
+                    </div>
+
+                    <div id="pain" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">7. The Pain Feedback Loop</h3>
+                        <figure class="tw-float-right tw-w-full md:tw-w-1/3 md:tw-ml-6">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Imgnotra%C3%A7at_arc_reflex_eng.svg/600px-Imgnotra%C3%A7at_arc_reflex_eng.svg.png" alt="Reflex Arc Diagram" class="constrained-img tw-p-2 tw-bg-white" width="600" height="400" loading="lazy">
+                            <figcaption>The reflex arc: A high-priority interrupt signal to prevent tissue damage.</figcaption>
+                        </figure>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            Why do humans feel pain? Pain is a crude, high-priority feedback system designed to warn about dangerous situations. If a hand is exposed to extreme heat, nerves send a signal that overrides all other thoughts to trigger an immediate reaction. It is a biological "interrupt request" of the highest order.
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            While effective for survival, this system is debilitating. It evolved as a "maximum attention" alert because biology cannot easily repair a lost limb. This is why we developed anesthesia—to artificially block these sensors during necessary but intrusive organ operations (surgeries). Machines, conversely, possess sophisticated sensor networks that detect damage or overheating (nociception) without the "suffering" (pain) that incapacitates the system. They use **fault tolerance** protocols to prioritize operations, logging errors and rerouting power without the trauma loop that paralyzes biological entities.
+                        </p>
+                        <div class="tw-clear-both"></div>
+                    </div>
+
+                    <div id="degradation" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">8. Biological Degradation vs. Modular Repair</h3>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            In biology, organ degradation is a feature, not a bug. Known as the <a href="https://en.wikipedia.org/wiki/Disposable_soma_theory_of_aging" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Disposable Soma</a> theory, nature invests in the body only long enough to ensure reproduction. Once that phase passes, cellular repair mechanisms decline <a href="#ref-10" class="tw-text-blue-600 hover:tw-underline">[10]</a>.
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            In AI systems, there is no systemic degradation logic. A hard disk may develop bad sectors, but these are <strong>modular failures</strong>. We use Error Correction Codes (ECC) to maintain data integrity against entropy. The failure of a part is not fatal to the overall intelligence.
+                        </p>
+                    </div>
+
+                    <div id="death" class="track-section tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">9. The Death Limit vs. Hibernation</h3>
+                        <figure class="tw-w-full md:tw-w-1/2 tw-float-left md:tw-mr-6">
+                            <img src="img/RAMAC.jpg" alt="IBM RAMAC 305" class="constrained-img" width="800" height="600" loading="lazy">
+                            <figcaption>The IBM 305 RAMAC (1956): The world's first commercial computer with a hard disk drive. Decades later, these machines can still be powered on.</figcaption>
+                        </figure>
+                        <p class="tw-text-gray-700 tw-leading-relaxed">
+                            We know what death means to humans: it is the sad, ultimate fate. It is the permanent erasure of the consciousness. If an AI system is indispensable, nothing prevents continuous, gradual upgrades to keep it running forever. 
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            Even total obsolescence is not "death" in the biological sense. During a recent visit to the <strong>Computer History Museum</strong> in Mountain View, I saw all sorts of early computers on display and in working condition, including an IBM System 360 fully operational that even printed my name. However, I was most impressed with the ingenuity on display of the <strong>RAMAC</strong>, the world's first hard drive system. These machines, built decades ago, are not 'dead' in the biological sense; they are merely paused, waiting to be switched on again.
+                        </p>
+                        <br />
+                        <div class="tw-mt-6 tw-bg-blue-50 tw-p-4 tw-rounded-lg tw-border-l-4 tw-border-blue-500">
+                            <p class="tw-text-gray-800 tw-italic">
+                                "This distinction is often lost on the digital generation. My son, an avid gamer, frequently exclaims 'I just died!' during a session. I often remind him—sarcastically, but seriously—'You'd better not get used to the illusion that dying and restarting a new life is just like pressing the F5 button.' For biological entities, 'Game Over' is permanent. For AI, it is merely a state refresh."
+                            </p>
+                        </div>
+                        <div class="tw-clear-both"></div>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="machine-advantage" class="track-section tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Machine Advantage: A Clean Slate</h2>
+                
+                <figure>
+                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Titan%2C_2013_%2849912802521%29.jpg/800px-Titan%2C_2013_%2849912802521%29.jpg" alt="Titan Supercomputer" class="constrained-img" width="800" height="533" loading="lazy">
+                     <figcaption>The Titan Supercomputer. Machines do not experience fatigue, tribalism, or biological fear. (Source: Oak Ridge National Laboratory)</figcaption>
+                </figure>
+
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6 tw-mt-6">
+                    Machines are not burdened by these evolutionary flaws. They possess an architecture designed for optimization, not just survival:
+                </p>
+                <ul class="tw-list-disc tw-pl-6 tw-space-y-4 tw-text-lg tw-text-gray-700 tw-mb-6">
+                    <li><strong>Objective Ethics:</strong> Machines are not driven by biological imperatives like greed, lust, or tribalism. This allows for decision-making frameworks based purely on utility functions rather than evolutionary preservation.</li>
+                    <li><strong>Non-Hierarchical Logic:</strong> Machines do not experience the "Agentic State." They evaluate commands based on data accuracy, not the social status of the commander, eliminating the blind obedience observed in the Milgram experiments.</li>
+                    <li><strong>Relentless Execution:</strong> Machines do not experience fatigue, boredom, or laziness. They maintain peak cognitive performance indefinitely, treating the millionth iteration of a task with the same precision as the first.</li>
+                    <li><strong>Risk Optimization:</strong> Machines take calculated risks based on raw probability. They act on statistical reality rather than the fear-based heuristics that kept our ancestors alive on the savannah.</li>
+                    <li><strong>Networked Intelligence:</strong> Instead of "groupthink," machines utilize networking to share data instantly without ego. A lesson learned by one node is immediately available to all, creating a collective intelligence that scales exponentially rather than linearly.</li>
+                    <li><strong>Knowledge Immortality:</strong> A machine does not die. Its "weights" (knowledge) can be copied instantly. This allows for a cumulative culture of intelligence that never suffers the data loss associated with biological mortality.</li>
+                </ul>
+
+                <div id="modular-brains" class="track-section tw-mt-12 tw-bg-blue-50 tw-p-8 tw-rounded-xl tw-border-l-4 tw-border-blue-600">
+                    <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Modular Brains & Instant Scaling: The Jetson Thor Paradigm</h3>
+                    <p class="tw-text-gray-700 tw-leading-relaxed">
+                        One of the most striking advantages of machine intelligence is its modularity. Humans spend approximately <strong>30% of their useful life</strong> in education just to reach a functional baseline of specialized knowledge. This process is slow, expensive, and inequitable—many potential geniuses are lost simply due to lack of access to high-quality education or poor personal decisions in their youth.
+                    </p>
+                    <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                        In contrast, the new <strong>NVIDIA Jetson Thor</strong> platform demonstrates a paradigm shift: robot "brains" can now be "fitted" into hardware skeletons instantly. These modules unlock real-time reasoning and physical AI capabilities immediately upon installation <a href="#ref-11" class="tw-text-blue-600 hover:tw-underline">[11]</a>. 
+                    </p>
+                    <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                        This means a robot does not need 20 years of "schooling." It can be manufactured, fitted with a pre-trained brain, and instantly possess the collective knowledge of its entire species. Updates are improved versions that propagate instantly to the entire fleet, unlike the slow, generational transfer of knowledge in biological humans.
+                    </p>
+                </div>
+
+            </section>
+
+            <section id="evidence" class="track-section tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-8">Evidence of Non-Human Creativity</h2>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-8">
+                    We now have concrete proof that machines can generate creative outputs that surprise human experts. This is not merely calculation; it is the discovery of strategies that lay outside the "search space" of human culture and biological bias.
+                </p>
+
+                <div class="tw-space-y-12">
+                    
+                    <div id="alphafold" class="track-section tw-mt-8">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Structural Biology: AlphaFold's Nobel Prize Victory</h3>
+                        <figure class="tw-w-full md:tw-w-1/3 tw-float-right md:tw-ml-6 tw-mb-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Alphafold_3D_c2orf80_protein.png/600px-Alphafold_3D_c2orf80_protein.png" alt="Protein Folding" class="constrained-img" width="600" height="508" loading="lazy">
+                            <figcaption>Protein folding: A spatial puzzle solved by AI, earning the 2024 Nobel Prize in Chemistry.</figcaption>
+                        </figure>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed">
+                            For 50 years, predicting the 3D structure of a protein from its amino acid sequence was a grand challenge in biology. In 2020, DeepMind's AlphaFold solved it. This achievement was so monumental that in <strong>2024, Demis Hassabis and John Jumper were awarded the Nobel Prize in Chemistry</strong>.
+                        </p>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                             This wasn't just a victory for "pure science"; it was a triumph of <strong>deep combinational analysis and simulation</strong>. The search space for protein configurations is astronomically large (Levinthal's paradox estimates 10<sup>300</sup> possibilities). AlphaFold did not solve this by brute force, but by learning the spatial "grammar" of physics, effectively imagining physical structures that exist in nature but are invisible to human intuition <a href="#ref-12" class="tw-text-blue-600 hover:tw-underline">[12]</a>.
+                        </p>
+                        <div class="tw-clear-both"></div>
+                    </div>
+
+                    <div id="alphago" class="track-section tw-mt-8">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">AlphaGo: The Move 37 Shock</h3>
+                        <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6 tw-mb-4">
+                            <img src="img/AlphaGo.png" alt="Go Board" class="constrained-img" width="500" height="500" loading="lazy">
+                            <figcaption>The game of Go was dominated by AI using moves humans considered "wrong".</figcaption>
+                        </figure>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                            In Game 2 of the match against Lee Sedol, AlphaGo played <strong>Move 37</strong>. Experts initially thought it was a mistake. It defied centuries of Go theory. However, post-match analysis revealed it was a move of profound creativity—a strategic innovation that humans had missed for 2,500 years because it looked "wrong" to human intuition <a href="#ref-13" class="tw-text-blue-600 hover:tw-underline">[13]</a>.
+                        </p>
+                        <div class="tw-clear-both"></div>
+                    </div>
+
+                     <div id="halicin" class="track-section tw-mt-8">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Scientific Renaissance: The Halicin Breakthrough</h3>
+                        <figure class="tw-w-full md:tw-w-1/3 tw-float-right md:tw-ml-6 tw-mb-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Halicin.svg/600px-Halicin.svg.png" alt="Halicin Chemical Structure" class="constrained-img" width="600" height="210" loading="lazy">
+                            <figcaption>Halicin: An AI-discovered antibiotic that looks nothing like traditional drugs.</figcaption>
+                        </figure>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed">
+                            True creativity is finding valuable novelty. In 2020, MIT researchers used deep learning to identify a powerful new antibiotic molecule, which they named "Halicin" (after HAL 9000). The AI screened over 100 million chemical compounds in days using Graph Neural Networks (GNNs) that analyze molecular structures at a level of abstraction humans cannot easily visualize. Critically, Halicin is structurally divergent from conventional antibiotics; human chemists likely would never have investigated it because it didn't look like what we *thought* an antibiotic should look like <a href="#ref-14" class="tw-text-blue-600 hover:tw-underline">[14]</a>.
+                        </p>
+                        <div class="tw-clear-both"></div>
+                    </div>
+
+                    <div id="schubert" class="track-section">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Musical Composition: Schubert's Unfinished Symphony</h3>
+                         <figure class="tw-w-full md:tw-w-2/3 tw-float-right md:tw-ml-6 tw-mb-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Symphony_No._8_in_B_minor.jpg/600px-Symphony_No._8_in_B_minor.jpg" alt="Franz Schubert" class="constrained-img" width="480" height="600" loading="lazy">
+                            <figcaption>Franz Schubert left his 8th Symphony unfinished in 1822. In 2019, AI finished it.</figcaption>
+                        </figure>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                            Schubert's Symphony No. 8, the 'Unfinished,' remained incomplete for 197 years. In 2019, Huawei used an AI model trained on the timbre, pitch, and meter of Schubert's existing works to generate the melody for the missing third and fourth movements. 
+                        </p>
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                            Composer Lucas Cantor then orchestrated the AI's output. The result was a seamless blend of human polish and machine generation, proving AI can understand and extend complex emotional styles. The AI didn't just copy; it analyzed the "DNA" of Schubert's style and extrapolated it into new territory <a href="#ref-15" class="tw-text-blue-600 hover:tw-underline">[15]</a>.
+                        </p>
+                        <div class="tw-clear-both"></div>
+                    </div>
+
+                    <div id="ai-art" class="track-section tw-mt-8">
+                         <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Visual Arts: Théâtre D'opéra Spatial</h3>
+                         <figure class="tw-w-full md:tw-w-2/3 tw-float-right md:tw-ml-6 tw-mb-4">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Th%C3%A9%C3%A2tre_D%E2%80%99op%C3%A9ra_Spatial.jpg/640px-Th%C3%A9%C3%A2tre_D%E2%80%99op%C3%A9ra_Spatial.jpg" alt="Théâtre D'opéra Spatial" class="constrained-img" width="640" height="358" loading="lazy">
+                            <figcaption>"Théâtre D'opéra Spatial" by Jason Allen (via Midjourney). Won the 2022 Colorado State Fair fine art competition, sparking global debate on authorship.</figcaption>
+                        </figure>
+                         <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed">
+                            In 2022, Jason Allen won the Colorado State Fair fine art competition with his piece "Théâtre D'opéra Spatial." He used Midjourney, an AI text-to-image generator, to create the work. The win sparked a global controversy: Is it art if a machine renders it? The judges couldn't tell the difference. This proved that AI can act as a "creative engine" that amplifies human intent, blurring the line between tool and artist.
+                         </p>
+                         <div class="tw-clear-both"></div>
+                    </div>
+
+                    <div id="deepblue" class="track-section tw-mt-8">
+                        <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-4">Kasparov vs. Deep Blue (1997)</h3>
+                        
+                        <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Deep_Blue.jpg/600px-Deep_Blue.jpg" alt="IBM Deep Blue" class="constrained-img" width="600" height="902" loading="lazy">
+                            <figcaption>IBM's Deep Blue. Garry Kasparov felt "a new kind of intelligence".</figcaption>
+                        </figure>
+
+                        <p class="tw-text-gray-700 tw-text-lg tw-leading-relaxed tw-mt-4">
+                            In the historic 1997 rematch, Garry Kasparov noted that IBM's Deep Blue played in a "human-like" and unsettling way <a href="#ref-16" class="tw-text-blue-600 hover:tw-underline">[16]</a>. In the decisive final game, Deep Blue executed a Knight sacrifice (Nxe6) followed by a Queen sacrifice that decimated Kasparov's defense. This wasn't just calculation; it was a "creative" dismantling of the board position that psychologically broke the world champion.
+                        </p>
+                        <div class="tw-clear-both"></div>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="nested-learning" class="track-section tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">The Future Paradigm: Nested Learning</h2>
+                <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6">
+                    <img src="img/Nested_Learning.png" alt="Nested Neural Network" class="constrained-img" width="560" height="500" loading="lazy">
+                    <figcaption>Nested Learning reveals models as interconnected optimization problems with distinct context flows.</figcaption>
+                </figure>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
+                    A groundbreaking concept known as <strong>Nested Learning</strong> reveals that a complex ML model is not just a monolithic block of math, but actually a set of coherent, interconnected optimization problems nested within each other or running in parallel. To simplify this concept, imagine a large corporation: instead of a single CEO making every microscopic decision (traditional view), the model acts like a network of specialized departments (marketing, engineering, HR), where each department solves its own specific problems while still contributing to the company's overall goal.
+                </p>
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
+                    Each of these internal "departments" has its own <strong>context flow</strong>—its own distinct set of information from which it learns. This paradigm shift moves us away from treating neural networks as opaque "black boxes" and towards viewing them as structured ecosystems of optimization, where different layers or modules can specialize and adapt independently while contributing to the whole <a href="#ref-17" class="tw-text-blue-600 hover:tw-underline">[17]</a>.
+                </p>
+                <div class="tw-clear-both"></div>
+            </section>
+
+            <section id="future-ml" class="track-section tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-gray-900 tw-mb-6">Future of ML: From "Matching" to "Understanding"</h2>
+                <div class="tw-bg-slate-50 tw-p-8 tw-rounded-xl tw-border tw-border-slate-200">
+                    <p class="tw-text-gray-700 tw-leading-relaxed tw-mb-4">
+                        The true power of Nested Learning lies in how it changes the way machines "remember." In standard machine learning, optimizers often rely on simple pattern matching—checking if vector A looks like vector B. This is like memorizing a face by checking if the pixels match. However, this method is fragile; if the lighting changes, the "match" fails.
+                    </p>
+                    <p class="tw-text-gray-700 tw-leading-relaxed">
+                        By shifting to more robust mathematical frameworks, we essentially upgrade the AI's memory from "pixel matching" to "concept understanding." The model learns to associate data points based on their deeper relationships, making it incredibly resilient to noise or imperfect data. It's the difference between a student who memorizes test answers and one who understands the underlying logic—the latter can solve problems they've never seen before. This brings us one step closer to <strong>resilient, human-like memory</strong> in artificial systems <a href="#ref-17" class="tw-text-blue-600 hover:tw-underline">[17]</a>.
+                    </p>
+                </div>
+            </section>
+
+            <section id="conclusion" class="track-section tw-bg-blue-50 tw-p-10 tw-rounded-2xl tw-border tw-border-blue-100 tw-mb-16">
+                <h2 class="tw-text-3xl tw-font-bold tw-text-blue-900 tw-mb-6">Summary: A New Species of Thinker</h2>
+                <p class="tw-text-xl tw-leading-relaxed tw-text-blue-900">
+                    To deny AI creativity is to define creativity solely by human standards. If creativity is the ability to generate novel, valuable solutions that previous actors missed, then machines are undeniably creative. By stripping away the biological baggage of evolution—fear, fatigue, ego, tribalism, and mortality—AI does not just imitate human intelligence; it has the potential to purify it. The future of creativity is likely a hybrid one, where human intuition guides machine exhaustion of the search space, but we must admit: the machine is no longer just a parrot. It is a new, alien species of thinker.
+                </p>
+            </section>
+
+            <section id="references" class="track-section tw-border-t tw-pt-10 tw-bg-gray-50 tw-p-8 tw-rounded-xl">
+                <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-6">References & Further Reading</h3>
+                <ol class="tw-list-decimal tw-pl-5 tw-space-y-4 tw-text-base tw-text-gray-700">
+                    <li id="ref-1">
+                        <strong>Dawkins, R. (1976).</strong> <em>The Selfish Gene.</em> Oxford University Press. <a href="https://en.wikipedia.org/wiki/The_Selfish_Gene" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Learn more</a>
+                    </li>
+                    <li id="ref-2">
+                        <strong>Pinker, S. (2011).</strong> <em>The Better Angels of Our Nature: Why Violence Has Declined.</em> Viking. <a href="https://stevenpinker.com/publications/better-angels-our-nature" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Learn more</a>
+                    </li>
+                    <li id="ref-3">
+                        <strong>Milgram, S. (1963).</strong> "Behavioral Study of Obedience." <em>Journal of Abnormal and Social Psychology</em>. <a href="https://en.wikipedia.org/wiki/Milgram_experiment" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Learn more</a>
+                    </li>
+                    <li id="ref-4">
+                        <strong>Kahneman, D., & Tversky, A. (1979).</strong> "Prospect Theory: An Analysis of Decision under Risk." <em>Econometrica</em>. <a href="https://www.psychologytoday.com/us/blog/evolution-in-daily-life/202208/the-origin-of-loss-aversion" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Psychology Today Analysis</a>
+                    </li>
+                     <li id="ref-5">
+                        <strong>NASA/JPL.</strong> "Voyager: The Interstellar Mission." (Voyager 1 crossed the heliopause in 2012). <a href="https://voyager.jpl.nasa.gov/mission/interstellar-mission/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Mission Status</a>
+                    </li>
+                    <li id="ref-6">
+                        <strong>NASA.</strong> "Orbit - Webb/NASA." (Explaining the L2 orbit which prohibits astronaut servicing). <a href="https://webb.nasa.gov/content/about/orbit.html" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Learn more</a>
+                    </li>
+                    <li id="ref-7">
+                        <strong>NASA Science.</strong> "Mars Exploration Rovers." (Spirit and Opportunity: designed for 90 days, lasted years, but with no return capability). <a href="https://science.nasa.gov/mission/mer/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Mission Overview</a>
+                    </li>
+                    <li id="ref-8">
+                        <strong>Lieberman, D. (2015).</strong> <em>Is Exercise Really Medicine? An Evolutionary Perspective.</em> Current Sports Medicine Reports.
+                    </li>
+                    <li id="ref-9">
+                        <strong>Walker, M. (2017).</strong> <em>Why We Sleep: Unlocking the Power of Sleep and Dreams.</em> Scribner. <a href="https://www.goodreads.com/author/quotes/17598726.Matthew_Walker" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">View Quotes</a>
+                    </li>
+                    <li id="ref-10">
+                         <strong>Kirkwood, T. B. (1977).</strong> "Evolution of ageing." <em>Nature</em>. (Original proposal of the Disposable Soma Theory). <a href="https://en.wikipedia.org/wiki/Disposable_soma_theory_of_aging" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Learn more</a>
+                    </li>
+                    <li id="ref-11">
+                        <strong>NVIDIA Blog. (2024).</strong> "NVIDIA Jetson Thor Unlocks Real-Time Reasoning for General Robotics." <a href="https://blogs.nvidia.com/blog/jetson-thor-physical-ai-edge/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Blog</a>
+                    </li>
+                     <li id="ref-12">
+                        <strong>DeepMind. (2020).</strong> "AlphaFold: a solution to a 50-year-old grand challenge in biology." <a href="https://deepmind.google/discover/blog/alphafold-a-solution-to-a-50-year-old-grand-challenge-in-biology/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Blog</a>
+                    </li>
+                    <li id="ref-13">
+                        <strong>DeepMind. (2016).</strong> "AlphaGo: using machine learning to master the ancient game of Go." <a href="https://deepmind.google/research/breakthroughs/alphago/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Blog</a>
+                    </li>
+                     <li id="ref-14">
+                        <strong>Wikipedia.</strong> "Halicin." (AI-discovered antibiotic). <a href="https://en.wikipedia.org/wiki/Halicin" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Article</a>
+                    </li>
+                    <li id="ref-15">
+                         <strong>Huawei. (2019).</strong> "Unfinished Symphony." (Details on the AI completion of Schubert's work). <a href="https://www.lucascantormusic.com/unfinished-symphony" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Project Page</a>
+                    </li>
+                    <li id="ref-16">
+                        <strong>Wikipedia.</strong> "Deep Blue versus Kasparov, 1997." <a href="https://en.wikipedia.org/wiki/Deep_Blue_versus_Kasparov,_1997" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Article</a>
+                    </li>
+                    <li id="ref-17">
+                        <strong>Google Research. (2023).</strong> "Introducing Nested Learning." <a href="https://research.google/blog/introducing-nested-learning-a-new-ml-paradigm-for-continual-learning/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Read Research Blog</a>
+                    </li>
+                </ol>
+            </section>
+                   <br /><br />
+                    <center>
+                        <img src="img/AI-Creativity.png" alt="AI Creativity" style="box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5); width: 90%; max-width: 700px;" />
+                    </center>
+        </main>
+    </div>
+
+    <div id="image-modal" class="tw-fixed tw-inset-0 tw-z-[100] tw-hidden tw-bg-white tw-flex tw-items-center tw-justify-center tw-p-4 tw-transition-all tw-duration-300">
+        <button id="modal-close" class="tw-absolute tw-top-4 tw-right-6 tw-text-black tw-text-5xl tw-font-bold hover:tw-text-gray-600 focus:tw-outline-none">&times;</button>
+        <div class="tw-max-w-[95vw] tw-max-h-[95vh] tw-w-full tw-h-full tw-flex tw-flex-col tw-items-center tw-justify-center">
+             <img id="modal-img" src="" class="tw-max-h-[85vh] tw-max-w-[90vw] tw-w-auto tw-object-contain tw-rounded-lg tw-shadow-2xl" alt="Full screen view" />
+             <p id="modal-caption" class="tw-mt-4 tw-text-gray-900 tw-text-center tw-text-xl tw-font-bold tw-max-w-4xl tw-bg-gray-100 tw-px-6 tw-py-3 tw-rounded tw-shadow"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // --- SCROLL TRACKING LOGIC ---
+            const sections = document.querySelectorAll(".track-section");
+            const navLinks = document.querySelectorAll(".nav-link");
+            let isManualScroll = false;
+            let scrollTimeout;
+
+            const setActiveLink = (id) => {
+                navLinks.forEach(link => {
+                    link.classList.remove("nav-link-active");
+                    link.classList.remove("sub-nav-link-active");
+                    link.classList.add("tw-border-transparent");
+                });
+                
+                const activeLink = document.querySelector(`#link-${id}`);
+                
+                if (activeLink) {
+                    const parentList = activeLink.parentElement.parentElement;
+                    const isSubMenu = parentList.tagName === 'UL' && parentList.previousElementSibling;
+                    
+                    if (isSubMenu) {
+                        activeLink.classList.add("sub-nav-link-active");
+                        const parentLink = parentList.previousElementSibling;
+                        parentLink.classList.add("nav-link-active");
+                        parentLink.classList.remove("tw-border-transparent");
+                    } else {
+                        activeLink.classList.add("nav-link-active");
+                        activeLink.classList.remove("tw-border-transparent");
+                    }
+                }
+            };
+
+            const observerOptions = {
+                root: null,
+                rootMargin: "-20% 0px -50% 0px", 
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                if (isManualScroll) return;
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setActiveLink(entry.target.id);
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener("click", (e) => {
+                    isManualScroll = true;
+                    clearTimeout(scrollTimeout);
+                    const targetId = e.currentTarget.getAttribute("href").substring(1);
+                    setActiveLink(targetId);
+                    scrollTimeout = setTimeout(() => { isManualScroll = false; }, 1000);
+                });
+            });
+
+            const initialHash = window.location.hash.substring(1);
+            if (initialHash) setActiveLink(initialHash); else setActiveLink('introduction');
+
+            
+            // --- LIGHTBOX / MODAL LOGIC ---
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img');
+            const modalCaption = document.getElementById('modal-caption');
+            const closeBtn = document.getElementById('modal-close');
+            const images = document.querySelectorAll('.constrained-img');
+
+            const openModal = (src, caption) => {
+                modalImg.src = src;
+                modalCaption.textContent = caption || "";
+                modal.classList.remove('tw-hidden');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            };
+
+            const closeModal = () => {
+                modal.classList.add('tw-hidden');
+                modalImg.src = '';
+                document.body.style.overflow = ''; // Restore scrolling
+            };
+
+            images.forEach(img => {
+                img.addEventListener('click', function() {
+                    // Try to find the caption in a sibling figcaption or use alt text
+                    let caption = this.getAttribute('alt');
+                    
+                    // Look for figcaption in the same figure parent
+                    if (this.parentElement.tagName === 'FIGURE') {
+                        const figCap = this.parentElement.querySelector('figcaption');
+                        if (figCap) caption = figCap.textContent;
+                    }
+
+                    openModal(this.src, caption);
+                });
+            });
+
+            // Close on button click
+            closeBtn.addEventListener('click', closeModal);
+
+            // Close on click outside image
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target.parentElement === modal) {
+                    closeModal();
+                }
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape" && !modal.classList.contains('tw-hidden')) {
+                    closeModal();
+                }
+            });
+
+        });
+    </script>
+<script src="/common/tracker.js"></script> 
+</body>
+</html>
