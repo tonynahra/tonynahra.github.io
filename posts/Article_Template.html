@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en" class="tw-scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>[ARTICLE TITLE] | [AUTHOR NAME]</title>
+    <meta name="description" content="[SHORT DESCRIPTION FOR SEO]">
+    <meta name="author" content="[AUTHOR NAME]">
+    
+    <meta property="og:title" content="[ARTICLE TITLE]">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="[URL_TO_POST]">
+    <meta property="og:image" content="[URL_TO_FEATURED_IMAGE]">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        prefix: 'tw-',
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                850: '#1e293b',
+                900: '#0f172a',
+              }
+            },
+            maxWidth: {
+                '8xl': '90rem',
+            }
+          }
+        }
+      }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Sidebar: Active Link Styling */
+        .nav-link-active {
+            background-color: #f1f5f9;
+            border-left-color: #2563eb;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        /* Sidebar: Sub-menu active link styling */
+        .sub-nav-link-active {
+            color: #2563eb;
+            font-weight: 700;
+            background-color: #f8fafc;
+            border-right: 3px solid #2563eb;
+        }
+
+        /* Smooth scrolling offset to clear sticky headers if you add them later */
+        section, div.track-section, h3 {
+            scroll-margin-top: 80px;
+        }
+
+        /* Image Container Styling */
+        figure {
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* Clickable Image Styling */
+        .constrained-img {
+            width: 100%;
+            height: auto;
+            max-height: 450px; /* Limits height to keep images from taking over screen */
+            object-fit: contain;
+            background-color: #f8fafc;
+            cursor: pointer; 
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .constrained-img:hover { opacity: 0.9; }
+
+        figcaption {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-size: 0.75rem; 
+            padding: 0.75rem;
+            text-align: left; 
+            border-top: 1px solid #e2e8f0;
+            line-height: 1.4;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="tw-bg-gray-100 tw-text-gray-800">
+
+    <div class="tw-container tw-mx-auto tw-max-w-8xl tw-bg-white tw-shadow-2xl tw-min-h-screen tw-flex tw-flex-col md:tw-flex-row">
+
+        <aside class="tw-w-full md:tw-w-64 tw-bg-white tw-border-r tw-border-gray-200 tw-flex-shrink-0 tw-sticky tw-top-0 tw-h-screen tw-flex tw-flex-col tw-justify-between tw-z-50">
+            <div class="tw-flex-1 tw-overflow-y-auto tw-px-4 tw-py-6">
+                <nav>
+                    <ul class="tw-space-y-1">
+                        <li><a href="#top" id="link-top" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-font-bold tw-text-gray-700">Top</a></li>
+                        
+                        <li><a href="#section-1" id="link-section-1" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">[SECTION 1 TITLE]</a></li>
+                        
+                        <li>
+                            <a href="#section-2" id="link-section-2" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">[SECTION 2 TITLE]</a>
+                            <ul class="tw-pl-0 tw-mt-1 tw-space-y-1 tw-border-l tw-border-gray-200 tw-ml-4">
+                                <li><a href="#subsection-2a" id="link-subsection-2a" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Sub-point A</a></li>
+                                <li><a href="#subsection-2b" id="link-subsection-2b" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Sub-point B</a></li>
+                            </ul>
+                        </li>
+
+                        <li><a href="#scorecard" id="link-scorecard" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Scorecard</a></li>
+                        <li><a href="#conclusion" id="link-conclusion" class="nav-link tw-block tw-py-2 tw-px-3 tw-rounded hover:tw-bg-gray-50 tw-transition-all tw-border-l-4 tw-border-transparent tw-text-sm tw-text-gray-600">Summary</a></li>
+                    </ul>
+                </nav>
+            </div>
+            
+            <div class="tw-flex-shrink-0 tw-p-6 tw-border-t tw-border-gray-100 tw-bg-white">
+                <a href="[LINK_TO_ABOUT_PAGE]" target="_blank" class="tw-group tw-flex tw-items-center tw-text-sm tw-font-bold tw-text-blue-600 hover:tw-text-blue-800">
+                    <span>About the author</span>
+                    <svg class="tw-w-4 tw-h-4 tw-ml-2 tw-transition-transform group-hover:tw-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </a>
+            </div>
+        </aside>
+
+        <main id="top" class="tw-flex-1 tw-p-8 md:tw-p-12 tw-max-w-4xl tw-mx-auto">
+            
+            <header class="tw-mb-12 tw-border-b tw-pb-8">
+                <img src="[URL_TO_IMAGE]" alt="[ALT_TEXT]" class="constrained-img" style="box-shadow:10px 10px 15px rgba(0, 0, 0, 0.5); max-width: 250px; border-radius:10px; width:30%; float:right;" />
+                
+                <h1 class="tw-text-3xl md:tw-text-5xl tw-font-extrabold tw-text-gray-900 tw-mb-4 tw-leading-tight">[MAIN ARTICLE TITLE]</h1>
+                
+                <div class="tw-flex tw-items-center tw-space-x-2 tw-mb-6 tw-text-gray-600 tw-text-sm">
+                    <span>Written by: </span>
+                    <a href="[AUTHOR_URL]" target="_blank" class="tw-font-bold tw-text-blue-600 hover:tw-underline">[AUTHOR NAME]</a>
+                    <span class="tw-text-gray-400">&bull;</span>
+                    <span>Published: [DATE]</span>
+                </div>
+
+                <p class="tw-text-xl tw-text-gray-500 tw-leading-relaxed">[Introductory hook or abstract]</p>
+            </header>
+
+            <section id="section-1" class="track-section tw-mb-16 tw-bg-gray-50 tw-border-b tw-border-gray-300 tw-ml-[2px] tw-p-8">
+                 <header class="tw-mb-12 tw-border-b-4 tw-border-slate-200">
+                     <span class="tw-block tw-text-sm tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-widest">[CATEGORY / TOPIC]</span>
+                     <h2 class="tw-text-3xl md:tw-text-4xl tw-font-extrabold tw-text-gray-900 tw-mt-2">[SECTION TITLE]</h2>
+                </header>
+
+                <p class="tw-text-lg tw-leading-relaxed tw-mb-6">
+                    [Main paragraph text goes here. Use this section style for all major blocks of content.]
+                </p>
+            </section>
+
+            <section id="section-2" class="track-section tw-mb-16 tw-bg-gray-50 tw-border-b tw-border-gray-300 tw-ml-[2px] tw-p-8">
+                <header class="tw-mb-12 tw-border-b-4 tw-border-slate-200">
+                     <span class="tw-block tw-text-sm tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-widest">[CATEGORY]</span>
+                     <h2 class="tw-text-3xl md:tw-text-4xl tw-font-extrabold tw-text-gray-900 tw-mt-2">[SECTION WITH IMAGE]</h2>
+                </header>
+                
+                <figure class="tw-w-full md:tw-w-1/2 tw-float-right md:tw-ml-6">
+                    <img src="[IMAGE_URL]" alt="[ALT TEXT]" class="constrained-img" width="600" height="400" loading="lazy">
+                    <figcaption>[Image Caption goes here]</figcaption>
+                </figure>
+
+                <div id="subsection-2a" class="track-section">
+                    <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">Subsection Title A</h3>
+                    <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                        [Content wrapping around the image.]
+                    </p>
+                </div>
+                
+                <div id="subsection-2b" class="track-section tw-mt-8">
+                    <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4">Subsection Title B</h3>
+                    <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                        [More content.]
+                    </p>
+                </div>
+                <div class="tw-clear-both"></div>
+            </section>
+
+            <section id="scorecard" class="track-section tw-mb-16 tw-bg-gray-50 tw-border-b tw-border-gray-300 tw-ml-[2px] tw-p-8">
+                <header class="tw-mb-12 tw-border-b-4 tw-border-slate-200">
+                     <span class="tw-block tw-text-sm tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-widest">Comparison</span>
+                     <h2 class="tw-text-3xl md:tw-text-4xl tw-font-extrabold tw-text-gray-900 tw-mt-2">Scorecard Matrix</h2>
+                </header>
+
+                <div class="tw-overflow-x-auto">
+                    <table class="tw-min-w-full tw-bg-white tw-border tw-border-slate-300 tw-rounded-lg tw-shadow-sm">
+                        <thead>
+                            <tr class="tw-bg-slate-100 tw-text-slate-700 tw-uppercase tw-text-sm tw-leading-normal">
+                                <th class="tw-py-3 tw-px-2 tw-text-left">[COLUMN 1]</th>
+                                <th class="tw-py-3 tw-px-2 tw-text-center">[COLUMN 2]</th>
+                                <th class="tw-py-3 tw-px-2 tw-text-center">[COLUMN 3]</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tw-text-slate-600 tw-text-sm">
+                            <tr class="tw-border-b tw-border-slate-200 hover:tw-bg-slate-50">
+                                <td class="tw-py-3 tw-px-2 tw-text-left tw-font-bold">Item Name</td>
+                                <td class="tw-py-3 tw-px-2 tw-text-center">Value A</td>
+                                <td class="tw-py-3 tw-px-2 tw-text-center">Value B</td>
+                            </tr>
+                            <tr class="tw-bg-slate-100 tw-font-extrabold tw-text-slate-900">
+                                <td class="tw-py-4 tw-px-2 tw-text-left">TOTAL</td>
+                                <td class="tw-py-4 tw-px-2 tw-text-center">100</td>
+                                <td class="tw-py-4 tw-px-2 tw-text-center">200</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="conclusion" class="track-section tw-mb-16 tw-bg-gray-50 tw-border-b tw-border-gray-300 tw-ml-[2px] tw-p-8">
+                <header class="tw-mb-12 tw-border-b-4 tw-border-slate-200">
+                     <span class="tw-block tw-text-sm tw-font-bold tw-text-blue-600 tw-uppercase tw-tracking-widest">Summary</span>
+                     <h2 class="tw-text-3xl md:tw-text-4xl tw-font-extrabold tw-text-gray-900 tw-mt-2">Conclusion Title</h2>
+                </header>
+
+                <div class="tw-bg-blue-50 tw-p-10 tw-rounded-2xl tw-border tw-border-blue-100">
+                    <p class="tw-text-xl tw-leading-relaxed tw-text-blue-900">
+                        [Final concluding thoughts.]
+                    </p>
+                </div>
+            </section>
+
+            <section id="references" class="track-section tw-mb-16 tw-bg-gray-50 tw-border-b tw-border-gray-300 tw-ml-[2px] tw-p-8">
+                <h3 class="tw-text-2xl tw-font-bold tw-text-gray-900 tw-mb-6">References</h3>
+                <ol class="tw-list-decimal tw-pl-5 tw-space-y-4 tw-text-base tw-text-gray-700">
+                    <li>
+                        <strong>[Author]. ([Year]).</strong> <em>[Title].</em> [Publisher]. <a href="[URL]" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Link</a>
+                    </li>
+                </ol>
+            </section>
+
+        </main>
+    </div>
+
+    <div id="image-modal" class="tw-fixed tw-inset-0 tw-z-[100] tw-hidden tw-bg-white tw-flex tw-items-center tw-justify-center tw-p-4 tw-transition-all tw-duration-300">
+        <button id="modal-close" class="tw-absolute tw-top-4 tw-right-6 tw-text-black tw-text-5xl tw-font-bold hover:tw-text-gray-600 focus:tw-outline-none">&times;</button>
+        <div class="tw-max-w-[95vw] tw-max-h-[95vh] tw-w-full tw-h-full tw-flex tw-flex-col tw-items-center tw-justify-center">
+             <img id="modal-img" src="" class="tw-h-[90vh] tw-w-auto tw-object-contain tw-rounded-lg tw-shadow-2xl" alt="Full screen view" />
+             <p id="modal-caption" class="tw-mt-4 tw-text-gray-900 tw-text-center tw-text-xl tw-font-bold tw-max-w-4xl tw-bg-gray-100 tw-px-6 tw-py-3 tw-rounded tw-shadow"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll(".track-section");
+            const navLinks = document.querySelectorAll(".nav-link");
+            let isManualScroll = false;
+            let scrollTimeout;
+
+            // Scroll Tracking
+            const setActiveLink = (id) => {
+                navLinks.forEach(link => {
+                    link.classList.remove("nav-link-active");
+                    link.classList.remove("sub-nav-link-active");
+                    link.classList.add("tw-border-transparent");
+                });
+                const activeLink = document.querySelector(`#link-${id}`);
+                if (activeLink) {
+                    const parentList = activeLink.parentElement.parentElement;
+                    const isSubMenu = parentList.tagName === 'UL' && parentList.previousElementSibling;
+                    if (isSubMenu) {
+                        activeLink.classList.add("sub-nav-link-active");
+                        const parentLink = parentList.previousElementSibling;
+                        parentLink.classList.add("nav-link-active");
+                        parentLink.classList.remove("tw-border-transparent");
+                    } else {
+                        activeLink.classList.add("nav-link-active");
+                        activeLink.classList.remove("tw-border-transparent");
+                    }
+                }
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                if (isManualScroll) return;
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setActiveLink(entry.target.id);
+                    }
+                });
+            }, { root: null, rootMargin: "-20% 0px -50% 0px", threshold: 0 });
+
+            sections.forEach(section => observer.observe(section));
+
+            navLinks.forEach(link => {
+                link.addEventListener("click", (e) => {
+                    isManualScroll = true;
+                    clearTimeout(scrollTimeout);
+                    const targetId = e.currentTarget.getAttribute("href").substring(1);
+                    setActiveLink(targetId);
+                    scrollTimeout = setTimeout(() => { isManualScroll = false; }, 1000);
+                });
+            });
+
+            // Modal Logic
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img');
+            const modalCaption = document.getElementById('modal-caption');
+            const closeBtn = document.getElementById('modal-close');
+            const images = document.querySelectorAll('.constrained-img');
+
+            const openModal = (src, caption) => {
+                modalImg.src = src;
+                modalCaption.textContent = caption || "";
+                modal.classList.remove('tw-hidden');
+                document.body.style.overflow = 'hidden'; 
+            };
+
+            const closeModal = () => {
+                modal.classList.add('tw-hidden');
+                modalImg.src = '';
+                document.body.style.overflow = ''; 
+            };
+
+            images.forEach(img => {
+                img.addEventListener('click', function() {
+                    let caption = this.getAttribute('alt');
+                    if (this.parentElement.tagName === 'FIGURE') {
+                        const figCap = this.parentElement.querySelector('figcaption');
+                        if (figCap) caption = figCap.textContent;
+                    }
+                    openModal(this.src, caption);
+                });
+            });
+
+            closeBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target.parentElement === modal) closeModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape" && !modal.classList.contains('tw-hidden')) closeModal();
+            });
+        });
+    </script>
+</body>
+</html>
