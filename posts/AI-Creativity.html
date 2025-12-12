@@ -234,4 +234,131 @@
                         <strong>Clay Mathematics Institute.</strong> "Millennium Prize Problems." <a href="https://www.claymath.org/millennium-problems/" target="_blank" class="tw-text-blue-600 hover:tw-underline tw-font-semibold">Official List</a>
                     </li>
                 </ol>
-            </section>                   <br /><br />                    <center>                        <img src="img/AI-Creativity.jpg" alt="AI Creativity" style="box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5); width: 90%; max-width: 700px;" />                    </center>        </main>    </div>    <div id="image-modal" class="tw-fixed tw-inset-0 tw-z-[100] tw-hidden tw-bg-white tw-flex tw-items-center tw-justify-center tw-p-4 tw-transition-all tw-duration-300">        <button id="modal-close" class="tw-absolute tw-top-4 tw-right-6 tw-text-black tw-text-5xl tw-font-bold hover:tw-text-gray-600 focus:tw-outline-none">&times;</button>        <div class="tw-max-w-[95vw] tw-max-h-[95vh] tw-w-full tw-h-full tw-flex tw-flex-col tw-items-center tw-justify-center">             <img id="modal-img" src="" class="tw-h-[90vh] tw-w-auto tw-object-contain tw-rounded-lg tw-shadow-2xl" alt="Full screen view" />             <p id="modal-caption" class="tw-mt-4 tw-text-gray-900 tw-text-center tw-text-xl tw-font-bold tw-max-w-4xl tw-bg-gray-100 tw-px-6 tw-py-3 tw-rounded tw-shadow"></p>        </div>    </div>    <script>        document.addEventListener("DOMContentLoaded", () => {                        // --- SCROLL TRACKING LOGIC ---            const sections = document.querySelectorAll(".track-section");            const navLinks = document.querySelectorAll(".nav-link");            let isManualScroll = false;            let scrollTimeout;            const setActiveLink = (id) => {                navLinks.forEach(link => {                    link.classList.remove("nav-link-active");                    link.classList.remove("sub-nav-link-active");                    link.classList.add("tw-border-transparent");                });                                const activeLink = document.querySelector(`#link-${id}`);                                if (activeLink) {                    const parentList = activeLink.parentElement.parentElement;                    const isSubMenu = parentList.tagName === 'UL' && parentList.previousElementSibling;                                        if (isSubMenu) {                        activeLink.classList.add("sub-nav-link-active");                        const parentLink = parentList.previousElementSibling;                        parentLink.classList.add("nav-link-active");                        parentLink.classList.remove("tw-border-transparent");                    } else {                        activeLink.classList.add("nav-link-active");                        activeLink.classList.remove("tw-border-transparent");                    }                }            };            const observerOptions = {                root: null,                rootMargin: "-20% 0px -50% 0px",                 threshold: 0            };            const observer = new IntersectionObserver((entries) => {                if (isManualScroll) return;                entries.forEach(entry => {                    if (entry.isIntersecting) {                        setActiveLink(entry.target.id);                    }                });            }, observerOptions);            sections.forEach(section => {                observer.observe(section);            });            navLinks.forEach(link => {                link.addEventListener("click", (e) => {                    isManualScroll = true;                    clearTimeout(scrollTimeout);                    const targetId = e.currentTarget.getAttribute("href").substring(1);                    setActiveLink(targetId);                    scrollTimeout = setTimeout(() => { isManualScroll = false; }, 1000);                });            });            const initialHash = window.location.hash.substring(1);            if (initialHash) setActiveLink(initialHash); else setActiveLink('introduction');                        // --- LIGHTBOX / MODAL LOGIC ---            const modal = document.getElementById('image-modal');            const modalImg = document.getElementById('modal-img');            const modalCaption = document.getElementById('modal-caption');            const closeBtn = document.getElementById('modal-close');            const images = document.querySelectorAll('.constrained-img');            const openModal = (src, caption) => {                modalImg.src = src;                modalCaption.textContent = caption || "";                modal.classList.remove('tw-hidden');                document.body.style.overflow = 'hidden'; // Prevent background scrolling            };            const closeModal = () => {                modal.classList.add('tw-hidden');                modalImg.src = '';                document.body.style.overflow = ''; // Restore scrolling            };            images.forEach(img => {                img.addEventListener('click', function() {                    // Try to find the caption in a sibling figcaption or use alt text                    let caption = this.getAttribute('alt');                                        // Look for figcaption in the same figure parent                    if (this.parentElement.tagName === 'FIGURE') {                        const figCap = this.parentElement.querySelector('figcaption');                        if (figCap) caption = figCap.textContent;                    }                    openModal(this.src, caption);                });            });            // Close on button click            closeBtn.addEventListener('click', closeModal);            // Close on click outside image            modal.addEventListener('click', (e) => {                if (e.target === modal || e.target.parentElement === modal) {                    closeModal();                }            });            // Close on Escape key            document.addEventListener('keydown', (e) => {                if (e.key === "Escape" && !modal.classList.contains('tw-hidden')) {                    closeModal();                }            });        });    </script><script src="/common/tracker.js"></script> </body></html>
+            </section>                   <br /><br />                    <center>                        <img src="img/AI-Creativity.jpg" alt="AI Creativity" style="box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.5); width: 90%; max-width: 700px;" />                    </center>        </main>    </div>    <div id="image-modal" class="tw-fixed tw-inset-0 tw-z-[100] tw-hidden tw-bg-white tw-flex tw-items-center tw-justify-center tw-p-4 tw-transition-all tw-duration-300">        <button id="modal-close" class="tw-absolute tw-top-4 tw-right-6 tw-text-black tw-text-5xl tw-font-bold hover:tw-text-gray-600 focus:tw-outline-none">&times;</button>        <div class="tw-max-w-[95vw] tw-max-h-[95vh] tw-w-full tw-h-full tw-flex tw-flex-col tw-items-center tw-justify-center">             <img id="modal-img" src="" class="tw-h-[90vh] tw-w-auto tw-object-contain tw-rounded-lg tw-shadow-2xl" alt="Full screen view" />             <p id="modal-caption" class="tw-mt-4 tw-text-gray-900 tw-text-center tw-text-xl tw-font-bold tw-max-w-4xl tw-bg-gray-100 tw-px-6 tw-py-3 tw-rounded tw-shadow"></p>        </div>    </div>   
+                
+                
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // --- SCROLL TRACKING LOGIC ---
+            const sections = document.querySelectorAll(".track-section");
+            const navLinks = document.querySelectorAll(".nav-link");
+            let isManualScroll = false;
+            let scrollTimeout;
+
+            const setActiveLink = (id) => {
+                navLinks.forEach(link => {
+                    link.classList.remove("nav-link-active");
+                    link.classList.remove("sub-nav-link-active");
+                    link.classList.add("tw-border-transparent");
+                });
+                
+                const activeLink = document.querySelector(`#link-${id}`);
+                
+                if (activeLink) {
+                    const parentList = activeLink.parentElement.parentElement;
+                    const isSubMenu = parentList.tagName === 'UL' && parentList.previousElementSibling;
+                    
+                    if (isSubMenu) {
+                        activeLink.classList.add("sub-nav-link-active");
+                        const parentLink = parentList.previousElementSibling;
+                        parentLink.classList.add("nav-link-active");
+                        parentLink.classList.remove("tw-border-transparent");
+                    } else {
+                        activeLink.classList.add("nav-link-active");
+                        activeLink.classList.remove("tw-border-transparent");
+                    }
+                }
+            };
+
+            const observerOptions = {
+                root: null,
+                rootMargin: "-20% 0px -50% 0px", 
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                if (isManualScroll) return;
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setActiveLink(entry.target.id);
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener("click", (e) => {
+                    isManualScroll = true;
+                    clearTimeout(scrollTimeout);
+                    const targetId = e.currentTarget.getAttribute("href").substring(1);
+                    setActiveLink(targetId);
+                    scrollTimeout = setTimeout(() => { isManualScroll = false; }, 1000);
+                });
+            });
+
+            const initialHash = window.location.hash.substring(1);
+            if (initialHash) setActiveLink(initialHash); else setActiveLink('introduction');
+
+            
+            // --- LIGHTBOX / MODAL LOGIC ---
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img');
+            const modalCaption = document.getElementById('modal-caption');
+            const closeBtn = document.getElementById('modal-close');
+            const images = document.querySelectorAll('.constrained-img');
+
+            const openModal = (src, caption) => {
+                modalImg.src = src;
+                modalCaption.textContent = caption || "";
+                modal.classList.remove('tw-hidden');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            };
+
+            const closeModal = () => {
+                modal.classList.add('tw-hidden');
+                modalImg.src = '';
+                document.body.style.overflow = ''; // Restore scrolling
+            };
+
+            images.forEach(img => {
+                img.addEventListener('click', function() {
+                    // Try to find the caption in a sibling figcaption or use alt text
+                    let caption = this.getAttribute('alt');
+                    
+                    // Look for figcaption in the same figure parent
+                    if (this.parentElement.tagName === 'FIGURE') {
+                        const figCap = this.parentElement.querySelector('figcaption');
+                        if (figCap) caption = figCap.textContent;
+                    }
+
+                    openModal(this.src, caption);
+                });
+            });
+
+            // Close on button click
+            closeBtn.addEventListener('click', closeModal);
+
+            // Close on click outside image
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target.parentElement === modal) {
+                    closeModal();
+                }
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape" && !modal.classList.contains('tw-hidden')) {
+                    closeModal();
+                }
+            });
+
+        });
+    </script>                
+                
+        <script src="/common/tracker.js"></script> 
+    </body></html>
