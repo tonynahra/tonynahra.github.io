@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Configuration ---
+    // --- 1. Configuration & DOM Elements & Global State ---
+
     // BASE_URL MUST end with '?' to append the album name as a query string (e.g., ?nature)
     const BASE_URL = 'https://mediamaze.com/json/?'; 
-    const PHOTOS_PER_LOAD = 30; // The initial limit and subsequent load size
+    const PHOTOS_PER_LOAD = 30; 
 
-    // --- DOM Elements ---
+    // DOM Elements
     const photoGrid = document.getElementById('photo-grid');
     const showMoreBtn = document.getElementById('show-more-btn');
     const filterInput = document.getElementById('filter-input');
@@ -18,20 +19,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalDescription = document.getElementById('modal-description');
     const modalInfo = document.getElementById('modal-info');
 
-    // --- Global State ---
+    // Global State
     let allPhotos = [];
     let filteredPhotos = [];
     let currentDisplayCount = 0;
     let currentPhotoIndex = -1;
     let isInfoVisible = true;
 
-    // --- Data Loading ---
+    // --- 2. Utility & Helper Functions (Defined BEFORE they are called) ---
+
     function getAlbumName() {
         // Reads the album name from the URL query parameter (e.g., album.html?nature)
         const params = new URLSearchParams(window.location.search);
         let albumName = '';
         
-        // Find the first non-empty query parameter key or value
         for (const [key, value] of params.entries()) {
             albumName = key || value;
             break;
@@ -39,38 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return albumName.replace('.json', '');
     }
 
-    async function loadAlbumData() {
-        const albumName = getAlbumName();
-        if (!albumName) {
-            albumTitle.textContent = "Error Loading Album";
-            alert("Error: Missing album name in URL (e.g., album.html?nature)");
-            return;
-        }
-
-        // Construct the URL as required by your proxy: https://mediamaze.com/json/?nature
-        const fetchUrl = `${BASE_URL}${albumName}`;
-
-        try {
-            const response = await fetch(fetchUrl);
-            const data = await response.json();
-
-            albumTitle.textContent = data.albumTitle || 'Photo Album';
-
-            // Filter out any entries that might be missing required photo data if needed
-            allPhotos = (data.photos || []).filter(p => p.url && (p.title || p.description));
-            filteredPhotos = allPhotos;
-
-            // Initialize filters and rendering
-            populateFilters(allPhotos);
-            renderPhotos();
-        } catch (error) {
-            console.error('Failed to load album data from proxy:', fetchUrl, error);
-            albumTitle.textContent = "Error: Check Console";
-            alert('Could not load album data. Check the proxy URL and file name.');
-        }
-    }
-
-    // --- Filter Population ---
     function populateFilters(photos) {
         const keywords = {};
         const categories = {};
@@ -109,7 +78,42 @@ document.addEventListener('DOMContentLoaded', () => {
         appendOptions(keywordFilter, keywords);
     }
 
-    // --- Filtering Logic ---
+    function createPhotoElement(photo, index) {
+        const item = document.createElement('div');
+        item.className = 'photo-item';
+        item.dataset.index = index;
+
+        const img = document.createElement('img');
+        img.src = photo.thumbnailUrl || photo.url;
+        img.alt = photo.title || 'Photo';
+        img.loading = 'lazy';
+
+        item.appendChild(img);
+        item.addEventListener('click', () => openModal(index));
+
+        return item;
+    }
+    
+    function renderPhotos() {
+        const newCount = Math.min(filteredPhotos.length, currentDisplayCount + PHOTOS_PER_LOAD);
+
+        for (let i = currentDisplayCount; i < newCount; i++) {
+            const photo = filteredPhotos[i];
+            const element = createPhotoElement(photo, i);
+            photoGrid.appendChild(element);
+        }
+
+        currentDisplayCount = newCount;
+
+        // Update "Show More" button visibility
+        if (currentDisplayCount < filteredPhotos.length) {
+            showMoreBtn.style.display = 'block';
+            showMoreBtn.textContent = `Show More Photos (${filteredPhotos.length - currentDisplayCount} remaining)`;
+        } else {
+            showMoreBtn.style.display = 'none';
+        }
+    }
+
     function applyFilters() {
         const searchText = filterInput.value.toLowerCase();
         const selectedKeyword = keywordFilter.value;
@@ -118,13 +122,13 @@ document.addEventListener('DOMContentLoaded', () => {
         filteredPhotos = allPhotos.filter(photo => {
             // 1. Search Text Filter (Title or Keywords, minimum 3 characters)
             if (searchText.length >= 3) {
-                const title = photo.title.toLowerCase();
+                const title = (photo.title || '').toLowerCase();
                 const keywords = (photo.keywords || '').toLowerCase();
                 if (!title.includes(searchText) && !keywords.includes(searchText)) {
                     return false;
                 }
             } else if (searchText.length > 0 && searchText.length < 3) {
-                 // Prevent filtering if less than 3 chars are typed, but still apply dropdowns
+                 // Ignore text filter if less than 3 chars are typed
             }
 
             // 2. Keyword Dropdown Filter
@@ -151,44 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPhotos();
     }
 
-    // --- Rendering Logic ---
-    function createPhotoElement(photo, index) {
-        const item = document.createElement('div');
-        item.className = 'photo-item';
-        item.dataset.index = index; // Store the index in the filteredPhotos array
-
-        const img = document.createElement('img');
-        img.src = photo.thumbnailUrl || photo.url;
-        img.alt = photo.title || 'Photo';
-        img.loading = 'lazy';
-
-        item.appendChild(img);
-        item.addEventListener('click', () => openModal(index));
-
-        return item;
-    }
-
-    function renderPhotos() {
-        const newCount = Math.min(filteredPhotos.length, currentDisplayCount + PHOTOS_PER_LOAD);
-
-        for (let i = currentDisplayCount; i < newCount; i++) {
-            const photo = filteredPhotos[i];
-            const element = createPhotoElement(photo, i);
-            photoGrid.appendChild(element);
-        }
-
-        currentDisplayCount = newCount;
-
-        // Update "Show More" button visibility
-        if (currentDisplayCount < filteredPhotos.length) {
-            showMoreBtn.style.display = 'block';
-            showMoreBtn.textContent = `Show More Photos (${filteredPhotos.length - currentDisplayCount} remaining)`;
-        } else {
-            showMoreBtn.style.display = 'none';
-        }
-    }
-
     // --- Modal Functions ---
+
     function updateModalContent(index) {
         if (index < 0 || index >= filteredPhotos.length) {
             return;
@@ -196,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPhotoIndex = index;
         const photo = filteredPhotos[currentPhotoIndex];
 
-        // Update main image and info
         modalImage.src = photo.url;
         modalTitle.textContent = photo.title;
         modalDescription.textContent = photo.description || 'No description available.';
@@ -208,14 +175,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function openModal(index) {
         updateModalContent(index);
         modal.style.display = 'flex';
-        // Prevent background scrolling
         document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
         modal.style.display = 'none';
         document.body.style.overflow = '';
-        // Exit fullscreen if active
         if (document.fullscreenElement) {
             document.exitFullscreen();
         }
@@ -225,7 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function navigatePhoto(direction) {
         let newIndex = currentPhotoIndex + direction;
         
-        // Wrap around logic
         if (newIndex < 0) {
             newIndex = filteredPhotos.length - 1; 
         } else if (newIndex >= filteredPhotos.length) {
@@ -242,7 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleFullScreen() {
         if (!document.fullscreenElement) {
-            // Enter fullscreen on the modal content
             modal.requestFullscreen().catch(err => {
                 console.error(`Error attempting to enable full-screen mode: ${err.message}`);
                 alert('Full-screen mode could not be enabled by the browser.');
@@ -254,7 +217,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Event Listeners ---
+
+    // --- 3. Core Execution Function ---
+
+    async function loadAlbumData() {
+        const albumName = getAlbumName();
+        if (!albumName) {
+            albumTitle.textContent = "Error Loading Album";
+            alert("Error: Missing album name in URL (e.g., album.html?nature)");
+            return;
+        }
+
+        const fetchUrl = `${BASE_URL}${albumName}`;
+
+        try {
+            const response = await fetch(fetchUrl);
+            const data = await response.json();
+
+            albumTitle.textContent = data.albumTitle || 'Photo Album';
+
+            allPhotos = (data.photos || []).filter(p => p.url);
+            filteredPhotos = allPhotos;
+
+            // These calls now safely reference the functions defined above
+            populateFilters(allPhotos); 
+            renderPhotos();
+        } catch (error) {
+            console.error('Failed to load album data from proxy:', fetchUrl, error);
+            albumTitle.textContent = "Error: Check Console";
+            // alert('Could not load album data. Check the proxy URL and file name.'); // Commented out to reduce popups on failure
+        }
+    }
+
+    // --- 4. Execution Call & Event Listeners ---
 
     // Load initial data when the script starts
     loadAlbumData();
@@ -278,21 +273,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (modal.style.display === 'flex') {
             if (e.key === 'Escape') {
-                closeModal(); // Exit modal/fullscreen
+                closeModal();
             } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                navigatePhoto(-1); // Previous
+                navigatePhoto(-1);
             } else if (e.key === 'ArrowRight' || e.key === ' ') {
                 e.preventDefault();
-                navigatePhoto(1); // Next (Spacebar also works)
+                navigatePhoto(1);
             } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
                 e.preventDefault();
-                toggleInfo(); // Toggle Info
+                toggleInfo();
             }
         }
     });
 
-    // Clean up modal class when leaving full screen via ESC or browser UI
+    // Handle browser exit from full screen
     document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement) {
             modal.classList.remove('fullscreen');
