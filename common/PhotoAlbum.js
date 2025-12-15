@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const categories = {};
 
         photos.forEach(photo => {
-            // Split Categories by comma (FIXED: Handles splitting for dropdown)
+            // Split Categories by comma 
             const photoCategories = (photo.category || '')
                 .split(',')
                 .map(c => c.trim())
