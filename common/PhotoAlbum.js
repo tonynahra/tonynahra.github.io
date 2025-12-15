@@ -71,12 +71,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const categories = {};
 
         photos.forEach(photo => {
-            // Count Categories
-            const cat = photo.category || 'Uncategorized';
-            categories[cat] = (categories[cat] || 0) + 1;
+            // Split Categories by comma (Point 4)
+            const photoCategories = (photo.category || '')
+                .split(',')
+                .map(c => c.trim())
+                .filter(c => c);
 
-            // Count Keywords (Split by comma OR space, and exclude common words - Point 4)
-            const keywordList = (photo.keywords || '').split(','); // Start by splitting on comma
+            if (photoCategories.length === 0) {
+                 photoCategories.push('Uncategorized');
+            }
+
+            photoCategories.forEach(cat => {
+                categories[cat] = (categories[cat] || 0) + 1;
+            });
+
+
+            // Split Keywords by comma and space, and exclude common words (Point 4)
+            const keywordList = (photo.keywords || '').split(','); 
             
             const processedKeywords = keywordList.flatMap(k => 
                 k.trim().split(/\s+/) // Then split each segment by space if necessary
@@ -164,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Keyword Dropdown Filter
             if (selectedKeyword) {
-                // Check if selectedKeyword is present in the photo's comma-split keywords
+                // Check if selectedKeyword is present in the photo's comma/space-split keywords
                 const photoKeywords = (photo.keywords || '').split(/[\s,]+/).map(k => k.trim());
                 if (!photoKeywords.includes(selectedKeyword)) {
                     return false;
@@ -173,7 +184,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Category Dropdown Filter
             if (selectedCategory) {
-                if ((photo.category || 'Uncategorized') !== selectedCategory) {
+                // Check if selectedCategory is present in the photo's comma-split categories
+                const photoCategories = (photo.category || '').split(',').map(c => c.trim());
+                
+                if (selectedCategory === 'Uncategorized') {
+                    // Match photos that have no category defined (or empty category field)
+                    if (photoCategories.filter(c => c).length > 0) {
+                        return false;
+                    }
+                } else if (!photoCategories.includes(selectedCategory)) {
                     return false;
                 }
             }
