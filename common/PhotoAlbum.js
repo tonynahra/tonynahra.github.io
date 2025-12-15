@@ -85,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 categories[cat] = (categories[cat] || 0) + 1;
             });
 
-
             // Split Keywords by comma and space, and exclude common words
             const keywordList = (photo.keywords || '').split(','); 
             
@@ -111,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
             sorted.forEach(([name, count]) => {
                 const option = document.createElement('option');
                 option.value = name;
-                // Capitalize first letter for display
                 const displayName = name.charAt(0).toUpperCase() + name.slice(1);
                 option.textContent = `${displayName} (${count})`;
                 selectElement.appendChild(option);
@@ -151,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show More Button logic
         if (currentDisplayCount < filteredPhotos.length) {
-            showMoreBtn.style.display = 'block';
+            showMoreBtn.style.display = 'inline-block'; // Matches CSS fix
             showMoreBtn.textContent = `Show More Photos (${filteredPhotos.length - currentDisplayCount} remaining)`;
         } else {
             showMoreBtn.style.display = 'none';
@@ -173,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Keyword Dropdown Filter (Checks against comma/space-split values)
+            // Keyword Dropdown Filter
             if (selectedKeyword) {
                 const photoKeywords = (photo.keywords || '').split(/[\s,]+/).map(k => k.trim());
                 if (!photoKeywords.includes(selectedKeyword)) {
@@ -181,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Category Dropdown Filter (Checks against comma-split values)
+            // Category Dropdown Filter
             if (selectedCategory) {
                 const photoCategories = (photo.category || '').split(',').map(c => c.trim());
                 
@@ -209,7 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPhotoIndex = index;
         const photo = filteredPhotos[currentPhotoIndex];
         
-        // Update content
         modalImage.src = photo.url;
         modalTitle.textContent = photo.title;
         modalDescription.textContent = photo.description || 'No description available.';
@@ -217,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openModal(index) {
-        // Ensure image starts fully opaque when opening modal
         modalImage.style.opacity = 1; 
         updateModalContent(index);
         modal.style.display = 'flex';
@@ -246,13 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Apply fade-out effect
         modalImage.style.opacity = 0;
         
-        // Wait for the fade-out transition to complete before changing the image source
         setTimeout(() => {
             updateModalContent(newIndex);
-            
-            // Apply fade-in effect
             modalImage.style.opacity = 1;
-        }, 300); // 300ms matches the CSS transition time
+        }, 300); 
     }
 
     function toggleInfo() {
@@ -289,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = '';
     }
 
-
     // --- 3. Core Execution Function ---
 
     async function loadAlbumData() {
@@ -325,25 +317,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadAlbumData();
 
-    // Show More / Shuffle / Filters
     showMoreBtn.addEventListener('click', renderPhotos);
     shuffleBtn.addEventListener('click', handleShuffle);
     filterInput.addEventListener('input', applyFilters);
     keywordFilter.addEventListener('change', applyFilters);
     categoryFilter.addEventListener('change', applyFilters);
-
-    // Meta Modal
     showMetaBtn.addEventListener('click', openMetaModal);
     closeMetaBtn.addEventListener('click', closeMetaModal);
 
-    // Image Modal
     document.getElementById('close-modal-btn').addEventListener('click', closeModal);
     document.getElementById('prev-btn').addEventListener('click', () => navigatePhoto(-1));
     document.getElementById('next-btn').addEventListener('click', () => navigatePhoto(1));
     document.getElementById('toggle-info-btn').addEventListener('click', toggleInfo);
     document.getElementById('fullscreen-btn').addEventListener('click', toggleFullScreen);
 
-    // Keyboard Navigation
     document.addEventListener('keydown', (e) => {
         if (modal.style.display === 'flex') {
             if (e.key === 'Escape') {
@@ -363,7 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle browser exit from full screen
     document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement) {
             modal.classList.remove('fullscreen');
