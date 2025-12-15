@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tony Nahra Album</title>
+    <title>Dynamic Photo Album</title>
     <link rel="stylesheet" href="common/PhotoAlbum.css">
 </head>
 <body>
 
     <header class="sticky-header">
         <div class="controls-container">
-            <h1 id="album-title">Photo Album</h1>
+            <div class="album-title-group">
+                <h1 id="album-title">Photo Album</h1>
+                <button id="show-meta-btn" title="View Album Details" style="display:none;">ⓘ</button>
+            </div>
 
-            <input type="text" id="filter-input" placeholder="Filter by Title or Keywords (3+ chars)">
+            <input type="text" id="filter-input" placeholder="Search">
 
             <select id="keyword-filter">
                 <option value="">All Keywords</option>
@@ -21,6 +24,8 @@
             <select id="category-filter">
                 <option value="">All Categories</option>
             </select>
+            
+            <button id="shuffle-btn" title="Shuffle Images">🔀 Shuffle</button>
         </div>
     </header>
 
@@ -34,18 +39,28 @@
         <div class="modal-content">
             <img id="modal-image" src="" alt="Full size photo">
 
-            <div class="modal-controls">
-                <button id="close-modal-btn" title="Close (Esc)">Close</button>
+            <div class="modal-controls-top">
                 <button id="toggle-info-btn" title="Toggle Info (Up/Down)">Info</button>
                 <button id="fullscreen-btn" title="Full Screen">Full Screen</button>
-                <button id="prev-btn" title="Previous Photo (Left Arrow)">Prev</button>
-                <button id="next-btn" title="Next Photo (Right Arrow / Spacebar)">Next</button>
+                <button id="close-modal-btn" title="Close (Esc)">✕ Close</button>
             </div>
+            
+            <button id="prev-btn" class="nav-button" title="Previous Photo (Left Arrow)">&#10094;</button>
+            <button id="next-btn" class="nav-button" title="Next Photo (Right Arrow / Spacebar)">&#10095;</button>
 
             <div id="modal-info" class="modal-info-overlay">
                 <h3 id="modal-title"></h3>
                 <p id="modal-description"></p>
             </div>
+        </div>
+    </div>
+    
+    <div id="meta-modal" class="modal" style="display: none;">
+        <div class="meta-modal-content">
+            <h2 id="meta-modal-title">Album Details</h2>
+            <p id="meta-modal-created"></p>
+            <p id="meta-modal-note"></p>
+            <button id="close-meta-btn">Close</button>
         </div>
     </div>
 
