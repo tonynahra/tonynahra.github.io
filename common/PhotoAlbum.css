@@ -2,7 +2,7 @@
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding-top: 80px; 
+    padding-top: 80px; /* Space for the sticky header */
     background-color: #f4f4f9;
 }
 
@@ -48,6 +48,11 @@ body {
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+#show-meta-btn:hover, #shuffle-btn:hover {
+    background-color: #0056b3;
 }
 
 .controls-container input,
@@ -103,6 +108,27 @@ body {
     .masonry { column-count: 1; }
 }
 
+/* --- Show More Button --- */
+#show-more-container {
+    text-align: center; /* Ensures the button is centered */
+    padding: 20px;
+}
+
+#show-more-btn {
+    padding: 10px 20px;
+    font-size: 1.1em;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#show-more-btn:hover {
+    background-color: #0056b3;
+}
+
 /* --- Modal Styles --- */
 .modal {
     position: fixed;
@@ -111,7 +137,7 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Prevents scrollbars in modal container */
+    overflow: hidden; 
     background-color: rgba(0, 0, 0, 0.95);
     display: flex;
     justify-content: center;
@@ -120,31 +146,39 @@ body {
 
 .modal-content {
     position: relative;
-    width: 100%; /* Use 100% width/height in modal-content to align to edges */
+    width: 100%; 
     height: 100%; 
-    display: flex; /* Helps centering image */
+    display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0; /* Remove default margins */
-    padding: 0; /* Remove default padding */
+    margin: 0;
+    padding: 0;
 }
 
+/* Image scaling inside the modal */
 #modal-image {
     display: block;
     max-width: 100%;
-    max-height: 100%; /* Fill the container */
-    height: auto;
+    max-height: 100%; 
     width: auto;
+    height: auto;
     object-fit: contain; 
 }
 
-/* Fix for Full Screen Margin/Padding Issue */
+/* Full Screen Fix: Image scales to full viewport */
 .modal:fullscreen,
 .modal.fullscreen {
     background-color: #000;
     padding: 0;
     margin: 0;
     overflow: hidden;
+}
+
+.modal.fullscreen #modal-image {
+    max-width: 100vw;
+    max-height: 100vh;
+    width: auto;
+    height: auto;
 }
 
 
@@ -177,13 +211,18 @@ body {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 2.5em; /* Bigger arrows */
+    font-size: 2.5em; 
     padding: 10px 20px;
     background: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
     cursor: pointer;
     z-index: 2005;
+    transition: background 0.2s;
+}
+
+.nav-button:hover {
+    background: rgba(0, 0, 0, 0.8);
 }
 
 #prev-btn { left: 10px; }
@@ -195,7 +234,7 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: rgba(0, 0, 0, 0.85); /* Slightly darker background */
+    background: rgba(0, 0, 0, 0.85); 
     color: white;
     padding: 15px 25px;
     text-align: left;
@@ -205,13 +244,13 @@ body {
 
 .modal-info-overlay h3 {
     margin: 0 0 8px 0;
-    font-size: 1.6em; /* Bigger title */
+    font-size: 1.6em; 
     font-weight: bold;
 }
 
 .modal-info-overlay p {
     margin: 0;
-    font-size: 1.1em; /* Bigger description */
+    font-size: 1.1em; 
 }
 
 /* --- Meta Data Modal (Album Info) --- */
@@ -232,4 +271,9 @@ body {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#close-meta-btn:hover {
+    background-color: #c82333;
 }
