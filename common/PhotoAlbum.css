@@ -108,9 +108,9 @@ body {
     .masonry { column-count: 1; }
 }
 
-/* --- Show More Button --- */
+/* --- Show More Button (Centered Fix) --- */
 #show-more-container {
-    text-align: center; /* Ensures the button is centered */
+    text-align: center; 
     padding: 20px;
 }
 
@@ -137,11 +137,11 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; 
     background-color: rgba(0, 0, 0, 0.95);
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 0; /* Important for full screen */
 }
 
 .modal-content {
@@ -152,10 +152,12 @@ body {
     justify-content: center;
     align-items: center;
     margin: 0;
-    padding: 0;
+    /* We use padding here to create a slight border for the image when not fullscreen */
+    padding: 20px; 
+    box-sizing: border-box; 
 }
 
-/* Image scaling inside the modal */
+/* Image scaling (point 2: as big as possible when not full screen) */
 #modal-image {
     display: block;
     max-width: 100%;
@@ -163,9 +165,11 @@ body {
     width: auto;
     height: auto;
     object-fit: contain; 
+    /* Transition for Prev/Next effect (point 5) */
+    transition: opacity 0.3s ease-in-out; 
 }
 
-/* Full Screen Fix: Image scales to full viewport */
+/* Full Screen Fix (point 1) */
 .modal:fullscreen,
 .modal.fullscreen {
     background-color: #000;
@@ -174,6 +178,12 @@ body {
     overflow: hidden;
 }
 
+/* In fullscreen mode, remove the padding on modal-content */
+.modal.fullscreen .modal-content {
+    padding: 0;
+}
+
+/* Image must fill the full viewport when fullscreen */
 .modal.fullscreen #modal-image {
     max-width: 100vw;
     max-height: 100vh;
@@ -228,7 +238,7 @@ body {
 #prev-btn { left: 10px; }
 #next-btn { right: 10px; }
 
-/* Image Info Overlay - Nicer and Bigger */
+/* Image Info Overlay */
 .modal-info-overlay {
     position: absolute;
     bottom: 0;
