@@ -62,9 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleShuffle() {
-        // Shuffle the master list
         shuffleArray(allPhotos);
-        // Reapply filters and re-render the first batch
         applyFilters(); 
     }
 
@@ -77,12 +75,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const cat = photo.category || 'Uncategorized';
             categories[cat] = (categories[cat] || 0) + 1;
 
-            // Count Keywords (Excluding common words from the external file)
-            const photoKeywords = (photo.keywords || '').split(',')
-                .map(k => k.trim().toLowerCase())
-                .filter(k => k && !excludedKeywords.includes(k)); 
+            // Count Keywords (Split by comma OR space, and exclude common words - Point 4)
+            const keywordList = (photo.keywords || '').split(','); // Start by splitting on comma
             
-            photoKeywords.forEach(k => {
+            const processedKeywords = keywordList.flatMap(k => 
+                k.trim().split(/\s+/) // Then split each segment by space if necessary
+            )
+            .map(k => k.trim().toLowerCase())
+            .filter(k => k && !excludedKeywords.includes(k)); 
+            
+            processedKeywords.forEach(k => {
                 keywords[k] = (keywords[k] || 0) + 1;
             });
         });
@@ -162,8 +164,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Keyword Dropdown Filter
             if (selectedKeyword) {
-                const keywords = (photo.keywords || '').split(',').map(k => k.trim());
-                if (!keywords.includes(selectedKeyword)) {
+                // Check if selectedKeyword is present in the photo's comma-split keywords
+                const photoKeywords = (photo.keywords || '').split(/[\s,]+/).map(k => k.trim());
+                if (!photoKeywords.includes(selectedKeyword)) {
                     return false;
                 }
             }
@@ -189,6 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (index < 0 || index >= filteredPhotos.length) { return; }
         currentPhotoIndex = index;
         const photo = filteredPhotos[currentPhotoIndex];
+        
+        // Update content
         modalImage.src = photo.url;
         modalTitle.textContent = photo.title;
         modalDescription.textContent = photo.description || 'No description available.';
@@ -213,12 +218,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function navigatePhoto(direction) {
         let newIndex = currentPhotoIndex + direction;
+        
         if (newIndex < 0) {
             newIndex = filteredPhotos.length - 1; 
         } else if (newIndex >= filteredPhotos.length) {
             newIndex = 0;
         }
-        updateModalContent(newIndex);
+
+        // Apply fade-out effect (Point 5)
+        modalImage.style.opacity = 0;
+        
+        // Wait for the fade-out transition to complete before changing the image source
+        setTimeout(() => {
+            updateModalContent(newIndex);
+            
+            // Apply fade-in effect
+            modalImage.style.opacity = 1;
+        }, 300); // 300ms matches the CSS transition time
     }
 
     function toggleInfo() {
@@ -233,7 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(`Error attempting to enable full-screen mode: ${err.message}`);
                 alert('Full-screen mode could not be enabled by the browser.');
             });
-            // Class added to trigger CSS for full viewport image size
             modal.classList.add('fullscreen'); 
         } else {
             document.exitFullscreen();
