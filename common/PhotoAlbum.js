@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const categories = {};
 
         photos.forEach(photo => {
-            // Split Categories by comma (Point 4)
+            // Split Categories by comma (FIXED: Handles splitting for dropdown)
             const photoCategories = (photo.category || '')
                 .split(',')
                 .map(c => c.trim())
@@ -86,11 +86,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
 
-            // Split Keywords by comma and space, and exclude common words (Point 4)
+            // Split Keywords by comma and space, and exclude common words
             const keywordList = (photo.keywords || '').split(','); 
             
             const processedKeywords = keywordList.flatMap(k => 
-                k.trim().split(/\s+/) // Then split each segment by space if necessary
+                k.trim().split(/\s+/) 
             )
             .map(k => k.trim().toLowerCase())
             .filter(k => k && !excludedKeywords.includes(k)); 
@@ -173,22 +173,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Keyword Dropdown Filter
+            // Keyword Dropdown Filter (Checks against comma/space-split values)
             if (selectedKeyword) {
-                // Check if selectedKeyword is present in the photo's comma/space-split keywords
                 const photoKeywords = (photo.keywords || '').split(/[\s,]+/).map(k => k.trim());
                 if (!photoKeywords.includes(selectedKeyword)) {
                     return false;
                 }
             }
 
-            // Category Dropdown Filter
+            // Category Dropdown Filter (Checks against comma-split values)
             if (selectedCategory) {
-                // Check if selectedCategory is present in the photo's comma-split categories
                 const photoCategories = (photo.category || '').split(',').map(c => c.trim());
                 
                 if (selectedCategory === 'Uncategorized') {
-                    // Match photos that have no category defined (or empty category field)
                     if (photoCategories.filter(c => c).length > 0) {
                         return false;
                     }
@@ -220,6 +217,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openModal(index) {
+        // Ensure image starts fully opaque when opening modal
+        modalImage.style.opacity = 1; 
         updateModalContent(index);
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -244,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             newIndex = 0;
         }
 
-        // Apply fade-out effect (Point 5)
+        // Apply fade-out effect
         modalImage.style.opacity = 0;
         
         // Wait for the fade-out transition to complete before changing the image source
