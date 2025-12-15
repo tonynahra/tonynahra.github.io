@@ -71,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const categories = {};
 
         photos.forEach(photo => {
-            // Split Categories by comma 
             const photoCategories = (photo.category || '')
                 .split(',')
                 .map(c => c.trim())
@@ -85,12 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 categories[cat] = (categories[cat] || 0) + 1;
             });
 
-            // Split Keywords by comma and space, and exclude common words
             const keywordList = (photo.keywords || '').split(','); 
-            
-            const processedKeywords = keywordList.flatMap(k => 
-                k.trim().split(/\s+/) 
-            )
+            const processedKeywords = keywordList.flatMap(k => k.trim().split(/\s+/))
             .map(k => k.trim().toLowerCase())
             .filter(k => k && !excludedKeywords.includes(k)); 
             
@@ -99,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Helper to sort and append options
         const appendOptions = (selectElement, counts) => {
             const sorted = Object.entries(counts).sort(([keyA, countA], [keyB, countB]) => {
                 if (countB !== countA) return countB - countA;
@@ -147,9 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentDisplayCount = newCount;
 
-        // Show More Button logic
         if (currentDisplayCount < filteredPhotos.length) {
-            showMoreBtn.style.display = 'inline-block'; // Matches CSS fix
+            showMoreBtn.style.display = 'block'; 
             showMoreBtn.textContent = `Show More Photos (${filteredPhotos.length - currentDisplayCount} remaining)`;
         } else {
             showMoreBtn.style.display = 'none';
@@ -162,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedCategory = categoryFilter.value;
 
         filteredPhotos = allPhotos.filter(photo => {
-            // Search Text Filter
             if (searchText.length > 0) {
                 const title = (photo.title || '').toLowerCase();
                 const keywords = (photo.keywords || '').toLowerCase();
@@ -170,19 +162,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     return false;
                 }
             }
-
-            // Keyword Dropdown Filter
             if (selectedKeyword) {
                 const photoKeywords = (photo.keywords || '').split(/[\s,]+/).map(k => k.trim());
                 if (!photoKeywords.includes(selectedKeyword)) {
                     return false;
                 }
             }
-
-            // Category Dropdown Filter
             if (selectedCategory) {
                 const photoCategories = (photo.category || '').split(',').map(c => c.trim());
-                
                 if (selectedCategory === 'Uncategorized') {
                     if (photoCategories.filter(c => c).length > 0) {
                         return false;
@@ -191,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     return false;
                 }
             }
-
             return true;
         });
 
@@ -211,9 +197,20 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTitle.textContent = photo.title;
         modalDescription.textContent = photo.description || 'No description available.';
         modalInfo.style.opacity = isInfoVisible ? 1 : 0;
+
+        // DEBUG: Log dimensions once image loads
+        modalImage.onload = function() {
+            console.log("--- [DEBUG] Image Loaded ---");
+            console.log("Image URL:", photo.url);
+            console.log("Natural Dimensions (WxH):", this.naturalWidth, this.naturalHeight);
+            console.log("Viewport Size (WxH):", window.innerWidth, window.innerHeight);
+            console.log("Rendered Element Size (WxH):", this.clientWidth, this.clientHeight);
+            console.log("Modal Container Size (WxH):", modal.clientWidth, modal.clientHeight);
+        };
     }
 
     function openModal(index) {
+        console.log("--- [DEBUG] Opening Modal ---");
         modalImage.style.opacity = 1; 
         updateModalContent(index);
         modal.style.display = 'flex';
@@ -222,6 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function closeModal() {
+        console.log("--- [DEBUG] Closing Modal ---");
         modal.style.display = 'none';
         document.body.style.overflow = '';
         if (document.fullscreenElement) {
@@ -239,9 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
             newIndex = 0;
         }
 
-        // Apply fade-out effect
         modalImage.style.opacity = 0;
-        
         setTimeout(() => {
             updateModalContent(newIndex);
             modalImage.style.opacity = 1;
@@ -255,14 +251,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleFullScreen() {
+        console.log("--- [DEBUG] Toggling Fullscreen ---");
         if (!document.fullscreenElement) {
-            modal.requestFullscreen().catch(err => {
-                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            modal.requestFullscreen().then(() => {
+                console.log("[DEBUG] Entered Fullscreen Mode");
+            }).catch(err => {
+                console.error(`[DEBUG] Error enabling full-screen mode: ${err.message}`);
                 alert('Full-screen mode could not be enabled by the browser.');
             });
             modal.classList.add('fullscreen'); 
         } else {
             document.exitFullscreen();
+            console.log("[DEBUG] Exited Fullscreen Mode");
             modal.classList.remove('fullscreen');
         }
     }
@@ -353,6 +353,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement) {
             modal.classList.remove('fullscreen');
+            console.log("[DEBUG] Fullscreen Change Detected: Exited");
+        } else {
+            console.log("[DEBUG] Fullscreen Change Detected: Entered");
         }
     });
 });
