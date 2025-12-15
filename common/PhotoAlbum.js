@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. Configuration & DOM Elements & Global State ---
+
     const BASE_URL = 'https://mediamaze.com/json/?'; 
     const PHOTOS_PER_LOAD = 30; 
 
@@ -28,14 +29,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeMetaBtn = document.getElementById('close-meta-btn');
 
     // Global State
-    let albumMetaData = {}; // To store the meta data
+    let albumMetaData = {};
     let allPhotos = [];
     let filteredPhotos = [];
     let currentDisplayCount = 0;
     let currentPhotoIndex = -1;
     let isInfoVisible = true;
+    
+    // Safety check for external keywords array
+    const excludedKeywords = typeof EXCLUDED_KEYWORDS !== 'undefined' ? EXCLUDED_KEYWORDS.map(k => k.toLowerCase()) : [];
 
-    // --- 2. Utility & Helper Functions (Defined BEFORE they are called) ---
+    // --- 2. Utility & Helper Functions ---
 
     function getAlbumName() {
         const params = new URLSearchParams(window.location.search);
@@ -47,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return albumName.replace('.json', '');
     }
 
-    // Fisher-Yates (Knuth) Shuffle Algorithm
     function shuffleArray(array) {
         let currentIndex = array.length, randomIndex;
         while (currentIndex != 0) {
@@ -59,13 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleShuffle() {
-        // Shuffle the master list of photos
+        // Shuffle the master list
         shuffleArray(allPhotos);
-        
-        // Apply the current filters to the newly shuffled list
+        // Reapply filters and re-render the first batch
         applyFilters(); 
-        
-        // Note: applyFilters handles clearing the grid and rerendering the first batch.
     }
 
     function populateFilters(photos) {
@@ -73,15 +73,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const categories = {};
 
         photos.forEach(photo => {
+            // Count Categories
             const cat = photo.category || 'Uncategorized';
             categories[cat] = (categories[cat] || 0) + 1;
 
-            const photoKeywords = (photo.keywords || '').split(',').map(k => k.trim()).filter(k => k);
+            // Count Keywords (Excluding common words from the external file)
+            const photoKeywords = (photo.keywords || '').split(',')
+                .map(k => k.trim().toLowerCase())
+                .filter(k => k && !excludedKeywords.includes(k)); 
+            
             photoKeywords.forEach(k => {
                 keywords[k] = (keywords[k] || 0) + 1;
             });
         });
 
+        // Helper to sort and append options
         const appendOptions = (selectElement, counts) => {
             const sorted = Object.entries(counts).sort(([keyA, countA], [keyB, countB]) => {
                 if (countB !== countA) return countB - countA;
@@ -92,7 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
             sorted.forEach(([name, count]) => {
                 const option = document.createElement('option');
                 option.value = name;
-                option.textContent = `${name} (${count})`;
+                // Capitalize first letter for display
+                const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+                option.textContent = `${displayName} (${count})`;
                 selectElement.appendChild(option);
             });
         };
@@ -128,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentDisplayCount = newCount;
 
+        // Show More Button logic
         if (currentDisplayCount < filteredPhotos.length) {
             showMoreBtn.style.display = 'block';
             showMoreBtn.textContent = `Show More Photos (${filteredPhotos.length - currentDisplayCount} remaining)`;
@@ -142,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedCategory = categoryFilter.value;
 
         filteredPhotos = allPhotos.filter(photo => {
-            // 1. Search Text Filter (Simple "Search" - no 3+ char requirement, applies to title/keywords)
+            // Search Text Filter
             if (searchText.length > 0) {
                 const title = (photo.title || '').toLowerCase();
                 const keywords = (photo.keywords || '').toLowerCase();
@@ -151,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 2. Keyword Dropdown Filter
+            // Keyword Dropdown Filter
             if (selectedKeyword) {
                 const keywords = (photo.keywords || '').split(',').map(k => k.trim());
                 if (!keywords.includes(selectedKeyword)) {
@@ -159,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 3. Category Dropdown Filter
+            // Category Dropdown Filter
             if (selectedCategory) {
                 if ((photo.category || 'Uncategorized') !== selectedCategory) {
                     return false;
@@ -177,16 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Modal Functions ---
 
     function updateModalContent(index) {
-        if (index < 0 || index >= filteredPhotos.length) {
-            return;
-        }
+        if (index < 0 || index >= filteredPhotos.length) { return; }
         currentPhotoIndex = index;
         const photo = filteredPhotos[currentPhotoIndex];
-
         modalImage.src = photo.url;
         modalTitle.textContent = photo.title;
         modalDescription.textContent = photo.description || 'No description available.';
-
         modalInfo.style.opacity = isInfoVisible ? 1 : 0;
     }
 
@@ -208,7 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function navigatePhoto(direction) {
         let newIndex = currentPhotoIndex + direction;
-        
         if (newIndex < 0) {
             newIndex = filteredPhotos.length - 1; 
         } else if (newIndex >= filteredPhotos.length) {
@@ -229,7 +233,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(`Error attempting to enable full-screen mode: ${err.message}`);
                 alert('Full-screen mode could not be enabled by the browser.');
             });
-            modal.classList.add('fullscreen');
+            // Class added to trigger CSS for full viewport image size
+            modal.classList.add('fullscreen'); 
         } else {
             document.exitFullscreen();
             modal.classList.remove('fullscreen');
@@ -239,11 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Meta Modal Functions ---
     function openMetaModal() {
         if (Object.keys(albumMetaData).length === 0) return;
-
         metaModalTitle.textContent = albumMetaData.albumTitle || 'Album Details';
         metaModalCreated.textContent = `Created: ${albumMetaData.meta.created || 'N/A'}`;
         metaModalNote.textContent = `Note: ${albumMetaData.meta.note || 'No note provided'}`;
-
         metaModal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
@@ -262,17 +265,13 @@ document.addEventListener('DOMContentLoaded', () => {
             albumTitle.textContent = "Error Loading Album";
             return;
         }
-
         const fetchUrl = `${BASE_URL}${albumName}`;
 
         try {
             const response = await fetch(fetchUrl);
             const data = await response.json();
 
-            // Store all data for meta and photos
             albumMetaData = data;
-            
-            // Set Page Header Title from JSON
             albumTitle.textContent = data.albumTitle || 'Photo Album';
             if (data.meta && (data.meta.created || data.meta.note)) {
                 showMetaBtn.style.display = 'block';
