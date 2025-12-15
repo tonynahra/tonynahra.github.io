@@ -110,12 +110,12 @@ body {
 
 /* --- Show More Button (Centering Fix) --- */
 #show-more-container {
-    text-align: center; /* Ensure button centering */
+    text-align: center; /* Ensures the button is centered horizontally */
     padding: 20px;
 }
 
 #show-more-btn {
-    display: inline-block; /* Ensure it respects text-align center */
+    display: inline-block; /* Ensure it responds to text-align center */
     padding: 10px 20px;
     font-size: 1.1em;
     background-color: #007bff;
@@ -143,6 +143,7 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    padding: 0; /* Ensures modal starts at edge of viewport */
 }
 
 .modal-content {
@@ -154,12 +155,12 @@ body {
     justify-content: center;
     align-items: center;
     margin: 0;
-    /* Reduced padding slightly for better maximization, applied as a frame */
+    /* This padding creates a border in popup mode (Point 2) */
     padding: 10px; 
     box-sizing: border-box; 
 }
 
-/* Image scaling (point 2: as big as possible when not full screen) */
+/* Image scaling (Point 2: as big as possible in popup mode) */
 #modal-image {
     display: block;
     /* Maximizes within the padded modal-content area */
@@ -169,10 +170,10 @@ body {
     height: auto;
     object-fit: contain; 
     transition: opacity 0.3s ease-in-out; 
-    opacity: 1; /* Default state for fade-in */
+    opacity: 1; 
 }
 
-/* Full Screen Fix (point 1) */
+/* Full Screen Fix (Point 1) */
 .modal:fullscreen,
 .modal.fullscreen {
     background-color: #000;
@@ -181,7 +182,7 @@ body {
     overflow: hidden;
 }
 
-/* Crucial: Remove padding on modal-content in fullscreen to ensure image fills viewport */
+/* Critical: Remove padding on modal-content in fullscreen to ensure image fills viewport */
 .modal.fullscreen .modal-content {
     padding: 0;
 }
