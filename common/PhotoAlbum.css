@@ -108,7 +108,7 @@ body {
     .masonry { column-count: 1; }
 }
 
-/* --- Show More Button (Centered Fix) --- */
+/* --- Show More Button (Centering Fix) --- */
 #show-more-container {
     text-align: center; 
     padding: 20px;
@@ -141,10 +141,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0; /* Important for full screen */
+    overflow: hidden;
 }
 
 .modal-content {
+    /* Critical: Set size based on viewport minus margins/info, but use 100% of the modal */
     position: relative;
     width: 100%; 
     height: 100%; 
@@ -152,7 +153,7 @@ body {
     justify-content: center;
     align-items: center;
     margin: 0;
-    /* We use padding here to create a slight border for the image when not fullscreen */
+    /* Use a slight padding here for a visual frame, but rely on max-height/width on image */
     padding: 20px; 
     box-sizing: border-box; 
 }
@@ -160,12 +161,12 @@ body {
 /* Image scaling (point 2: as big as possible when not full screen) */
 #modal-image {
     display: block;
-    max-width: 100%;
+    /* Use max-width/height of 100% of parent (modal-content's padded area) */
+    max-width: 100%; 
     max-height: 100%; 
     width: auto;
     height: auto;
     object-fit: contain; 
-    /* Transition for Prev/Next effect (point 5) */
     transition: opacity 0.3s ease-in-out; 
 }
 
@@ -178,7 +179,7 @@ body {
     overflow: hidden;
 }
 
-/* In fullscreen mode, remove the padding on modal-content */
+/* In fullscreen mode, remove all padding on modal-content to ensure image fills viewport */
 .modal.fullscreen .modal-content {
     padding: 0;
 }
@@ -189,6 +190,8 @@ body {
     max-height: 100vh;
     width: auto;
     height: auto;
+    /* Ensure it takes precedence */
+    object-fit: contain !important; 
 }
 
 
