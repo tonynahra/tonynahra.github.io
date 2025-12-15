@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tony Nahra Album</title>
+    <link rel="stylesheet" href="common/PhotoAlbum.css">
+</head>
+<body>
+
+    <header class="sticky-header">
+        <div class="controls-container">
+            <h1 id="album-title">Photo Album</h1>
+
+            <input type="text" id="filter-input" placeholder="Filter by Title or Keywords (3+ chars)">
+
+            <select id="keyword-filter">
+                <option value="">All Keywords</option>
+            </select>
+
+            <select id="category-filter">
+                <option value="">All Categories</option>
+            </select>
+        </div>
+    </header>
+
+    <main id="photo-grid" class="masonry"></main>
+
+    <div id="show-more-container">
+        <button id="show-more-btn" style="display: none;">Show More Photos</button>
+    </div>
+
+    <div id="image-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <img id="modal-image" src="" alt="Full size photo">
+
+            <div class="modal-controls">
+                <button id="close-modal-btn" title="Close (Esc)">Close</button>
+                <button id="toggle-info-btn" title="Toggle Info (Up/Down)">Info</button>
+                <button id="fullscreen-btn" title="Full Screen">Full Screen</button>
+                <button id="prev-btn" title="Previous Photo (Left Arrow)">Prev</button>
+                <button id="next-btn" title="Next Photo (Right Arrow / Spacebar)">Next</button>
+            </div>
+
+            <div id="modal-info" class="modal-info-overlay">
+                <h3 id="modal-title"></h3>
+                <p id="modal-description"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="common/PhotoAlbum.js"></script>
+</body>
+</html>
