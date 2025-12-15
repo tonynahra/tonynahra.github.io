@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. Configuration & DOM Elements & Global State ---
-
-    // BASE_URL MUST end with '?' to append the album name as a query string (e.g., ?nature)
     const BASE_URL = 'https://mediamaze.com/json/?'; 
     const PHOTOS_PER_LOAD = 30; 
 
@@ -12,14 +10,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const keywordFilter = document.getElementById('keyword-filter');
     const categoryFilter = document.getElementById('category-filter');
     const albumTitle = document.getElementById('album-title');
-
+    const shuffleBtn = document.getElementById('shuffle-btn');
+    const showMetaBtn = document.getElementById('show-meta-btn');
+    
+    // Modal Elements
     const modal = document.getElementById('image-modal');
     const modalImage = document.getElementById('modal-image');
     const modalTitle = document.getElementById('modal-title');
     const modalDescription = document.getElementById('modal-description');
     const modalInfo = document.getElementById('modal-info');
+    
+    // Meta Modal Elements
+    const metaModal = document.getElementById('meta-modal');
+    const metaModalTitle = document.getElementById('meta-modal-title');
+    const metaModalCreated = document.getElementById('meta-modal-created');
+    const metaModalNote = document.getElementById('meta-modal-note');
+    const closeMetaBtn = document.getElementById('close-meta-btn');
 
     // Global State
+    let albumMetaData = {}; // To store the meta data
     let allPhotos = [];
     let filteredPhotos = [];
     let currentDisplayCount = 0;
@@ -29,10 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 2. Utility & Helper Functions (Defined BEFORE they are called) ---
 
     function getAlbumName() {
-        // Reads the album name from the URL query parameter (e.g., album.html?nature)
         const params = new URLSearchParams(window.location.search);
         let albumName = '';
-        
         for (const [key, value] of params.entries()) {
             albumName = key || value;
             break;
@@ -40,30 +47,46 @@ document.addEventListener('DOMContentLoaded', () => {
         return albumName.replace('.json', '');
     }
 
+    // Fisher-Yates (Knuth) Shuffle Algorithm
+    function shuffleArray(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function handleShuffle() {
+        // Shuffle the master list of photos
+        shuffleArray(allPhotos);
+        
+        // Apply the current filters to the newly shuffled list
+        applyFilters(); 
+        
+        // Note: applyFilters handles clearing the grid and rerendering the first batch.
+    }
+
     function populateFilters(photos) {
         const keywords = {};
         const categories = {};
 
         photos.forEach(photo => {
-            // Count Categories
             const cat = photo.category || 'Uncategorized';
             categories[cat] = (categories[cat] || 0) + 1;
 
-            // Count Keywords
             const photoKeywords = (photo.keywords || '').split(',').map(k => k.trim()).filter(k => k);
             photoKeywords.forEach(k => {
                 keywords[k] = (keywords[k] || 0) + 1;
             });
         });
 
-        // Helper to sort and append options
         const appendOptions = (selectElement, counts) => {
             const sorted = Object.entries(counts).sort(([keyA, countA], [keyB, countB]) => {
-                if (countB !== countA) return countB - countA; // Sort by count (desc)
-                return keyA.localeCompare(keyB); // Then by name (asc)
+                if (countB !== countA) return countB - countA;
+                return keyA.localeCompare(keyB);
             });
-
-            // Clear previous options (except "All")
             selectElement.innerHTML = `<option value="">All ${selectElement.id.replace('-filter', '').replace('keyword', 'keyword').replace('category', 'category')}s</option>`;
 
             sorted.forEach(([name, count]) => {
@@ -105,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentDisplayCount = newCount;
 
-        // Update "Show More" button visibility
         if (currentDisplayCount < filteredPhotos.length) {
             showMoreBtn.style.display = 'block';
             showMoreBtn.textContent = `Show More Photos (${filteredPhotos.length - currentDisplayCount} remaining)`;
@@ -120,15 +142,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedCategory = categoryFilter.value;
 
         filteredPhotos = allPhotos.filter(photo => {
-            // 1. Search Text Filter (Title or Keywords, minimum 3 characters)
-            if (searchText.length >= 3) {
+            // 1. Search Text Filter (Simple "Search" - no 3+ char requirement, applies to title/keywords)
+            if (searchText.length > 0) {
                 const title = (photo.title || '').toLowerCase();
                 const keywords = (photo.keywords || '').toLowerCase();
                 if (!title.includes(searchText) && !keywords.includes(searchText)) {
                     return false;
                 }
-            } else if (searchText.length > 0 && searchText.length < 3) {
-                 // Ignore text filter if less than 3 chars are typed
             }
 
             // 2. Keyword Dropdown Filter
@@ -149,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
 
-        // Reset and re-render the photos with the new filter
         currentDisplayCount = 0;
         photoGrid.innerHTML = '';
         renderPhotos();
@@ -168,7 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTitle.textContent = photo.title;
         modalDescription.textContent = photo.description || 'No description available.';
 
-        // Ensure info visibility respects the current state
         modalInfo.style.opacity = isInfoVisible ? 1 : 0;
     }
 
@@ -176,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateModalContent(index);
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        document.getElementById('toggle-info-btn').textContent = isInfoVisible ? 'Hide Info' : 'Show Info';
     }
 
     function closeModal() {
@@ -216,6 +235,23 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.classList.remove('fullscreen');
         }
     }
+    
+    // --- Meta Modal Functions ---
+    function openMetaModal() {
+        if (Object.keys(albumMetaData).length === 0) return;
+
+        metaModalTitle.textContent = albumMetaData.albumTitle || 'Album Details';
+        metaModalCreated.textContent = `Created: ${albumMetaData.meta.created || 'N/A'}`;
+        metaModalNote.textContent = `Note: ${albumMetaData.meta.note || 'No note provided'}`;
+
+        metaModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMetaModal() {
+        metaModal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
 
 
     // --- 3. Core Execution Function ---
@@ -224,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const albumName = getAlbumName();
         if (!albumName) {
             albumTitle.textContent = "Error Loading Album";
-            alert("Error: Missing album name in URL (e.g., album.html?nature)");
             return;
         }
 
@@ -234,35 +269,42 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(fetchUrl);
             const data = await response.json();
 
+            // Store all data for meta and photos
+            albumMetaData = data;
+            
+            // Set Page Header Title from JSON
             albumTitle.textContent = data.albumTitle || 'Photo Album';
+            if (data.meta && (data.meta.created || data.meta.note)) {
+                showMetaBtn.style.display = 'block';
+            }
 
             allPhotos = (data.photos || []).filter(p => p.url);
             filteredPhotos = allPhotos;
 
-            // These calls now safely reference the functions defined above
             populateFilters(allPhotos); 
             renderPhotos();
         } catch (error) {
             console.error('Failed to load album data from proxy:', fetchUrl, error);
             albumTitle.textContent = "Error: Check Console";
-            // alert('Could not load album data. Check the proxy URL and file name.'); // Commented out to reduce popups on failure
         }
     }
 
     // --- 4. Execution Call & Event Listeners ---
 
-    // Load initial data when the script starts
     loadAlbumData();
 
-    // Show More button
+    // Show More / Shuffle / Filters
     showMoreBtn.addEventListener('click', renderPhotos);
-
-    // Filters
+    shuffleBtn.addEventListener('click', handleShuffle);
     filterInput.addEventListener('input', applyFilters);
     keywordFilter.addEventListener('change', applyFilters);
     categoryFilter.addEventListener('change', applyFilters);
 
-    // Modal Events
+    // Meta Modal
+    showMetaBtn.addEventListener('click', openMetaModal);
+    closeMetaBtn.addEventListener('click', closeMetaModal);
+
+    // Image Modal
     document.getElementById('close-modal-btn').addEventListener('click', closeModal);
     document.getElementById('prev-btn').addEventListener('click', () => navigatePhoto(-1));
     document.getElementById('next-btn').addEventListener('click', () => navigatePhoto(1));
@@ -284,6 +326,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 toggleInfo();
             }
+        } else if (metaModal.style.display === 'flex' && e.key === 'Escape') {
+            closeMetaModal();
         }
     });
 
