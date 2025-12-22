@@ -1,1 +1,116 @@
-window.lpEndLoaded=!0;let endListLinks=[],endSelectedIndex=-1;async function openEndScreen(){const e=document.getElementById("end-screen-modal"),t=document.getElementById("end-album-list"),n=window.location.search.replace("?","").split("#")[0].replace(".json","");if(!e||!t)return;e.style.display="flex",t.innerHTML='<div class="loading-spinner">Loading other albums...</div>',endListLinks=[],endSelectedIndex=-1;try{const o=await fetch(`list_albums.php?album=${encodeURIComponent(n)}`);if(!o.ok)throw new Error("Network response was not ok");const s=await o.json();let l="User";if(s.dir){const e=s.dir.split("/");e.length>1&&(l=e[1])}const a=e.querySelector("h2");a&&(a.textContent=`Other albums by ${l}`),t.innerHTML="",s.albums&&s.albums.length>0?(ul=document.createElement("ul"),ul.className="end-album-list",s.albums.forEach(e=>{const t=document.createElement("li");if(e.is_current)t.className="current",t.textContent=e.name;else{const n=document.createElement("a");n.href=`?${s.dir}/${e.name}#info`,n.textContent=e.name,t.appendChild(n)}ul.appendChild(t)}),container=document.createElement("div"),container.className="album-list-container",container.appendChild(ul),t.appendChild(container),endListLinks=Array.from(ul.querySelectorAll("a"))):t.innerHTML="<p>No other albums found.</p>"}catch(e){console.error(e),t.innerHTML='<p style="color:red">Error loading list.</p>'}}window.lpEndNav=function(e){if(0===endListLinks.length)return;"ArrowDown"===e?(endSelectedIndex++,endSelectedIndex>=endListLinks.length&&(endSelectedIndex=0)):"ArrowUp"===e?(endSelectedIndex--,endSelectedIndex<0&&(endSelectedIndex=endListLinks.length-1)):"Enter"===e&&(endSelectedIndex>-1&&endListLinks[endSelectedIndex]&&endListLinks[endSelectedIndex].click()),endListLinks.forEach((e,t)=>{t===endSelectedIndex?(e.classList.add("keyboard-selected"),e.scrollIntoView({block:"nearest",behavior:"smooth"})):e.classList.remove("keyboard-selected")})},document.addEventListener("DOMContentLoaded",()=>{const e=document.getElementById("close-end-btn");e&&e.addEventListener("click",()=>{document.getElementById("end-screen-modal").style.display="none"})});
+// --- SECURITY FLAG (Required for LP.js to run) ---
+window.lpEndLoaded = true; 
+
+// --- STATE ---
+let endListLinks = [];
+let endSelectedIndex = -1;
+
+// --- END SCREEN LOGIC ---
+async function openEndScreen() {
+    const modal = document.getElementById('end-screen-modal');
+    const contentList = document.getElementById('end-album-list');
+    
+    // Strip query/hash
+    let currentAlbum = "";
+    if (window.location.search && window.location.search.length > 1) {
+        currentAlbum = window.location.search.substring(1).replace('.json', '');
+    } else {
+        currentAlbum = window.location.hash.substring(1).split('#')[0].replace('.json', '');
+    }
+
+    if (!modal || !contentList) return;
+
+    modal.style.display = 'flex';
+    contentList.innerHTML = '<div class="loading-spinner">Loading other albums...</div>';
+    
+    endListLinks = [];
+    endSelectedIndex = -1;
+
+    try {
+        const response = await fetch(`list_albums.php?album=${encodeURIComponent(currentAlbum)}`);
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        const data = await response.json();
+        
+        let user = "User";
+        if (data.dir) {
+            const parts = data.dir.split('/');
+            if (parts.length > 1) user = parts[1]; 
+        }
+
+        const titleEl = modal.querySelector('h2');
+        if (titleEl) titleEl.textContent = `Other albums by ${user}`;
+
+        contentList.innerHTML = '';
+        
+        if (data.albums && data.albums.length > 0) {
+            const ul = document.createElement('ul');
+            ul.className = 'end-album-list';
+
+            data.albums.forEach(album => {
+                const li = document.createElement('li');
+                
+                if (album.is_current) {
+                    li.className = 'current';
+                    li.textContent = album.name;
+                } else {
+                    const a = document.createElement('a');
+                    a.href = `?${data.dir}/${album.name}#info`; 
+                    a.textContent = album.name;
+                    li.appendChild(a);
+                }
+                ul.appendChild(li);
+            });
+            
+            const container = document.createElement('div');
+            container.className = 'album-list-container';
+            container.appendChild(ul);
+            contentList.appendChild(container);
+
+            endListLinks = Array.from(ul.querySelectorAll('a'));
+
+        } else {
+            contentList.innerHTML = '<p>No other albums found.</p>';
+        }
+
+    } catch (e) {
+        console.error(e);
+        contentList.innerHTML = '<p style="color:red">Error loading list.</p>';
+    }
+}
+
+// --- KEYBOARD NAVIGATION HANDLER ---
+window.lpEndNav = function(key) {
+    if (endListLinks.length === 0) return;
+
+    if (key === 'ArrowDown') {
+        endSelectedIndex++;
+        if (endSelectedIndex >= endListLinks.length) endSelectedIndex = 0; 
+    } else if (key === 'ArrowUp') {
+        endSelectedIndex--;
+        if (endSelectedIndex < 0) endSelectedIndex = endListLinks.length - 1; 
+    } else if (key === 'Enter') {
+        if (endSelectedIndex > -1 && endListLinks[endSelectedIndex]) {
+            endListLinks[endSelectedIndex].click();
+        }
+        return;
+    }
+
+    endListLinks.forEach((link, idx) => {
+        if (idx === endSelectedIndex) {
+            link.classList.add('keyboard-selected');
+            link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        } else {
+            link.classList.remove('keyboard-selected');
+        }
+    });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('close-end-btn');
+    if(closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            document.getElementById('end-screen-modal').style.display = 'none';
+        });
+    }
+});
