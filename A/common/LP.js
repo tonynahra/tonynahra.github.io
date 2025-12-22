@@ -1,1 +1,894 @@
-var isYouTubeReady=!1,ytPlayer=null;window.onYouTubeIframeAPIReady=function(){isYouTubeReady=!0,console.log("[DEBUG] YouTube API Ready"),document.dispatchEvent(new Event("youtube_api_ready"))},document.addEventListener("DOMContentLoaded",()=>{if(typeof window.lpEndLoaded=="undefined"||typeof window.viewCountsLoaded=="undefined")throw document.body.innerHTML='<div style="color:red;padding:50px;text-align:center;font-family:sans-serif;"><h1>System Error</h1><p>Required components are missing. Viewer cannot initialize.</p></div>',new Error("Integrity check failed: Components missing.");const e="https://mediamaze.com/json/?",t=[["animate__fadeOut","animate__fadeIn"],["animate__zoomOut","animate__zoomIn"],["animate__slideOutLeft","animate__slideInRight"],["animate__flipOutY","animate__flipInY"],["animate__rotateOut","animate__rotateIn"],["animate__rollOut","animate__rollIn"],["animate__backOutDown","animate__backInDown"],["animate__zoomOutUp","animate__zoomInUp"],["animate__lightSpeedOutRight","animate__lightSpeedInLeft"]];let n={},o=[],a=[],l=0,i=1,s=[],r=-1,c=[],d=0,u=!1,m=!1,p=null,g=!1,y=null;function h(e){return document.getElementById(e)}function f(e,t){const n=h(e);n&&n.addEventListener("click",t)}function v(e,t=!1,n=2e3,o=!1){if(!g||o){const o=h("toast-container");if(o){o.innerHTML="";const a=document.createElement("div");a.className="toast-message"+(t?" big":""),a.innerHTML=e,o.appendChild(a),void a.offsetWidth,a.classList.add("show"),setTimeout(()=>{a.classList.remove("show"),setTimeout(()=>{a.parentNode&&a.parentNode.removeChild(a)},300)},n)}}}function b(e){const t=h("meta-modal");t&&"flex"===t.style.display||v(e)}async function E(e,t){const n=h(t);if(n)try{const t=await fetch(e);t.ok?n.innerHTML=await t.text():console.warn(`[LP] Failed to load ${e}: ${t.status}`)}catch(t){console.warn(`[LP] Error loading ${e}`,t)}}function L(){if(!document.getElementById("youtube-api-script")){const e=document.createElement("script");e.id="youtube-api-script",e.src="https://www.youtube.com/iframe_api";const t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}}function w(){const e=window.location.search||window.location.hash,t=e.replace(/[?#]/g,"").replace(".json","");return t.endsWith("/info")?t.replace("/info",""):t}function I(){const e=window.location.search,t=window.location.hash;return e.includes("/info")||t.includes("#info")}function k(e){if(e){const t=e.meta||{};document.title=t.og_title||t.twitter_title||e.albumTitle||"Photo Album"}}function T(e=0){if(0!==a.length){2===i&&S(1);let n=l+e;n<0?n=a.length-1:n>=a.length&&(n=0),l=n;const o=a[l];h("photo-title").textContent=o.title||"Untitled",h("photo-desc").innerHTML=o.description||"",h("photo-exif").innerHTML="";const s=h("photo-counter");s&&(s.textContent=`${l+1} / ${a.length}`),h("detail-title").textContent=o.title||"Untitled",h("detail-desc").innerHTML=o.description||"";const r=h("detail-exif");r.innerHTML="",o.exif&&Object.entries(o.exif).forEach(([e,t])=>{const n=document.createElement("span");n.className="exif-item",n.textContent=`${e.toUpperCase()}: ${t}`,r.appendChild(n)});const c=h("image-wrapper"),d=Array.from(c.querySelectorAll("img")),u=Math.floor(Math.random()*t.length),[m,p]=t[u],g=document.createElement("img");g.src=o.url,g.alt=o.title,g.style.zIndex="10",g.className=`animate__animated ${p}`,c.appendChild(g),d.forEach(e=>{e.style.zIndex="1",e.className="",e.classList.add("animate__animated",m);const t=()=>{e.parentNode&&e.parentNode.removeChild(e)};e.addEventListener("animationend",t,{once:!0}),setTimeout(t,1100)}),g.addEventListener("animationend",()=>{g.classList.remove(p)},{once:!0})}}function C(){p?x():(v("Slideshow Started (8s)"),p=setInterval(()=>T(1),8e3))}function x(){p&&(clearInterval(p),p=null,v("Slideshow Paused"))}function A(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(e=>console.log(e))}document.addEventListener("mousemove",()=>{document.body.classList.remove("hide-cursor"),y&&clearTimeout(y),document.fullscreenElement&&g&&(y=setTimeout(()=>{document.fullscreenElement&&g&&document.body.classList.add("hide-cursor")},3e3))});function S(e){i=e;const t=h("info-overlay"),n=h("photo-details-modal"),o=h("photo-counter");0===e?(t&&t.classList.add("hidden"),n&&(n.style.display="none"),o&&o.classList.add("hidden"),document.body.classList.remove("info-on")):1===e?(t&&t.classList.remove("hidden"),n&&(n.style.display="none"),o&&o.classList.remove("hidden"),document.body.classList.add("info-on")):2===e&&(t&&t.classList.add("hidden"),n&&(n.style.display="flex"),o&&o.classList.add("hidden"),document.body.classList.add("info-on"))}function M(){S(i>0?0:1)}function P(){0===i?S(1):1===i&&S(2)}function B(){2===i?S(1):1===i&&S(0)}function N(){const e=()=>{m||(m=!0,u&&setTimeout(()=>{u&&_()},50),document.removeEventListener("click",e),document.removeEventListener("keydown",e),document.removeEventListener("touchstart",e))};document.addEventListener("click",e),document.addEventListener("keydown",e),document.addEventListener("touchstart",e)}function _(){if(0===c.length)return;const e=c[d],t=h("music-btn");t&&t.classList.add("music-active"),"mp3"===e.type?(h("audio-element").src=e.url,h("audio-element").play().then(()=>{u||(h("audio-element").pause(),t&&t.classList.remove("music-active"))}).catch(e=>{console.warn("Play blocked")})): "youtube"===e.type&&(isYouTubeReady?ytPlayer?ytPlayer.loadVideoById(e.url.split("v=")[1].split("&")[0]):(ytPlayer=new YT.Player("youtube-player-placeholder",{height:"0",width:"0",videoId:e.url.split("v=")[1].split("&")[0],events:{onReady:e=>{e.target.playVideo(),setTimeout(()=>{u||e.target.pauseVideo()},500)}}})):(document.addEventListener("youtube_api_ready",()=>_(),{once:!0})))}function O(){if(0!==c.length){const e=h("music-btn"),t=h("audio-element");t&&t.pause(),ytPlayer&&"function"==typeof ytPlayer.pauseVideo&&ytPlayer.pauseVideo(),e&&e.classList.remove("music-active"),v("Music Paused")}}function U(){0!==c.length&&(d=(d+1)%c.length,u||(u=!0,m=!0),_(),v(`Playing: ${c[d].title}`))}function R(){0!==c.length&&(u=!u,u?(m=!0,_(),v("Music On")):O())}function q(){g=!g,g?(v("Silent Mode ON (No Toasts)",!1,2e3,!0),document.body.classList.remove("hide-cursor"),y&&clearTimeout(y)):(v("Silent Mode OFF"),document.body.classList.remove("hide-cursor"),y&&clearTimeout(y))}function D(){const e={};o.forEach(t=>{if(!t.categories&&!t.category)return;const n=t.categories||t.category,o=n.split(",").map(e=>e.trim()).filter(e=>e.length>0);o.forEach(t=>{e[t]=(e[t]||0)+1})});const t=h("grid-category-filter");if(t.innerHTML="",0===Object.keys(e).length){const e=document.createElement("option");return e.textContent="No Categories",e.disabled=!0,e.selected=!0,t.appendChild(e),t.disabled=!0,void(s=[])}const n=document.createElement("option");n.value="",n.textContent="All Categories",t.appendChild(n);const a=Object.keys(e).sort((t,n)=>e[n]-e[t]);s=a,a.forEach(n=>{const o=document.createElement("option");o.value=n,o.textContent=`${n} (${e[n]})`,t.appendChild(o)}),t.disabled=!1,t.onchange=()=>{const e=t.value;r=""===e?-1:s.indexOf(e),H(e)},F(Object.keys(e).length)}function F(e){const t=h("meta-categories-display");if(!t)return;let n="";e>0&&(n+=`Categories found: ${e}`),c.length>0&&(""!==n&&(n+=", "),n+=`Music found: ${c.length}`),""===n?t.style.display="none":(t.textContent=n,t.style.display="block")}function j(e){if(0===s.length)return;let t=r+e;if(t<-1)return r=-1,void v("Page Down for Categories");if(t>=s.length)return r=s.length-1,void v("No More Categories");r=t;let n="";-1===r?(n="",v("Showing all photos",!0,2500)):(n=s[r],v(`Category:<br><span style="font-size: 1.3em; font-weight: bold;">${n}</span>`,!0,2500));const o=h("grid-category-filter");o&&(o.value=n),H(n),l=0,T(0)}function z(){x(),a=[...o],r=-1;const e=h("grid-category-filter");e&&(e.value=""),l=0,"flex"===h("grid-modal").style.display&&W(),T(0),v("Album Reset")}function H(e){a=e?o.filter(t=>{if(!t.categories&&!t.category)return!1;const n=t.categories||t.category;return n.split(",").map(e=>e.trim()).includes(e)}):[...o],"flex"===h("grid-modal").style.display&&W()}function W(){const e=h("photo-grid");e.innerHTML="",a.forEach((t,n)=>{const o=document.createElement("div");o.className="photo-item";const a=document.createElement("img");a.src=t.thumbnailUrl||t.url,a.loading="lazy",o.appendChild(a),o.onclick=()=>{l=n,T(0),G()},e.appendChild(o)})}function Y(){G(),h("grid-category-filter").options.length<=1&&D(),W(),h("grid-modal").style.display="flex"}function G(){document.querySelectorAll(".overlay-modal").forEach(e=>e.style.display="none"),2===i&&S(1)}function K(){G(),h("help-modal").style.display="flex"}function J(){G(),h("meta-album-title").textContent=n.albumTitle||"Album",h("meta-created").textContent=n.meta?.created||"N/A",h("meta-note").textContent=n.meta?.note||"";const e=h("meta-og-desc");e&&(e.textContent=n.meta?.og_description||"");const t=c.length>0,o=h("close-meta-btn"),a=h("startup-options");t?(o.style.display="none",a.style.display="flex",setTimeout(()=>{const e=h("btn-view-silent");e&&e.focus()},100)):(o.style.display="block",a.style.display="none"),h("meta-modal").style.display="flex"}function Q(){const e=a[l];if(!e)return;h("admin-json").textContent=w()+".json",h("admin-id").textContent=e.id;const t=`https://mediamaze.com/tony/PhotoAlbum/public/?${w()}#${e.id}`,n=h("admin-url");n.href=t,n.textContent="Link",h("admin-modal").style.display="flex"}async function V(){const t=w();if(S(1),!t)return void(h("main-viewer").innerHTML='<div class="error-message">Error: No album specified in URL.</div>');E("common/LP_first.html","lp-first-content"),E("common/LP_help.html","lp-help-content");try{const i=await fetch(`${e}${t}`);if(!i.ok)throw new Error("Fetch Failed");const s=await i.json();if(s._security&&"Private"===s._security.mode)return void(document.body.innerHTML='<div class="private-overlay"><div class="private-box"><h1>🔒 Private Album</h1><p>This album is private.</p></div></div>');n=s,k(s),o=(s.photos||[]).filter(e=>e.url&&(!e.mode||"Private"!==e.mode)),a=[...o],s.music&&s.music.length>0?(c=s.music,u=!1,c.some(e=>"youtube"===e.type)&&L(),N()):(h("music-btn").style.display="none",(()=>{const e=document.querySelector('li[data-action="music"]');e&&(e.style.display="none");const t=document.querySelector('li[data-action="next-track"]');t&&(t.style.display="none")})()),D(),a.length>0?T(0):h("main-viewer").innerHTML='<div class="error-message">No photos in album.</div>',I()&&J()}catch(e){console.error(e),h("main-viewer").innerHTML='<div class="error-message">Failed to load album data.</div>'}}f("prev-btn",()=>{T(-1)}),f("next-btn",()=>{T(1)}),f("grid-btn",Y),f("help-btn",K),f("about-btn",J),f("fullscreen-btn",A),f("music-btn",R),f("close-grid-btn",G),f("close-help-btn",G),f("close-meta-btn",G),f("close-admin-btn",()=>h("admin-modal").style.display="none"),f("close-detail-btn",()=>{S(1)}),f("btn-view-music",()=>{u=!0,m=!0,(_(),G())}),f("btn-view-silent",()=>{u=!1,O(),G()}),f("nav-instruction-btn",()=>{G(),K()});function X(){const e=[h("help-list-nav"),h("help-list-info")];e.forEach(e=>{e&&e.addEventListener("click",e=>{const t=e.target.closest("li");if(!t)return;const n=t.getAttribute("data-action");"category-nav"!==n?G():G();switch(n){case"next":T(1);break;case"prev":T(-1);break;case"fullscreen":A();break;case"slideshow":C();break;case"stop":x();break;case"info":M();break;case"music":R();break;case"help":K();break;case"info-modal":J();break;case"grid":Y();break;case"shuffle":a.sort(()=>Math.random()-.5),l=0,T(0),v("Shuffled");break;case"category-nav":v("Use PageUp / PageDown keys");break;case"reset":z();break;case"next-track":U();break;case"end":openEndScreen();break;case"silent":q();break}})})}(function(){X()})(),document.addEventListener("keydown",e=>{const t=h("grid-modal"),n=t&&"flex"===t.style.display,o=h("photo-details-modal"),s=o&&"flex"===o.style.display,c=h("meta-modal"),d=c&&"flex"===c.style.display,u=h("help-modal"),m=u&&"flex"===u.style.display,g=h("end-screen-modal"),y=g&&"flex"===g.style.display,E=document.querySelector('.overlay-modal[style*="flex"]');if(("Escape"===e.key||"0"===e.key)&&p)return e.preventDefault(),void x();if(d){if(["ArrowRight","ArrowLeft"," ","Enter"].includes(e.key))e.preventDefault(),u=!1,O(),G();else{if("Escape"===e.key)return void G();return}}if(m){if(["ArrowRight","ArrowLeft"," ","Enter","Home","PageUp","PageDown"].includes(e.key))G();else{if("Escape"===e.key)return void G();return}}if(y){if(["ArrowUp","ArrowDown","Enter"].includes(e.key))return e.preventDefault(),void("function"==typeof window.lpEndNav&&window.lpEndNav(e.key));if(["ArrowRight","ArrowLeft"," ","Home","PageUp","PageDown","Escape"].includes(e.key))return void G();return}if(n){if("Escape"===e.key||"p"===e.key.toLowerCase())return void G();if(["ArrowRight","ArrowLeft"," ","ArrowUp","ArrowDown","f","h","m","i"].includes(e.key)||["ArrowRight","ArrowLeft"," ","ArrowUp","ArrowDown","f","h","m","i"].includes(e.key.toLowerCase()))G();else return}if(s){if("ArrowUp"===e.key)return e.preventDefault(),void P();if("ArrowDown"===e.key)return e.preventDefault(),void B();if("Escape"===e.key)return void S(1)}else if(E&&!d&&!m&&!y){if("Escape"===e.key)return void G();return}if(e.shiftKey&&"a"===e.key.toLowerCase())return void Q();switch(e.key){case"ArrowRight":case" ":T(1);break;case"ArrowLeft":T(-1);break;case"ArrowUp":e.preventDefault(),P();break;case"ArrowDown":e.preventDefault(),B();break;case"f":case"F":A();break;case"h":case"H":K();break;case"m":case"M":R();break;case"i":case"I":J();break;case"p":case"P":Y();break;case"0":p&&C();break;case"PageUp":e.preventDefault(),j(-1);break;case"PageDown":e.preventDefault(),j(1);break;case"Home":e.preventDefault(),z();break;case"Insert":e.preventDefault(),U();break;case"End":e.preventDefault(),openEndScreen();break;case"s":case"S":q();break;case"r":case"R":a.sort(()=>Math.random()-.5),l=0,T(0),v("Shuffled");break}e.key>="1"&&e.key<="9"&&(p&&clearInterval(p),speed=(parseInt(e.key)+5)*1e3,p=setInterval(()=>T(1),speed),v(`Slideshow: ${speed/1e3}s`))}),document.addEventListener("fullscreenchange",()=>{document.fullscreenElement?document.body.classList.add("is-fullscreen"):document.body.classList.remove("is-fullscreen")}),V()});
+// --- YOUTUBE API SETUP ---
+var isYouTubeReady = false;
+var ytPlayer = null;
+
+window.onYouTubeIframeAPIReady = function() {
+    isYouTubeReady = true;
+    console.log("[DEBUG] YouTube API Ready");
+    document.dispatchEvent(new Event('youtube_api_ready'));
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- SECURITY / INTEGRITY CHECK ---
+    if (typeof window.lpEndLoaded === 'undefined' || typeof window.viewCountsLoaded === 'undefined') {
+        document.body.innerHTML = '<div style="color:red;padding:50px;text-align:center;font-family:sans-serif;"><h1>System Error</h1><p>Required components are missing. Viewer cannot initialize.</p></div>';
+        throw new Error("Integrity check failed: Components missing.");
+    }
+
+    // --- 1. CONFIGURATION ---
+    const BASE_URL = 'https://mediamaze.com/json/?'; 
+    
+    const TRANSITIONS = [
+        ['animate__fadeOut', 'animate__fadeIn'],
+        ['animate__zoomOut', 'animate__zoomIn'],
+        ['animate__slideOutLeft', 'animate__slideInRight'],
+        ['animate__flipOutY', 'animate__flipInY'],
+        ['animate__rotateOut', 'animate__rotateIn'],
+        ['animate__rollOut', 'animate__rollIn'],
+        ['animate__backOutDown', 'animate__backInDown'],
+        ['animate__zoomOutUp', 'animate__zoomInUp'],
+        ['animate__lightSpeedOutRight', 'animate__lightSpeedInLeft']
+    ];
+
+    let albumMetaData = {};
+    let allPhotos = [];
+    let currentFilteredPhotos = []; 
+    let currentPhotoIndex = 0;
+    let infoMode = 1; 
+    let sortedCategories = []; 
+    let currentCategoryIdx = -1;
+    let musicPlaylist = [];
+    let currentMusicIndex = 0;
+    let isMusicEnabled = false; 
+    let hasUserInteracted = false; 
+    let slideshowIntervalId = null;
+    let isSilentMode = false;
+    let mouseTimer = null;
+    
+    // --- NOTE FEATURE STATE ---
+    let currentNoteIndex = -1; // -1 = Original, 0 = Note 1, etc.
+    
+    // --- 2. UTILITY ---
+    function getEl(id) { return document.getElementById(id); }
+    
+    function bindClick(id, handler) {
+        const el = getEl(id);
+        if (el) el.addEventListener('click', handler);
+    }
+    
+    function showToast(message, isBig = false, duration = 2000, force = false) {
+        if (isSilentMode && !force) return;
+
+        const c = getEl('toast-container');
+        if(!c) return;
+        c.innerHTML = ''; 
+        const t = document.createElement('div');
+        t.className = 'toast-message' + (isBig ? ' big' : '');
+        t.innerHTML = message;
+        c.appendChild(t);
+        void t.offsetWidth; t.classList.add('show');
+        setTimeout(() => { t.classList.remove('show'); setTimeout(() => { if(t.parentNode) t.parentNode.removeChild(t); }, 300); }, duration);
+    }
+
+    function showMusicStatus(msg) {
+        const metaModal = getEl('meta-modal');
+        const isModalOpen = metaModal && metaModal.style.display === 'flex';
+        if (!isModalOpen) {
+            showToast(msg);
+        }
+    }
+
+    async function loadExternalHtml(url, containerId) {
+        const container = getEl(containerId);
+        if (!container) return;
+        try {
+            const res = await fetch(url);
+            if (res.ok) container.innerHTML = await res.text();
+        } catch (e) { console.warn(`[LP] Error loading ${url}`, e); }
+    }
+
+    function loadYouTubeAPI() {
+        if (document.getElementById('youtube-api-script')) return; 
+        const tag = document.createElement('script');
+        tag.id = 'youtube-api-script';
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    function getAlbumName() {
+        const str = window.location.search || window.location.hash;
+        let clean = str.replace(/[?#]/g, '').replace('.json', '');
+        if(clean.endsWith('/info')) return clean.replace('/info', '');
+        return clean;
+    }
+    
+    function shouldStartWithInfo() {
+        const s = window.location.search;
+        const h = window.location.hash;
+        return s.includes('/info') || h.includes('#info');
+    }
+
+    function updatePageMeta(data) {
+        if (!data) return;
+        const m = data.meta || {};
+        document.title = m.og_title || m.twitter_title || data.albumTitle || 'Photo Album';
+    }
+
+    // --- 5. MAIN VIEWER LOGIC ---
+    function updateMainImage(direction = 0) {
+        if (currentFilteredPhotos.length === 0) return;
+        
+        if (infoMode === 2) setInfoMode(1);
+
+        let newIndex = currentPhotoIndex + direction;
+        if (newIndex < 0) newIndex = currentFilteredPhotos.length - 1;
+        else if (newIndex >= currentFilteredPhotos.length) newIndex = 0;
+        
+        currentPhotoIndex = newIndex;
+        const photo = currentFilteredPhotos[currentPhotoIndex];
+
+        // --- NOTES LOGIC RESET ---
+        currentNoteIndex = -1; // Reset to original view
+        const notesBtn = getEl('notes-btn');
+        if (notesBtn) {
+            if (photo.notes && photo.notes.length > 0) {
+                notesBtn.style.display = 'flex'; 
+                notesBtn.classList.remove('notes-active');
+            } else {
+                notesBtn.style.display = 'none'; 
+            }
+        }
+        
+        // Update Indicator (resets to Original view or hides)
+        updateNoteIndicator();
+
+        getEl('photo-title').textContent = photo.title || 'Untitled';
+        getEl('photo-desc').innerHTML = photo.description || ''; 
+        getEl('photo-exif').innerHTML = '';
+
+        const counter = getEl('photo-counter');
+        if(counter) counter.textContent = `${currentPhotoIndex + 1} / ${currentFilteredPhotos.length}`;
+
+        getEl('detail-title').textContent = photo.title || 'Untitled';
+        getEl('detail-desc').innerHTML = photo.description || ''; 
+        
+        const detailExif = getEl('detail-exif');
+        detailExif.innerHTML = '';
+        if (photo.exif) {
+            Object.entries(photo.exif).forEach(([k, v]) => {
+                const s = document.createElement('span');
+                s.className = 'exif-item'; s.textContent = `${k.toUpperCase()}: ${v}`;
+                detailExif.appendChild(s);
+            });
+        }
+
+        const wrapper = getEl('image-wrapper');
+        const oldImages = Array.from(wrapper.querySelectorAll('img'));
+        const tIndex = Math.floor(Math.random() * TRANSITIONS.length);
+        const [outAnim, inAnim] = TRANSITIONS[tIndex];
+
+        const newImg = document.createElement('img');
+        newImg.src = photo.url;
+        newImg.alt = photo.title;
+        newImg.style.zIndex = "10"; 
+        newImg.className = `animate__animated ${inAnim}`; 
+        wrapper.appendChild(newImg);
+
+        oldImages.forEach(oldImg => {
+            oldImg.style.zIndex = "1";
+            oldImg.className = ''; 
+            oldImg.classList.add('animate__animated', outAnim);
+            const cleanup = () => { if(oldImg.parentNode) oldImg.parentNode.removeChild(oldImg); };
+            oldImg.addEventListener('animationend', cleanup, {once: true});
+            setTimeout(cleanup, 1100); 
+        });
+        newImg.addEventListener('animationend', () => { newImg.classList.remove(inAnim); }, {once:true});
+    }
+
+    // --- INDICATOR LOGIC (UPDATED) ---
+    function updateNoteIndicator() {
+        const indicator = getEl('note-indicator');
+        if (!indicator) return;
+
+        // Default Hide
+        indicator.classList.add('hidden');
+
+        // 1. Silent Mode: Always Hide
+        if (isSilentMode) return;
+
+        if (currentFilteredPhotos.length === 0) return;
+        const photo = currentFilteredPhotos[currentPhotoIndex];
+        const notesCount = (photo && photo.notes) ? photo.notes.length : 0;
+        
+        // 2. Existence Check: Only show if REAL notes exist (excluding modal)
+        if (notesCount === 0) return; 
+
+        // Total = Actual Notes + 1 (Modal)
+        const totalPages = notesCount + 1; 
+        let text = "";
+
+        if (infoMode === 2) {
+            // Modal View (The last "page")
+            text = `Note ${totalPages} / ${totalPages}`;
+        } else if (currentNoteIndex > -1) {
+            // Specific Note View
+            text = `Note ${currentNoteIndex + 1} / ${totalPages}`;
+        } else {
+            // Original Image View
+            text = `Original / ${totalPages}`;
+        }
+
+        indicator.textContent = text;
+        indicator.classList.remove('hidden');
+    }
+
+    // --- NOTES VISUAL UPDATER ---
+    function applyNoteView() {
+        if (currentFilteredPhotos.length === 0) return;
+        const photo = currentFilteredPhotos[currentPhotoIndex];
+        const notesBtn = getEl('notes-btn');
+        const activeImg = getEl('image-wrapper').querySelector('img:last-child'); // Target top image
+
+        if (currentNoteIndex === -1) {
+            // Show Original
+            if(activeImg) activeImg.src = photo.url;
+            if(notesBtn) notesBtn.classList.remove('notes-active');
+            showToast("Showing Original");
+        } else {
+            // Show Note
+            if (photo.notes && photo.notes[currentNoteIndex]) {
+                if(activeImg) activeImg.src = photo.notes[currentNoteIndex];
+                if(notesBtn) notesBtn.classList.add('notes-active');
+            }
+        }
+        updateNoteIndicator();
+    }
+
+    // --- TOGGLE NOTES (N Key) ---
+    function toggleNotes() {
+        if (currentFilteredPhotos.length === 0) return;
+        const photo = currentFilteredPhotos[currentPhotoIndex];
+        
+        if (!photo.notes || photo.notes.length === 0) return;
+
+        // Cycle Index (Original -> N1 -> N2 -> Original)
+        currentNoteIndex++;
+        if (currentNoteIndex >= photo.notes.length) {
+            currentNoteIndex = -1; // Back to Original
+        }
+        applyNoteView();
+    }
+
+    // --- UP/DOWN ARROW LOGIC (With Notes Integration) ---
+    function handleArrowUp() {
+        const photo = currentFilteredPhotos[currentPhotoIndex];
+        const notesCount = (photo && photo.notes) ? photo.notes.length : 0;
+
+        if (infoMode === 0) {
+            setInfoMode(1);
+        } else if (infoMode === 1) {
+            if (currentNoteIndex < notesCount - 1) {
+                currentNoteIndex++;
+                applyNoteView();
+            } else {
+                setInfoMode(2); 
+            }
+        }
+    }
+
+    function handleArrowDown() {
+        const photo = currentFilteredPhotos[currentPhotoIndex];
+        const notesCount = (photo && photo.notes) ? photo.notes.length : 0;
+
+        if (infoMode === 2) {
+            setInfoMode(1);
+            if (notesCount > 0) {
+                currentNoteIndex = notesCount - 1;
+                applyNoteView();
+            }
+        } else if (infoMode === 1) {
+            if (currentNoteIndex > -1) {
+                currentNoteIndex--;
+                applyNoteView();
+            } else {
+                setInfoMode(0);
+            }
+        }
+    }
+
+    function toggleSlideshow() {
+        if (slideshowIntervalId) {
+            stopSlideshow();
+        } else {
+            showToast("Slideshow Started (8s)");
+            slideshowIntervalId = setInterval(() => updateMainImage(1), 8000);
+        }
+    }
+
+    function stopSlideshow() {
+        if (slideshowIntervalId) {
+            clearInterval(slideshowIntervalId);
+            slideshowIntervalId = null;
+            showToast("Slideshow Paused");
+        }
+    }
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(e => console.log(e));
+        else document.exitFullscreen();
+    }
+
+    // --- MOUSE HIDE LOGIC ---
+    document.addEventListener('mousemove', () => {
+        document.body.classList.remove('hide-cursor');
+        if (mouseTimer) clearTimeout(mouseTimer);
+        
+        if (document.fullscreenElement && isSilentMode) {
+            mouseTimer = setTimeout(() => {
+                if (document.fullscreenElement && isSilentMode) {
+                    document.body.classList.add('hide-cursor');
+                }
+            }, 3000);
+        }
+    });
+
+    function setInfoMode(mode) {
+        infoMode = mode;
+        const bottomOverlay = getEl('info-overlay');
+        const detailModal = getEl('photo-details-modal');
+        const counter = getEl('photo-counter');
+
+        if (mode === 0) { 
+            if(bottomOverlay) bottomOverlay.classList.add('hidden');
+            if(detailModal) detailModal.style.display = 'none';
+            if(counter) counter.classList.add('hidden'); 
+            document.body.classList.remove('info-on');
+        } else if (mode === 1) { 
+            if(bottomOverlay) bottomOverlay.classList.remove('hidden');
+            if(detailModal) detailModal.style.display = 'none';
+            if(counter) counter.classList.remove('hidden'); 
+            document.body.classList.add('info-on');
+        } else if (mode === 2) { 
+            if(bottomOverlay) bottomOverlay.classList.add('hidden'); 
+            if(detailModal) detailModal.style.display = 'flex';    
+            if(counter) counter.classList.add('hidden'); 
+            document.body.classList.add('info-on');
+        }
+        updateNoteIndicator(); 
+    }
+
+    function toggleInfo() {
+        if (infoMode > 0) setInfoMode(0);
+        else setInfoMode(1);
+    }
+
+    function bindGlobalAudioUnlock() {
+        const unlock = () => {
+            if (hasUserInteracted) return; 
+            hasUserInteracted = true;
+            if (isMusicEnabled) {
+                setTimeout(() => { if(isMusicEnabled) playCurrentTrack(); }, 50);
+            }
+            document.removeEventListener('click', unlock);
+            document.removeEventListener('keydown', unlock);
+            document.removeEventListener('touchstart', unlock);
+        };
+        document.addEventListener('click', unlock);
+        document.addEventListener('keydown', unlock);
+        document.addEventListener('touchstart', unlock);
+    }
+
+    function playCurrentTrack() {
+        if(musicPlaylist.length === 0) return;
+        const track = musicPlaylist[currentMusicIndex];
+        const btn = getEl('music-btn');
+        if(btn) btn.classList.add('music-active');
+        
+        if (track.type === 'mp3') {
+            const audio = getEl('audio-element');
+            audio.src = track.url;
+            audio.play().then(() => {
+                if(!isMusicEnabled) {
+                    audio.pause();
+                    if(btn) btn.classList.remove('music-active');
+                }
+            }).catch(e => { console.warn("Play blocked"); });
+        } else if (track.type === 'youtube') {
+            let vidId = track.url.split('v=')[1].split('&')[0];
+            if (!isYouTubeReady) {
+                document.addEventListener('youtube_api_ready', () => playCurrentTrack(), {once:true});
+                return;
+            }
+            if (!ytPlayer) {
+                ytPlayer = new YT.Player('youtube-player-placeholder', {
+                    height: '0', width: '0', videoId: vidId,
+                    events: { 'onReady': (e) => { 
+                        e.target.playVideo(); 
+                        setTimeout(() => { if(!isMusicEnabled) e.target.pauseVideo(); }, 500);
+                    }}
+                });
+            } else {
+                ytPlayer.loadVideoById(vidId);
+                ytPlayer.playVideo();
+            }
+        }
+    }
+
+    function pauseMusic() {
+        if(musicPlaylist.length === 0) return; 
+        const btn = getEl('music-btn');
+        const audio = getEl('audio-element');
+        if(audio) audio.pause();
+        if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+        if(btn) btn.classList.remove('music-active');
+        showToast("Music Paused");
+    }
+
+    function nextMusicTrack() {
+        if(musicPlaylist.length === 0) return;
+        currentMusicIndex = (currentMusicIndex + 1) % musicPlaylist.length;
+        if (!isMusicEnabled) {
+            isMusicEnabled = true; hasUserInteracted = true;
+        }
+        playCurrentTrack();
+        showToast(`Playing: ${musicPlaylist[currentMusicIndex].title}`);
+    }
+
+    function handleMusicToggle() {
+        if(musicPlaylist.length === 0) return;
+        isMusicEnabled = !isMusicEnabled;
+        if (isMusicEnabled) {
+            hasUserInteracted = true; 
+            playCurrentTrack();
+            showToast("Music On");
+        } else {
+            pauseMusic();
+        }
+    }
+
+    function toggleSilentMode() {
+        isSilentMode = !isSilentMode;
+        if (isSilentMode) {
+            showToast("Silent Mode ON (No Toasts)", false, 2000, true); 
+        } else {
+            showToast("Silent Mode OFF");
+            document.body.classList.remove('hide-cursor'); 
+            if(mouseTimer) clearTimeout(mouseTimer);
+        }
+        updateNoteIndicator(); // Immediate update on toggle
+    }
+
+    function populateGridCategories() {
+        const counts = {};
+        allPhotos.forEach(p => {
+            const rawCats = p.categories || p.category; 
+            if (!rawCats) return;
+            const tags = rawCats.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            tags.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+        });
+
+        const select = getEl('grid-category-filter');
+        select.innerHTML = '';
+
+        if (Object.keys(counts).length === 0) {
+            const noOpt = document.createElement('option');
+            noOpt.textContent = "No Categories";
+            noOpt.disabled = true;
+            noOpt.selected = true; 
+            select.appendChild(noOpt);
+            select.disabled = true;
+            sortedCategories = [];
+        } else {
+            const allOpt = document.createElement('option');
+            allOpt.value = "";
+            allOpt.textContent = "All Categories";
+            select.appendChild(allOpt);
+
+            const sortedKeys = Object.keys(counts).sort((a,b) => counts[b] - counts[a]);
+            sortedCategories = sortedKeys; 
+
+            sortedKeys.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = `${cat} (${counts[cat]})`;
+                select.appendChild(opt);
+            });
+            
+            select.disabled = false;
+            select.onchange = () => { 
+                const val = select.value;
+                if(val === "") currentCategoryIdx = -1;
+                else currentCategoryIdx = sortedCategories.indexOf(val);
+                filterGridPhotos(val); 
+            };
+        }
+        
+        updateMetaCounts(Object.keys(counts).length);
+    }
+
+    function updateMetaCounts(catCount) {
+        const display = getEl('meta-categories-display');
+        if (!display) return;
+        let text = "";
+        if (catCount > 0) text += `Categories found: ${catCount}`;
+        if (musicPlaylist.length > 0) {
+            if (text !== "") text += ", ";
+            text += `Music found: ${musicPlaylist.length}`;
+        }
+        if (text === "") display.style.display = 'none';
+        else {
+            display.textContent = text;
+            display.style.display = 'block';
+        }
+    }
+
+    function cycleCategory(direction) {
+        if (sortedCategories.length === 0) return;
+        let newIdx = currentCategoryIdx + direction;
+        if (newIdx < -1) {
+            currentCategoryIdx = -1; 
+            showToast("Page Down for Categories");
+            return;
+        }
+        if (newIdx >= sortedCategories.length) {
+            currentCategoryIdx = sortedCategories.length - 1;
+            showToast("No More Categories");
+            return;
+        }
+        currentCategoryIdx = newIdx;
+        let catName = "";
+        if (currentCategoryIdx === -1) {
+            catName = ""; 
+            showToast("Showing all photos", true, 2500);
+        } else {
+            catName = sortedCategories[currentCategoryIdx];
+            showToast(`Category:<br><span style="font-size: 1.3em; font-weight: bold;">${catName}</span>`, true, 2500);
+        }
+        const select = getEl('grid-category-filter');
+        if (select) select.value = catName;
+        filterGridPhotos(catName);
+        currentPhotoIndex = 0;
+        updateMainImage(0);
+    }
+
+    function resetAlbum() {
+        stopSlideshow();
+        currentFilteredPhotos = [...allPhotos];
+        currentCategoryIdx = -1;
+        const select = getEl('grid-category-filter');
+        if(select) select.value = "";
+        currentPhotoIndex = 0;
+        if (getEl('grid-modal').style.display === 'flex') renderGrid();
+        updateMainImage(0);
+        showToast("Album Reset");
+    }
+
+    function filterGridPhotos(category) {
+        if (!category) {
+            currentFilteredPhotos = [...allPhotos];
+        } else {
+            currentFilteredPhotos = allPhotos.filter(p => {
+                const raw = p.categories || p.category;
+                if(!raw) return false;
+                const tags = raw.split(',').map(s => s.trim());
+                return tags.includes(category);
+            });
+        }
+        if (getEl('grid-modal').style.display === 'flex') renderGrid();
+    }
+
+    function renderGrid() {
+        const grid = getEl('photo-grid');
+        grid.innerHTML = ''; 
+        currentFilteredPhotos.forEach((photo, index) => {
+            const item = document.createElement('div');
+            item.className = 'photo-item';
+            const img = document.createElement('img');
+            img.src = photo.thumbnailUrl || photo.url;
+            img.loading = "lazy";
+            item.appendChild(img);
+            item.onclick = () => {
+                currentPhotoIndex = index;
+                updateMainImage(0); 
+                closeAllModals(); 
+            };
+            grid.appendChild(item);
+        });
+    }
+
+    function openGrid() {
+        closeAllModals();
+        if (getEl('grid-category-filter').options.length <= 1) populateGridCategories();
+        renderGrid(); 
+        getEl('grid-modal').style.display = 'flex';
+    }
+
+    function closeAllModals() {
+        document.querySelectorAll('.overlay-modal').forEach(m => m.style.display = 'none');
+        if(getEl('modal-music-status')) getEl('modal-music-status').textContent = '';
+        if (infoMode === 2) setInfoMode(1);
+    }
+
+    function openHelp() {
+        closeAllModals();
+        getEl('help-modal').style.display = 'flex';
+    }
+
+    function openAbout() {
+        closeAllModals();
+        getEl('meta-album-title').textContent = albumMetaData.albumTitle || 'Album';
+        getEl('meta-created').textContent = albumMetaData.meta?.created || 'N/A';
+        getEl('meta-note').textContent = albumMetaData.meta?.note || '';
+        if(getEl('meta-og-desc')) getEl('meta-og-desc').textContent = albumMetaData.meta?.og_description || '';
+        
+        const hasMusic = musicPlaylist.length > 0;
+        const closeBtn = getEl('close-meta-btn');
+        const startupOpts = getEl('startup-options');
+
+        if (hasMusic) {
+            closeBtn.style.display = 'none';
+            startupOpts.style.display = 'flex';
+            setTimeout(() => {
+                const silentBtn = getEl('btn-view-silent');
+                if(silentBtn) silentBtn.focus();
+            }, 100);
+        } else {
+            closeBtn.style.display = 'block';
+            startupOpts.style.display = 'none';
+        }
+        getEl('meta-modal').style.display = 'flex';
+    }
+
+    function openAdmin() {
+        const photo = currentFilteredPhotos[currentPhotoIndex];
+        if(!photo) return;
+        getEl('admin-json').textContent = getAlbumName() + ".json";
+        getEl('admin-id').textContent = photo.id;
+        const adminLink = `https://mediamaze.com/tony/PhotoAlbum/public/?${getAlbumName()}#${photo.id}`;
+        getEl('admin-url').href = adminLink;
+        getEl('admin-url').textContent = "Link";
+        getEl('admin-modal').style.display = 'flex';
+    }
+
+    async function init() {
+        const name = getAlbumName();
+        setInfoMode(1);
+
+        if (!name) {
+            getEl('main-viewer').innerHTML = '<div class="error-message">Error: No album specified in URL.</div>';
+            return;
+        }
+
+        loadExternalHtml('common/LP_first.html', 'lp-first-content');
+        loadExternalHtml('common/LP_help.html', 'lp-help-content');
+
+        try {
+            const res = await fetch(`${BASE_URL}${name}`);
+            if(!res.ok) throw new Error("Fetch Failed");
+            const data = await res.json();
+            
+            if (data._security && data._security.mode === 'Private') {
+                document.body.innerHTML = `
+                    <div class="private-overlay">
+                        <div class="private-box">
+                            <h1>🔒 Private Album</h1>
+                            <p>This album is private.</p>
+                        </div>
+                    </div>`;
+                return; 
+            }
+            
+            albumMetaData = data;
+            updatePageMeta(data);
+
+            // Filter Private Photos
+            allPhotos = (data.photos || []).filter(p => p.url && (!p.mode || p.mode !== 'Private'));
+            currentFilteredPhotos = [...allPhotos];
+            
+            if(data.music && data.music.length > 0) {
+                musicPlaylist = data.music;
+                isMusicEnabled = false; 
+                const hasYoutube = musicPlaylist.some(t => t.type === 'youtube');
+                if(hasYoutube) loadYouTubeAPI();
+                bindGlobalAudioUnlock(); 
+            } else {
+                const mBtn = getEl('music-btn');
+                if(mBtn) mBtn.style.display = 'none';
+                
+                const helpLiMusic = document.querySelector('li[data-action="music"]');
+                if(helpLiMusic) helpLiMusic.style.display = 'none';
+                const helpLiNext = document.querySelector('li[data-action="next-track"]');
+                if(helpLiNext) helpLiNext.style.display = 'none';
+            }
+            
+            populateGridCategories();
+
+            if (currentFilteredPhotos.length > 0) {
+                updateMainImage(0); 
+            } else {
+                getEl('main-viewer').innerHTML = '<div class="error-message">No photos in album.</div>';
+            }
+
+            if(shouldStartWithInfo()) {
+                openAbout();
+            }
+
+        } catch (e) {
+            console.error(e);
+            getEl('main-viewer').innerHTML = '<div class="error-message">Failed to load album data.</div>';
+        }
+    }
+
+    bindClick('prev-btn', () => { updateMainImage(-1); });
+    bindClick('next-btn', () => { updateMainImage(1); });
+    bindClick('grid-btn', openGrid);
+    bindClick('help-btn', openHelp);
+    bindClick('about-btn', openAbout);
+    bindClick('fullscreen-btn', toggleFullScreen);
+    bindClick('music-btn', handleMusicToggle);
+    bindClick('close-grid-btn', closeAllModals);
+    bindClick('close-help-btn', closeAllModals);
+    bindClick('close-meta-btn', closeAllModals); 
+    bindClick('close-admin-btn', () => getEl('admin-modal').style.display = 'none');
+    bindClick('close-detail-btn', () => { setInfoMode(1); });
+    bindClick('btn-view-music', () => {
+        isMusicEnabled = true; hasUserInteracted = true;
+        playCurrentTrack(); closeAllModals();
+    });
+    bindClick('btn-view-silent', () => {
+        isMusicEnabled = false; pauseMusic(); closeAllModals();
+    });
+    bindClick('nav-instruction-btn', () => { closeAllModals(); openHelp(); });
+    bindClick('notes-btn', toggleNotes);
+
+    function bindHelpClicks() {
+        const lists = [getEl('help-list-nav'), getEl('help-list-info')];
+        lists.forEach(list => {
+            if (!list) return;
+            list.addEventListener('click', (e) => {
+                const li = e.target.closest('li');
+                if (!li) return;
+                const action = li.getAttribute('data-action');
+                if(action !== 'category-nav') closeAllModals(); 
+                else closeAllModals();
+
+                switch(action) {
+                    case 'next': updateMainImage(1); break;
+                    case 'prev': updateMainImage(-1); break;
+                    case 'fullscreen': toggleFullScreen(); break;
+                    case 'slideshow': toggleSlideshow(); break;
+                    case 'stop': stopSlideshow(); break;
+                    case 'info': toggleInfo(); break;
+                    case 'music': handleMusicToggle(); break;
+                    case 'help': openHelp(); break; 
+                    case 'info-modal': openAbout(); break; 
+                    case 'grid': openGrid(); break;        
+                    case 'shuffle': 
+                        currentFilteredPhotos.sort(() => Math.random() - 0.5); 
+                        currentPhotoIndex = 0; updateMainImage(0); 
+                        showToast("Shuffled"); 
+                        break;
+                    case 'category-nav': showToast("Use PageUp / PageDown keys"); break;
+                    case 'reset': resetAlbum(); break; 
+                    case 'next-track': nextMusicTrack(); break; 
+                    case 'end': openEndScreen(); break;
+                    case 'silent': toggleSilentMode(); break;
+                    case 'notes': toggleNotes(); break;
+                }
+            });
+        });
+    }
+    bindHelpClicks();
+
+    document.addEventListener('keydown', (e) => {
+        const grid = getEl('grid-modal');
+        const isGridOpen = grid && grid.style.display === 'flex';
+        const details = getEl('photo-details-modal');
+        const isDetailsOpen = details && details.style.display === 'flex';
+        const metaModal = getEl('meta-modal');
+        const isMetaOpen = metaModal && metaModal.style.display === 'flex';
+        const helpModal = getEl('help-modal');
+        const isHelpOpen = helpModal && helpModal.style.display === 'flex';
+        const endModal = getEl('end-screen-modal');
+        const isEndOpen = endModal && endModal.style.display === 'flex';
+        const anyModal = document.querySelector('.overlay-modal[style*="flex"]');
+
+        if ((e.key === 'Escape' || e.key === '0') && slideshowIntervalId) {
+            e.preventDefault(); stopSlideshow(); return;
+        }
+
+        if (isMetaOpen) {
+            const navKeys = ['ArrowRight', 'ArrowLeft', ' ', 'Enter'];
+            if (navKeys.includes(e.key)) {
+                e.preventDefault();
+                isMusicEnabled = false; 
+                pauseMusic();
+                closeAllModals();
+            } else if (e.key === 'Escape') {
+                closeAllModals(); return;
+            } else {
+                return; 
+            }
+        }
+
+        if (isHelpOpen) {
+            const navKeys = ['ArrowRight', 'ArrowLeft', ' ', 'Enter', 'Home', 'PageUp', 'PageDown'];
+            if (navKeys.includes(e.key)) closeAllModals();
+            else if (e.key === 'Escape') { closeAllModals(); return; }
+            else return;
+        }
+
+        if (isEndOpen) {
+            if (['ArrowUp', 'ArrowDown', 'Enter'].includes(e.key)) {
+                e.preventDefault();
+                if (typeof window.lpEndNav === 'function') window.lpEndNav(e.key);
+                return;
+            }
+            const closeKeys = ['ArrowRight', 'ArrowLeft', ' ', 'Home', 'PageUp', 'PageDown', 'Escape'];
+            if (closeKeys.includes(e.key)) {
+                closeAllModals();
+                return;
+            }
+            return;
+        }
+
+        if (isGridOpen) {
+            if (e.key === 'Escape' || e.key.toLowerCase() === 'p') { closeAllModals(); return; }
+            const navKeys = ['ArrowRight', 'ArrowLeft', ' ', 'ArrowUp', 'ArrowDown', 'f', 'h', 'm', 'i'];
+            if (navKeys.includes(e.key) || navKeys.includes(e.key.toLowerCase())) {
+                closeAllModals(); 
+            } else { return; }
+        }
+
+        if (isDetailsOpen) {
+            // FIX: UP/DOWN logic handled in switch now to support Notes integration
+            if (e.key === 'Escape') { setInfoMode(1); return; }
+        } else if (anyModal && !isMetaOpen && !isHelpOpen && !isEndOpen) {
+            if (e.key === 'Escape') closeAllModals();
+            return; 
+        }
+
+        if (e.shiftKey && e.key.toLowerCase() === 'a') { openAdmin(); return; }
+        
+        switch(e.key) {
+            case 'ArrowRight': case ' ': updateMainImage(1); break;
+            case 'ArrowLeft': updateMainImage(-1); break;
+            case 'ArrowUp': e.preventDefault(); handleArrowUp(); break;
+            case 'ArrowDown': e.preventDefault(); handleArrowDown(); break;
+            case 'f': case 'F': toggleFullScreen(); break;
+            case 'h': case 'H': openHelp(); break;
+            case 'm': case 'M': handleMusicToggle(); break;
+            case 'i': case 'I': openAbout(); break; 
+            case 'p': case 'P': openGrid(); break;  
+            case '0': if(slideshowIntervalId) toggleSlideshow(); break;
+            case 'PageUp': e.preventDefault(); cycleCategory(-1); break;
+            case 'PageDown': e.preventDefault(); cycleCategory(1); break;
+            case 'Home': e.preventDefault(); resetAlbum(); break; 
+            case 'Insert': e.preventDefault(); nextMusicTrack(); break; 
+            case 'End': e.preventDefault(); openEndScreen(); break; 
+            case 's': case 'S': toggleSilentMode(); break; 
+            case 'r': case 'R': 
+                currentFilteredPhotos.sort(() => Math.random() - 0.5); 
+                currentPhotoIndex = 0; updateMainImage(0); 
+                showToast("Shuffled"); 
+                break;
+            case 'n': case 'N': toggleNotes(); break; 
+        }
+        
+        if (e.key >= '1' && e.key <= '9') {
+            if(slideshowIntervalId) clearInterval(slideshowIntervalId);
+            const speed = (parseInt(e.key) + 5) * 1000;
+            slideshowIntervalId = setInterval(() => updateMainImage(1), speed);
+            showToast(`Slideshow: ${speed/1000}s`);
+        }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) document.body.classList.add('is-fullscreen');
+        else document.body.classList.remove('is-fullscreen');
+    });
+
+    init();
+});
