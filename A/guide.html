@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediaMaze Viewer - User Guide</title>
+    <title>MediaMaze Viewer - Official Guide</title>
     <style>
         :root {
             --bg-dark: #121212;
             --bg-card: #1e1e1e;
             --accent: #007bff;
+            --accent-hover: #0056b3;
             --text-main: #e0e0e0;
-            --text-muted: #a0a0a0;
+            --text-muted: #b0b0b0;
             --border: #333;
         }
         body {
@@ -24,12 +25,11 @@
         .container { max-width: 900px; margin: 0 auto; }
         
         header { text-align: center; margin-bottom: 50px; border-bottom: 1px solid var(--border); padding-bottom: 30px; }
-        h1 { margin: 0; font-size: 2.5em; color: #fff; }
-        p.subtitle { color: var(--accent); font-size: 1.2em; margin-top: 10px; }
+        h1 { margin: 0; font-size: 2.8em; color: #fff; letter-spacing: -1px; }
+        p.subtitle { color: var(--accent); font-size: 1.3em; margin-top: 10px; font-weight: 300; }
 
         /* Accordion Styles */
-        .accordion { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-        
+        .accordion { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .accordion-item { border-bottom: 1px solid var(--border); background: var(--bg-card); }
         .accordion-item:last-child { border-bottom: none; }
 
@@ -46,167 +46,211 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.2s;
+            transition: background 0.2s, color 0.2s;
         }
-        .accordion-header:hover { background: #2a2a2a; }
-        .accordion-header::after { content: '+'; font-size: 1.5em; color: var(--accent); }
-        .accordion-header.active::after { content: '−'; }
-        .accordion-header.active { background: #252525; border-bottom: 1px solid var(--border); }
+        .accordion-header:hover { background: #2a2a2a; color: var(--accent); }
+        .accordion-header::after { content: '+'; font-size: 1.5em; color: var(--text-muted); transition: transform 0.3s; }
+        .accordion-header.active::after { content: '−'; color: var(--accent); transform: rotate(180deg); }
+        .accordion-header.active { background: #252525; border-bottom: 1px solid var(--border); color: var(--accent); }
 
         .accordion-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease-out;
+            transition: max-height 0.4s ease-out;
             background: #181818;
         }
-        .accordion-body { padding: 25px; color: var(--text-muted); }
+        .accordion-body { padding: 30px; color: var(--text-muted); }
 
         /* Content Styling */
+        h3 { color: #fff; margin-top: 0; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        h4 { color: var(--accent); margin-top: 25px; margin-bottom: 10px; font-size: 1.1em; }
+        
         .key-badge {
             display: inline-block;
             background: #333;
             color: #fff;
-            padding: 3px 8px;
+            padding: 2px 8px;
             border-radius: 4px;
             border-bottom: 2px solid #000;
-            font-family: monospace;
+            font-family: 'Consolas', monospace;
             font-weight: bold;
+            font-size: 0.9em;
             margin: 0 3px;
+            vertical-align: middle;
         }
         
         ul.feature-list { list-style: none; padding: 0; }
-        ul.feature-list li { margin-bottom: 15px; padding-left: 20px; position: relative; }
+        ul.feature-list li { margin-bottom: 12px; padding-left: 20px; position: relative; }
         ul.feature-list li::before { content: '•'; color: var(--accent); position: absolute; left: 0; font-weight: bold; }
 
-        code { background: #000; color: #4caf50; padding: 2px 5px; border-radius: 3px; font-family: monospace; }
+        code { background: #000; color: #4caf50; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.95em; }
         
         .highlight-box {
-            background: rgba(0, 123, 255, 0.1);
+            background: rgba(0, 123, 255, 0.08);
             border-left: 4px solid var(--accent);
-            padding: 15px;
-            margin-top: 20px;
+            padding: 20px;
+            margin-top: 25px;
             border-radius: 0 4px 4px 0;
         }
+        .highlight-box strong { color: #fff; }
+
+        .builder-promo {
+            background: linear-gradient(135deg, #1e1e1e 0%, #252525 100%);
+            border: 1px solid var(--accent);
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .builder-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 25px;
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .builder-btn:hover { background: var(--accent-hover); }
+
+        footer { text-align: center; margin-top: 60px; color: #555; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>MediaMaze Viewer Guide</h1>
-        <p class="subtitle">The definitive guide to creating and viewing dynamic albums.</p>
+        <h1>MediaMaze Viewer</h1>
+        <p class="subtitle">A High-Performance Digital Album Experience</p>
     </header>
 
     <div class="accordion">
         
         <div class="accordion-item">
-            <button class="accordion-header">1. Introduction & Core Concept</button>
+            <button class="accordion-header">1. Introduction & The MediaMaze Ecosystem</button>
             <div class="accordion-content">
                 <div class="accordion-body">
-                    <p>The <strong>MediaMaze Viewer</strong> is a lightweight, high-performance web application designed to turn simple folders of images into immersive, interactive storytelling experiences.</p>
-                    <p>Unlike traditional galleries, it focuses on <strong>keyboard navigation</strong>, <strong>background audio</strong>, and <strong>fluid animations</strong> to create a presentation-like feel.</p>
-                    <div class="highlight-box">
-                        <strong>For Creators:</strong> You don't need to write code. The viewer reads a simple JSON file (generated by our AI tools) to understand your album structure, music, and notes.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="accordion-item">
-            <button class="accordion-header">2. Navigation & Controls</button>
-            <div class="accordion-content">
-                <div class="accordion-body">
-                    <p>The viewer is optimized for keyboard use, making it perfect for presentations or lean-back viewing.</p>
-                    <ul class="feature-list">
-                        <li><strong>Next/Prev:</strong> Use <span class="key-badge">Right</span> / <span class="key-badge">Left</span> arrows or <span class="key-badge">Space</span>.</li>
-                        <li><strong>Info Panel:</strong> Use <span class="key-badge">Up</span> / <span class="key-badge">Down</span> arrows to cycle through view modes: <em>Hidden → Bottom Bar → Full Details Modal</em>.</li>
-                        <li><strong>Categories:</strong> Use <span class="key-badge">PageUp</span> / <span class="key-badge">PageDown</span> to cycle through photo categories instantly.</li>
-                        <li><strong>Reset:</strong> Press <span class="key-badge">Home</span> to clear all filters and return to the first photo.</li>
-                        <li><strong>Slideshow:</strong> Press <span class="key-badge">1</span> through <span class="key-badge">9</span> to start an auto-play (3s to 11s delays). Press <span class="key-badge">0</span> or <span class="key-badge">Esc</span> to stop.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="accordion-item">
-            <button class="accordion-header">3. URL Options & Link Generation</button>
-            <div class="accordion-content">
-                <div class="accordion-body">
-                    <p>You can customize how an album starts by adding special "Hash Options" to the end of the URL. Multiple options can be comma-separated.</p>
-                    <p><strong>Example:</strong> <code>.../AlbumName#R,S,5</code> (Randomize, Silent Mode, 8s Slideshow)</p>
+                    <p>The <strong>MediaMaze Viewer</strong> is not just a gallery; it is a presentation engine designed to turn folders of images into immersive, cinematic experiences. It prioritizes speed, keyboard efficiency, and audio-visual flow over traditional point-and-click interfaces.</p>
                     
-                    <ul class="feature-list">
-                        <li><code>#S</code> : <strong>Silent Mode.</strong> Disables toast notifications and hides mouse cursor in fullscreen.</li>
-                        <li><code>#N</code> : <strong>Notes Mode.</strong> Starts with "Annotated Notes" view enabled by default.</li>
-                        <li><code>#R</code> : <strong>Randomize.</strong> Shuffles the photo order on load.</li>
-                        <li><code>#F</code> : <strong>Fullscreen.</strong> Enters fullscreen on the first click.</li>
-                        <li><code>#[Digit]</code> : <strong>Auto-Start.</strong> Starts slideshow. #1 = 3s, #9 = 11s.</li>
-                        <li><code>#CAT-[Name]</code> : <strong>Filter Category.</strong> e.g., <code>#CAT-Nature</code>.</li>
-                        <li><code>#KW-[Word]</code> : <strong>Filter Keyword.</strong> e.g., <code>#KW-Mountain</code> filters by title.</li>
-                    </ul>
-
-                    <div class="highlight-box">
-                        <strong>Pro Tip:</strong> Press <span class="key-badge">A</span> inside the viewer to open the <strong>Link Assistant</strong>. It lets you select these options visually and generates the link for you!
+                    <div class="builder-promo">
+                        <h3 style="border:none; margin:0; color:var(--accent);">Powered by the Album Builder</h3>
+                        <p>This viewer works in tandem with the <strong>MediaMaze Album Builder</strong>. The Builder is an intelligent backend tool that scans your folders, uses AI to generate descriptions and tags, and compiles everything into the highly optimized JSON format this viewer consumes.</p>
+                        <p style="font-size: 0.9em; opacity: 0.8;">(Contact your administrator to access the Album Builder)</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="accordion-item">
-            <button class="accordion-header">4. Special Features (Notes & Music)</button>
+            <button class="accordion-header">2. Controls & Keyboard Shortcuts</button>
             <div class="accordion-content">
                 <div class="accordion-body">
-                    <h3>📝 Annotated Notes</h3>
-                    <p>Some photos may have "Notes"—alternate versions with text overlays or diagrams. If a photo has notes:</p>
-                    <ul>
-                        <li>A 📝 button appears in the top right.</li>
-                        <li>Press <span class="key-badge">N</span> to cycle: <em>Original → Note 1 → Note 2 → Original</em>.</li>
-                        <li>A badge "Note 1 / X" will appear in the corner.</li>
+                    <p>For the best experience, use your keyboard. The interface is designed to fade away, leaving only your content.</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <h4>Navigation</h4>
+                            <ul class="feature-list">
+                                <li><strong>Next Photo:</strong> <span class="key-badge">Right</span> / <span class="key-badge">Space</span></li>
+                                <li><strong>Previous Photo:</strong> <span class="key-badge">Left</span></li>
+                                <li><strong>Category Jump:</strong> <span class="key-badge">PageUp</span> / <span class="key-badge">PageDown</span></li>
+                                <li><strong>Reset Album:</strong> <span class="key-badge">Home</span></li>
+                                <li><strong>End Screen:</strong> <span class="key-badge">End</span></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>View & Media</h4>
+                            <ul class="feature-list">
+                                <li><strong>Info Modes:</strong> <span class="key-badge">Up</span> / <span class="key-badge">Down</span> <br><small>(Cycles: Hidden → Bar → Modal)</small></li>
+                                <li><strong>Fullscreen:</strong> <span class="key-badge">F</span></li>
+                                <li><strong>Thumbnails:</strong> <span class="key-badge">P</span></li>
+                                <li><strong>Play/Pause Music:</strong> <span class="key-badge">M</span></li>
+                                <li><strong>Next Track:</strong> <span class="key-badge">Insert</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong>Link Assistant:</strong> Press <span class="key-badge">A</span> at any time to open a tool that helps you generate shareable links with specific filters and settings pre-applied.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <button class="accordion-header">3. Annotated Notes Feature</button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <p>The viewer supports a unique <strong>"Annotated Notes"</strong> layer. This is perfect for technical diagrams, "before/after" shots, or detailed text overlays.</p>
+                    
+                    <h4>How it Works</h4>
+                    <p>If a photo has associated notes, a <span style="font-size:1.2em">📝</span> icon appears in the HUD.</p>
+                    <ul class="feature-list">
+                        <li>Press <span class="key-badge">N</span> to toggle.</li>
+                        <li>It cycles through: <em>Original Image → Note 1 → Note 2 → ... → Original</em>.</li>
+                        <li>A persistent indicator (e.g., "Note 1 / 3") will appear in the top-right corner to show your position in the stack.</li>
+                    </ul>
+                    <p><em>Note: Navigating to a new photo automatically resets the view to the "Original" image.</em></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <button class="accordion-header">4. Visual Effects & Slideshows</button>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <h3>Slideshows</h3>
+                    <p>Press any number key from <span class="key-badge">1</span> to <span class="key-badge">9</span> to start an instant slideshow.</p>
+                    <ul class="feature-list">
+                        <li><span class="key-badge">1</span> : 3 Seconds</li>
+                        <li><span class="key-badge">5</span> : 7 Seconds (Standard)</li>
+                        <li><span class="key-badge">9</span> : 11 Seconds</li>
+                        <li><span class="key-badge">0</span> / <span class="key-badge">Esc</span> : Stop</li>
                     </ul>
 
-                    <h3 style="margin-top:20px;">🎵 Dynamic Audio</h3>
-                    <p>Albums can contain MP3 or YouTube playlists.</p>
-                    <ul>
-                        <li>Press <span class="key-badge">M</span> to Play/Pause.</li>
-                        <li>Press <span class="key-badge">Insert</span> to skip to the next track.</li>
+                    <h3>Transition Effects</h3>
+                    <p>The viewer includes a cinema-grade transition engine (Fade, Zoom, Slide, Flip, Bounce, etc.).</p>
+                    <ul class="feature-list">
+                        <li><strong>Random (Default):</strong> The viewer picks a new effect for every photo.</li>
+                        <li><strong>Fade Only:</strong> Press <span class="key-badge">E</span> to enforce a strict "Fade" transition for a calmer experience. Press again to return to Random.</li>
                     </ul>
                 </div>
             </div>
         </div>
 
         <div class="accordion-item">
-            <button class="accordion-header">5. Building Your Own Album</button>
+            <button class="accordion-header">5. URL Parameters & Custom Links</button>
             <div class="accordion-content">
                 <div class="accordion-body">
-                    <p>Advanced users can create their own albums by generating a JSON file in the same directory as their photos.</p>
-                    <p>Required Structure:</p>
-<pre style="background:#000; padding:10px; color:#aaa; overflow-x:auto;">
-{
-  "albumTitle": "My Trip",
-  "photos": [
-    {
-      "url": "image1.jpg",
-      "title": "The Beach",
-      "categories": "Nature, Summer",
-      "notes": ["image1_note.png"]
-    }
-  ]
-}
-</pre>
-                    <p>Refer to the technical documentation for full details on Music integration and Privacy settings.</p>
+                    <p>You can create "Smart Links" that launch the album in a specific state by adding a hash (<code>#</code>) followed by options.</p>
+                    <p><strong>Format:</strong> <code>https://site.com/viewer/?AlbumName#Option1,Option2...</code></p>
+
+                    <h4>Available Options</h4>
+                    <ul class="feature-list">
+                        <li><code>#S</code> : <strong>Silent Mode</strong> (No popups, auto-hide cursor).</li>
+                        <li><code>#N</code> : <strong>Start with Notes</strong> enabled.</li>
+                        <li><code>#R</code> : <strong>Randomize</strong> the photo order on load.</li>
+                        <li><code>#F</code> : <strong>Fullscreen</strong> (Enables on first click).</li>
+                        <li><code>#E[0-9]</code> : <strong>Enforce Effect</strong> (e.g., <code>#E1</code> for Fade).</li>
+                        <li><code>#[Digit]</code> : <strong>Auto-Start Slideshow</strong> (e.g., <code>#5</code>).</li>
+                        <li><code>#CAT-[Name]</code> : <strong>Filter by Category</strong>.</li>
+                        <li><code>#KW-[Word]</code> : <strong>Filter by Title Keyword</strong>.</li>
+                        <li><code>#ID</code> : <strong>Start at specific Photo ID</strong>.</li>
+                    </ul>
                 </div>
             </div>
         </div>
 
     </div>
     
-    <footer style="text-align: center; margin-top: 50px; color: #555;">
-        &copy; 2025 MediaMaze.
+    <footer>
+        &copy; 2025 MediaMaze. All rights reserved.
     </footer>
 </div>
 
 <script>
-    // Accordion Logic
     document.querySelectorAll('.accordion-header').forEach(button => {
         button.addEventListener('click', () => {
             const content = button.nextElementSibling;
