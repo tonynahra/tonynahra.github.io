@@ -919,7 +919,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setInfoMode(1);
 
         if (!name) {
-            getEl('main-viewer').innerHTML = '<div class="error-message">Error: No album specified in URL.</div>';
+            // getEl('main-viewer').innerHTML = '<div class="error-message">Error: No album specified in URL.</div>';
+            window.location.href = "about.html";
             return;
         }
 
