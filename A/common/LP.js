@@ -45,9 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let slideshowIntervalId = null;
     let isSilentMode = false;
     let mouseTimer = null;
-    
-    // --- NOTE FEATURE STATE ---
-    let currentNoteIndex = -1; // -1 = Original, 0 = Note 1, etc.
+    let requestFullscreenOnInteract = false; 
+    let currentNoteIndex = -1; 
     
     // --- 2. UTILITY ---
     function getEl(id) { return document.getElementById(id); }
@@ -71,14 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { t.classList.remove('show'); setTimeout(() => { if(t.parentNode) t.parentNode.removeChild(t); }, 300); }, duration);
     }
 
-    function showMusicStatus(msg) {
-        const metaModal = getEl('meta-modal');
-        const isModalOpen = metaModal && metaModal.style.display === 'flex';
-        if (!isModalOpen) {
-            showToast(msg);
-        }
-    }
-
     async function loadExternalHtml(url, containerId) {
         const container = getEl(containerId);
         if (!container) return;
@@ -98,10 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getAlbumName() {
-        const str = window.location.search || window.location.hash;
-        let clean = str.replace(/[?#]/g, '').replace('.json', '');
-        if(clean.endsWith('/info')) return clean.replace('/info', '');
-        return clean;
+        if (window.location.search && window.location.search.length > 1) {
+            return window.location.search.substring(1).replace('.json', ''); 
+        }
+        const hash = window.location.hash.substring(1);
+        if (hash.includes('/')) {
+            return hash.split('#')[0].replace('.json', ''); 
+        }
+        return '';
     }
     
     function shouldStartWithInfo() {
@@ -129,8 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPhotoIndex = newIndex;
         const photo = currentFilteredPhotos[currentPhotoIndex];
 
-        // --- NOTES LOGIC RESET ---
-        currentNoteIndex = -1; // Reset to original view
+        // Reset Notes Logic
+        currentNoteIndex = -1;
         const notesBtn = getEl('notes-btn');
         if (notesBtn) {
             if (photo.notes && photo.notes.length > 0) {
@@ -186,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
         newImg.addEventListener('animationend', () => { newImg.classList.remove(inAnim); }, {once:true});
     }
 
-    // --- INDICATOR LOGIC ---
     function updateNoteIndicator() {
         const indicator = getEl('note-indicator');
         if (!indicator) return;
@@ -216,20 +210,17 @@ document.addEventListener('DOMContentLoaded', () => {
         indicator.classList.remove('hidden');
     }
 
-    // --- NOTES VISUAL UPDATER ---
     function applyNoteView() {
         if (currentFilteredPhotos.length === 0) return;
         const photo = currentFilteredPhotos[currentPhotoIndex];
         const notesBtn = getEl('notes-btn');
-        const activeImg = getEl('image-wrapper').querySelector('img:last-child'); // Target top image
+        const activeImg = getEl('image-wrapper').querySelector('img:last-child'); 
 
         if (currentNoteIndex === -1) {
-            // Show Original
             if(activeImg) activeImg.src = photo.url;
             if(notesBtn) notesBtn.classList.remove('notes-active');
             showToast("Showing Original");
         } else {
-            // Show Note
             if (photo.notes && photo.notes[currentNoteIndex]) {
                 if(activeImg) activeImg.src = photo.notes[currentNoteIndex];
                 if(notesBtn) notesBtn.classList.add('notes-active');
@@ -238,22 +229,18 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNoteIndicator();
     }
 
-    // --- TOGGLE NOTES (N Key) ---
     function toggleNotes() {
         if (currentFilteredPhotos.length === 0) return;
         const photo = currentFilteredPhotos[currentPhotoIndex];
-        
         if (!photo.notes || photo.notes.length === 0) return;
 
-        // Cycle Index (Original -> N1 -> N2 -> Original)
         currentNoteIndex++;
         if (currentNoteIndex >= photo.notes.length) {
-            currentNoteIndex = -1; // Back to Original
+            currentNoteIndex = -1; 
         }
         applyNoteView();
     }
 
-    // --- UP/DOWN ARROW LOGIC (With Notes Integration) ---
     function handleArrowUp() {
         const photo = currentFilteredPhotos[currentPhotoIndex];
         const notesCount = (photo && photo.notes) ? photo.notes.length : 0;
@@ -290,12 +277,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function toggleSlideshow() {
+    function toggleSlideshow(speed = 8000) {
         if (slideshowIntervalId) {
             stopSlideshow();
         } else {
-            showToast("Slideshow Started (8s)");
-            slideshowIntervalId = setInterval(() => updateMainImage(1), 8000);
+            showToast(`Slideshow Started (${speed/1000}s)`);
+            slideshowIntervalId = setInterval(() => updateMainImage(1), speed);
         }
     }
 
@@ -308,15 +295,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleFullScreen() {
-        if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(e => console.log(e));
-        else document.exitFullscreen();
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(e => {
+                requestFullscreenOnInteract = true;
+            });
+        } else {
+            document.exitFullscreen();
+        }
     }
 
-    // --- MOUSE HIDE LOGIC ---
     document.addEventListener('mousemove', () => {
         document.body.classList.remove('hide-cursor');
         if (mouseTimer) clearTimeout(mouseTimer);
-        
         if (document.fullscreenElement && isSilentMode) {
             mouseTimer = setTimeout(() => {
                 if (document.fullscreenElement && isSilentMode) {
@@ -360,6 +350,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const unlock = () => {
             if (hasUserInteracted) return; 
             hasUserInteracted = true;
+            if (requestFullscreenOnInteract) {
+                toggleFullScreen();
+                requestFullscreenOnInteract = false;
+            }
             if (isMusicEnabled) {
                 setTimeout(() => { if(isMusicEnabled) playCurrentTrack(); }, 50);
             }
@@ -644,6 +638,112 @@ document.addEventListener('DOMContentLoaded', () => {
         getEl('admin-modal').style.display = 'flex';
     }
 
+    // --- ASSISTANT LOGIC ---
+    function openAssistant() {
+        closeAllModals();
+        getEl('assistant-modal').style.display = 'flex';
+        updateAssistantLink(); 
+    }
+
+    function initAssistant() {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                getEl(btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        const inputs = ['opt-silent','opt-notes','opt-random','opt-full','opt-info','opt-end','opt-id','opt-cat','opt-kw','opt-speed'];
+        inputs.forEach(id => {
+            const el = getEl(id);
+            if(el) el.addEventListener('input', updateAssistantLink);
+            if(el) el.addEventListener('change', updateAssistantLink);
+        });
+
+        bindClick('btn-copy-link', () => {
+            const link = getEl('generated-link');
+            link.select();
+            document.execCommand('copy');
+            showToast("Link Copied");
+        });
+
+        bindClick('btn-apply-link', () => {
+            const link = getEl('generated-link').value;
+            window.location.href = link;
+            window.location.reload();
+        });
+        
+        bindClick('close-assistant-btn', () => getEl('assistant-modal').style.display = 'none');
+    }
+
+    function updateAssistantLink() {
+        const baseUrl = window.location.href.split('#')[0];
+        let hashParts = [];
+
+        if (getEl('opt-random').checked) hashParts.push('R');
+        if (getEl('opt-silent').checked) hashParts.push('S');
+        if (getEl('opt-notes').checked) hashParts.push('N');
+        if (getEl('opt-full').checked) hashParts.push('F');
+        if (getEl('opt-info').checked) hashParts.push('I');
+        if (getEl('opt-end').checked) hashParts.push('E');
+
+        const speed = getEl('opt-speed').value;
+        if (speed) {
+            const digit = parseInt(speed) - 2;
+            if (digit >= 1 && digit <= 9) hashParts.push(digit);
+        }
+
+        const cat = getEl('opt-cat').value.trim();
+        if (cat) hashParts.push(`CAT-${cat}`);
+        
+        const kw = getEl('opt-kw').value.trim();
+        if (kw) hashParts.push(`KW-${kw}`);
+
+        const id = getEl('opt-id').value.trim();
+        if (id) hashParts.push(id);
+
+        const hash = hashParts.length > 0 ? '#' + hashParts.join(',') : '';
+        getEl('generated-link').value = baseUrl + hash;
+    }
+
+    function parseHashOptions(hash) {
+        const parts = hash.split(',');
+        const opts = { 
+            startId: null,
+            filters: { category: null, keyword: null },
+            flags: { silent: false, notes: false, fullscreen: false, randomize: false },
+            actions: { slideshowSpeed: null, openInfo: false, openEnd: false }
+        };
+
+        parts.forEach(part => {
+            const p = part.trim();
+            if (!p) return;
+
+            if (/^[1-9]$/.test(p)) {
+                opts.actions.slideshowSpeed = (parseInt(p) + 2) * 1000;
+            }
+            else if (p === 'S') opts.flags.silent = true;
+            else if (p === 'N') opts.flags.notes = true;
+            else if (p === 'R') opts.flags.randomize = true;
+            else if (p === 'F') opts.flags.fullscreen = true;
+            else if (p === 'I') opts.actions.openInfo = true;
+            else if (p === 'E') opts.actions.openEnd = true;
+            
+            else if (p.toUpperCase().startsWith('CAT-')) {
+                opts.filters.category = p.substring(4).toLowerCase(); 
+            }
+            else if (p.toUpperCase().startsWith('KW-')) {
+                opts.filters.keyword = p.substring(3).toLowerCase();
+            }
+            else {
+                opts.startId = p;
+            }
+        });
+        return opts;
+    }
+
     async function init() {
         const name = getAlbumName();
         setInfoMode(1);
@@ -675,10 +775,42 @@ document.addEventListener('DOMContentLoaded', () => {
             albumMetaData = data;
             updatePageMeta(data);
 
-            // Filter Private Photos
             allPhotos = (data.photos || []).filter(p => p.url && (!p.mode || p.mode !== 'Private'));
+            
+            // Apply Hash Options
+            const hashString = window.location.hash.substring(1); 
+            const startupOpts = parseHashOptions(hashString);
+
+            if (startupOpts.flags.randomize) {
+                allPhotos.sort(() => Math.random() - 0.5);
+                showToast("Randomized");
+            }
+
+            if (startupOpts.filters.keyword) {
+                const kw = startupOpts.filters.keyword;
+                allPhotos = allPhotos.filter(p => (p.title || "").toLowerCase().includes(kw));
+            }
+
             currentFilteredPhotos = [...allPhotos];
             
+            populateGridCategories();
+            
+            if (startupOpts.filters.category) {
+                const targetCat = startupOpts.filters.category;
+                const actualCat = sortedCategories.find(c => c.toLowerCase() === targetCat);
+                if (actualCat) {
+                    currentCategoryIdx = sortedCategories.indexOf(actualCat);
+                    filterGridPhotos(actualCat);
+                    const select = getEl('grid-category-filter');
+                    if(select) select.value = actualCat;
+                }
+            }
+
+            if (startupOpts.startId) {
+                const foundIdx = currentFilteredPhotos.findIndex(p => String(p.id) === startupOpts.startId);
+                if (foundIdx !== -1) currentPhotoIndex = foundIdx;
+            }
+
             if(data.music && data.music.length > 0) {
                 musicPlaylist = data.music;
                 isMusicEnabled = false; 
@@ -688,22 +820,35 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const mBtn = getEl('music-btn');
                 if(mBtn) mBtn.style.display = 'none';
-                
                 const helpLiMusic = document.querySelector('li[data-action="music"]');
                 if(helpLiMusic) helpLiMusic.style.display = 'none';
                 const helpLiNext = document.querySelector('li[data-action="next-track"]');
                 if(helpLiNext) helpLiNext.style.display = 'none';
             }
             
-            populateGridCategories();
+            if (startupOpts.flags.silent) toggleSilentMode();
+            if (startupOpts.flags.notes) {
+                setTimeout(() => toggleNotes(), 100); 
+            }
+            if (startupOpts.flags.fullscreen) {
+                requestFullscreenOnInteract = true;
+            }
 
             if (currentFilteredPhotos.length > 0) {
                 updateMainImage(0); 
             } else {
-                getEl('main-viewer').innerHTML = '<div class="error-message">No photos in album.</div>';
+                getEl('main-viewer').innerHTML = '<div class="error-message">No photos found (Check filters).</div>';
             }
 
-            if(shouldStartWithInfo()) {
+            if (startupOpts.actions.slideshowSpeed) {
+                toggleSlideshow(startupOpts.actions.slideshowSpeed);
+            }
+
+            if (startupOpts.actions.openEnd) {
+                openEndScreen();
+            } else if (startupOpts.actions.openInfo) {
+                openAbout();
+            } else if (shouldStartWithInfo()) {
                 openAbout();
             }
 
@@ -734,6 +879,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     bindClick('nav-instruction-btn', () => { closeAllModals(); openHelp(); });
     bindClick('notes-btn', toggleNotes);
+
+    initAssistant(); // Init Assistant
 
     function bindHelpClicks() {
         const lists = [getEl('help-list-nav'), getEl('help-list-info')];
@@ -768,6 +915,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     case 'end': openEndScreen(); break;
                     case 'silent': toggleSilentMode(); break;
                     case 'notes': toggleNotes(); break;
+                    case 'assist': openAssistant(); break;
                 }
             });
         });
@@ -785,6 +933,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const isHelpOpen = helpModal && helpModal.style.display === 'flex';
         const endModal = getEl('end-screen-modal');
         const isEndOpen = endModal && endModal.style.display === 'flex';
+        const assistModal = getEl('assistant-modal');
+        const isAssistOpen = assistModal && assistModal.style.display === 'flex';
         const anyModal = document.querySelector('.overlay-modal[style*="flex"]');
 
         if ((e.key === 'Escape' || e.key === '0') && slideshowIntervalId) {
@@ -805,7 +955,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (isHelpOpen) {
+        if (isHelpOpen || isAssistOpen) {
             const navKeys = ['ArrowRight', 'ArrowLeft', ' ', 'Enter', 'Home', 'PageUp', 'PageDown'];
             if (navKeys.includes(e.key)) closeAllModals();
             else if (e.key === 'Escape') { closeAllModals(); return; }
@@ -835,9 +985,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (isDetailsOpen) {
-            // FIX: UP/DOWN logic handled in switch now to support Notes integration
             if (e.key === 'Escape') { setInfoMode(1); return; }
-        } else if (anyModal && !isMetaOpen && !isHelpOpen && !isEndOpen) {
+        } else if (anyModal && !isMetaOpen && !isHelpOpen && !isEndOpen && !isAssistOpen) {
             if (e.key === 'Escape') closeAllModals();
             return; 
         }
@@ -847,7 +996,6 @@ document.addEventListener('DOMContentLoaded', () => {
         switch(e.key) {
             case 'ArrowRight': case ' ': updateMainImage(1); break;
             case 'ArrowLeft': updateMainImage(-1); break;
-            // FIX: New Up/Down Logic handles Notes + Info Modes
             case 'ArrowUp': e.preventDefault(); handleArrowUp(); break;
             case 'ArrowDown': e.preventDefault(); handleArrowDown(); break;
             case 'f': case 'F': toggleFullScreen(); break;
@@ -868,11 +1016,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast("Shuffled"); 
                 break;
             case 'n': case 'N': toggleNotes(); break; 
+            case 'a': case 'A': openAssistant(); break;
         }
         
         if (e.key >= '1' && e.key <= '9') {
             if(slideshowIntervalId) clearInterval(slideshowIntervalId);
-            const speed = (parseInt(e.key) + 5) * 1000;
+            const speed = (parseInt(e.key) + 2) * 1000;
             slideshowIntervalId = setInterval(() => updateMainImage(1), speed);
             showToast(`Slideshow: ${speed/1000}s`);
         }
