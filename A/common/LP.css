@@ -80,6 +80,7 @@ body.is-fullscreen.info-on #about-btn { display: none; }
     animation: pulse-green 2s infinite;
 }
 
+/* Note Button Active State */
 .notes-active {
     background-color: rgba(40, 167, 69, 0.8) !important;
     color: white !important;
@@ -130,6 +131,7 @@ body.is-fullscreen.info-on #about-btn { display: none; }
 }
 #photo-counter.hidden { opacity: 0; }
 
+/* Note Indicator */
 .note-indicator {
     position: fixed; 
     top: 90px; 
@@ -150,6 +152,7 @@ body.is-fullscreen.info-on #about-btn { display: none; }
     opacity: 0;
 }
 
+/* Mouse Hide */
 body.hide-cursor, body.hide-cursor * {
     cursor: none !important;
 }
@@ -208,7 +211,8 @@ body.hide-cursor, body.hide-cursor * {
     display: flex; justify-content: center; align-items: center;
 }
 .overlay-content {
-    background: white; padding: 40px; border-radius: 8px;
+    background: #f2f2f2; /* Light Gray Page for Assistant */
+    padding: 40px; border-radius: 8px;
     max-width: 500px; width: 90%; text-align: left; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; color: #333;
 }
@@ -257,7 +261,7 @@ body.hide-cursor, body.hide-cursor * {
     color: #007bff;
     font-weight: bold;
 }
-.tab-btn:hover { background: #f9f9f9; }
+.tab-btn:hover { background: #e9ecef; }
 
 .tab-content { display: none; animation: fadeIn 0.3s; }
 .tab-content.active { display: block; }
@@ -287,9 +291,10 @@ body.hide-cursor, body.hide-cursor * {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1em;
+    background: #ffffff; /* White Input Background */
 }
 
-/* New: Input with Counter for Keywords */
+/* NEW: Input with Counter */
 .input-with-counter {
     display: flex;
     gap: 10px;
@@ -299,9 +304,9 @@ body.hide-cursor, body.hide-cursor * {
     flex-grow: 1;
 }
 .input-with-counter .badge {
-    background: #007bff;
+    background: #6c757d; /* Gray Badge */
     color: white;
-    padding: 5px 10px;
+    padding: 5px 15px; /* Increased Padding */
     border-radius: 12px;
     font-size: 0.9em;
     font-weight: bold;
@@ -323,7 +328,7 @@ body.hide-cursor, body.hide-cursor * {
 .link-preview input {
     flex-grow: 1;
     padding: 10px;
-    background: #f0f0f0;
+    background: #ffffff; /* White Input */
     border: 1px solid #ccc;
     color: #333;
     font-family: monospace;
