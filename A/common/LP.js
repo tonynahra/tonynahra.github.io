@@ -42,11 +42,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMusicIndex = 0;
     let isMusicEnabled = false; 
     let hasUserInteracted = false; 
+    
+    // Slideshow State
     let slideshowIntervalId = null;
+    let currentSlideshowSpeed = 8000; // Default 8s
+
     let isSilentMode = false;
     let mouseTimer = null;
     let requestFullscreenOnInteract = false; 
     let currentNoteIndex = -1; 
+
+    // Resume State (For Modals)
+    let resumeState = {
+        slideshow: false,
+        music: false
+    };
     
     // --- 2. UTILITY ---
     function getEl(id) { return document.getElementById(id); }
@@ -124,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPhotoIndex = newIndex;
         const photo = currentFilteredPhotos[currentPhotoIndex];
 
+        // Reset Notes Logic
         currentNoteIndex = -1;
         const notesBtn = getEl('notes-btn');
         if (notesBtn) {
@@ -276,12 +287,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function toggleSlideshow(speed = 8000) {
+    function toggleSlideshow(speed) {
+        if (speed) currentSlideshowSpeed = speed; // Update speed if provided
+        
         if (slideshowIntervalId) {
             stopSlideshow();
         } else {
-            showToast(`Slideshow Started (${speed/1000}s)`);
-            slideshowIntervalId = setInterval(() => updateMainImage(1), speed);
+            showToast(`Slideshow Started (${currentSlideshowSpeed/1000}s)`);
+            slideshowIntervalId = setInterval(() => updateMainImage(1), currentSlideshowSpeed);
         }
     }
 
@@ -306,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('mousemove', () => {
         document.body.classList.remove('hide-cursor');
         if (mouseTimer) clearTimeout(mouseTimer);
+        
         if (document.fullscreenElement && isSilentMode) {
             mouseTimer = setTimeout(() => {
                 if (document.fullscreenElement && isSilentMode) {
@@ -526,10 +540,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let catName = "";
         if (currentCategoryIdx === -1) {
             catName = ""; 
-            showToast("Showing all photos", true, 2500);
+            // FIX: Removed 'true' (big) parameter
+            showToast("Showing all photos", false, 2000); 
         } else {
             catName = sortedCategories[currentCategoryIdx];
-            showToast(`Category:<br><span style="font-size: 1.3em; font-weight: bold;">${catName}</span>`, true, 2500);
+            // FIX: Removed 'true' (big) parameter
+            showToast(`Category:<br><span style="font-size: 1.3em; font-weight: bold;">${catName}</span>`, false, 2000);
         }
         const select = getEl('grid-category-filter');
         if (select) select.value = catName;
@@ -583,26 +599,75 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- STATE SUSPENSION LOGIC ---
+    function suspendState() {
+        // Remember if playing
+        resumeState.slideshow = !!slideshowIntervalId;
+        resumeState.music = isMusicEnabled; 
+
+        // Pause everything
+        if (slideshowIntervalId) {
+            clearInterval(slideshowIntervalId);
+            slideshowIntervalId = null;
+            // Note: We do NOT call showToast here to avoid spamming "Paused" when opening a menu
+        }
+        
+        if (resumeState.music) {
+            const audio = getEl('audio-element');
+            if(audio) audio.pause();
+            if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+            // We keep isMusicEnabled = true logically in resumeState, but physically pause
+        }
+    }
+
+    function restoreState() {
+        // Resume Slideshow
+        if (resumeState.slideshow) {
+            toggleSlideshow(currentSlideshowSpeed);
+        }
+        
+        // Resume Music
+        if (resumeState.music) {
+            // Re-enable and play
+            // Note: playCurrentTrack checks isMusicEnabled
+            const audio = getEl('audio-element');
+            if(audio) audio.play().catch(e => console.warn(e));
+            if (ytPlayer && typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
+        }
+        
+        // Reset flags
+        resumeState.slideshow = false;
+        resumeState.music = false;
+    }
+
+    // --- MODAL HANDLERS ---
     function openGrid() {
-        closeAllModals();
+        suspendState(); // Pause
+        closeAllModals(false); // Don't restore yet, we are opening grid
         if (getEl('grid-category-filter').options.length <= 1) populateGridCategories();
         renderGrid(); 
         getEl('grid-modal').style.display = 'flex';
     }
 
-    function closeAllModals() {
+    function closeAllModals(shouldRestore = true) {
         document.querySelectorAll('.overlay-modal').forEach(m => m.style.display = 'none');
         if(getEl('modal-music-status')) getEl('modal-music-status').textContent = '';
         if (infoMode === 2) setInfoMode(1);
+        
+        if (shouldRestore) {
+            restoreState(); // Resume
+        }
     }
 
     function openHelp() {
-        closeAllModals();
+        suspendState();
+        closeAllModals(false);
         getEl('help-modal').style.display = 'flex';
     }
 
     function openAbout() {
-        closeAllModals();
+        suspendState();
+        closeAllModals(false);
         getEl('meta-album-title').textContent = albumMetaData.albumTitle || 'Album';
         getEl('meta-created').textContent = albumMetaData.meta?.created || 'N/A';
         getEl('meta-note').textContent = albumMetaData.meta?.note || '';
@@ -629,6 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openAdmin() {
         const photo = currentFilteredPhotos[currentPhotoIndex];
         if(!photo) return;
+        suspendState();
         getEl('admin-json').textContent = getAlbumName() + ".json";
         getEl('admin-id').textContent = photo.id;
         const adminLink = `https://mediamaze.com/tony/PhotoAlbum/public/?${getAlbumName()}#${photo.id}`;
@@ -637,40 +703,45 @@ document.addEventListener('DOMContentLoaded', () => {
         getEl('admin-modal').style.display = 'flex';
     }
 
-    // --- ASSISTANT LOGIC ---
     function openAssistant() {
-        closeAllModals();
+        suspendState();
+        closeAllModals(false);
         getEl('assistant-modal').style.display = 'flex';
-        populateAssistantDropdowns(); // Dynamic population
+        populateAssistantDropdowns(); 
         updateAssistantLink(); 
     }
 
+    function openEndScreen() {
+        suspendState();
+        closeAllModals(false);
+        // Call the global function from LP_end.js
+        if(typeof window.openEndScreen === 'function') window.openEndScreen();
+    }
+
     function populateAssistantDropdowns() {
-        // 1. Categories
         const catSelect = getEl('opt-cat');
-        // Clear except first option
-        while (catSelect.options.length > 1) catSelect.remove(1);
-        
-        sortedCategories.forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat;
-            opt.textContent = cat;
-            catSelect.appendChild(opt);
-        });
+        if(catSelect) {
+            while (catSelect.options.length > 1) catSelect.remove(1);
+            sortedCategories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                catSelect.appendChild(opt);
+            });
+        }
 
-        // 2. Photo IDs
         const idSelect = getEl('opt-id');
-        while (idSelect.options.length > 1) idSelect.remove(1);
-
-        allPhotos.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.id;
-            // Shorten title for display if needed
-            let displayTitle = p.title || "Untitled";
-            if (displayTitle.length > 30) displayTitle = displayTitle.substring(0, 27) + "...";
-            opt.textContent = `ID: ${p.id} - ${displayTitle}`;
-            idSelect.appendChild(opt);
-        });
+        if(idSelect) {
+            while (idSelect.options.length > 1) idSelect.remove(1);
+            allPhotos.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                let displayTitle = p.title || "Untitled";
+                if (displayTitle.length > 30) displayTitle = displayTitle.substring(0, 27) + "...";
+                opt.textContent = `ID: ${p.id} - ${displayTitle}`;
+                idSelect.appendChild(opt);
+            });
+        }
     }
 
     function initAssistant() {
@@ -708,12 +779,17 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.reload();
         });
         
-        bindClick('close-assistant-btn', () => getEl('assistant-modal').style.display = 'none');
+        bindClick('close-assistant-btn', () => closeAllModals());
     }
 
     function updateKeywordCount() {
-        const kw = getEl('opt-kw').value.trim().toLowerCase();
+        const input = getEl('opt-kw');
+        if(!input) return;
+        
+        const kw = input.value.trim().toLowerCase();
         const countBadge = getEl('kw-count');
+        if (!countBadge) return;
+
         if (!kw) {
             countBadge.textContent = "0 matches";
             return;
@@ -739,14 +815,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (digit >= 1 && digit <= 9) hashParts.push(digit);
         }
 
-        const cat = getEl('opt-cat').value; // Dropdown value
-        if (cat) hashParts.push(`CAT-${cat}`);
+        const catEl = getEl('opt-cat');
+        if (catEl && catEl.value) hashParts.push(`CAT-${catEl.value}`);
         
-        const kw = getEl('opt-kw').value.trim();
-        if (kw) hashParts.push(`KW-${kw}`);
+        const kwEl = getEl('opt-kw');
+        if (kwEl && kwEl.value.trim()) hashParts.push(`KW-${kwEl.value.trim()}`);
 
-        const id = getEl('opt-id').value; // Dropdown value
-        if (id) hashParts.push(id);
+        const idEl = getEl('opt-id');
+        if (idEl && idEl.value) hashParts.push(idEl.value);
 
         const hash = hashParts.length > 0 ? '#' + hashParts.join(',') : '';
         getEl('generated-link').value = baseUrl + hash;
@@ -827,7 +903,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (startupOpts.flags.randomize) {
                 allPhotos.sort(() => Math.random() - 0.5);
-                showToast("Randomized");
+                showToast("Randomized"); // FIX: Corrected text
             }
 
             if (startupOpts.filters.keyword) {
@@ -934,8 +1010,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const li = e.target.closest('li');
                 if (!li) return;
                 const action = li.getAttribute('data-action');
-                if(action !== 'category-nav') closeAllModals(); 
-                else closeAllModals();
+                // The nav links now close the modal, which restores state automatically
+                closeAllModals(true); 
 
                 switch(action) {
                     case 'next': updateMainImage(1); break;
@@ -951,7 +1027,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     case 'shuffle': 
                         currentFilteredPhotos.sort(() => Math.random() - 0.5); 
                         currentPhotoIndex = 0; updateMainImage(0); 
-                        showToast("Shuffled"); 
+                        showToast("Randomized"); // FIX: Correct text
                         break;
                     case 'category-nav': showToast("Use PageUp / PageDown keys"); break;
                     case 'reset': resetAlbum(); break; 
@@ -1057,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'r': case 'R': 
                 currentFilteredPhotos.sort(() => Math.random() - 0.5); 
                 currentPhotoIndex = 0; updateMainImage(0); 
-                showToast("Shuffled"); 
+                showToast("Randomized"); 
                 break;
             case 'n': case 'N': toggleNotes(); break; 
             case 'a': case 'A': openAssistant(); break;
