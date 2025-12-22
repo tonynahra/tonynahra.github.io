@@ -24,18 +24,15 @@
 <body>
     <div id="main-viewer">
         <div id="image-wrapper"></div>
-
         <div id="hud-bar" class="hud-bar">
             <div class="hud-left">
                 <button id="help-btn" title="Help (H)">?</button>
                 <button id="about-btn" title="Album Info (I)">i</button>
             </div>
-            
             <div class="hud-center">
                 <button id="prev-btn" class="nav-arrow">❮</button>
                 <button id="next-btn" class="nav-arrow">❯</button>
             </div>
-
             <div class="hud-right">
                 <button id="notes-btn" title="Notes (N)" style="display:none;">📝</button>
                 <button id="grid-btn" title="Thumbnails (P)">▦</button>
@@ -43,13 +40,11 @@
                 <button id="fullscreen-btn" title="Fullscreen (F)">⛶</button>
             </div>
         </div>
-
         <div id="info-overlay" class="info-overlay">
             <h3 id="photo-title">Loading...</h3>
             <div id="photo-exif" class="exif-data"></div>
             <p id="photo-desc"></p>
         </div>
-        
         <div id="photo-counter"></div>
         <div id="note-indicator" class="note-indicator hidden"></div>
     </div>
@@ -100,8 +95,7 @@
                         <li data-action="info"><strong>Up/Down</strong> : Info Bar/Details</li>
                         <li data-action="notes"><strong>N</strong> : Toggle Notes</li>
                         <li data-action="grid"><strong>P</strong> : Thumbnails Panel</li>
-                        <li data-action="end"><strong>End</strong> : End Screen</li>
-                        <li data-action="fullscreen"><strong>F</strong> : Toggle Fullscreen</li>
+                        <li data-action="effect"><strong>E</strong> : Toggle Fade Only</li> <li data-action="fullscreen"><strong>F</strong> : Fullscreen</li> <li data-action="end"><strong>End</strong> : End Screen</li>
                         <li data-action="silent"><strong>S</strong> : Toggle Silent Mode</li>
                         <li data-action="music"><strong>M</strong> : Toggle Music</li>
                         <li data-action="next-track"><strong>Insert</strong> : Next Music Track</li>
@@ -151,7 +145,7 @@
             <div class="assistant-tabs">
                 <button class="tab-btn active" data-tab="tab-flags">Flags</button>
                 <button class="tab-btn" data-tab="tab-filters">Filters</button>
-                <button class="tab-btn" data-tab="tab-slide">Slideshow</button>
+                <button class="tab-btn" data-tab="tab-slide">Slideshow & FX</button>
             </div>
 
             <div class="tab-content active" id="tab-flags">
@@ -188,7 +182,27 @@
             </div>
 
             <div class="tab-content" id="tab-slide">
-                <div class="form-group"><label>Auto-Start Speed (#[Digit]):</label><select id="opt-speed"><option value="">Do not auto-start</option><option value="3">3 Seconds (#1)</option><option value="4">4 Seconds (#2)</option><option value="5">5 Seconds (#3)</option><option value="6">6 Seconds (#4)</option><option value="7">7 Seconds (#5)</option><option value="8">8 Seconds (#6)</option><option value="9">9 Seconds (#7)</option><option value="10">10 Seconds (#8)</option><option value="11">11 Seconds (#9)</option></select></div>
+                <div class="form-group">
+                    <label>Auto-Start Speed (#[Digit]):</label>
+                    <select id="opt-speed">
+                        <option value="">Do not auto-start</option>
+                        <option value="3">3 Seconds (#1)</option>
+                        <option value="4">4 Seconds (#2)</option>
+                        <option value="5">5 Seconds (#3)</option>
+                        <option value="6">6 Seconds (#4)</option>
+                        <option value="7">7 Seconds (#5)</option>
+                        <option value="8">8 Seconds (#6)</option>
+                        <option value="9">9 Seconds (#7)</option>
+                        <option value="10">10 Seconds (#8)</option>
+                        <option value="11">11 Seconds (#9)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Transition Effect (#E[Digit]):</label>
+                    <select id="opt-effect">
+                        <option value="0">Random (E0)</option>
+                    </select>
+                </div>
             </div>
 
             <div class="assistant-footer">
