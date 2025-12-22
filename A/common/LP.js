@@ -141,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Update Indicator (resets to Original view or hides)
         updateNoteIndicator();
 
         getEl('photo-title').textContent = photo.title || 'Untitled';
@@ -187,36 +186,29 @@ document.addEventListener('DOMContentLoaded', () => {
         newImg.addEventListener('animationend', () => { newImg.classList.remove(inAnim); }, {once:true});
     }
 
-    // --- INDICATOR LOGIC (UPDATED) ---
+    // --- INDICATOR LOGIC ---
     function updateNoteIndicator() {
         const indicator = getEl('note-indicator');
         if (!indicator) return;
 
-        // Default Hide
         indicator.classList.add('hidden');
 
-        // 1. Silent Mode: Always Hide
         if (isSilentMode) return;
 
         if (currentFilteredPhotos.length === 0) return;
         const photo = currentFilteredPhotos[currentPhotoIndex];
         const notesCount = (photo && photo.notes) ? photo.notes.length : 0;
         
-        // 2. Existence Check: Only show if REAL notes exist (excluding modal)
         if (notesCount === 0) return; 
 
-        // Total = Actual Notes + 1 (Modal)
         const totalPages = notesCount + 1; 
         let text = "";
 
         if (infoMode === 2) {
-            // Modal View (The last "page")
             text = `Note ${totalPages} / ${totalPages}`;
         } else if (currentNoteIndex > -1) {
-            // Specific Note View
             text = `Note ${currentNoteIndex + 1} / ${totalPages}`;
         } else {
-            // Original Image View
             text = `Original / ${totalPages}`;
         }
 
@@ -457,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.classList.remove('hide-cursor'); 
             if(mouseTimer) clearTimeout(mouseTimer);
         }
-        updateNoteIndicator(); // Immediate update on toggle
+        updateNoteIndicator(); 
     }
 
     function populateGridCategories() {
@@ -855,6 +847,7 @@ document.addEventListener('DOMContentLoaded', () => {
         switch(e.key) {
             case 'ArrowRight': case ' ': updateMainImage(1); break;
             case 'ArrowLeft': updateMainImage(-1); break;
+            // FIX: New Up/Down Logic handles Notes + Info Modes
             case 'ArrowUp': e.preventDefault(); handleArrowUp(); break;
             case 'ArrowDown': e.preventDefault(); handleArrowDown(); break;
             case 'f': case 'F': toggleFullScreen(); break;
