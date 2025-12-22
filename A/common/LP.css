@@ -80,7 +80,6 @@ body.is-fullscreen.info-on #about-btn { display: none; }
     animation: pulse-green 2s infinite;
 }
 
-/* Note Button Active State */
 .notes-active {
     background-color: rgba(40, 167, 69, 0.8) !important;
     color: white !important;
@@ -131,7 +130,6 @@ body.is-fullscreen.info-on #about-btn { display: none; }
 }
 #photo-counter.hidden { opacity: 0; }
 
-/* Note Indicator */
 .note-indicator {
     position: fixed; 
     top: 90px; 
@@ -152,7 +150,6 @@ body.is-fullscreen.info-on #about-btn { display: none; }
     opacity: 0;
 }
 
-/* Mouse Hide */
 body.hide-cursor, body.hide-cursor * {
     cursor: none !important;
 }
@@ -292,6 +289,27 @@ body.hide-cursor, body.hide-cursor * {
     font-size: 1em;
 }
 
+/* New: Input with Counter for Keywords */
+.input-with-counter {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.input-with-counter input {
+    flex-grow: 1;
+}
+.input-with-counter .badge {
+    background: #007bff;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    font-weight: bold;
+    white-space: nowrap;
+    min-width: 80px;
+    text-align: center;
+}
+
 .assistant-footer {
     margin-top: 25px;
     padding-top: 20px;
@@ -324,8 +342,6 @@ body.hide-cursor, body.hide-cursor * {
 /* --- Help Columns --- */
 .help-columns { display: flex; gap: 40px; justify-content: space-between; margin-bottom: 20px; }
 .help-col { flex: 1; }
-.help-col h3 { font-size: 1.2em; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 10px; color: #555; text-align: center; }
-
 .clickable-help { list-style: none; padding: 0; text-align: left; }
 .clickable-help li { padding: 8px 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
 .clickable-help li:hover { background-color: #f0f8ff; color: #007bff; font-weight: bold; }
