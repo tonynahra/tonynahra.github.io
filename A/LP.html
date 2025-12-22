@@ -30,10 +30,12 @@
                 <button id="help-btn" title="Help (H)">?</button>
                 <button id="about-btn" title="Album Info (I)">i</button>
             </div>
+            
             <div class="hud-center">
                 <button id="prev-btn" class="nav-arrow">❮</button>
                 <button id="next-btn" class="nav-arrow">❯</button>
             </div>
+
             <div class="hud-right">
                 <button id="notes-btn" title="Notes (N)" style="display:none;">📝</button>
                 <button id="grid-btn" title="Thumbnails (P)">▦</button>
@@ -79,10 +81,9 @@
 
     <div id="help-modal" class="overlay-modal" style="display: none;">
         <div class="overlay-content" style="max-width: 800px;">
-            <h2>Controls Help <span style="font-size: 0.6em; color: #777; vertical-align: middle;">(H)</span></h2>
+            <h2>Help page ( press H )</h2>
             <div class="help-columns">
                 <div class="help-col">
-                    <h3>Navigation</h3>
                     <ul id="help-list-nav" class="clickable-help">
                         <li data-action="prev"><strong>Left</strong> : Previous Photo</li>
                         <li data-action="next"><strong>Space / Right</strong> : Next Photo</li>
@@ -94,7 +95,6 @@
                     </ul>
                 </div>
                 <div class="help-col">
-                    <h3>Information & View</h3>
                     <ul id="help-list-info" class="clickable-help">
                         <li data-action="info-modal"><strong>I</strong> : Album Info</li>
                         <li data-action="info"><strong>Up/Down</strong> : Info Bar/Details</li>
@@ -147,11 +147,13 @@
     <div id="assistant-modal" class="overlay-modal" style="display: none;">
         <div class="overlay-content extended-content" style="max-width: 600px;">
             <h2>Link Assistant</h2>
+            
             <div class="assistant-tabs">
                 <button class="tab-btn active" data-tab="tab-flags">Flags</button>
                 <button class="tab-btn" data-tab="tab-filters">Filters</button>
                 <button class="tab-btn" data-tab="tab-slide">Slideshow</button>
             </div>
+
             <div class="tab-content active" id="tab-flags">
                 <div class="option-grid">
                     <label class="toggle-row"><span>Silent Mode (#S)</span><input type="checkbox" id="opt-silent"></label>
@@ -162,14 +164,33 @@
                     <label class="toggle-row"><span>Start at End (#E)</span><input type="checkbox" id="opt-end"></label>
                 </div>
             </div>
+
             <div class="tab-content" id="tab-filters">
-                <div class="form-group"><label>Start Photo ID (#ID):</label><input type="text" id="opt-id" placeholder="e.g. 12345"></div>
-                <div class="form-group"><label>Category Filter (#CAT-):</label><input type="text" id="opt-cat" placeholder="e.g. Nature"></div>
-                <div class="form-group"><label>Keyword Filter (#KW-):</label><input type="text" id="opt-kw" placeholder="e.g. Mountain"></div>
+                <div class="form-group">
+                    <label>Start Photo ID (#ID):</label>
+                    <select id="opt-id">
+                        <option value="">-- Start from Beginning --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Category Filter (#CAT-):</label>
+                    <select id="opt-cat">
+                        <option value="">-- No Filter --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Keyword Filter (#KW-):</label>
+                    <div class="input-with-counter">
+                        <input type="text" id="opt-kw" placeholder="e.g. Mountain">
+                        <span id="kw-count" class="badge">0 matches</span>
+                    </div>
+                </div>
             </div>
+
             <div class="tab-content" id="tab-slide">
                 <div class="form-group"><label>Auto-Start Speed (#[Digit]):</label><select id="opt-speed"><option value="">Do not auto-start</option><option value="3">3 Seconds (#1)</option><option value="4">4 Seconds (#2)</option><option value="5">5 Seconds (#3)</option><option value="6">6 Seconds (#4)</option><option value="7">7 Seconds (#5)</option><option value="8">8 Seconds (#6)</option><option value="9">9 Seconds (#7)</option><option value="10">10 Seconds (#8)</option><option value="11">11 Seconds (#9)</option></select></div>
             </div>
+
             <div class="assistant-footer">
                 <div class="link-preview"><input type="text" id="generated-link" readonly><button id="btn-copy-link">Copy</button></div>
                 <div style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
@@ -210,7 +231,6 @@
             renderHTML(detailDesc);
         }, 1000);
     </script>
-    
     <script src="common/view_counts.js"></script>
     <script src="common/LP_end.js"></script> 
     <script src="common/LP.js"></script>
