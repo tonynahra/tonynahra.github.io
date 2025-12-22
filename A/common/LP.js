@@ -124,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPhotoIndex = newIndex;
         const photo = currentFilteredPhotos[currentPhotoIndex];
 
-        // Reset Notes Logic
         currentNoteIndex = -1;
         const notesBtn = getEl('notes-btn');
         if (notesBtn) {
@@ -642,7 +641,36 @@ document.addEventListener('DOMContentLoaded', () => {
     function openAssistant() {
         closeAllModals();
         getEl('assistant-modal').style.display = 'flex';
+        populateAssistantDropdowns(); // Dynamic population
         updateAssistantLink(); 
+    }
+
+    function populateAssistantDropdowns() {
+        // 1. Categories
+        const catSelect = getEl('opt-cat');
+        // Clear except first option
+        while (catSelect.options.length > 1) catSelect.remove(1);
+        
+        sortedCategories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            catSelect.appendChild(opt);
+        });
+
+        // 2. Photo IDs
+        const idSelect = getEl('opt-id');
+        while (idSelect.options.length > 1) idSelect.remove(1);
+
+        allPhotos.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            // Shorten title for display if needed
+            let displayTitle = p.title || "Untitled";
+            if (displayTitle.length > 30) displayTitle = displayTitle.substring(0, 27) + "...";
+            opt.textContent = `ID: ${p.id} - ${displayTitle}`;
+            idSelect.appendChild(opt);
+        });
     }
 
     function initAssistant() {
@@ -658,8 +686,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const inputs = ['opt-silent','opt-notes','opt-random','opt-full','opt-info','opt-end','opt-id','opt-cat','opt-kw','opt-speed'];
         inputs.forEach(id => {
             const el = getEl(id);
-            if(el) el.addEventListener('input', updateAssistantLink);
-            if(el) el.addEventListener('change', updateAssistantLink);
+            if(el) {
+                el.addEventListener('input', () => {
+                    if (id === 'opt-kw') updateKeywordCount();
+                    updateAssistantLink();
+                });
+                el.addEventListener('change', updateAssistantLink);
+            }
         });
 
         bindClick('btn-copy-link', () => {
@@ -676,6 +709,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         bindClick('close-assistant-btn', () => getEl('assistant-modal').style.display = 'none');
+    }
+
+    function updateKeywordCount() {
+        const kw = getEl('opt-kw').value.trim().toLowerCase();
+        const countBadge = getEl('kw-count');
+        if (!kw) {
+            countBadge.textContent = "0 matches";
+            return;
+        }
+        const matches = allPhotos.filter(p => (p.title || "").toLowerCase().includes(kw)).length;
+        countBadge.textContent = `${matches} match${matches !== 1 ? 'es' : ''}`;
     }
 
     function updateAssistantLink() {
@@ -695,13 +739,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (digit >= 1 && digit <= 9) hashParts.push(digit);
         }
 
-        const cat = getEl('opt-cat').value.trim();
+        const cat = getEl('opt-cat').value; // Dropdown value
         if (cat) hashParts.push(`CAT-${cat}`);
         
         const kw = getEl('opt-kw').value.trim();
         if (kw) hashParts.push(`KW-${kw}`);
 
-        const id = getEl('opt-id').value.trim();
+        const id = getEl('opt-id').value; // Dropdown value
         if (id) hashParts.push(id);
 
         const hash = hashParts.length > 0 ? '#' + hashParts.join(',') : '';
