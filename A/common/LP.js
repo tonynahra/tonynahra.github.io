@@ -10,15 +10,16 @@ window.onYouTubeIframeAPIReady = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     
+    // --- CONFIGURATION CONSTANTS ---
+    const BASE_URL = 'https://mediamaze.com/json/?'; 
+    const DROPDOWN_TEXT_LIMIT = 50; // Increased limit for ID+Title in dropdown
+
     // --- SECURITY / INTEGRITY CHECK ---
     if (typeof window.lpEndLoaded === 'undefined' || typeof window.viewCountsLoaded === 'undefined') {
         document.body.innerHTML = '<div style="color:red;padding:50px;text-align:center;font-family:sans-serif;"><h1>System Error</h1><p>Required components are missing. Viewer cannot initialize.</p></div>';
         throw new Error("Integrity check failed: Components missing.");
     }
 
-    // --- 1. CONFIGURATION ---
-    const BASE_URL = 'https://mediamaze.com/json/?'; 
-    
     const TRANSITIONS = [
         ['animate__fadeOut', 'animate__fadeIn'],
         ['animate__zoomOut', 'animate__zoomIn'],
@@ -741,9 +742,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Construct full string
                 let fullText = `ID: ${p.id} - ${p.title || "Untitled"}`;
                 
-                // Truncate total text to 30 chars
-                if (fullText.length > 30) {
-                    fullText = fullText.substring(0, 27) + "...";
+                // Truncate total text to constant
+                if (fullText.length > DROPDOWN_TEXT_LIMIT) {
+                    fullText = fullText.substring(0, DROPDOWN_TEXT_LIMIT - 3) + "...";
                 }
                 
                 opt.textContent = fullText;
