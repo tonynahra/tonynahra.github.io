@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to MediaMaze</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --dark: #121212;
+            --card-bg: #1e1e1e;
+            --text: #e0e0e0;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--dark);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://source.unsplash.com/random/1600x900/?technology,abstract');
+            background-size: cover;
+            background-position: center;
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .hero h1 {
+            font-size: 3.5em;
+            margin: 0;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+            background: linear-gradient(90deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.5em;
+            max-width: 700px;
+            margin-top: 10px;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
+        }
+        .container {
+            max-width: 1000px;
+            margin: -50px auto 50px;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+            border-top: 4px solid var(--primary);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card h3 {
+            color: #fff;
+            margin-top: 0;
+            font-size: 1.4em;
+        }
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #0056b3; }
+        
+        .footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid #333;
+            color: #777;
+        }
+        .highlight { color: var(--primary); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <h1>MediaMaze Ecosystem</h1>
+        <p>Turn static folders into cinematic stories.</p>
+        <a href="guide.html" class="btn">Read the User Guide</a>
+    </div>
+
+    <div class="container">
+        <div class="grid">
+            <div class="card">
+                <h3>🚀 The Viewer</h3>
+                <p>An ultra-lightweight, keyboard-driven presentation engine.</p>
+                <ul>
+                    <li>Zero-latency navigation.</li>
+                    <li>Built-in transition effects.</li>
+                    <li>Integrated background music support.</li>
+                    <li>"Annotated Notes" layer for technical details.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>🤖 The Builder</h3>
+                <p>Stop manually organizing photos. The <span class="highlight">Album Builder</span> uses AI to scan your folders, generate titles, tag content, and structure your entire album automatically.</p>
+                <p><em>(Contact Tony Nahra for access)</em></p>
+            </div>
+
+            <div class="card">
+                <h3>✨ The Experience</h3>
+                <p>Designed for storytelling. Whether it's a travel log, a technical portfolio, or a family archive, MediaMaze treats your images with the respect they deserve.</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 60px;">
+            <h2>Ready to see it in action?</h2>
+            <p>If you have an album link, paste it in your browser. If you want to create one, check out our guide.</p>
+            <br>
+            <p><strong>Created by Tony Nahra</strong></p>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2025 MediaMaze. All rights reserved.
+    </div>
+
+</body>
+</html>
