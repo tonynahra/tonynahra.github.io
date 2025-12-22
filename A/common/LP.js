@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- CONFIGURATION CONSTANTS ---
     const BASE_URL = 'https://mediamaze.com/json/?'; 
-    const DROPDOWN_TEXT_LIMIT = 50; // Increased limit for ID+Title in dropdown
+    const DROPDOWN_TEXT_LIMIT = 50; 
 
     // --- SECURITY / INTEGRITY CHECK ---
     if (typeof window.lpEndLoaded === 'undefined' || typeof window.viewCountsLoaded === 'undefined') {
@@ -20,16 +20,20 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error("Integrity check failed: Components missing.");
     }
 
+    // --- EFFECTS LIST ---
     const TRANSITIONS = [
-        ['animate__fadeOut', 'animate__fadeIn'],
-        ['animate__zoomOut', 'animate__zoomIn'],
-        ['animate__slideOutLeft', 'animate__slideInRight'],
-        ['animate__flipOutY', 'animate__flipInY'],
-        ['animate__rotateOut', 'animate__rotateIn'],
-        ['animate__rollOut', 'animate__rollIn'],
-        ['animate__backOutDown', 'animate__backInDown'],
-        ['animate__zoomOutUp', 'animate__zoomInUp'],
-        ['animate__lightSpeedOutRight', 'animate__lightSpeedInLeft']
+        { name: "Fade", in: 'animate__fadeIn', out: 'animate__fadeOut' },
+        { name: "Zoom", in: 'animate__zoomIn', out: 'animate__zoomOut' },
+        { name: "Slide", in: 'animate__slideInRight', out: 'animate__slideOutLeft' },
+        { name: "Flip Y", in: 'animate__flipInY', out: 'animate__flipOutY' },
+        { name: "Flip X", in: 'animate__flipInX', out: 'animate__flipOutX' }, // New
+        { name: "Rotate", in: 'animate__rotateIn', out: 'animate__rotateOut' },
+        { name: "Roll", in: 'animate__rollIn', out: 'animate__rollOut' },
+        { name: "Back Down", in: 'animate__backInDown', out: 'animate__backOutDown' },
+        { name: "Zoom Up", in: 'animate__zoomInUp', out: 'animate__zoomOutUp' },
+        { name: "LightSpeed", in: 'animate__lightSpeedInLeft', out: 'animate__lightSpeedOutRight' },
+        { name: "Bounce", in: 'animate__bounceIn', out: 'animate__bounceOut' }, // New
+        { name: "JackInBox", in: 'animate__jackInTheBox', out: 'animate__fadeOut' } // New (Custom out)
     ];
 
     let albumMetaData = {};
@@ -52,6 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let mouseTimer = null;
     let requestFullscreenOnInteract = false; 
     let currentNoteIndex = -1; 
+
+    // Visual State
+    let forcedEffectIndex = -1; // -1 = Random
 
     // Resume State
     let resumeState = {
@@ -171,25 +178,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const wrapper = getEl('image-wrapper');
         const oldImages = Array.from(wrapper.querySelectorAll('img'));
-        const tIndex = Math.floor(Math.random() * TRANSITIONS.length);
-        const [outAnim, inAnim] = TRANSITIONS[tIndex];
+        
+        // --- EFFECT SELECTION ---
+        let selectedEffect;
+        if (forcedEffectIndex !== -1 && TRANSITIONS[forcedEffectIndex]) {
+            selectedEffect = TRANSITIONS[forcedEffectIndex];
+        } else {
+            selectedEffect = TRANSITIONS[Math.floor(Math.random() * TRANSITIONS.length)];
+        }
 
         const newImg = document.createElement('img');
         newImg.src = photo.url;
         newImg.alt = photo.title;
         newImg.style.zIndex = "10"; 
-        newImg.className = `animate__animated ${inAnim}`; 
+        newImg.className = `animate__animated ${selectedEffect.in}`; 
         wrapper.appendChild(newImg);
 
         oldImages.forEach(oldImg => {
             oldImg.style.zIndex = "1";
             oldImg.className = ''; 
-            oldImg.classList.add('animate__animated', outAnim);
+            oldImg.classList.add('animate__animated', selectedEffect.out);
             const cleanup = () => { if(oldImg.parentNode) oldImg.parentNode.removeChild(oldImg); };
             oldImg.addEventListener('animationend', cleanup, {once: true});
             setTimeout(cleanup, 1100); 
         });
-        newImg.addEventListener('animationend', () => { newImg.classList.remove(inAnim); }, {once:true});
+        newImg.addEventListener('animationend', () => { newImg.classList.remove(selectedEffect.in); }, {once:true});
+    }
+
+    // --- EFFECT TOGGLE (E Key) ---
+    function toggleFadeOnly() {
+        if (forcedEffectIndex === -1) {
+            forcedEffectIndex = 0; // Fade (Index 0)
+            showToast("Effect: Fade Only");
+        } else {
+            forcedEffectIndex = -1; // Random
+            showToast("Effect: Random");
+        }
     }
 
     function updateNoteIndicator() {
@@ -707,14 +731,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if(typeof window.openEndScreen === 'function') window.openEndScreen();
     }
 
-    // --- ASSISTANT POPULATION (FIXED LENGTH LOGIC) ---
+    // --- ASSISTANT POPULATION ---
     function populateAssistantDropdowns() {
-        // 1. Categories
         const catSelect = getEl('opt-cat');
         if(catSelect) {
             while (catSelect.options.length > 1) catSelect.remove(1);
             
-            // Recalculate counts locally
             const counts = {};
             allPhotos.forEach(p => {
                 const rawCats = p.categories || p.category;
@@ -731,7 +753,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 2. Photo IDs (Strict Total Length Limit)
         const idSelect = getEl('opt-id');
         if(idSelect) {
             while (idSelect.options.length > 1) idSelect.remove(1);
@@ -739,16 +760,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const opt = document.createElement('option');
                 opt.value = p.id;
                 
-                // Construct full string
                 let fullText = `ID: ${p.id} - ${p.title || "Untitled"}`;
                 
-                // Truncate total text to constant
                 if (fullText.length > DROPDOWN_TEXT_LIMIT) {
                     fullText = fullText.substring(0, DROPDOWN_TEXT_LIMIT - 3) + "...";
                 }
                 
                 opt.textContent = fullText;
                 idSelect.appendChild(opt);
+            });
+        }
+        
+        const efxSelect = getEl('opt-effect');
+        if(efxSelect) {
+            while (efxSelect.options.length > 1) efxSelect.remove(1);
+            TRANSITIONS.forEach((t, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx + 1; 
+                opt.textContent = `${t.name} (E${idx + 1})`;
+                efxSelect.appendChild(opt);
             });
         }
     }
@@ -763,7 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        const inputs = ['opt-silent','opt-notes','opt-random','opt-full','opt-info','opt-end','opt-id','opt-cat','opt-kw','opt-speed'];
+        const inputs = ['opt-silent','opt-notes','opt-random','opt-full','opt-info','opt-end','opt-id','opt-cat','opt-kw','opt-speed','opt-effect'];
         inputs.forEach(id => {
             const el = getEl(id);
             if(el) {
@@ -823,6 +853,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const digit = parseInt(speed) - 2;
             if (digit >= 1 && digit <= 9) hashParts.push(digit);
         }
+        
+        const efx = getEl('opt-effect').value;
+        if (efx && efx !== "0") {
+            hashParts.push(`E${efx}`); 
+        }
 
         const catEl = getEl('opt-cat');
         if (catEl && catEl.value) hashParts.push(`CAT-${catEl.value}`);
@@ -843,7 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
             startId: null,
             filters: { category: null, keyword: null },
             flags: { silent: false, notes: false, fullscreen: false, randomize: false },
-            actions: { slideshowSpeed: null, openInfo: false, openEnd: false }
+            actions: { slideshowSpeed: null, openInfo: false, openEnd: false, effectIndex: -1 }
         };
 
         parts.forEach(part => {
@@ -859,6 +894,12 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (p === 'F') opts.flags.fullscreen = true;
             else if (p === 'I') opts.actions.openInfo = true;
             else if (p === 'E') opts.actions.openEnd = true;
+            
+            else if (p.toUpperCase().startsWith('E') && /^\d+$/.test(p.substring(1))) {
+                const eIdx = parseInt(p.substring(1));
+                if (eIdx === 0) opts.actions.effectIndex = -1;
+                else opts.actions.effectIndex = eIdx - 1;
+            }
             
             else if (p.toUpperCase().startsWith('CAT-')) {
                 opts.filters.category = p.substring(4).toLowerCase(); 
@@ -906,7 +947,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             allPhotos = (data.photos || []).filter(p => p.url && (!p.mode || p.mode !== 'Private'));
             
-            // Apply Hash Options
             const hashString = window.location.hash.substring(1); 
             const startupOpts = parseHashOptions(hashString);
 
@@ -962,6 +1002,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (startupOpts.flags.fullscreen) {
                 requestFullscreenOnInteract = true;
             }
+            
+            if (startupOpts.actions.effectIndex !== -1) {
+                forcedEffectIndex = startupOpts.actions.effectIndex;
+            }
 
             if (currentFilteredPhotos.length > 0) {
                 updateMainImage(0); 
@@ -1009,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bindClick('nav-instruction-btn', () => { closeAllModals(); openHelp(); });
     bindClick('notes-btn', toggleNotes);
 
-    initAssistant(); // Init Assistant
+    initAssistant(); 
 
     function bindHelpClicks() {
         const lists = [getEl('help-list-nav'), getEl('help-list-info')];
@@ -1044,6 +1088,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     case 'end': openEndScreen(); break;
                     case 'silent': toggleSilentMode(); break;
                     case 'notes': toggleNotes(); break;
+                    case 'effect': toggleFadeOnly(); break; // NEW
                     case 'assist': openAssistant(); break;
                 }
             });
@@ -1127,7 +1172,8 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'ArrowLeft': updateMainImage(-1); break;
             case 'ArrowUp': e.preventDefault(); handleArrowUp(); break;
             case 'ArrowDown': e.preventDefault(); handleArrowDown(); break;
-            case 'f': case 'F': toggleFullScreen(); break;
+            case 'f': case 'F': toggleFullScreen(); break; // RESTORED
+            case 'e': case 'E': toggleFadeOnly(); break; // CHANGED
             case 'h': case 'H': openHelp(); break;
             case 'm': case 'M': handleMusicToggle(); break;
             case 'i': case 'I': openAbout(); break; 
