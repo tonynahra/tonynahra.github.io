@@ -45,14 +45,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Slideshow State
     let slideshowIntervalId = null;
-    let currentSlideshowSpeed = 8000; // Default 8s
+    let currentSlideshowSpeed = 8000; 
 
     let isSilentMode = false;
     let mouseTimer = null;
     let requestFullscreenOnInteract = false; 
     let currentNoteIndex = -1; 
 
-    // Resume State (For Modals)
+    // Resume State
     let resumeState = {
         slideshow: false,
         music: false
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleSlideshow(speed) {
-        if (speed) currentSlideshowSpeed = speed; // Update speed if provided
+        if (speed) currentSlideshowSpeed = speed; 
         
         if (slideshowIntervalId) {
             stopSlideshow();
@@ -540,11 +540,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let catName = "";
         if (currentCategoryIdx === -1) {
             catName = ""; 
-            // FIX: Removed 'true' (big) parameter
             showToast("Showing all photos", false, 2000); 
         } else {
             catName = sortedCategories[currentCategoryIdx];
-            // FIX: Removed 'true' (big) parameter
             showToast(`Category:<br><span style="font-size: 1.3em; font-weight: bold;">${catName}</span>`, false, 2000);
         }
         const select = getEl('grid-category-filter');
@@ -601,49 +599,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- STATE SUSPENSION LOGIC ---
     function suspendState() {
-        // Remember if playing
         resumeState.slideshow = !!slideshowIntervalId;
         resumeState.music = isMusicEnabled; 
 
-        // Pause everything
         if (slideshowIntervalId) {
             clearInterval(slideshowIntervalId);
             slideshowIntervalId = null;
-            // Note: We do NOT call showToast here to avoid spamming "Paused" when opening a menu
         }
         
         if (resumeState.music) {
             const audio = getEl('audio-element');
             if(audio) audio.pause();
             if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
-            // We keep isMusicEnabled = true logically in resumeState, but physically pause
         }
     }
 
     function restoreState() {
-        // Resume Slideshow
         if (resumeState.slideshow) {
             toggleSlideshow(currentSlideshowSpeed);
         }
         
-        // Resume Music
         if (resumeState.music) {
-            // Re-enable and play
-            // Note: playCurrentTrack checks isMusicEnabled
             const audio = getEl('audio-element');
             if(audio) audio.play().catch(e => console.warn(e));
             if (ytPlayer && typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
         }
         
-        // Reset flags
         resumeState.slideshow = false;
         resumeState.music = false;
     }
 
     // --- MODAL HANDLERS ---
     function openGrid() {
-        suspendState(); // Pause
-        closeAllModals(false); // Don't restore yet, we are opening grid
+        suspendState(); 
+        closeAllModals(false); 
         if (getEl('grid-category-filter').options.length <= 1) populateGridCategories();
         renderGrid(); 
         getEl('grid-modal').style.display = 'flex';
@@ -655,7 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (infoMode === 2) setInfoMode(1);
         
         if (shouldRestore) {
-            restoreState(); // Resume
+            restoreState(); 
         }
     }
 
@@ -714,31 +703,50 @@ document.addEventListener('DOMContentLoaded', () => {
     function openEndScreen() {
         suspendState();
         closeAllModals(false);
-        // Call the global function from LP_end.js
         if(typeof window.openEndScreen === 'function') window.openEndScreen();
     }
 
+    // --- ASSISTANT POPULATION (FIXED LENGTH LOGIC) ---
     function populateAssistantDropdowns() {
+        // 1. Categories
         const catSelect = getEl('opt-cat');
         if(catSelect) {
             while (catSelect.options.length > 1) catSelect.remove(1);
+            
+            // Recalculate counts locally
+            const counts = {};
+            allPhotos.forEach(p => {
+                const rawCats = p.categories || p.category;
+                if (!rawCats) return;
+                const tags = rawCats.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                tags.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+            });
+
             sortedCategories.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat;
-                opt.textContent = cat;
+                opt.textContent = `${cat} (${counts[cat] || 0})`; 
                 catSelect.appendChild(opt);
             });
         }
 
+        // 2. Photo IDs (Strict Total Length Limit)
         const idSelect = getEl('opt-id');
         if(idSelect) {
             while (idSelect.options.length > 1) idSelect.remove(1);
             allPhotos.forEach(p => {
                 const opt = document.createElement('option');
                 opt.value = p.id;
-                let displayTitle = p.title || "Untitled";
-                if (displayTitle.length > 30) displayTitle = displayTitle.substring(0, 27) + "...";
-                opt.textContent = `ID: ${p.id} - ${displayTitle}`;
+                
+                // Construct full string
+                let fullText = `ID: ${p.id} - ${p.title || "Untitled"}`;
+                
+                // Truncate total text to 30 chars
+                if (fullText.length > 30) {
+                    fullText = fullText.substring(0, 27) + "...";
+                }
+                
+                opt.textContent = fullText;
                 idSelect.appendChild(opt);
             });
         }
@@ -903,7 +911,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (startupOpts.flags.randomize) {
                 allPhotos.sort(() => Math.random() - 0.5);
-                showToast("Randomized"); // FIX: Corrected text
+                showToast("Randomized"); 
             }
 
             if (startupOpts.filters.keyword) {
@@ -1010,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const li = e.target.closest('li');
                 if (!li) return;
                 const action = li.getAttribute('data-action');
-                // The nav links now close the modal, which restores state automatically
+                
                 closeAllModals(true); 
 
                 switch(action) {
@@ -1027,7 +1035,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     case 'shuffle': 
                         currentFilteredPhotos.sort(() => Math.random() - 0.5); 
                         currentPhotoIndex = 0; updateMainImage(0); 
-                        showToast("Randomized"); // FIX: Correct text
+                        showToast("Randomized"); 
                         break;
                     case 'category-nav': showToast("Use PageUp / PageDown keys"); break;
                     case 'reset': resetAlbum(); break; 
