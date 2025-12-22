@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tony Nahra</title>
+    <meta name="description" content="Dynamic photo album viewer">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tonynahra.github.io">
+    <meta property="og:title" content="Tony Nahra">
+    <meta property="og:description" content="Dynamic photo album viewer">
+    <meta property="og:image" content="">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://tonynahra.github.io">
+    <meta name="twitter:title" content="Tony Nahra">
+    <meta name="twitter:description" content="Dynamic photo album viewer">
+    <meta name="twitter:image" content="">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="common/LP.css">
+</head>
+<body>
+    <div id="main-viewer">
+        <div id="image-wrapper"></div>
+
+        <div id="hud-bar" class="hud-bar">
+            <div class="hud-left">
+                <button id="help-btn" title="Help (H)">?</button>
+                <button id="about-btn" title="Album Info (I)">i</button>
+            </div>
+            <div class="hud-center">
+                <button id="prev-btn" class="nav-arrow">❮</button>
+                <button id="next-btn" class="nav-arrow">❯</button>
+            </div>
+            <div class="hud-right">
+                <button id="notes-btn" title="Notes (N)" style="display:none;">📝</button>
+                <button id="grid-btn" title="Thumbnails (P)">▦</button>
+                <button id="music-btn" title="Music (M)">🎵</button>
+                <button id="fullscreen-btn" title="Fullscreen (F)">⛶</button>
+            </div>
+        </div>
+
+        <div id="info-overlay" class="info-overlay">
+            <h3 id="photo-title">Loading...</h3>
+            <div id="photo-exif" class="exif-data"></div>
+            <p id="photo-desc"></p>
+        </div>
+        
+        <div id="photo-counter"></div>
+        <div id="note-indicator" class="note-indicator hidden"></div>
+    </div>
+
+    <div id="grid-modal" class="overlay-modal side-panel" style="display: none;">
+        <div class="modal-header">
+            <div class="header-title">Thumbnails Panel</div>
+            <div class="header-controls">
+                <select id="grid-category-filter" class="panel-dropdown">
+                    <option value="">All Categories</option>
+                </select>
+                <button class="close-overlay-btn panel-close-btn" id="close-grid-btn">✕</button>
+            </div>
+        </div>
+        <div id="grid-content" class="masonry-scroll-container">
+            <div id="photo-grid" class="masonry"></div>
+        </div>
+    </div>
+
+    <div id="photo-details-modal" class="overlay-modal" style="display: none;">
+        <div class="overlay-content extended-content">
+            <h2 id="detail-title"></h2>
+            <div id="detail-desc" style="font-size: 1.1em; line-height: 1.6; margin-bottom: 20px;"></div>
+            <hr>
+            <div id="detail-exif" class="exif-data" style="margin-top: 15px; justify-content: center;"></div>
+            <button class="close-overlay-btn" id="close-detail-btn">Close</button>
+        </div>
+    </div>
+
+    <div id="help-modal" class="overlay-modal" style="display: none;">
+        <div class="overlay-content" style="max-width: 800px;">
+            <h2>Controls Help <span style="font-size: 0.6em; color: #777; vertical-align: middle;">(H)</span></h2>
+            <div class="help-columns">
+                <div class="help-col">
+                    <h3>Navigation</h3>
+                    <ul id="help-list-nav" class="clickable-help">
+                        <li data-action="prev"><strong>Left</strong> : Previous Photo</li>
+                        <li data-action="next"><strong>Space / Right</strong> : Next Photo</li>
+                        <li data-action="category-nav"><strong>PgUp / PgDn</strong> : Filter Categories</li>
+                        <li data-action="reset"><strong>Home</strong> : Reset Album</li>
+                        <li data-action="slideshow"><strong>1-9</strong> : Slideshow (3s-11s)</li>
+                        <li data-action="stop"><strong>0 / Esc</strong> : Pause Slideshow</li>
+                        <li data-action="shuffle"><strong>R</strong> : Randomize photos</li>
+                    </ul>
+                </div>
+                <div class="help-col">
+                    <h3>Information & View</h3>
+                    <ul id="help-list-info" class="clickable-help">
+                        <li data-action="info-modal"><strong>I</strong> : Album Info</li>
+                        <li data-action="info"><strong>Up/Down</strong> : Info Bar/Details</li>
+                        <li data-action="notes"><strong>N</strong> : Toggle Notes</li>
+                        <li data-action="grid"><strong>P</strong> : Thumbnails Panel</li>
+                        <li data-action="end"><strong>End</strong> : End Screen</li>
+                        <li data-action="fullscreen"><strong>F</strong> : Toggle Fullscreen</li>
+                        <li data-action="silent"><strong>S</strong> : Toggle Silent Mode</li>
+                        <li data-action="music"><strong>M</strong> : Toggle Music</li>
+                        <li data-action="next-track"><strong>Insert</strong> : Next Music Track</li>
+                        <li data-action="assist"><strong>A</strong> : Link Assistant</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="lp-help-content" style="margin-top: 20px;"></div>
+            <button class="close-overlay-btn" id="close-help-btn">Close</button>
+        </div>
+    </div>
+
+    <div id="meta-modal" class="overlay-modal" style="display: none;">
+        <div class="overlay-content extended-content">
+            <h2 id="meta-album-title">Album</h2>
+            <div id="meta-og-desc" style="font-size: 1.1em; color: #555; margin-bottom: 20px; font-style: italic;"></div>
+            <p><strong>Created:</strong> <span id="meta-created"></span></p>
+            <p><strong>Note:</strong> <span id="meta-note"></span></p>
+            <div id="meta-categories-display" style="font-weight: bold; margin: 15px 0; display:none;"></div>
+            <div id="lp-first-content" style="margin-bottom: 15px;"></div>
+            <div id="modal-music-box" style="display:none;"></div>
+            <div style="margin-top:15px">
+                 <button id="nav-instruction-btn" style="background:none; border:none; color:#007bff; font-size:0.9em; cursor:pointer; text-decoration:underline;">
+                     Navigation Instructions
+                 </button>
+            </div>
+            <div id="startup-options" style="margin-top: 25px; display:none; gap:15px; justify-content:center;">
+                <button id="btn-view-music" class="action-btn" style="background-color: #28a745;">View with Music 🎵</button>
+                <button id="btn-view-silent" class="action-btn" style="background-color: #6c757d;">View without Music</button>
+            </div>
+            <button class="close-overlay-btn" id="close-meta-btn">Close</button>
+        </div>
+    </div>
+
+    <div id="end-screen-modal" class="overlay-modal" style="display: none;">
+        <div class="overlay-content extended-content">
+            <h2>More Albums</h2>
+            <div id="end-album-list" style="margin: 20px 0; text-align: left;"></div>
+            <button class="close-overlay-btn" id="close-end-btn">Close</button>
+        </div>
+    </div>
+
+    <div id="assistant-modal" class="overlay-modal" style="display: none;">
+        <div class="overlay-content extended-content" style="max-width: 600px;">
+            <h2>Link Assistant</h2>
+            <div class="assistant-tabs">
+                <button class="tab-btn active" data-tab="tab-flags">Flags</button>
+                <button class="tab-btn" data-tab="tab-filters">Filters</button>
+                <button class="tab-btn" data-tab="tab-slide">Slideshow</button>
+            </div>
+            <div class="tab-content active" id="tab-flags">
+                <div class="option-grid">
+                    <label class="toggle-row"><span>Silent Mode (#S)</span><input type="checkbox" id="opt-silent"></label>
+                    <label class="toggle-row"><span>Toggle Notes (#N)</span><input type="checkbox" id="opt-notes"></label>
+                    <label class="toggle-row"><span>Randomize (#R)</span><input type="checkbox" id="opt-random"></label>
+                    <label class="toggle-row"><span>Fullscreen (#F)</span><input type="checkbox" id="opt-full"></label>
+                    <label class="toggle-row"><span>Show Info (#I)</span><input type="checkbox" id="opt-info"></label>
+                    <label class="toggle-row"><span>Start at End (#E)</span><input type="checkbox" id="opt-end"></label>
+                </div>
+            </div>
+            <div class="tab-content" id="tab-filters">
+                <div class="form-group"><label>Start Photo ID (#ID):</label><input type="text" id="opt-id" placeholder="e.g. 12345"></div>
+                <div class="form-group"><label>Category Filter (#CAT-):</label><input type="text" id="opt-cat" placeholder="e.g. Nature"></div>
+                <div class="form-group"><label>Keyword Filter (#KW-):</label><input type="text" id="opt-kw" placeholder="e.g. Mountain"></div>
+            </div>
+            <div class="tab-content" id="tab-slide">
+                <div class="form-group"><label>Auto-Start Speed (#[Digit]):</label><select id="opt-speed"><option value="">Do not auto-start</option><option value="3">3 Seconds (#1)</option><option value="4">4 Seconds (#2)</option><option value="5">5 Seconds (#3)</option><option value="6">6 Seconds (#4)</option><option value="7">7 Seconds (#5)</option><option value="8">8 Seconds (#6)</option><option value="9">9 Seconds (#7)</option><option value="10">10 Seconds (#8)</option><option value="11">11 Seconds (#9)</option></select></div>
+            </div>
+            <div class="assistant-footer">
+                <div class="link-preview"><input type="text" id="generated-link" readonly><button id="btn-copy-link">Copy</button></div>
+                <div style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
+                    <button id="btn-apply-link" class="action-btn" style="background: #28a745; font-size: 0.9em; padding: 10px 20px;">Go / Reload</button>
+                    <button class="close-overlay-btn" id="close-assistant-btn" style="margin-top:0;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="overlay-modal" style="display: none;">
+        <div class="overlay-content" style="text-align: left;">
+            <h2 style="color: #d63384;">Admin Info</h2>
+            <p><strong>Album:</strong> <span id="admin-json"></span></p>
+            <p><strong>ID:</strong> <span id="admin-id"></span></p>
+            <p><strong>URL:</strong> <a id="admin-url" href="#" target="_blank"></a></p>
+            <button class="close-overlay-btn" id="close-admin-btn">Close</button>
+        </div>
+    </div>
+
+    <div id="music-container" style="display:none;">
+         <div id="youtube-player-placeholder"></div>
+         <audio id="audio-element"></audio>
+    </div>
+    <div id="toast-container"></div>
+
+    <script src="common/excluded_keywords.js"></script> 
+    <script>
+        setInterval(() => {
+            const desc = document.getElementById('photo-desc');
+            const detailDesc = document.getElementById('detail-desc');
+            const renderHTML = (el) => {
+                if(el && el.textContent.includes('<') && el.textContent.includes('>')) {
+                   if(el.innerText === el.innerHTML) el.innerHTML = el.textContent;
+                }
+            };
+            renderHTML(desc);
+            renderHTML(detailDesc);
+        }, 1000);
+    </script>
+    
+    <script src="common/view_counts.js"></script>
+    <script src="common/LP_end.js"></script> 
+    <script src="common/LP.js"></script>
+</body>
+</html>
