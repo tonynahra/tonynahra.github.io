@@ -18,15 +18,20 @@
         .btn-save { background: #0f172a; color: white; border-color: #0f172a; } .btn-save:hover { background: #334155; }
         .btn-code { background: #334155; color: white; border-color: #334155; } .btn-code:hover { background: #475569; }
         .btn-link { border: none; background: none; color: var(--primary); text-decoration: underline; padding: 0; font-size: 12px; }
-        .btn-close-x { border: none; background: transparent; font-size: 24px; color: #64748b; cursor: pointer; line-height: 1; padding: 0; }
+        
+        /* Modal Controls */
+        .modal-controls { display: flex; align-items: center; gap: 10px; }
+        .btn-nav { border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 16px; transition: 0.2s; }
+        .btn-nav:hover { background: #e2e8f0; color: #334155; }
+        .btn-close-x { border: none; background: transparent; font-size: 24px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
         .btn-close-x:hover { color: #dc2626; }
+        
         .btn-auth { background: #f59e0b; color: white; border-color: #f59e0b; }
 
         /* Pills & Badges */
         .status-pill { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
         .pass { background: #dcfce7; color: #166534; } .fail { background: #fee2e2; color: #991b1b; } .idle { background: #f1f5f9; color: #94a3b8; }
         
-        /* Feature Icons */
         .cap-badge { display: inline-flex; align-items: center; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: 600; margin: 2px; }
         .cap-icons { font-size: 16px; cursor: pointer; display: flex; gap: 4px; }
         
@@ -58,7 +63,6 @@
         .info-val { font-weight: 600; color: #334155; }
         .model-chip { display: inline-block; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 13px; margin: 2px; color: #475569; border: 1px solid #e2e8f0; }
 
-        /* Input/Output Styles */
         pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 14px; margin: 0; height: 300px; line-height: 1.5; }
         select, input[type="text"] { padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; }
         .fade-in { animation: fadeIn 0.2s ease-in-out; }
@@ -97,7 +101,11 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 id="featModalTitle">Provider Features</h3>
-            <button class="btn-close-x" onclick="closeModal('featuresModal')">×</button>
+            <div class="modal-controls">
+                <button class="btn-nav" onclick="navFeature(-1)" title="Previous">‹</button>
+                <button class="btn-nav" onclick="navFeature(1)" title="Next">›</button>
+                <button class="btn-close-x" onclick="closeModal('featuresModal')">×</button>
+            </div>
         </div>
         
         <div class="features-grid">
@@ -107,8 +115,9 @@
                 <div class="info-row"><span class="info-label">Rate Limits</span> <span class="info-val" id="featLimits">--</span></div>
                 <div class="info-row"><span class="info-label">Auth Type</span> <span class="info-val" id="featAuth">--</span></div>
                 <div class="info-row"><span class="info-label">Endpoint</span> <span class="info-val" id="featEndpoint" style="font-size:11px; max-width:200px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">--</span></div>
-                <div style="margin-top:20px;">
-                    <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="width:100%; justify-content:center;">📖 Open Official Documentation</a>
+                
+                <div style="margin-top:20px; display:flex;">
+                    <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📖 Open Official Docs</a>
                 </div>
             </div>
 
@@ -179,13 +188,14 @@
 <script>
     let data = { providers: [] };
     let currentIdx = -1;
+    let currentFeatureIdx = -1;
     let sessionAuth = ""; 
 
     const CAP_ICONS = {
         "Text": "📝", "Vision": "👁️", "Image": "🖼️", "Video": "🎥", "Audio": "🎵",
         "Music": "🎼", "Speech": "🗣️", "Embedding": "🧠", "Reasoning": "🤔",
         "Mathematics": "🧮", "Coding": "💻", "Online Search": "🔍",
-        "Translation": "🌐", "Document Processing": "📄"
+        "Translation": "🌐", "Document Processing": "📄", "Generative AI": "✨"
     };
 
     fetch('sources.json').then(r => r.json()).then(d => { data = d; render(); });
@@ -208,7 +218,6 @@
             const passes = Object.values(history).filter(h => h.status === 'PASS').map(h => h.date).sort().reverse();
             if(passes.length > 0) lastPassDate = passes[0];
 
-            // Feature Icons
             const caps = p.capabilities || [];
             const capHtml = caps.slice(0, 3).map(c => CAP_ICONS[c] || '•').join(' ');
 
@@ -217,7 +226,7 @@
                     <td><strong style="cursor:pointer; color:#2563eb;" onclick="openFeaturesModal(${idx})">${p.name}</strong></td>
                     <td title="Click for details" class="cap-icons" onclick="openFeaturesModal(${idx})">${capHtml} <span style="font-size:10px; color:#94a3b8;">+</span></td>
                     <td>
-                        <select onchange="updateRowStatus(${idx}, this.value)">
+                        <select onchange="updateRowStatus(${idx}, this.value, this)">
                             ${models.map(m => {
                                 const s = history[m] ? history[m].status : '';
                                 const icon = s === 'PASS' ? '✅ ' : (s === 'FAIL' ? '❌ ' : '');
@@ -235,7 +244,7 @@
         });
     }
 
-    function updateRowStatus(idx, model) {
+    function updateRowStatus(idx, model, selectEl) {
         const history = data.providers[idx].history || {};
         const status = (history[model] && history[model].status) ? history[model].status : "IDLE";
         const pill = document.getElementById(`status-pill-${idx}`);
@@ -243,65 +252,57 @@
         pill.innerText = status;
     }
 
-    // --- AUTH LOGIC ---
     function requestAuth() {
         const pass = prompt("Enter Password to enable live testing:");
-        if (pass === "MM") {
-            sessionAuth = pass;
-            updateAuthBtn();
-        } else {
-            alert("Incorrect password.");
-        }
+        if (pass === "MM") { sessionAuth = pass; updateAuthBtn(); } else { alert("Incorrect password."); }
     }
     
     function updateAuthBtn() {
          const btn = document.getElementById("btnAuth");
          if(sessionAuth === "MM") {
             btn.innerText = "🔓 Key Ready";
-            btn.style.backgroundColor = "#10b981";
-            btn.style.borderColor = "#10b981";
+            btn.style.backgroundColor = "#10b981"; btn.style.borderColor = "#10b981";
         } else {
             btn.innerText = "🔑 Insert Key";
-            btn.style.backgroundColor = "#f59e0b";
-            btn.style.borderColor = "#f59e0b";
+            btn.style.backgroundColor = "#f59e0b"; btn.style.borderColor = "#f59e0b";
         }
     }
 
-    // --- FEATURES MODAL ---
+    // --- FEATURES MODAL (NAVIGABLE) ---
     function openFeaturesModal(idx) {
+        currentFeatureIdx = idx;
         const p = data.providers[idx];
-        document.getElementById('featModalTitle').innerText = p.name + " Features";
+        document.getElementById('featModalTitle').innerText = p.name;
         
-        // Fill Info
         document.getElementById('featCost').innerText = p.cost || "Unknown";
         document.getElementById('featLimits').innerText = p.limits || "Unknown";
         document.getElementById('featAuth').innerText = p.authType;
         document.getElementById('featEndpoint').innerText = p.endpoint;
         document.getElementById('featDocs').href = p.docs;
         
-        // Fill Caps
-        const capsContainer = document.getElementById('featCapsContainer');
-        capsContainer.innerHTML = (p.capabilities || []).map(c => 
+        document.getElementById('featCapsContainer').innerHTML = (p.capabilities || []).map(c => 
             `<span class="cap-badge">${CAP_ICONS[c] || ''} ${c}</span>`
         ).join('');
 
-        // Fill Models
         document.getElementById('featModelCount').innerText = p.models.length;
-        document.getElementById('featModelList').innerHTML = p.models.map(m => 
-            `<span class="model-chip">${m}</span>`
-        ).join('');
+        document.getElementById('featModelList').innerHTML = p.models.map(m => `<span class="model-chip">${m}</span>`).join('');
 
         document.getElementById('featuresModal').style.display = 'flex';
+    }
+
+    function navFeature(direction) {
+        let newIdx = currentFeatureIdx + direction;
+        // Loop around
+        if (newIdx < 0) newIdx = data.providers.length - 1;
+        if (newIdx >= data.providers.length) newIdx = 0;
+        openFeaturesModal(newIdx);
     }
 
     // --- TEST MODAL ---
     function openTestModal(idx) {
         currentIdx = idx;
         const p = data.providers[idx];
-        
         document.getElementById('testModalTitle').innerText = `Test Provider: ${p.name}`;
-
-        // Populate Summary
         document.getElementById('tsCost').innerText = p.cost || "Unknown";
         document.getElementById('tsLimits').innerText = p.limits || "Unknown";
         document.getElementById('tsCaps').innerText = (p.capabilities || []).join(", ");
@@ -311,7 +312,6 @@
         syncInput();
         updateAuthBtn();
 
-        // Reset Views
         document.getElementById('modalActions').style.display = "none";
         document.getElementById('copyAction').style.display = "none";
         document.getElementById('modalOutput').innerText = "Ready to test...";
@@ -330,7 +330,6 @@
         const p = data.providers[currentIdx];
         const val = document.getElementById('modalNewInput').value.trim();
         if (!val) return alert("Please enter a model ID");
-        
         if (!p.models.includes(val)) {
             p.models.unshift(val);
             const dl = document.getElementById('modalSelector');
@@ -344,9 +343,7 @@
         }
     }
 
-    function closeModal(id) {
-        document.getElementById(id).style.display = 'none';
-    }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function toggleCodeView() {
         const output = document.getElementById('viewOutput');
@@ -355,18 +352,13 @@
         const copyBtn = document.getElementById('copyAction');
         
         if (code.style.display === 'none') {
-            output.style.display = 'none';
-            code.style.display = 'flex';
+            output.style.display = 'none'; code.style.display = 'flex';
             generateCodeSnippet();
-            actions.style.display = 'none';
-            copyBtn.style.display = 'flex';
+            actions.style.display = 'none'; copyBtn.style.display = 'flex';
         } else {
-            code.style.display = 'none';
-            output.style.display = 'flex';
+            code.style.display = 'none'; output.style.display = 'flex';
             copyBtn.style.display = 'none';
-            if (document.getElementById('modalOutput').innerText !== "Ready to test...") {
-                 actions.style.display = 'flex';
-            }
+            if (document.getElementById('modalOutput').innerText !== "Ready to test...") actions.style.display = 'flex';
         }
     }
 
@@ -374,7 +366,6 @@
         const p = data.providers[currentIdx];
         const model = document.getElementById('modalNewInput').value;
         const url = p.endpoint.replace('{model}', model).replace('{key}', 'YOUR_API_KEY');
-        
         let headers = { "Content-Type": "application/json" };
         if(p.authType === 'bearer') headers['Authorization'] = "Bearer YOUR_API_KEY";
         if(p.authType === 'header-custom') {
@@ -382,49 +373,31 @@
             if(p.customHeaders) Object.assign(headers, p.customHeaders);
         }
         let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
-
-        let snippet = `// API Call for ${p.name} (${model})\n`;
-        snippet += `const url = "${url}";\n`;
-        snippet += `const headers = ${JSON.stringify(headers, null, 2)};\n`;
-        snippet += `const body = ${JSON.stringify(body, null, 2)};\n\n`;
-        snippet += `fetch(url, {\n  method: "POST",\n  headers: headers,\n  body: JSON.stringify(body)\n})\n`;
-        snippet += `.then(response => response.json())\n.then(data => console.log(data));`;
-        
+        let snippet = `// API Call for ${p.name} (${model})\nconst url = "${url}";\nconst headers = ${JSON.stringify(headers, null, 2)};\nconst body = ${JSON.stringify(body, null, 2)};\n\nfetch(url, { method: "POST", headers, body: JSON.stringify(body) })\n.then(response => response.json())\n.then(data => console.log(data));`;
         document.getElementById('codeSnippet').innerText = snippet;
     }
 
     function copyCode() {
-        const text = document.getElementById('codeSnippet').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Code copied!");
-        });
+        navigator.clipboard.writeText(document.getElementById('codeSnippet').innerText);
+        alert("Code copied!");
     }
 
     async function runSecureTest() {
         document.getElementById('viewOutput').style.display = 'flex';
         document.getElementById('viewCode').style.display = 'none';
         document.getElementById('copyAction').style.display = 'none';
-
         const p = data.providers[currentIdx];
         const model = document.getElementById('modalNewInput').value;
         const output = document.getElementById('modalOutput');
         
         output.innerText = "Requesting via proxy...";
-        
         let bodyPayload = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
 
         try {
             const res = await fetch('proxy.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    password: sessionAuth,
-                    provider_id: p.id,
-                    model: model,
-                    body: bodyPayload
-                })
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: sessionAuth, provider_id: p.id, model: model, body: bodyPayload })
             });
-            
             const json = await res.json();
             output.innerText = JSON.stringify(json, null, 2);
             document.getElementById('modalActions').style.display = "flex";
@@ -447,8 +420,7 @@
         statusEl.innerText = "Saving...";
         try {
             await fetch('save_data.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-            statusEl.innerText = "Saved ✔";
-            setTimeout(() => statusEl.innerText = "", 2000);
+            statusEl.innerText = "Saved ✔"; setTimeout(() => statusEl.innerText = "", 2000);
         } catch(e) { statusEl.innerText = "Error"; alert("Failed: " + e.message); }
     }
 </script>
