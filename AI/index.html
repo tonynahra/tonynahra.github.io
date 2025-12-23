@@ -7,9 +7,11 @@
         :root { --bg:#f1f5f9; --surface:#ffffff; --text:#334155; --primary:#2563eb; --success:#16a34a; --danger:#dc2626; --border:#cbd5e1; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 30px; }
         
+        /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .header h1 { margin: 0; font-size: 20px; color: #1e293b; }
         
+        /* Buttons */
         .btn { padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; background: white; font-size: 13px; font-weight: 500; transition: 0.1s; }
         .btn:hover { background: #f8fafc; border-color: #94a3b8; }
         .btn-primary { background: var(--primary); color: white; border-color: var(--primary); } .btn-primary:hover { background: #1d4ed8; }
@@ -20,9 +22,17 @@
         .btn-close-x:hover { color: #dc2626; }
         .btn-auth { background: #f59e0b; color: white; border-color: #f59e0b; } .btn-auth:hover { background: #d97706; }
 
+        /* Status Pills */
         .status-pill { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .pass { background: #dcfce7; color: #166534; } .fail { background: #fee2e2; color: #991b1b; } .idle { background: #f1f5f9; color: #94a3b8; }
+        .pass { background: #dcfce7; color: #166534; } 
+        .fail { background: #fee2e2; color: #991b1b; } 
+        .idle { background: #f1f5f9; color: #94a3b8; }
         
+        /* Capabilities Badges */
+        .cap-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; background: #e0f2fe; color: #0369a1; border-radius: 4px; font-size: 11px; margin-right: 4px; cursor: help; }
+        .cap-icons { font-size: 14px; cursor: pointer; }
+
+        /* Table */
         .card { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; }
@@ -31,11 +41,20 @@
         tbody tr:nth-child(even) { background-color: #f8fafc; }
         tbody tr:hover { background-color: #f1f5f9; }
 
+        /* Modal */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; width: 900px; max-width: 95%; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); max-height: 95vh; }
+        .modal-content { background: white; width: 900px; max-width: 95%; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); max-height: 95vh; overflow-y: auto; }
+        
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 5px; }
         .modal-header h3 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; }
+        
         .modal-label { font-size: 15px; font-weight: 700; color: #334155; display: block; margin-bottom: 8px; }
+
+        /* Provider Details Box inside Modal */
+        .provider-details-box { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 15px; display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 10px; }
+        .detail-item { display: flex; flex-direction: column; gap: 4px; }
+        .detail-label { font-size: 11px; text-transform: uppercase; color: #0369a1; font-weight: 700; }
+        .detail-value { font-size: 14px; color: #0c4a6e; font-weight: 500; }
 
         pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 14px; margin: 0; height: 300px; line-height: 1.5; }
         select, input[type="text"] { padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; }
@@ -58,12 +77,13 @@
         <thead>
             <tr>
                 <th width="15%">Provider</th>
+                <th width="10%">Features</th>
                 <th width="25%">Model Selector</th>
                 <th width="10%">Status</th>
                 <th width="10%">Passing</th>
                 <th width="15%">Last Pass</th>
-                <th width="10%">Action</th>
-                <th width="15%">Ref</th>
+                <th width="5%">Action</th>
+                <th width="10%">Ref</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -76,6 +96,9 @@
             <h3 id="modalTitle">Test Provider</h3>
             <button class="btn-close-x" onclick="closeModal()">×</button>
         </div>
+
+        <div class="provider-details-box" id="modalProviderInfo">
+            </div>
 
         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
             <label class="modal-label">Select Existing or Add New Model:</label>
@@ -98,8 +121,8 @@
                 <button class="btn" style="color:#dc2626; border-color:#dc2626;" onclick="markStatus('FAIL')">✖ Mark Fail</button>
             </div>
             
-            <div id="copyAction" style="display:none; margin-left: auto;" class="fade-in">
-                <button class="btn" onclick="copyCode()">📋 Copy Code to Clipboard</button>
+             <div id="copyAction" style="display:none; margin-left: auto;" class="fade-in">
+                <button class="btn" onclick="copyCode()">📋 Copy Code</button>
             </div>
         </div>
         
@@ -119,9 +142,24 @@
 <script>
     let data = { providers: [] };
     let currentIdx = -1;
-    let sessionAuth = ""; // Stores the "MM" password
+    let sessionAuth = ""; 
 
-    // Load Public Data
+    // Mapping for Capability Icons
+    const CAP_ICONS = {
+        "Text": "📝",
+        "Vision": "👁️",
+        "Image": "🖼️",
+        "Video": "🎥",
+        "Audio": "🎵",
+        "Music": "🎼",
+        "Speech": "🗣️",
+        "Embedding": "🧠",
+        "Reasoning": "🤔",
+        "Mathematics": "🧮",
+        "Coding": "💻",
+        "Online Search": "🔍"
+    };
+
     fetch('sources.json').then(r => r.json()).then(d => { data = d; render(); });
 
     function render() {
@@ -142,9 +180,15 @@
             const passes = Object.values(history).filter(h => h.status === 'PASS').map(h => h.date).sort().reverse();
             if(passes.length > 0) lastPassDate = passes[0];
 
+            // Generate Capabilities HTML
+            const caps = p.capabilities || [];
+            const capHtml = caps.slice(0, 3).map(c => CAP_ICONS[c] || '•').join(' ');
+            const capTooltip = caps.join(', ');
+
             tbody.innerHTML += `
                 <tr>
-                    <td><strong>${p.name}</strong></td>
+                    <td><strong style="cursor:pointer; color:#2563eb;" onclick="openModal(${idx})">${p.name}</strong></td>
+                    <td title="${capTooltip}" class="cap-icons" onclick="openModal(${idx})">${capHtml} <span style="font-size:10px; color:#94a3b8;">+</span></td>
                     <td>
                         <select onchange="updateRowStatus(${idx}, this.value, this)">
                             ${models.map(m => {
@@ -158,7 +202,7 @@
                     <td><strong>${passCount}</strong> / ${models.length}</td>
                     <td style="font-size:12px; color:#64748b;">${lastPassDate}</td>
                     <td><button class="btn" onclick="openModal(${idx})">Test</button></td>
-                    <td><a href="${p.docs}" target="_blank" class="btn-link">Latest Models ↗</a></td>
+                    <td><a href="${p.docs}" target="_blank" class="btn-link">Ref ↗</a></td>
                 </tr>
             `;
         });
@@ -177,12 +221,22 @@
         const pass = prompt("Enter Password to enable live testing:");
         if (pass === "MM") {
             sessionAuth = pass;
-            const btn = document.getElementById("btnAuth");
-            btn.innerText = "🔓 Key Ready";
-            btn.style.backgroundColor = "#10b981"; // Green
-            btn.style.borderColor = "#10b981";
+            updateAuthBtn();
         } else {
             alert("Incorrect password.");
+        }
+    }
+    
+    function updateAuthBtn() {
+         const btn = document.getElementById("btnAuth");
+         if(sessionAuth === "MM") {
+            btn.innerText = "🔓 Key Ready";
+            btn.style.backgroundColor = "#10b981";
+            btn.style.borderColor = "#10b981";
+        } else {
+            btn.innerText = "🔑 Insert Key";
+            btn.style.backgroundColor = "#f59e0b";
+            btn.style.borderColor = "#f59e0b";
         }
     }
 
@@ -192,22 +246,28 @@
         const p = data.providers[idx];
         
         document.getElementById('modalTitle').innerText = `Test Provider: ${p.name}`;
-        
+
+        // Populate Provider Details
+        const caps = p.capabilities ? p.capabilities.join(", ") : "Standard Text";
+        document.getElementById('modalProviderInfo').innerHTML = `
+            <div class="detail-item">
+                <span class="detail-label">Cost</span>
+                <span class="detail-value">${p.cost || 'Unknown'}</span>
+            </div>
+             <div class="detail-item">
+                <span class="detail-label">Limits</span>
+                <span class="detail-value">${p.limits || 'Unknown'}</span>
+            </div>
+             <div class="detail-item" style="flex: 1;">
+                <span class="detail-label">Capabilities</span>
+                <span class="detail-value">${caps}</span>
+            </div>
+        `;
+
         const dl = document.getElementById('modalSelector');
         dl.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join('');
         syncInput();
-
-        // Check Auth Status visuals
-        const btnAuth = document.getElementById("btnAuth");
-        if(sessionAuth === "MM") {
-            btnAuth.innerText = "🔓 Key Ready";
-            btnAuth.style.backgroundColor = "#10b981";
-            btnAuth.style.borderColor = "#10b981";
-        } else {
-            btnAuth.innerText = "🔑 Insert Key";
-            btnAuth.style.backgroundColor = "#f59e0b";
-            btnAuth.style.borderColor = "#f59e0b";
-        }
+        updateAuthBtn();
 
         // Reset Views
         document.getElementById('modalActions').style.display = "none";
@@ -252,25 +312,21 @@
         const actions = document.getElementById('modalActions');
         const copyBtn = document.getElementById('copyAction');
         
-        // SWITCH TO CODE VIEW
         if (code.style.display === 'none') {
             output.style.display = 'none';
             code.style.display = 'flex';
             generateCodeSnippet();
-            
-            // Hide Pass/Fail, Show Copy
             actions.style.display = 'none';
             copyBtn.style.display = 'flex';
-        } 
-        // SWITCH TO OUTPUT VIEW
-        else {
+        } else {
             code.style.display = 'none';
             output.style.display = 'flex';
-            
-            // Hide Copy, Show Pass/Fail (if available)
             copyBtn.style.display = 'none';
-            // Only show pass/fail if we actually have output, but simplest is to just show them if user switches back
-            actions.style.display = 'flex'; 
+            // Restore actions if there's content, or hide if still fresh. 
+            // Simple logic: if text is not "Ready...", show actions
+            if (document.getElementById('modalOutput').innerText !== "Ready to test...") {
+                 actions.style.display = 'flex';
+            }
         }
     }
 
@@ -305,7 +361,6 @@
     }
 
     async function runSecureTest() {
-        // Switch to Output View
         document.getElementById('viewOutput').style.display = 'flex';
         document.getElementById('viewCode').style.display = 'none';
         document.getElementById('copyAction').style.display = 'none';
@@ -323,7 +378,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    password: sessionAuth, // SEND PASSWORD "MM"
+                    password: sessionAuth,
                     provider_id: p.id,
                     model: model,
                     body: bodyPayload
