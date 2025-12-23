@@ -5,17 +5,19 @@
     <title>AI Pulse Dashboard</title>
     <style>
         :root { --bg:#f8fafc; --surface:#ffffff; --text:#334155; --primary:#2563eb; --border:#e2e8f0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 40px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 40px; height: 100vh; box-sizing: border-box; overflow: hidden; }
         
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        /* Layout */
+        .container { max-width: 1400px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
         h1 { margin: 0; color: #1e293b; letter-spacing: -0.5px; }
         
         /* Card & Table */
-        .card { background: white; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f1f5f9; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f1f5f9; flex: 1; display: flex; flex-direction: column; }
+        .table-scroll { overflow-y: auto; flex: 1; }
         table { width: 100%; border-collapse: collapse; }
         
-        th { background: #f8fafc; font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 20px 24px; text-align: left; cursor: pointer; user-select: none; border-bottom: 1px solid #e2e8f0; letter-spacing: 0.05em; }
+        th { background: #f8fafc; font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 20px 24px; text-align: left; cursor: pointer; user-select: none; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 10; }
         th:hover { background: #e2e8f0; color: #334155; }
         th:after { content: ' ↕'; font-size: 11px; color: #94a3b8; margin-left: 5px; }
         
@@ -26,36 +28,28 @@
         .provider-link { color: #0f172a; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 15px; }
         .provider-link:hover { color: var(--primary); text-decoration: underline; }
         
-        /* Features Cell */
+        /* --- COLOR CODED BADGES --- */
         .feat-cell { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; cursor: pointer; }
-        .cap-badge { background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; border: 1px solid #e2e8f0; }
+        .cap-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 4px; text-transform: uppercase; }
         
-        /* --- MODERN DROPDOWN STYLE --- */
+        /* Badge Colors */
+        .c-text { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .c-vision { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; }
+        .c-audio { background: #fff1f2; color: #be123c; border-color: #fecdd3; }
+        .c-video { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .c-gen { background: #fffbeb; color: #b45309; border-color: #fde68a; } /* Gold/Amber */
+        .c-code { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .c-other { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+
+        /* Modern Dropdown */
         .model-select {
-            width: 65%; /* Reduced width */
-            padding: 10px 14px;
-            padding-right: 35px; /* Space for arrow */
-            font-size: 15px; /* Increased font */
-            font-weight: 500;
-            color: #334155;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            cursor: pointer;
-            outline: none;
-            transition: all 0.2s ease;
-            
-            /* Custom Arrow */
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
+            width: 70%; padding: 10px 14px; padding-right: 35px; font-size: 14px; font-weight: 500; color: #334155;
+            background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; outline: none;
+            appearance: none; -webkit-appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
+            background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
         }
         .model-select:hover { border-color: #94a3b8; background-color: #f8fafc; }
-        .model-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 
         /* Buttons */
         .btn { padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; transition: 0.1s; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
@@ -65,173 +59,186 @@
         .btn-primary:hover { background: #1d4ed8; color: white; }
         .btn-code { background: #334155; color: white; border-color: #334155; }
         .btn-code:hover { background: #475569; color: white; }
-
         .btn-nav { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 18px; color: #64748b; }
         .btn-close-x { border: none; background: transparent; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
         .btn-close-x:hover { color: #dc2626; }
+        
+        .btn-copy { padding: 4px 10px; font-size: 12px; background: #475569; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-copy:hover { background: #64748b; }
 
         /* Modals */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; overflow-y: auto; backdrop-filter: blur(2px); }
-        .modal-aligner { display: flex; justify-content: center; align-items: flex-start; padding-top: 60px; min-height: 100%; width: 100%; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; backdrop-filter: blur(2px); justify-content: center; align-items: center; }
         
-        .modal-content { background: white; border-radius: 16px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); margin-bottom: 50px; }
+        /* Modal Content - Fixed Height Logic */
+        .modal-content { background: white; border-radius: 16px; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         
-        /* SCALED SIZES */
-        .size-large { width: 1200px; max-width: 95%; padding: 40px; }
-        .size-medium { width: 1000px; max-width: 95%; padding: 40px; }
+        /* Sizes */
+        .size-large { width: 1200px; max-width: 95%; height: 90vh; padding: 30px; }
+        .size-medium { width: 1000px; max-width: 95%; height: 90vh; padding: 30px; }
 
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; }
-        .modal-header h3 { margin: 0; font-size: 28px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; flex-shrink: 0; }
+        .modal-header h3 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
+
+        /* Test Modal Layout */
+        .test-body { display: flex; flex-direction: column; height: 100%; gap: 15px; padding-top: 15px; overflow: hidden; }
+        
+        .input-group { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; flex-shrink: 0; }
+        
+        .output-group { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+        .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        
+        pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 12px; flex: 1; overflow: auto; margin: 0; font-family: "Menlo", "Monaco", "Courier New", monospace; font-size: 14px; line-height: 1.6; border: 1px solid #0f172a; }
 
         /* Feature Modal Specifics */
-        .features-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
-        .feature-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; }
-        .feature-box h4 { margin: 0 0 20px 0; color: #334155; font-size: 18px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; letter-spacing: 0.05em; font-weight: 700; }
+        .features-layout { display: flex; height: 100%; gap: 20px; overflow: hidden; padding-top: 15px; }
+        .features-left { width: 60%; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        .features-right { width: 40%; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
         
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
-        .info-label { color: #64748b; font-weight: 500; }
-        .info-val { font-weight: 600; color: #334155; text-align: right; }
+        .feature-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; }
+        .feature-box h4 { margin: 0 0 15px 0; color: #334155; font-size: 16px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; font-weight: 700; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
         
-        .model-chip { display: inline-block; background: #f8fafc; padding: 10px 14px; border-radius: 8px; font-size: 16px; margin: 4px; color: #334155; border: 1px solid #e2e8f0; font-weight: 500; }
-        .endpoint-link { color: #2563eb; text-decoration: none; word-break: break-all; font-family: monospace; font-size: 15px; }
-
-        /* Inputs & Pre */
-        input[type="text"], input[type="password"] { padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; transition: 0.2s; }
-        input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        
-        /* Modal Select is slightly different from Table Select (Full width) */
-        .modal-input-select { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 16px; background-color:white; }
-
-        pre { background: #1e293b; color: #e2e8f0; padding: 25px; border-radius: 12px; height: 250px; overflow: auto; margin: 0; font-family: "Menlo", "Monaco", "Courier New", monospace; font-size: 15px; line-height: 1.6; }
+        /* Inputs */
+        input[type="password"] { padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; }
+        .modal-input-select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 16px; background-color:white; }
         
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div>
-        <h1>AI Pulse Dashboard</h1>
-        <div style="font-size:15px; color:#64748b; margin-top:5px; font-weight:500;">Public Status Monitor</div>
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>AI Pulse Dashboard</h1>
+            <div style="font-size:15px; color:#64748b; margin-top:5px; font-weight:500;">Public Status Monitor</div>
+        </div>
+        <button class="btn btn-help" onclick="document.getElementById('helpModal').style.display='flex'">
+            ❓ Help & Guide
+        </button>
     </div>
-    <button class="btn btn-help" onclick="document.getElementById('helpModal').style.display='flex'">
-        ❓ Help & Guide
-    </button>
-</div>
 
-<div class="card">
-    <table id="dashTable">
-        <thead>
-            <tr>
-                <th onclick="sortTable(0)" width="20%">Provider</th>
-                <th onclick="sortTable(1)" width="20%">Features</th>
-                <th onclick="sortTable(2)" width="35%">Available Models</th>
-                <th onclick="sortTable(3)" width="15%">Status</th>
-                <th width="10%">Action</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <div class="card">
+        <div class="table-scroll">
+            <table id="dashTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)" width="20%">Provider</th>
+                        <th onclick="sortTable(1)" width="25%">Features</th>
+                        <th onclick="sortTable(2)" width="30%">Available Models</th>
+                        <th onclick="sortTable(3)" width="15%">Status</th>
+                        <th width="10%">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <div id="helpModal" class="modal">
-    <div class="modal-aligner">
-        <div class="modal-content size-medium" style="width: 700px;">
-            <div class="modal-header">
-                <h3>Dashboard Guide</h3>
-                <button class="btn-close-x" onclick="document.getElementById('helpModal').style.display='none'">×</button>
-            </div>
-            <div style="font-size: 16px; line-height: 1.6; color:#334155;">
-                <p>This dashboard monitors the status of various AI API providers. You can view capabilities, check limits, and test models.</p>
-                <strong>Testing:</strong>
-                <ul>
-                    <li>Select a model and enter your own API key to test connectivity.</li>
-                    <li>Your API key is used directly by your browser to communicate with the provider. It is NOT saved or sent to our servers.</li>
-                </ul>
-            </div>
+    <div class="modal-content" style="width: 700px; height: auto; max-height: 90vh;">
+        <div class="modal-header">
+            <h3>Dashboard Guide</h3>
+            <button class="btn-close-x" onclick="document.getElementById('helpModal').style.display='none'">×</button>
+        </div>
+        <div style="font-size: 16px; line-height: 1.6; color:#334155; padding-bottom: 20px;">
+            <p>This dashboard monitors the status of various AI API providers.</p>
+            <strong>Testing:</strong>
+            <ul>
+                <li>Select a model and enter your own API key to test connectivity.</li>
+                <li>Your API key is used directly by your browser. It is NOT saved.</li>
+            </ul>
         </div>
     </div>
 </div>
 
 <div id="featuresModal" class="modal">
-    <div class="modal-aligner">
-        <div class="modal-content size-large">
-            <div class="modal-header">
-                <h3 id="featModalTitle">Features</h3>
-                <div style="display:flex; align-items:center;">
-                    <button class="btn-nav" onclick="navFeature(-1)">‹</button>
-                    <button class="btn-nav" style="margin-left:5px;" onclick="navFeature(1)">›</button>
-                    <button class="btn-close-x" onclick="document.getElementById('featuresModal').style.display='none'">×</button>
-                </div>
+    <div class="modal-content size-large">
+        <div class="modal-header">
+            <h3 id="featModalTitle">Features</h3>
+            <div style="display:flex; align-items:center;">
+                <button class="btn-nav" onclick="navFeature(-1)">‹</button>
+                <button class="btn-nav" style="margin-left:5px;" onclick="navFeature(1)">›</button>
+                <button class="btn-close-x" onclick="document.getElementById('featuresModal').style.display='none'">×</button>
             </div>
-            
-            <div class="features-grid">
+        </div>
+        
+        <div class="features-layout">
+            <div class="features-left">
                 <div class="feature-box" style="background:#f8fafc;">
                     <h4>Configuration & Limits</h4>
-                    <div class="info-row"><span class="info-label">Cost Tier</span> <span class="info-val" id="featCost">--</span></div>
-                    <div class="info-row"><span class="info-label">Limits</span> <span class="info-val" id="featLimits">--</span></div>
-                    <div class="info-row"><span class="info-label">Auth</span> <span class="info-val" id="featAuth">--</span></div>
-                    <div style="margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
-                        <span class="info-label" style="display:block; margin-bottom:6px;">Endpoint URL</span>
-                        <a href="#" target="_blank" id="featEndpoint" class="endpoint-link">--</a>
+                    <div class="info-row"><span style="color:#64748b;">Cost Tier</span> <span style="font-weight:600;" id="featCost">--</span></div>
+                    <div class="info-row"><span style="color:#64748b;">Limits</span> <span style="font-weight:600;" id="featLimits">--</span></div>
+                    <div class="info-row"><span style="color:#64748b;">Auth</span> <span style="font-weight:600;" id="featAuth">--</span></div>
+                    <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:15px;">
+                        <span style="display:block; margin-bottom:5px; font-size:14px; font-weight:600; color:#64748b;">Endpoint URL</span>
+                        <a href="#" target="_blank" id="featEndpoint" style="color:#2563eb; word-break:break-all; font-family:monospace;">--</a>
                     </div>
-                    <div style="margin-top:25px; display:flex;">
-                        <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; padding:15px; font-size:16px;">📖 Open Docs</a>
+                    <div style="margin-top:20px;">
+                        <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="width:100%; justify-content:center;">📖 Open Official Docs</a>
                     </div>
                 </div>
+                
                 <div class="feature-box">
-                    <h4>Capabilities</h4>
-                    <div id="featCapsContainer" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+                    <h4>Available Models (<span id="featModelCount">0</span>)</h4>
+                    <div id="featModelList" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
                 </div>
             </div>
-            <div class="feature-box">
-                <h4>Available Models (<span id="featModelCount">0</span>)</h4>
-                <div id="featModelList" style="max-height: 300px; overflow-y: auto;"></div>
+
+            <div class="features-right">
+                <div class="feature-box">
+                    <h4>Capabilities</h4>
+                    <div id="featCapsContainer" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <div id="testModal" class="modal">
-    <div class="modal-aligner">
-        <div class="modal-content size-medium">
-            <div class="modal-header">
-                <h3 id="modalTitle">Provider Name</h3>
-                <div style="display:flex; align-items:center;">
-                    <button class="btn-nav" onclick="navTest(-1)">‹</button>
-                    <button class="btn-nav" style="margin-left:5px;" onclick="navTest(1)">›</button>
-                    <button class="btn-close-x" onclick="document.getElementById('testModal').style.display='none'">×</button>
-                </div>
+    <div class="modal-content size-medium">
+        <div class="modal-header">
+            <h3 id="modalTitle">Provider Name</h3>
+            <div style="display:flex; align-items:center;">
+                <button class="btn-nav" onclick="navTest(-1)">‹</button>
+                <button class="btn-nav" style="margin-left:5px;" onclick="navTest(1)">›</button>
+                <button class="btn-close-x" onclick="document.getElementById('testModal').style.display='none'">×</button>
             </div>
-            
-            <div style="background:#f8fafc; padding:30px; border-radius:12px; display:flex; flex-direction:column; gap:20px; border:1px solid #e2e8f0;">
+        </div>
+        
+        <div class="test-body">
+            <div class="input-group">
+                <div style="display:flex; gap:20px; margin-bottom:15px;">
+                    <div style="flex:1;">
+                        <label style="font-size:13px; font-weight:700; color:#64748b; display:block; margin-bottom:6px; text-transform:uppercase;">1. Select Model</label>
+                        <select id="modalSelector" class="modal-input-select"></select>
+                    </div>
+                    <div style="flex:1.5;">
+                        <label style="font-size:13px; font-weight:700; color:#64748b; display:block; margin-bottom:6px; text-transform:uppercase;">2. Enter API Key</label>
+                        <input type="password" id="userKey" placeholder="Paste your API Key (sk-...)">
+                    </div>
+                </div>
                 
-                <div>
-                    <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px; color:#475569; text-transform:uppercase;">1. Select Model</label>
-                    <select id="modalSelector" class="modal-input-select"></select>
-                </div>
-
-                <div>
-                    <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px; color:#475569; text-transform:uppercase;">2. Enter Your API Key</label>
-                    <input type="password" id="userKey" placeholder="Paste your API Key here (sk-...)">
-                    <div style="font-size:13px; color:#64748b; margin-top:8px;">Your key is used locally and never saved.</div>
-                </div>
-
-                <div style="display:flex; gap:15px; margin-top:10px;">
-                    <button class="btn btn-primary" style="font-size:16px; padding:12px 24px;" onclick="runTest()">▶ Run Test</button>
-                    <button class="btn btn-code" style="font-size:16px; padding:12px 24px;" onclick="toggleCode()"> { } Show Code</button>
+                <div style="display:flex; gap:15px;">
+                    <button class="btn btn-primary" style="padding:12px 24px;" onclick="runPublicTest()">▶ Run Test</button>
+                    <button class="btn btn-code" style="padding:12px 24px;" onclick="toggleCode()"> { } Show Code</button>
                 </div>
             </div>
             
-            <div id="viewOutput">
-                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:10px; color:#334155;">Response Output:</label>
-                <pre id="modalOutput">Waiting for input...</pre>
+            <div id="viewOutput" class="output-group">
+                <div class="output-header">
+                    <label style="font-size:14px; font-weight:bold; color:#334155;">Response Output</label>
+                </div>
+                <pre id="modalOutput">Waiting for test run...</pre>
             </div>
 
-            <div id="viewCode" style="display:none;">
-                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:10px; color:#334155;">Integration Code:</label>
+            <div id="viewCode" class="output-group" style="display:none;">
+                <div class="output-header">
+                    <label style="font-size:14px; font-weight:bold; color:#334155;">Integration Code</label>
+                    <button class="btn-copy" onclick="copyCode()">📋 Copy</button>
+                </div>
                 <pre id="codeSnippet" style="background:#0f172a; color:#a5b4fc;"></pre>
             </div>
-
         </div>
     </div>
 </div>
@@ -241,12 +248,23 @@ let data = { providers: [] };
 let currentIdx = -1;
 let currentFeatureIdx = -1;
 
-const CAP_ICONS = {
-    "Text": "📝", "Vision": "👁️", "Image": "🖼️", "Video": "🎥", "Audio": "🎵",
-    "Music": "🎼", "Speech": "🗣️", "Embedding": "🧠", "Reasoning": "🤔",
-    "Mathematics": "🧮", "Coding": "💻", "Online Search": "🔍",
-    "Translation": "🌐", "Document Processing": "📄", "Generative AI": "✨",
-    "Aggregator": "🔗", "Fast Inference": "⚡"
+const CAP_CONFIG = {
+    "Text": { icon: "📝", cls: "c-text" },
+    "Vision": { icon: "👁️", cls: "c-vision" },
+    "Image": { icon: "🖼️", cls: "c-vision" },
+    "Video": { icon: "🎥", cls: "c-video" },
+    "Audio": { icon: "🎵", cls: "c-audio" },
+    "Music": { icon: "🎼", cls: "c-audio" },
+    "Speech": { icon: "🗣️", cls: "c-audio" },
+    "Embedding": { icon: "🧠", cls: "c-other" },
+    "Reasoning": { icon: "🤔", cls: "c-code" },
+    "Mathematics": { icon: "🧮", cls: "c-code" },
+    "Coding": { icon: "💻", cls: "c-code" },
+    "Online Search": { icon: "🔍", cls: "c-other" },
+    "Translation": { icon: "🌐", cls: "c-text" },
+    "Document Processing": { icon: "📄", cls: "c-text" },
+    "Generative AI": { icon: "✨", cls: "c-gen" },
+    "Fast Inference": { icon: "⚡", cls: "c-gen" }
 };
 
 fetch('sources.json').then(r => r.json()).then(d => { data = d; render(); });
@@ -255,14 +273,18 @@ function render() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = "";
     data.providers.forEach((p, idx) => {
-        const caps = (p.capabilities || []).slice(0,3).map(c => `<span class="cap-badge">${CAP_ICONS[c] || ''} ${c}</span>`).join('');
+        // Badges
+        const caps = (p.capabilities || []).slice(0,3).map(c => {
+            const conf = CAP_CONFIG[c] || { icon: '•', cls: 'c-other' };
+            return `<span class="cap-badge ${conf.cls}">${conf.icon} ${c}</span>`;
+        }).join('');
+        
         const models = p.models || [];
         const hist = p.history || {};
         const passedCount = Object.values(hist).filter(h => h.status === 'PASS').length;
-        const statusText = passedCount > 0 ? "Operational" : "Unknown"; 
         const statusBadge = passedCount > 0 
-            ? `<span style="color:#16a34a; font-weight:bold;">● ${statusText}</span>` 
-            : `<span style="color:#94a3b8;">● ${statusText}</span>`;
+            ? `<span style="color:#16a34a; font-weight:bold;">● Operational</span>` 
+            : `<span style="color:#94a3b8;">● Unknown</span>`;
 
         tbody.innerHTML += `
             <tr data-idx="${idx}">
@@ -298,7 +320,7 @@ function sortTable(n) {
     }
 }
 
-// --- FEATURES MODAL ---
+/* --- FEATURES --- */
 function openFeaturesModal(idx) {
     currentFeatureIdx = idx;
     const p = data.providers[idx];
@@ -310,12 +332,16 @@ function openFeaturesModal(idx) {
     document.getElementById('featEndpoint').href = p.endpoint;
     document.getElementById('featDocs').href = p.docs;
     
-    document.getElementById('featCapsContainer').innerHTML = (p.capabilities || []).map(c => 
-        `<span class="cap-badge" style="font-size:14px; padding:6px 10px;">${CAP_ICONS[c] || ''} ${c}</span>`
-    ).join('');
+    document.getElementById('featCapsContainer').innerHTML = (p.capabilities || []).map(c => {
+        const conf = CAP_CONFIG[c] || { icon: '•', cls: 'c-other' };
+        return `<span class="cap-badge ${conf.cls}" style="font-size:14px; padding:8px 12px;">${conf.icon} ${c}</span>`;
+    }).join('');
 
     document.getElementById('featModelCount').innerText = p.models.length;
-    document.getElementById('featModelList').innerHTML = p.models.map(m => `<span class="model-chip">${m}</span>`).join('');
+    document.getElementById('featModelList').innerHTML = p.models.map(m => 
+        `<span style="background:#f1f5f9; padding:6px 12px; border-radius:4px; border:1px solid #e2e8f0; font-size:13px; color:#475569;">${m}</span>`
+    ).join('');
+    
     document.getElementById('featuresModal').style.display = 'flex';
 }
 function navFeature(dir) {
@@ -325,19 +351,18 @@ function navFeature(dir) {
     openFeaturesModal(newIdx);
 }
 
-// --- TEST MODAL ---
+/* --- TEST --- */
 function openTest(idx) {
     currentIdx = idx;
     const p = data.providers[idx];
-    document.getElementById('modalTitle').innerText = p.name; 
+    document.getElementById('modalTitle').innerText = p.name;
     const sel = document.getElementById('modalSelector');
     sel.innerHTML = p.models.map(m => `<option>${m}</option>`).join('');
-    
     document.getElementById('userKey').value = "";
-    document.getElementById('modalOutput').innerText = "Waiting for input...";
-    document.getElementById('viewOutput').style.display = "block";
-    document.getElementById('viewCode').style.display = "none";
     
+    document.getElementById('modalOutput').innerText = "Waiting for test run...";
+    document.getElementById('viewOutput').style.display = "flex";
+    document.getElementById('viewCode').style.display = "none";
     document.getElementById('testModal').style.display = "flex";
 }
 
@@ -353,11 +378,11 @@ function toggleCode() {
     const code = document.getElementById('viewCode');
     if (code.style.display === 'none') {
         out.style.display = 'none';
-        code.style.display = 'block';
+        code.style.display = 'flex';
         generateCodeSnippet();
     } else {
         code.style.display = 'none';
-        out.style.display = 'block';
+        out.style.display = 'flex';
     }
 }
 
@@ -376,37 +401,43 @@ function generateCodeSnippet() {
     document.getElementById('codeSnippet').innerText = snippet;
 }
 
-async function runTest() {
-    document.getElementById('viewOutput').style.display = 'block';
+function copyCode() {
+    navigator.clipboard.writeText(document.getElementById('codeSnippet').innerText);
+    alert("Copied to clipboard!");
+}
+
+async function runPublicTest() {
+    document.getElementById('viewOutput').style.display = 'flex';
     document.getElementById('viewCode').style.display = 'none';
     const out = document.getElementById('modalOutput');
     const p = data.providers[currentIdx];
     const model = document.getElementById('modalSelector').value;
-    let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
-
-    out.innerText = "Processing...";
-
     const key = document.getElementById('userKey').value;
-    if(!key) return alert("Please enter your API Key.");
+    
+    if(!key) return alert("Please enter a key to test.");
+    out.innerText = "Sending request...";
     
     let url = p.endpoint.replace('{model}', model).replace('{key}', key);
     let headers = {'Content-Type': 'application/json'};
+    
     if(p.authType === 'bearer') headers['Authorization'] = `Bearer ${key}`;
     if(p.authType === 'header-custom') {
         headers['x-api-key'] = key;
         if(p.customHeaders) Object.assign(headers, p.customHeaders);
     }
     
+    let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
+
     try {
         const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body) });
         const json = await res.json();
         out.innerText = JSON.stringify(json, null, 2);
     } catch(e) {
-        out.innerText = "Network Error (Check Console/CORS): " + e.message;
+        out.innerText = "Error (CORS or Network): " + e.message;
     }
 }
 
-// Keyboard Navigation
+/* KEYBOARD SUPPORT */
 document.addEventListener('keydown', function(event) {
     if (document.getElementById('featuresModal').style.display === 'flex') {
         if (event.key === 'ArrowLeft') navFeature(-1);
@@ -414,6 +445,8 @@ document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') document.getElementById('featuresModal').style.display='none';
     }
     if (document.getElementById('testModal').style.display === 'flex') {
+        if (event.key === 'ArrowLeft') navTest(-1);
+        if (event.key === 'ArrowRight') navTest(1);
         if (event.key === 'Escape') document.getElementById('testModal').style.display='none';
     }
     if (document.getElementById('helpModal').style.display === 'flex') {
