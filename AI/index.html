@@ -25,21 +25,31 @@
         .fail { background: #fee2e2; color: #991b1b; } 
         .idle { background: #f1f5f9; color: #94a3b8; }
         
-        /* Table */
+        /* Table with Alternating Colors */
         .card { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; }
         th { background: #f8fafc; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; }
         tr:last-child td { border-bottom: none; }
         
+        /* Zebra Striping */
+        tbody tr:nth-child(even) { background-color: #f8fafc; }
+        tbody tr:hover { background-color: #f1f5f9; }
+        
         /* Modal */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; width: 800px; max-width: 90%; padding: 25px; border-radius: 10px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 5px; }
-        .modal-header h3 { margin: 0; font-size: 18px; color: #0f172a; }
+        .modal-content { background: white; width: 800px; max-width: 90%; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); max-height: 90vh; }
         
-        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: monospace; font-size: 12px; margin: 0; height: 180px; }
-        select, input[type="text"] { padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 5px; }
+        /* Bigger Modal Title */
+        .modal-header h3 { margin: 0; font-size: 22px; color: #0f172a; font-weight: 800; }
+        
+        /* Bigger Label Text */
+        .modal-label { font-size: 14px; font-weight: 700; color: #475569; display: block; margin-bottom: 8px; }
+
+        /* Taller Pre Blocks */
+        pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 13px; margin: 0; height: 250px; line-height: 1.5; }
+        select, input[type="text"] { padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; }
         
         /* Animation */
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -52,7 +62,7 @@
     <h1>AI Pulse Admin</h1>
     <div style="display:flex; gap:10px; align-items:center;">
         <span id="saveStatus" style="font-size:12px; color:#64748b; font-weight:500;"></span>
-        <button class="btn btn-save" onclick="saveToServer()">💾 Save Changes (History & New Models)</button>
+        <button class="btn btn-save" onclick="saveToServer()">💾 Save Changes</button>
     </div>
 </div>
 
@@ -76,12 +86,12 @@
 <div id="testModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="modalTitle">Test Model</h3>
-            <button class="btn" style="padding:4px 10px; font-size:14px;" onclick="closeModal()">Close</button>
+            <h3 id="modalTitle">Test Provider</h3>
+            <button class="btn" style="padding:6px 12px; font-size:14px;" onclick="closeModal()">Close</button>
         </div>
 
-        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom: 5px;">Select Existing or Add New:</label>
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <label class="modal-label">Select Existing or Add New Model:</label>
             <div style="display:flex; gap:10px; margin-bottom: 10px;">
                 <select id="modalSelector" style="flex:1;" onchange="syncInput()"></select>
             </div>
@@ -91,9 +101,9 @@
             </div>
         </div>
         
-        <div style="display:flex; gap:10px; align-items:center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
-            <button class="btn btn-primary" onclick="runSecureTest()">▶ Run Test</button>
-            <button class="btn btn-code" onclick="toggleCodeView()"> { } Show Code</button>
+        <div style="display:flex; gap:10px; align-items:center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
+            <button class="btn btn-primary" style="padding: 10px 20px; font-size:14px;" onclick="runSecureTest()">▶ Run Test</button>
+            <button class="btn btn-code" style="padding: 10px 20px; font-size:14px;" onclick="toggleCodeView()"> { } Show Code</button>
             
             <div id="modalActions" style="display:none; gap:10px; margin-left: auto;">
                 <button class="btn" style="color:#16a34a; border-color:#16a34a;" onclick="markStatus('PASS')">✔ Mark Pass</button>
@@ -101,13 +111,13 @@
             </div>
         </div>
         
-        <div id="viewOutput" class="fade-in" style="display:flex; flex-direction:column; gap:5px;">
-             <label style="font-size:12px; font-weight:600; color:#64748b;">Response Output:</label>
+        <div id="viewOutput" class="fade-in" style="display:flex; flex-direction:column;">
+             <label class="modal-label">Response Output:</label>
              <pre id="modalOutput">Ready...</pre>
         </div>
 
-        <div id="viewCode" class="fade-in" style="display:none; flex-direction:column; gap:5px;">
-            <label style="font-size:12px; font-weight:600; color:#64748b;">Client-Side Integration Code (Direct API):</label>
+        <div id="viewCode" class="fade-in" style="display:none; flex-direction:column;">
+            <label class="modal-label">Client-Side Integration Code (Direct API):</label>
             <pre id="codeSnippet" style="background: #0f172a; color: #a5b4fc;"></pre>
        </div>
 
@@ -221,10 +231,10 @@
             dl.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join('');
             dl.value = val;
             
-            // Re-render Main Table (to show new count)
+            // Re-render Main Table
             render();
             
-            alert(`Added ${val}. Click 'Save Changes' later to keep this permanently.`);
+            alert(`Added ${val}. Click 'Save Changes' to keep permanently.`);
         } else {
             alert("Model already exists.");
             document.getElementById('modalSelector').value = val;
@@ -253,7 +263,7 @@
         const p = data.providers[currentIdx];
         const model = document.getElementById('modalNewInput').value;
         
-        // We use "YOUR_API_KEY" because the browser doesn't know the real key (it's in config.php)
+        // We use "YOUR_API_KEY" as a placeholder
         const url = p.endpoint.replace('{model}', model).replace('{key}', 'YOUR_API_KEY');
         
         let headers = { "Content-Type": "application/json" };
