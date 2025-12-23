@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pulse v8 | QA Edition</title>
+    <title>AI Pulse v9 | Dynamic Manager</title>
     <style>
         :root {
             --bg: #f8fafc;
@@ -53,7 +53,6 @@
         td { padding: 14px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
         
-        /* Specific Alignments */
         .text-right { text-align: right; }
         .text-center { text-align: center; }
 
@@ -70,22 +69,25 @@
 
         /* --- Modal --- */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
-        .modal { background: white; width: 750px; max-width: 90%; padding: 25px; border-radius: 12px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .modal { background: white; width: 800px; max-width: 90%; padding: 25px; border-radius: 12px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         
         pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 13px; font-family: monospace; margin: 0; }
         .alert-box { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; display: none; }
         
-        /* Stats Styling */
         .stat-pass { color: var(--success); font-weight: 700; }
         .stat-date { color: #64748b; font-size: 12px; }
+
+        /* Animation for appearance */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="header">
     <div style="display:flex; align-items:center; gap:10px;">
-        <h1>AI Pulse v8</h1>
-        <span style="font-size:11px; background:#e2e8f0; padding:2px 8px; border-radius:4px;">QA & Testing</span>
+        <h1>AI Pulse v9</h1>
+        <span style="font-size:11px; background:#e2e8f0; padding:2px 8px; border-radius:4px;">Dynamic Manager</span>
     </div>
     <div style="display:flex; gap:10px;">
         <input type="file" id="sourceFile" accept=".json" style="display:none" onchange="loadExternalSource(this)">
@@ -125,26 +127,31 @@
             <button class="btn" onclick="document.getElementById('codeModal').style.display='none'">Close</button>
         </div>
         
-        <div style="background:#f1f5f9; padding:10px; border-radius:6px; display:flex; align-items:center; justify-content:space-between;">
-            <div>
-                <strong>Current Model:</strong> <span id="modalModelID" style="font-family:monospace;">--</span>
+        <div style="background:#f1f5f9; padding:15px; border-radius:8px; display:flex; gap:10px; flex-direction: column;">
+            <label style="font-size:12px; font-weight:600; color:#64748b;">Select or Type Model ID:</label>
+            <div style="display:flex; gap:10px;">
+                <input list="modalModelList" id="modalModelInput" class="input-combo" placeholder="Type model ID..." onchange="updateSnippetFromInput()">
+                <datalist id="modalModelList"></datalist>
+                <button class="btn btn-primary" onclick="addNewModelFromModal()">ADD</button>
             </div>
-            <div style="display:flex; gap:5px;">
-                <button class="btn btn-success" onclick="markModelStatus('PASS')">✔ Mark Pass</button>
-                <button class="btn btn-danger" onclick="markModelStatus('FAIL')">✖ Mark Fail</button>
-            </div>
+            <div style="font-size:11px; color:#64748b;">Click ADD to save new model IDs to your local list.</div>
         </div>
 
-        <div style="display:flex; gap:10px; margin-top:5px; align-items: center;">
-            <button class="btn btn-primary" onclick="runSingleTestFromModal()">▶ Run Live Request</button>
-            <span id="modalStatus" style="font-weight:bold; font-size:13px;"></span>
+        <div style="display:flex; gap:15px; align-items: center; margin-top:5px;">
+            <button class="btn btn-primary" style="padding: 10px 20px;" onclick="runSingleTestFromModal()">▶ Run Live Request</button>
+            <span id="modalStatus" style="font-weight:bold; font-size:14px;"></span>
+        </div>
+
+        <div id="actionButtons" style="display:none; gap:10px; margin-top:0px;" class="fade-in">
+            <button class="btn btn-success" onclick="markModelStatus('PASS')">✔ Mark Pass</button>
+            <button class="btn btn-danger" onclick="markModelStatus('FAIL')">✖ Mark Fail</button>
         </div>
 
         <pre id="codeBlock"></pre>
         
         <div style="display:flex; flex-direction:column; gap:5px;">
              <label style="font-size:12px; font-weight:600; color:#64748b;">Live Response:</label>
-             <div style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0; height:150px; overflow-y:auto; font-family:monospace; font-size:12px;" id="modalOutput">Click 'Run Request' to see output...</div>
+             <div style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0; height:150px; overflow-y:auto; font-family:monospace; font-size:12px;" id="modalOutput">Click 'Run Live Request' to see output...</div>
         </div>
     </div>
 </div>
@@ -152,12 +159,15 @@
 <script>
     let providersData = [];
     
-    // STRUCTURE OF testHistory:
-    // { "openai": { "gpt-4o": { status: "PASS", date: "2025-12-23 10:00" } } }
-    let testHistory = JSON.parse(localStorage.getItem("ai_pulse_history_v8") || "{}");
-    
-    // User preference for selected model per provider
-    let savedSelection = JSON.parse(localStorage.getItem("ai_pulse_selection_v8") || "{}");
+    // STORAGE KEYS
+    const STORAGE_HISTORY = "ai_pulse_history_v9";
+    const STORAGE_SELECTION = "ai_pulse_selection_v9";
+    const STORAGE_CUSTOM = "ai_pulse_custom_models_v9";
+
+    // LOAD DATA
+    let testHistory = JSON.parse(localStorage.getItem(STORAGE_HISTORY) || "{}");
+    let savedSelection = JSON.parse(localStorage.getItem(STORAGE_SELECTION) || "{}");
+    let customModels = JSON.parse(localStorage.getItem(STORAGE_CUSTOM) || "{}");
     
     let currentModalIdx = -1;
 
@@ -201,23 +211,28 @@
             const pid = p.id;
             const history = testHistory[pid] || {};
             
-            // Calculate Stats
-            const totalModels = (p.models || []).length;
+            // Merge JSON models with Custom Models
+            const userModels = customModels[pid] || [];
+            const allModels = [...new Set([...(p.models || []), ...userModels])];
+            
+            // Store merged list back in provider object for easier access
+            p._allModels = allModels; 
+
+            // Stats
             const passingCount = Object.values(history).filter(h => h.status === 'PASS').length;
             
-            // Get most recent pass date
             let lastPassDate = "--";
             const passes = Object.values(history).filter(h => h.status === 'PASS').map(h => h.date).sort().reverse();
             if (passes.length > 0) lastPassDate = passes[0];
 
-            // Determine currently selected model
-            const currentModel = savedSelection[pid] || (p.models && p.models[0]) || "";
+            // Current Selection
+            const currentModel = savedSelection[pid] || allModels[0] || "";
 
-            // Build Datalist with Emoji Indicators
+            // Datalist
             const dataListId = `list-${idx}`;
-            const options = (p.models || []).map(m => {
+            const options = allModels.map(m => {
                 const status = history[m] ? history[m].status : "NEVER";
-                let icon = "⚪"; // Never tested
+                let icon = "⚪"; 
                 if (status === "PASS") icon = "✅";
                 if (status === "FAIL") icon = "❌";
                 return `<option value="${m}">${icon} ${m}</option>`;
@@ -237,7 +252,7 @@
                 <td><span id="status-${idx}" class="status-pill st-idle">Idle</span></td>
                 <td id="lat-${idx}" style="font-family:monospace;">--</td>
                 
-                <td class="text-right"><strong>${totalModels}</strong></td>
+                <td class="text-right"><strong>${allModels.length}</strong></td>
                 <td class="text-right"><span class="stat-pass">${passingCount}</span></td>
                 <td class="text-right"><span class="stat-date">${lastPassDate}</span></td>
                 
@@ -252,20 +267,43 @@
     // --- 3. STATE MANAGEMENT ---
     function saveSelection(pid, val) {
         savedSelection[pid] = val;
-        localStorage.setItem("ai_pulse_selection_v8", JSON.stringify(savedSelection));
-        // Refresh table to update emoji in current selection if needed (optional)
+        localStorage.setItem(STORAGE_SELECTION, JSON.stringify(savedSelection));
     }
 
     function recordTestResult(pid, model, status) {
         if (!testHistory[pid]) testHistory[pid] = {};
-        
         testHistory[pid][model] = {
             status: status,
             date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
         };
+        localStorage.setItem(STORAGE_HISTORY, JSON.stringify(testHistory));
+        loadProviders(providersData); // Refresh UI
+    }
+
+    function addNewModelFromModal() {
+        if(currentModalIdx === -1) return;
+        const p = providersData[currentModalIdx];
+        const newVal = document.getElementById("modalModelInput").value.trim();
         
-        localStorage.setItem("ai_pulse_history_v8", JSON.stringify(testHistory));
-        loadProviders(providersData); // Re-render table to update counts/emojis
+        if(!newVal) return alert("Please type a model ID.");
+        
+        // Save to Custom Models
+        if(!customModels[p.id]) customModels[p.id] = [];
+        if(!customModels[p.id].includes(newVal)) {
+            customModels[p.id].push(newVal);
+            localStorage.setItem(STORAGE_CUSTOM, JSON.stringify(customModels));
+            alert(`Added "${newVal}" to ${p.name}`);
+            
+            // Reload everything to reflect changes
+            loadProviders(providersData);
+            
+            // Update the modal's dropdown list immediately
+            openCodeModal(currentModalIdx); 
+            // Keep the value in input
+            document.getElementById("modalModelInput").value = newVal;
+        } else {
+            alert("Model already exists in list.");
+        }
     }
 
     // --- 4. SYSTEM CHECK ---
@@ -273,9 +311,7 @@
         const btn = document.querySelector('.btn-primary');
         const oldText = btn.innerText;
         btn.innerText = "⏳ Running...";
-        
         await Promise.all(providersData.map((_, idx) => runTest(idx)));
-        
         btn.innerText = oldText;
     }
 
@@ -289,7 +325,6 @@
         if(!model) return;
 
         statusEl.className = "status-pill st-load"; statusEl.innerText = "Testing";
-        
         const start = performance.now();
         try {
             const { url, headers, body } = buildRequest(p, model, key);
@@ -319,26 +354,44 @@
             if (key) headers["x-api-key"] = key;
             if (p.customHeaders) Object.assign(headers, p.customHeaders);
         }
-        let bodyStr = JSON.stringify(p.testBody).replace(/"{model}"/g, `"${model}"`); 
-        // Note: Simple replace. For robust replace, we parse/stringify properly below if needed.
-        // But simply replacing "{model}" inside stringify works for simple cases.
-        // Actually, let's do safe replace:
-        let safeBody = JSON.parse(JSON.stringify(p.testBody));
-        // Recursive replacer could be better, but we assume flat structure mostly or top level
-        // Standard hack for the specific structure:
         let bStr = JSON.stringify(p.testBody).replace("{model}", model);
         return { url, headers, body: JSON.parse(bStr) };
     }
 
-    // --- 6. MODAL & MANUAL MARKING ---
+    // --- 6. MODAL & INTERACTION ---
     function openCodeModal(idx) {
         currentModalIdx = idx;
         const p = providersData[idx];
-        const model = document.getElementById(`model-${idx}`).value;
         
-        document.getElementById("modalModelID").innerText = model;
-        document.getElementById("modalModelID").title = p.id; // Store provider ID in title for easier access
+        // Use the model currently selected in the main table as default
+        const currentSelection = document.getElementById(`model-${idx}`).value;
         
+        // 1. Reset UI
+        document.getElementById("modalOutput").innerText = "Click 'Run Live Request' to see output...";
+        document.getElementById("modalStatus").innerText = "";
+        document.getElementById("actionButtons").style.display = "none"; // HIDE BUTTONS INITIALLY
+        
+        // 2. Populate Dropdown
+        const dataList = document.getElementById("modalModelList");
+        dataList.innerHTML = "";
+        p._allModels.forEach(m => {
+            const opt = document.createElement("option");
+            opt.value = m;
+            dataList.appendChild(opt);
+        });
+        
+        document.getElementById("modalModelInput").value = currentSelection;
+        
+        // 3. Generate Code Snippet
+        updateSnippetFromInput();
+
+        document.getElementById("codeModal").style.display = "flex";
+    }
+
+    function updateSnippetFromInput() {
+        if(currentModalIdx === -1) return;
+        const p = providersData[currentModalIdx];
+        const model = document.getElementById("modalModelInput").value || "{model}";
         const { url, headers, body } = buildRequest(p, model, "YOUR_API_KEY");
 
         let code = `// ${p.name} - ${model}\n`;
@@ -347,34 +400,38 @@
         code += `const body = ${JSON.stringify(body, null, 2)};\n\n`;
         code += `fetch(url, { method: "POST", headers, body: JSON.stringify(body) })\n`;
         code += `.then(res => res.json()).then(console.log);`;
-
+        
         document.getElementById("codeBlock").innerText = code;
-        document.getElementById("modalOutput").innerText = "Ready...";
-        document.getElementById("modalStatus").innerText = "";
-        document.getElementById("codeModal").style.display = "flex";
     }
 
     function markModelStatus(status) {
         if (currentModalIdx === -1) return;
         const p = providersData[currentModalIdx];
-        const model = document.getElementById("modalModelID").innerText; // Get from modal header label
+        const model = document.getElementById("modalModelInput").value;
         
         recordTestResult(p.id, model, status);
         
-        // Visual feedback
-        const btn = status === 'PASS' ? "✔ Passed" : "✖ Failed";
+        // Feedback
+        const color = status === 'PASS' ? 'green' : 'red';
         document.getElementById("modalStatus").innerText = `Marked as ${status}`;
-        document.getElementById("modalStatus").style.color = status === 'PASS' ? 'green' : 'red';
+        document.getElementById("modalStatus").style.color = color;
     }
 
     async function runSingleTestFromModal() {
         if (currentModalIdx === -1) return;
+        
+        // Reset state
+        document.getElementById("actionButtons").style.display = "none";
+        document.getElementById("modalStatus").innerText = "";
+        
         const p = providersData[currentModalIdx];
-        const model = document.getElementById(`model-${currentModalIdx}`).value;
+        const model = document.getElementById("modalModelInput").value;
+        if(!model) return alert("Please select a model");
+        
         const key = p.key || "";
         const out = document.getElementById("modalOutput");
 
-        out.innerText = "⏳ Sending...";
+        out.innerText = "⏳ Sending request...";
         try {
             const { url, headers, body } = buildRequest(p, model, key);
             const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
@@ -383,15 +440,18 @@
             out.innerText = JSON.stringify(json, null, 2);
             const isSuccess = res.ok;
             
-            document.getElementById("modalStatus").innerText = isSuccess ? "✅ Success" : "❌ Error";
+            document.getElementById("modalStatus").innerText = isSuccess ? "✅ Response Received" : "❌ Error Response";
             document.getElementById("modalStatus").style.color = isSuccess ? "green" : "red";
             
-            // Auto-mark pass/fail if run from modal
-            markModelStatus(isSuccess ? "PASS" : "FAIL");
+            // SHOW BUTTONS NOW
+            document.getElementById("actionButtons").style.display = "flex";
 
         } catch (e) {
             out.innerText = "Error: " + e.message;
-            markModelStatus("FAIL");
+            document.getElementById("modalStatus").innerText = "Network Failed";
+            document.getElementById("modalStatus").style.color = "red";
+            // Even on fail, user might want to mark fail explicitly
+            document.getElementById("actionButtons").style.display = "flex";
         }
     }
 </script>
