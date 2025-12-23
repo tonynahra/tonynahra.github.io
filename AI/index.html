@@ -2,476 +2,152 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI Pulse | Admin Panel</title>
+    <title>AI Pulse Dashboard</title>
     <style>
-        :root { --bg:#f1f5f9; --surface:#ffffff; --text:#334155; --primary:#2563eb; --success:#16a34a; --danger:#dc2626; --border:#cbd5e1; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 30px; }
+        :root { --bg:#f8fafc; --surface:#ffffff; --text:#334155; --primary:#2563eb; --border:#e2e8f0; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { margin: 0; color: #1e293b; }
         
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .header h1 { margin: 0; font-size: 20px; color: #1e293b; }
-        
-        /* Buttons */
-        .btn { padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; background: white; font-size: 13px; font-weight: 500; transition: 0.1s; display: inline-flex; align-items: center; gap: 6px; }
-        .btn:hover { background: #f8fafc; border-color: #94a3b8; }
-        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); } .btn-primary:hover { background: #1d4ed8; }
-        .btn-save { background: #0f172a; color: white; border-color: #0f172a; } .btn-save:hover { background: #334155; }
-        .btn-code { background: #334155; color: white; border-color: #334155; } .btn-code:hover { background: #475569; }
-        .btn-link { border: none; background: none; color: var(--primary); text-decoration: underline; padding: 0; font-size: 12px; }
-        
-        /* Modal Controls */
-        .modal-controls { display: flex; align-items: center; gap: 10px; }
-        .btn-nav { border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; transition: 0.2s; }
-        .btn-nav:hover { background: #e2e8f0; color: #334155; }
-        .btn-close-x { border: none; background: transparent; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
-        .btn-close-x:hover { color: #dc2626; }
-        
-        .btn-auth { background: #f59e0b; color: white; border-color: #f59e0b; }
-
-        /* Pills & Badges */
-        .status-pill { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .pass { background: #dcfce7; color: #166534; } .fail { background: #fee2e2; color: #991b1b; } .idle { background: #f1f5f9; color: #94a3b8; }
-        
-        .cap-badge { display: inline-flex; align-items: center; padding: 6px 10px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 13px; font-weight: 600; margin: 3px; }
-        .cap-icons { font-size: 16px; cursor: pointer; display: flex; gap: 4px; }
-        
-        /* Table */
-        .card { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background: #f8fafc; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; }
-        tr:last-child td { border-bottom: none; }
-        tbody tr:nth-child(even) { background-color: #f8fafc; }
-        tbody tr:hover { background-color: #f1f5f9; }
-
-        /* Modals Generic */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; }
+        th, td { padding: 16px 24px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        th { background: #f1f5f9; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; }
         
-        /* FIXED POSITIONING: 
-           Using align-items: flex-start and padding-top ensures the modal 
-           stays at the top and doesn't jump around when content height changes.
-        */
-        .modal-aligner { display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; min-height: 100%; width: 100%; }
-
-        .modal-content { background: white; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); margin-bottom: 50px; }
+        /* Fixed Height for Features to ensure alignment */
+        .feat-cell { height: 40px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        .cap-badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
         
-        /* Specific Sizes */
-        .size-large { width: 1100px; max-width: 95%; padding: 35px; } /* Increased Size */
-        .size-medium { width: 800px; max-width: 95%; padding: 30px; }
+        .btn { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 500; transition: 0.1s; }
+        .btn:hover { background: #f8fafc; border-color: #94a3b8; }
+        .btn-nav { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; }
 
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
-        .modal-header h3 { margin: 0; font-size: 26px; color: #0f172a; font-weight: 800; }
-        
-        /* Provider Info Box (Summary) */
-        .provider-summary { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 15px; display: flex; gap: 30px; font-size: 13px; color: #0c4a6e; }
-        .summary-item strong { display: block; font-size: 11px; text-transform: uppercase; color: #0369a1; margin-bottom: 4px; }
-
-        /* Feature Modal Specifics */
-        /* GRID: 60% Left, 40% Right */
-        .features-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 25px; }
-        
-        .feature-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; }
-        .feature-box h4 { margin: 0 0 20px 0; color: #334155; font-size: 16px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; letter-spacing: 0.05em; }
-        
-        /* Bigger Fonts for Features */
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
-        .info-label { color: #64748b; font-weight: 500; }
-        .info-val { font-weight: 600; color: #334155; text-align: right; }
-        
-        .model-chip { display: inline-block; background: #f1f5f9; padding: 6px 10px; border-radius: 4px; font-size: 14px; margin: 3px; color: #475569; border: 1px solid #e2e8f0; }
-
-        /* Clickable Link Style */
-        .endpoint-link { color: #2563eb; text-decoration: none; word-break: break-all; font-family: monospace; font-size: 13px; }
-        .endpoint-link:hover { text-decoration: underline; }
-
-        pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 14px; margin: 0; height: 300px; line-height: 1.5; }
-        select, input[type="text"] { padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; }
-        .fade-in { animation: fadeIn 0.2s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: white; width: 700px; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>AI Pulse Admin</h1>
-    <div style="display:flex; gap:10px; align-items:center;">
-        <span id="saveStatus" style="font-size:12px; color:#64748b; font-weight:500;"></span>
-        <button class="btn btn-save" onclick="saveToServer()">💾 Save Changes</button>
-    </div>
+    <h1>AI Pulse Dashboard</h1>
+    <div style="font-size:14px; color:#64748b;">Public Status Monitor</div>
 </div>
 
 <div class="card">
     <table>
-        <thead>
-            <tr>
-                <th width="15%">Provider</th>
-                <th width="15%">Features</th>
-                <th width="25%">Model Selector</th>
-                <th width="10%">Status</th>
-                <th width="10%">Passing</th>
-                <th width="10%">Last Pass</th>
-                <th width="5%">Action</th>
-                <th width="10%">Ref</th>
-            </tr>
-        </thead>
+        <thead><tr><th>Provider</th><th>Features</th><th>Available Models</th><th>Status</th><th>Action</th></tr></thead>
         <tbody id="tableBody"></tbody>
     </table>
 </div>
 
-<div id="featuresModal" class="modal">
-    <div class="modal-aligner">
-        <div class="modal-content size-large">
-            <div class="modal-header">
-                <h3 id="featModalTitle">Provider Features</h3>
-                <div class="modal-controls">
-                    <button class="btn-nav" onclick="navFeature(-1)" title="Previous (Left Arrow)">‹</button>
-                    <button class="btn-nav" onclick="navFeature(1)" title="Next (Right Arrow)">›</button>
-                    <button class="btn-close-x" onclick="closeModal('featuresModal')">×</button>
-                </div>
-            </div>
-            
-            <div class="features-grid">
-                <div class="feature-box" style="background:#f8fafc;">
-                    <h4>Configuration & Limits</h4>
-                    <div class="info-row"><span class="info-label">Cost Tier</span> <span class="info-val" id="featCost">--</span></div>
-                    <div class="info-row"><span class="info-label">Rate Limits</span> <span class="info-val" id="featLimits">--</span></div>
-                    <div class="info-row"><span class="info-label">Auth Type</span> <span class="info-val" id="featAuth">--</span></div>
-                    
-                    <div style="margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
-                        <span class="info-label" style="display:block; margin-bottom:4px;">Endpoint URL</span>
-                        <a href="#" target="_blank" id="featEndpoint" class="endpoint-link">--</a>
-                    </div>
-                    
-                    <div style="margin-top:25px; display:flex;">
-                        <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; padding: 12px; font-size:15px;">📖 Open Official Docs</a>
-                    </div>
-                </div>
-
-                <div class="feature-box">
-                    <h4>Capabilities</h4>
-                    <div id="featCapsContainer" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
-                </div>
-            </div>
-
-            <div class="feature-box">
-                <h4>Available Models (<span id="featModelCount">0</span>)</h4>
-                <div id="featModelList" style="max-height: 250px; overflow-y: auto;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div id="testModal" class="modal">
-    <div class="modal-aligner">
-        <div class="modal-content size-medium">
-            <div class="modal-header">
-                <h3 id="testModalTitle">Test Provider</h3>
-                <button class="btn-close-x" onclick="closeModal('testModal')">×</button>
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 id="modalTitle" style="margin:0;">Test Provider</h3>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-nav" onclick="navTest(-1)">‹</button>
+                <button class="btn-nav" onclick="navTest(1)">›</button>
+                <button class="btn" onclick="document.getElementById('testModal').style.display='none'">×</button>
             </div>
-
-            <div class="provider-summary" id="testSummary">
-                <div class="summary-item"><strong>Cost</strong> <span id="tsCost">--</span></div>
-                <div class="summary-item"><strong>Limits</strong> <span id="tsLimits">--</span></div>
-                <div class="summary-item" style="flex:1;"><strong>Capabilities</strong> <span id="tsCaps">--</span></div>
-            </div>
-
-            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <label style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:5px; display:block;">Select or Add Model:</label>
-                <div style="display:flex; gap:10px; margin-bottom: 10px;">
-                    <select id="modalSelector" style="flex:1;" onchange="syncInput()"></select>
-                    <button id="btnAuth" class="btn btn-auth" onclick="requestAuth()">🔑 Insert Key</button>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="modalNewInput" placeholder="Type new model ID..." style="flex:1; font-family:monospace;">
-                    <button class="btn" onclick="addNewModel()">+ Add & Select</button>
-                </div>
-            </div>
-            
-            <div style="display:flex; gap:10px; align-items:center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
-                <button class="btn btn-primary" style="padding: 10px 20px; font-size:14px;" onclick="runSecureTest()">▶ Run Test</button>
-                <button class="btn btn-code" style="padding: 10px 20px; font-size:14px;" onclick="toggleCodeView()"> { } Show Code</button>
-                
-                <div id="modalActions" style="display:none; gap:10px; margin-left: auto;" class="fade-in">
-                    <button class="btn" style="color:#16a34a; border-color:#16a34a;" onclick="markStatus('PASS')">✔ Mark Pass</button>
-                    <button class="btn" style="color:#dc2626; border-color:#dc2626;" onclick="markStatus('FAIL')">✖ Mark Fail</button>
-                </div>
-                
-                 <div id="copyAction" style="display:none; margin-left: auto;" class="fade-in">
-                    <button class="btn" onclick="copyCode()">📋 Copy Code</button>
-                </div>
-            </div>
-            
-            <div id="viewOutput" class="fade-in" style="display:flex; flex-direction:column;">
-                 <label style="font-size:14px; font-weight:700; color:#334155; margin-bottom:5px;">Response Output:</label>
-                 <pre id="modalOutput">Ready...</pre>
-            </div>
-
-            <div id="viewCode" class="fade-in" style="display:none; flex-direction:column;">
-                <label style="font-size:14px; font-weight:700; color:#334155; margin-bottom:5px;">Integration Code:</label>
-                <pre id="codeSnippet" style="background: #0f172a; color: #a5b4fc;"></pre>
-           </div>
         </div>
+        
+        <p style="font-size:13px; color:#64748b;">This is a public dashboard. To test, please enter your own API key. It is not saved.</p>
+        
+        <div style="background:#f8fafc; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:10px;">
+            <label style="font-size:12px; font-weight:bold;">1. Select Model</label>
+            <select id="modalSelector" style="padding:8px; border-radius:4px; border:1px solid #cbd5e1;"></select>
+            
+            <label style="font-size:12px; font-weight:bold;">2. Enter Your API Key</label>
+            <input type="password" id="userKey" placeholder="sk-..." style="padding:8px; border-radius:4px; border:1px solid #cbd5e1;">
+            
+            <button class="btn" style="background:#2563eb; color:white; align-self:flex-start;" onclick="runPublicTest()">Run Test</button>
+        </div>
+        
+        <pre id="modalOutput" style="background:#1e293b; color:#e2e8f0; padding:15px; border-radius:8px; height:150px; overflow:auto; margin:0;">Waiting for input...</pre>
     </div>
 </div>
 
 <script>
-    let data = { providers: [] };
-    let currentIdx = -1;
-    let currentFeatureIdx = -1;
-    let sessionAuth = ""; 
+let data = { providers: [] };
+let currentIdx = -1;
 
-    const CAP_ICONS = {
-        "Text": "📝", "Vision": "👁️", "Image": "🖼️", "Video": "🎥", "Audio": "🎵",
-        "Music": "🎼", "Speech": "🗣️", "Embedding": "🧠", "Reasoning": "🤔",
-        "Mathematics": "🧮", "Coding": "💻", "Online Search": "🔍",
-        "Translation": "🌐", "Document Processing": "📄", "Generative AI": "✨"
-    };
+fetch('sources.json').then(r => r.json()).then(d => { data = d; render(); });
 
-    fetch('sources.json').then(r => r.json()).then(d => { data = d; render(); });
-
-    function render() {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = "";
+function render() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = "";
+    data.providers.forEach((p, idx) => {
+        // Feature Badges
+        const caps = (p.capabilities || []).slice(0,3).map(c => `<span class="cap-badge">${c}</span>`).join('');
+        const models = p.models || [];
         
-        data.providers.forEach((p, idx) => {
-            const history = p.history || {};
-            const models = p.models || [];
-            const selected = models[0] || ""; 
-            
-            let status = "IDLE";
-            if (selected && history[selected]) status = history[selected].status;
+        // Status Check
+        const hist = p.history || {};
+        const passedCount = Object.values(hist).filter(h => h.status === 'PASS').length;
+        const statusBadge = passedCount > 0 
+            ? `<span style="color:#16a34a; font-weight:bold;">● Operational</span>` 
+            : `<span style="color:#94a3b8;">● Unknown</span>`;
 
-            const passCount = Object.values(history).filter(h => h.status === 'PASS').length;
-            
-            let lastPassDate = "--";
-            const passes = Object.values(history).filter(h => h.status === 'PASS').map(h => h.date).sort().reverse();
-            if(passes.length > 0) lastPassDate = passes[0];
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${p.name}</strong></td>
+                <td><div class="feat-cell">${caps}</div></td>
+                <td><select style="padding:6px; border-radius:4px; border:1px solid #e2e8f0;">${models.map(m => `<option>${m}</option>`).join('')}</select></td>
+                <td>${statusBadge}</td>
+                <td><button class="btn" onclick="openTest(${idx})">Test</button></td>
+            </tr>
+        `;
+    });
+}
 
-            const caps = p.capabilities || [];
-            const capHtml = caps.slice(0, 3).map(c => CAP_ICONS[c] || '•').join(' ');
+function openTest(idx) {
+    currentIdx = idx;
+    const p = data.providers[idx];
+    document.getElementById('modalTitle').innerText = "Test " + p.name;
+    const sel = document.getElementById('modalSelector');
+    sel.innerHTML = p.models.map(m => `<option>${m}</option>`).join('');
+    document.getElementById('userKey').value = ""; // Clear key for security
+    document.getElementById('modalOutput').innerText = "Waiting for input...";
+    document.getElementById('testModal').style.display = "flex";
+}
 
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong style="cursor:pointer; color:#2563eb;" onclick="openFeaturesModal(${idx})">${p.name}</strong></td>
-                    <td title="Click for details" class="cap-icons" onclick="openFeaturesModal(${idx})">${capHtml} <span style="font-size:10px; color:#94a3b8;">+</span></td>
-                    <td>
-                        <select onchange="updateRowStatus(${idx}, this.value, this)">
-                            ${models.map(m => {
-                                const s = history[m] ? history[m].status : '';
-                                const icon = s === 'PASS' ? '✅ ' : (s === 'FAIL' ? '❌ ' : '');
-                                return `<option value="${m}" ${m===selected?'selected':''}>${icon}${m}</option>`;
-                            }).join('')}
-                        </select>
-                    </td>
-                    <td><span class="status-pill ${status.toLowerCase()}" id="status-pill-${idx}">${status}</span></td>
-                    <td><strong>${passCount}</strong> / ${models.length}</td>
-                    <td style="font-size:12px; color:#64748b;">${lastPassDate}</td>
-                    <td><button class="btn" onclick="openTestModal(${idx})">Test</button></td>
-                    <td><a href="${p.docs}" target="_blank" class="btn-link">Docs ↗</a></td>
-                </tr>
-            `;
-        });
-    }
+function navTest(dir) {
+    let newIdx = currentIdx + dir;
+    if(newIdx < 0) newIdx = data.providers.length - 1;
+    if(newIdx >= data.providers.length) newIdx = 0;
+    openTest(newIdx);
+}
 
-    function updateRowStatus(idx, model, selectEl) {
-        const history = data.providers[idx].history || {};
-        const status = (history[model] && history[model].status) ? history[model].status : "IDLE";
-        const pill = document.getElementById(`status-pill-${idx}`);
-        pill.className = `status-pill ${status.toLowerCase()}`;
-        pill.innerText = status;
-    }
-
-    // --- AUTH LOGIC ---
-    function requestAuth() {
-        const pass = prompt("Enter Password to enable live testing:");
-        if (pass === "MM") { sessionAuth = pass; updateAuthBtn(); } else { alert("Incorrect password."); }
+async function runPublicTest() {
+    const p = data.providers[currentIdx];
+    const model = document.getElementById('modalSelector').value;
+    const key = document.getElementById('userKey').value;
+    const out = document.getElementById('modalOutput');
+    
+    if(!key) return alert("Please enter a key to test.");
+    
+    out.innerText = "Sending request...";
+    
+    // Construct Direct Request (Client Side)
+    let url = p.endpoint.replace('{model}', model).replace('{key}', key);
+    let headers = {'Content-Type': 'application/json'};
+    
+    if(p.authType === 'bearer') headers['Authorization'] = `Bearer ${key}`;
+    if(p.authType === 'header-custom') {
+        headers['x-api-key'] = key;
+        if(p.customHeaders) Object.assign(headers, p.customHeaders);
     }
     
-    function updateAuthBtn() {
-         const btn = document.getElementById("btnAuth");
-         if(sessionAuth === "MM") {
-            btn.innerText = "🔓 Key Ready";
-            btn.style.backgroundColor = "#10b981"; btn.style.borderColor = "#10b981";
-        } else {
-            btn.innerText = "🔑 Insert Key";
-            btn.style.backgroundColor = "#f59e0b"; btn.style.borderColor = "#f59e0b";
-        }
+    let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
+
+    try {
+        const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body) });
+        const json = await res.json();
+        out.innerText = JSON.stringify(json, null, 2);
+    } catch(e) {
+        out.innerText = "Error (CORS or Network): " + e.message;
     }
-
-    // --- KEYBOARD LISTENERS ---
-    document.addEventListener('keydown', function(event) {
-        // Only active if features modal is showing
-        if (document.getElementById('featuresModal').style.display === 'block') {
-            if (event.key === 'ArrowLeft') navFeature(-1);
-            if (event.key === 'ArrowRight') navFeature(1);
-            if (event.key === 'Escape') closeModal('featuresModal');
-        }
-        // Close Test Modal on Escape
-        if (event.key === 'Escape' && document.getElementById('testModal').style.display === 'block') {
-            closeModal('testModal');
-        }
-    });
-
-    // --- FEATURES MODAL ---
-    function openFeaturesModal(idx) {
-        currentFeatureIdx = idx;
-        const p = data.providers[idx];
-        document.getElementById('featModalTitle').innerText = p.name + " Features";
-        
-        document.getElementById('featCost').innerText = p.cost || "Unknown";
-        document.getElementById('featLimits').innerText = p.limits || "Unknown";
-        document.getElementById('featAuth').innerText = p.authType;
-        
-        // Link logic
-        const el = document.getElementById('featEndpoint');
-        el.innerText = p.endpoint;
-        el.href = p.endpoint; // Basic link behavior, though POST endpoints often 404 in browser
-        
-        document.getElementById('featDocs').href = p.docs;
-        
-        const capsContainer = document.getElementById('featCapsContainer');
-        capsContainer.innerHTML = (p.capabilities || []).map(c => 
-            `<span class="cap-badge">${CAP_ICONS[c] || ''} ${c}</span>`
-        ).join('');
-
-        document.getElementById('featModelCount').innerText = p.models.length;
-        document.getElementById('featModelList').innerHTML = p.models.map(m => `<span class="model-chip">${m}</span>`).join('');
-
-        document.getElementById('featuresModal').style.display = 'block'; // Block used by modal-aligner logic
-    }
-
-    function navFeature(direction) {
-        let newIdx = currentFeatureIdx + direction;
-        if (newIdx < 0) newIdx = data.providers.length - 1;
-        if (newIdx >= data.providers.length) newIdx = 0;
-        openFeaturesModal(newIdx);
-    }
-
-    // --- TEST MODAL ---
-    function openTestModal(idx) {
-        currentIdx = idx;
-        const p = data.providers[idx];
-        document.getElementById('testModalTitle').innerText = `Test Provider: ${p.name}`;
-        document.getElementById('tsCost').innerText = p.cost || "Unknown";
-        document.getElementById('tsLimits').innerText = p.limits || "Unknown";
-        document.getElementById('tsCaps').innerText = (p.capabilities || []).join(", ");
-
-        const dl = document.getElementById('modalSelector');
-        dl.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join('');
-        syncInput();
-        updateAuthBtn();
-
-        document.getElementById('modalActions').style.display = "none";
-        document.getElementById('copyAction').style.display = "none";
-        document.getElementById('modalOutput').innerText = "Ready to test...";
-        document.getElementById('viewOutput').style.display = "flex";
-        document.getElementById('viewCode').style.display = "none";
-        
-        document.getElementById('testModal').style.display = 'block';
-    }
-
-    function syncInput() {
-        const val = document.getElementById('modalSelector').value;
-        document.getElementById('modalNewInput').value = val;
-    }
-
-    function addNewModel() {
-        const p = data.providers[currentIdx];
-        const val = document.getElementById('modalNewInput').value.trim();
-        if (!val) return alert("Please enter a model ID");
-        if (!p.models.includes(val)) {
-            p.models.unshift(val);
-            const dl = document.getElementById('modalSelector');
-            dl.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join('');
-            dl.value = val;
-            render();
-            alert(`Added ${val}.`);
-        } else {
-            alert("Model already exists.");
-            document.getElementById('modalSelector').value = val;
-        }
-    }
-
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-    function toggleCodeView() {
-        const output = document.getElementById('viewOutput');
-        const code = document.getElementById('viewCode');
-        const actions = document.getElementById('modalActions');
-        const copyBtn = document.getElementById('copyAction');
-        
-        if (code.style.display === 'none') {
-            output.style.display = 'none'; code.style.display = 'flex';
-            generateCodeSnippet();
-            actions.style.display = 'none'; copyBtn.style.display = 'flex';
-        } else {
-            code.style.display = 'none'; output.style.display = 'flex';
-            copyBtn.style.display = 'none';
-            if (document.getElementById('modalOutput').innerText !== "Ready to test...") actions.style.display = 'flex';
-        }
-    }
-
-    function generateCodeSnippet() {
-        const p = data.providers[currentIdx];
-        const model = document.getElementById('modalNewInput').value;
-        const url = p.endpoint.replace('{model}', model).replace('{key}', 'YOUR_API_KEY');
-        let headers = { "Content-Type": "application/json" };
-        if(p.authType === 'bearer') headers['Authorization'] = "Bearer YOUR_API_KEY";
-        if(p.authType === 'header-custom') {
-            headers['x-api-key'] = "YOUR_API_KEY";
-            if(p.customHeaders) Object.assign(headers, p.customHeaders);
-        }
-        let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
-        let snippet = `// API Call for ${p.name} (${model})\nconst url = "${url}";\nconst headers = ${JSON.stringify(headers, null, 2)};\nconst body = ${JSON.stringify(body, null, 2)};\n\nfetch(url, { method: "POST", headers, body: JSON.stringify(body) })\n.then(response => response.json())\n.then(data => console.log(data));`;
-        document.getElementById('codeSnippet').innerText = snippet;
-    }
-
-    function copyCode() {
-        navigator.clipboard.writeText(document.getElementById('codeSnippet').innerText);
-        alert("Code copied!");
-    }
-
-    async function runSecureTest() {
-        document.getElementById('viewOutput').style.display = 'flex';
-        document.getElementById('viewCode').style.display = 'none';
-        document.getElementById('copyAction').style.display = 'none';
-        const p = data.providers[currentIdx];
-        const model = document.getElementById('modalNewInput').value;
-        const output = document.getElementById('modalOutput');
-        
-        output.innerText = "Requesting via proxy...";
-        let bodyPayload = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
-
-        try {
-            const res = await fetch('proxy.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: sessionAuth, provider_id: p.id, model: model, body: bodyPayload })
-            });
-            const json = await res.json();
-            output.innerText = JSON.stringify(json, null, 2);
-            document.getElementById('modalActions').style.display = "flex";
-        } catch(e) {
-            output.innerText = "Error: " + e.message;
-            document.getElementById('modalActions').style.display = "flex";
-        }
-    }
-
-    function markStatus(status) {
-        const p = data.providers[currentIdx];
-        const model = document.getElementById('modalNewInput').value;
-        if(!p.history) p.history = {};
-        p.history[model] = { status: status, date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString() };
-        render(); closeModal('testModal');
-    }
-
-    async function saveToServer() {
-        const statusEl = document.getElementById('saveStatus');
-        statusEl.innerText = "Saving...";
-        try {
-            await fetch('save_data.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-            statusEl.innerText = "Saved ✔"; setTimeout(() => statusEl.innerText = "", 2000);
-        } catch(e) { statusEl.innerText = "Error"; alert("Failed: " + e.message); }
-    }
+}
 </script>
 </body>
 </html>
