@@ -16,6 +16,7 @@
         .btn:hover { background: #f8fafc; border-color: #94a3b8; }
         .btn-primary { background: var(--primary); color: white; border-color: var(--primary); } .btn-primary:hover { background: #1d4ed8; }
         .btn-save { background: #0f172a; color: white; border-color: #0f172a; } .btn-save:hover { background: #334155; }
+        .btn-code { background: #334155; color: white; border-color: #334155; } .btn-code:hover { background: #475569; }
         .btn-link { border: none; background: none; color: var(--primary); text-decoration: underline; padding: 0; font-size: 12px; }
         
         /* Status Pills */
@@ -33,13 +34,16 @@
         
         /* Modal */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; width: 750px; max-width: 90%; padding: 25px; border-radius: 10px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; }
+        .modal-content { background: white; width: 800px; max-width: 90%; padding: 25px; border-radius: 10px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 5px; }
         .modal-header h3 { margin: 0; font-size: 18px; color: #0f172a; }
-        .modal-footer { display: flex; justify-content: flex-end; padding-top: 15px; border-top: 1px solid #e2e8f0; }
         
-        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: monospace; font-size: 12px; margin: 0; height: 200px; }
-        select { padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100%; max-width: 300px; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: monospace; font-size: 12px; margin: 0; height: 180px; }
+        select, input[type="text"] { padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; }
+        
+        /* Animation */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -48,7 +52,7 @@
     <h1>AI Pulse Admin</h1>
     <div style="display:flex; gap:10px; align-items:center;">
         <span id="saveStatus" style="font-size:12px; color:#64748b; font-weight:500;"></span>
-        <button class="btn btn-save" onclick="saveToServer()">💾 Save Changes</button>
+        <button class="btn btn-save" onclick="saveToServer()">💾 Save Changes (History & New Models)</button>
     </div>
 </div>
 
@@ -73,32 +77,40 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 id="modalTitle">Test Model</h3>
-            <button class="btn" style="padding:4px 8px; font-size:16px; line-height:1;" onclick="closeModal()">×</button>
+            <button class="btn" style="padding:4px 10px; font-size:14px;" onclick="closeModal()">Close</button>
         </div>
 
-        <div style="display:flex; flex-direction:column; gap:8px;">
-            <label style="font-size:12px; font-weight:600; color:#64748b;">Select Model to Test:</label>
+        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom: 5px;">Select Existing or Add New:</label>
+            <div style="display:flex; gap:10px; margin-bottom: 10px;">
+                <select id="modalSelector" style="flex:1;" onchange="syncInput()"></select>
+            </div>
             <div style="display:flex; gap:10px;">
-                <select id="modalInput" style="flex:1;"></select>
+                <input type="text" id="modalNewInput" placeholder="Type new model ID..." style="flex:1; font-family:monospace;">
+                <button class="btn" onclick="addNewModel()">+ Add & Select</button>
             </div>
         </div>
         
-        <div style="display:flex; gap:10px; align-items:center;">
-            <button class="btn btn-primary" onclick="runSecureTest()">▶ Run Test via Proxy</button>
-            <div id="modalActions" style="display:none; gap:10px;">
+        <div style="display:flex; gap:10px; align-items:center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
+            <button class="btn btn-primary" onclick="runSecureTest()">▶ Run Test</button>
+            <button class="btn btn-code" onclick="toggleCodeView()"> { } Show Code</button>
+            
+            <div id="modalActions" style="display:none; gap:10px; margin-left: auto;">
                 <button class="btn" style="color:#16a34a; border-color:#16a34a;" onclick="markStatus('PASS')">✔ Mark Pass</button>
                 <button class="btn" style="color:#dc2626; border-color:#dc2626;" onclick="markStatus('FAIL')">✖ Mark Fail</button>
             </div>
         </div>
         
-        <div style="display:flex; flex-direction:column; gap:5px;">
+        <div id="viewOutput" class="fade-in" style="display:flex; flex-direction:column; gap:5px;">
              <label style="font-size:12px; font-weight:600; color:#64748b;">Response Output:</label>
              <pre id="modalOutput">Ready...</pre>
         </div>
 
-        <div class="modal-footer">
-            <button class="btn" onclick="closeModal()">Close Window</button>
-        </div>
+        <div id="viewCode" class="fade-in" style="display:none; flex-direction:column; gap:5px;">
+            <label style="font-size:12px; font-weight:600; color:#64748b;">Client-Side Integration Code (Direct API):</label>
+            <pre id="codeSnippet" style="background: #0f172a; color: #a5b4fc;"></pre>
+       </div>
+
     </div>
 </div>
 
@@ -117,17 +129,17 @@
             const history = p.history || {};
             const models = p.models || [];
             
-            // Default selection: first model
+            // Default selection
             const selected = models[0] || ""; 
             
-            // Status of selected model
+            // Status
             let status = "IDLE";
             if (selected && history[selected]) status = history[selected].status;
 
-            // Stats Logic: Count Passing
+            // Stats
             const passCount = Object.values(history).filter(h => h.status === 'PASS').length;
             
-            // Logic: Last Pass Date (of any model for this provider)
+            // Last Pass Date
             let lastPassDate = "--";
             const passes = Object.values(history)
                 .filter(h => h.status === 'PASS')
@@ -141,7 +153,6 @@
                     <td>
                         <select onchange="updateRowStatus(${idx}, this.value, this)">
                             ${models.map(m => {
-                                // Add checkmark to dropdown if passed
                                 const s = history[m] ? history[m].status : '';
                                 const icon = s === 'PASS' ? '✅ ' : (s === 'FAIL' ? '❌ ' : '');
                                 return `<option value="${m}" ${m===selected?'selected':''}>${icon}${m}</option>`;
@@ -152,14 +163,13 @@
                     <td><strong>${passCount}</strong> / ${models.length}</td>
                     <td style="font-size:12px; color:#64748b;">${lastPassDate}</td>
                     <td><button class="btn" onclick="openModal(${idx})">Test</button></td>
-                    <td><a href="${p.docs}" target="_blank" class="btn-link">Docs ↗</a></td>
+                    <td><a href="${p.docs}" target="_blank" class="btn-link">Latest Models ↗</a></td>
                 </tr>
             `;
         });
     }
 
     function updateRowStatus(idx, model, selectEl) {
-        // Just updates the visual status pill without re-rendering whole table
         const history = data.providers[idx].history || {};
         const status = (history[model] && history[model].status) ? history[model].status : "IDLE";
         const pill = document.getElementById(`status-pill-${idx}`);
@@ -167,35 +177,115 @@
         pill.innerText = status;
     }
 
+    // --- MODAL LOGIC ---
+
     function openModal(idx) {
         currentIdx = idx;
         const p = data.providers[idx];
         
-        // Set Title
         document.getElementById('modalTitle').innerText = `Test Provider: ${p.name}`;
         
-        // Fill Dropdown
-        const dl = document.getElementById('modalInput');
+        // Populate Dropdown
+        const dl = document.getElementById('modalSelector');
         dl.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join('');
         
-        // Reset State
+        // Sync Text Input
+        syncInput();
+
+        // Reset Views
         document.getElementById('modalActions').style.display = "none";
         document.getElementById('modalOutput').innerText = "Ready to test...";
+        document.getElementById('viewOutput').style.display = "flex";
+        document.getElementById('viewCode').style.display = "none";
+        
         document.getElementById('testModal').style.display = "flex";
+    }
+
+    function syncInput() {
+        const val = document.getElementById('modalSelector').value;
+        document.getElementById('modalNewInput').value = val;
+    }
+
+    function addNewModel() {
+        const p = data.providers[currentIdx];
+        const val = document.getElementById('modalNewInput').value.trim();
+        
+        if (!val) return alert("Please enter a model ID");
+        
+        if (!p.models.includes(val)) {
+            // Add to local data
+            p.models.unshift(val); // Add to top
+            
+            // Re-render Modal Dropdown
+            const dl = document.getElementById('modalSelector');
+            dl.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join('');
+            dl.value = val;
+            
+            // Re-render Main Table (to show new count)
+            render();
+            
+            alert(`Added ${val}. Click 'Save Changes' later to keep this permanently.`);
+        } else {
+            alert("Model already exists.");
+            document.getElementById('modalSelector').value = val;
+        }
     }
 
     function closeModal() {
         document.getElementById('testModal').style.display = 'none';
     }
 
-    async function runSecureTest() {
+    function toggleCodeView() {
+        const output = document.getElementById('viewOutput');
+        const code = document.getElementById('viewCode');
+        
+        if (code.style.display === 'none') {
+            output.style.display = 'none';
+            code.style.display = 'flex';
+            generateCodeSnippet();
+        } else {
+            code.style.display = 'none';
+            output.style.display = 'flex';
+        }
+    }
+
+    function generateCodeSnippet() {
         const p = data.providers[currentIdx];
-        const model = document.getElementById('modalInput').value;
+        const model = document.getElementById('modalNewInput').value;
+        
+        // We use "YOUR_API_KEY" because the browser doesn't know the real key (it's in config.php)
+        const url = p.endpoint.replace('{model}', model).replace('{key}', 'YOUR_API_KEY');
+        
+        let headers = { "Content-Type": "application/json" };
+        if(p.authType === 'bearer') headers['Authorization'] = "Bearer YOUR_API_KEY";
+        if(p.authType === 'header-custom') {
+            headers['x-api-key'] = "YOUR_API_KEY";
+            if(p.customHeaders) Object.assign(headers, p.customHeaders);
+        }
+        
+        let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
+
+        let snippet = `// Direct API Call for ${p.name} (${model})\n`;
+        snippet += `const url = "${url}";\n`;
+        snippet += `const headers = ${JSON.stringify(headers, null, 2)};\n`;
+        snippet += `const body = ${JSON.stringify(body, null, 2)};\n\n`;
+        snippet += `fetch(url, {\n  method: "POST",\n  headers: headers,\n  body: JSON.stringify(body)\n})\n`;
+        snippet += `.then(response => response.json())\n.then(data => console.log(data));`;
+        
+        document.getElementById('codeSnippet').innerText = snippet;
+    }
+
+    async function runSecureTest() {
+        // Ensure we are viewing output, not code
+        document.getElementById('viewOutput').style.display = 'flex';
+        document.getElementById('viewCode').style.display = 'none';
+
+        const p = data.providers[currentIdx];
+        const model = document.getElementById('modalNewInput').value;
         const output = document.getElementById('modalOutput');
         
         output.innerText = "Requesting via proxy...";
         
-        // Prepare payload (Client-side replacer)
         let bodyPayload = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
 
         try {
@@ -219,7 +309,7 @@
 
     function markStatus(status) {
         const p = data.providers[currentIdx];
-        const model = document.getElementById('modalInput').value;
+        const model = document.getElementById('modalNewInput').value;
         if(!p.history) p.history = {};
         
         p.history[model] = { 
@@ -227,7 +317,6 @@
             date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString() 
         };
         
-        // Refresh entire table to update counts and pills
         render(); 
         closeModal();
     }
