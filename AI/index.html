@@ -18,14 +18,16 @@
         .btn-save { background: #0f172a; color: white; border-color: #0f172a; } .btn-save:hover { background: #334155; }
         .btn-code { background: #334155; color: white; border-color: #334155; } .btn-code:hover { background: #475569; }
         .btn-link { border: none; background: none; color: var(--primary); text-decoration: underline; padding: 0; font-size: 12px; }
-        
+        .btn-close-x { border: none; background: transparent; font-size: 24px; color: #64748b; cursor: pointer; line-height: 1; padding: 0; }
+        .btn-close-x:hover { color: #dc2626; }
+
         /* Status Pills */
         .status-pill { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
         .pass { background: #dcfce7; color: #166534; } 
         .fail { background: #fee2e2; color: #991b1b; } 
         .idle { background: #f1f5f9; color: #94a3b8; }
         
-        /* Table with Alternating Colors */
+        /* Table */
         .card { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; }
@@ -35,20 +37,17 @@
         /* Zebra Striping */
         tbody tr:nth-child(even) { background-color: #f8fafc; }
         tbody tr:hover { background-color: #f1f5f9; }
-        
+
         /* Modal */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; width: 800px; max-width: 90%; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); max-height: 90vh; }
+        .modal-content { background: white; width: 900px; max-width: 95%; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); max-height: 95vh; }
         
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 5px; }
-        /* Bigger Modal Title */
-        .modal-header h3 { margin: 0; font-size: 22px; color: #0f172a; font-weight: 800; }
+        .modal-header h3 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; }
         
-        /* Bigger Label Text */
-        .modal-label { font-size: 14px; font-weight: 700; color: #475569; display: block; margin-bottom: 8px; }
+        .modal-label { font-size: 15px; font-weight: 700; color: #334155; display: block; margin-bottom: 8px; }
 
-        /* Taller Pre Blocks */
-        pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 13px; margin: 0; height: 250px; line-height: 1.5; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 14px; margin: 0; height: 300px; line-height: 1.5; }
         select, input[type="text"] { padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; }
         
         /* Animation */
@@ -87,7 +86,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 id="modalTitle">Test Provider</h3>
-            <button class="btn" style="padding:6px 12px; font-size:14px;" onclick="closeModal()">Close</button>
+            <button class="btn-close-x" onclick="closeModal()">×</button>
         </div>
 
         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
@@ -142,7 +141,7 @@
             // Default selection
             const selected = models[0] || ""; 
             
-            // Status
+            // Status of selected
             let status = "IDLE";
             if (selected && history[selected]) status = history[selected].status;
 
@@ -263,7 +262,7 @@
         const p = data.providers[currentIdx];
         const model = document.getElementById('modalNewInput').value;
         
-        // We use "YOUR_API_KEY" as a placeholder
+        // We use "YOUR_API_KEY" because the browser doesn't know the real key (it's in config.php)
         const url = p.endpoint.replace('{model}', model).replace('{key}', 'YOUR_API_KEY');
         
         let headers = { "Content-Type": "application/json" };
