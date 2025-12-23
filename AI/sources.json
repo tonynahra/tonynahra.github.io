@@ -3,97 +3,205 @@
     {
       "id": "openai",
       "name": "OpenAI",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.openai.com/v1/chat/completions",
       "docs": "https://platform.openai.com/docs/models",
       "models": [
-        "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4", "o1-preview", "o1-mini"
+        "gpt-4o",
+        "gpt-4o-2024-08-06",
+        "gpt-4o-mini",
+        "chatgpt-4o-latest",
+        "gpt-4o-audio-preview",
+        "gpt-4-turbo",
+        "gpt-4",
+        "o1",
+        "o1-preview",
+        "o1-mini",
+        "o3-mini",
+        "openai/o3-2025-04-16",
+        "openai/o3-pro",
+        "openai/gpt-4.1-2025-04-14",
+        "openai/gpt-5-2025-08-07",
+        "openai/gpt-5-chat-latest"
       ],
       "history": {},
-      "testBody": { "model": "{model}", "messages": [{ "role": "user", "content": "Hello" }] }
+      "testBody": {
+        "model": "{model}",
+        "messages": [{ "role": "user", "content": "Hello" }]
+      }
     },
     {
       "id": "anthropic",
       "name": "Anthropic",
-      "key": "",
       "authType": "header-custom",
       "endpoint": "https://api.anthropic.com/v1/messages",
       "docs": "https://docs.anthropic.com/en/docs/about-claude/models",
-      "customHeaders": { "x-api-version": "2023-06-01", "anthropic-dangerously-allow-browser": "true" },
+      "customHeaders": { 
+        "x-api-version": "2023-06-01", 
+        "anthropic-dangerously-allow-browser": "true" 
+      },
       "models": [
-        "claude-3-5-sonnet-latest", "claude-3-5-haiku-latest", "claude-3-opus-20240229"
+        "claude-3-5-sonnet-latest",
+        "claude-3-5-haiku-latest",
+        "claude-3-7-sonnet-20250219",
+        "claude-3-opus-20240229",
+        "claude-3-haiku-20240307",
+        "anthropic/claude-opus-4",
+        "anthropic/claude-sonnet-4.5",
+        "anthropic/claude-haiku-4.5"
       ],
       "history": {},
-      "testBody": { "model": "{model}", "max_tokens": 50, "messages": [{ "role": "user", "content": "Hello" }] }
+      "testBody": {
+        "model": "{model}",
+        "max_tokens": 100,
+        "messages": [{ "role": "user", "content": "Hello" }]
+      }
     },
     {
       "id": "gemini",
       "name": "Google Gemini",
-      "key": "",
       "authType": "query",
       "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
       "docs": "https://ai.google.dev/gemini-api/docs/models/gemini",
       "models": [
-        "gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash"
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-exp",
+        "gemini-1.5-pro",
+        "gemini-1.5-flash",
+        "google/gemini-2.5-flash",
+        "google/gemini-3-flash-preview",
+        "google/gemma-3-27b-it"
       ],
       "history": {},
-      "testBody": { "contents": [{ "parts": [{ "text": "Hello" }] }] }
+      "testBody": {
+        "contents": [{ "parts": [{ "text": "Hello" }] }]
+      }
     },
     {
       "id": "deepseek",
       "name": "DeepSeek",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.deepseek.com/chat/completions",
       "docs": "https://api-docs.deepseek.com/",
-      "models": [ "deepseek-chat", "deepseek-reasoner" ],
+      "models": [
+        "deepseek-chat",
+        "deepseek-reasoner",
+        "deepseek/deepseek-chat-v3-0324",
+        "deepseek/deepseek-r1",
+        "deepseek/deepseek-prover-v2",
+        "deepseek/deepseek-reasoner-v3.1",
+        "deepseek/deepseek-thinking-v3.2-exp"
+      ],
       "history": {},
-      "testBody": { "model": "{model}", "messages": [{ "role": "user", "content": "Hello" }] }
+      "testBody": {
+        "model": "{model}",
+        "messages": [{ "role": "user", "content": "Hello" }]
+      }
     },
     {
       "id": "xai",
       "name": "xAI (Grok)",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.x.ai/v1/chat/completions",
       "docs": "https://docs.x.ai/docs",
-      "models": [ "grok-2-latest", "grok-beta" ],
+      "models": [
+        "grok-2-latest",
+        "x-ai/grok-3-beta",
+        "x-ai/grok-3-mini-beta",
+        "x-ai/grok-4-07-09",
+        "x-ai/grok-4-fast-reasoning",
+        "x-ai/grok-4-1-fast-reasoning"
+      ],
       "history": {},
-      "testBody": { "model": "{model}", "messages": [{ "role": "user", "content": "Hello" }] }
+      "testBody": {
+        "model": "{model}",
+        "messages": [{ "role": "user", "content": "Hello" }]
+      }
     },
     {
       "id": "mistral",
       "name": "Mistral AI",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.mistral.ai/v1/chat/completions",
       "docs": "https://docs.mistral.ai/getting-started/models/",
-      "models": [ "mistral-large-latest", "mistral-small-latest" ],
+      "models": [
+        "mistral-large-latest",
+        "mistral-small-latest",
+        "mistralai/Mistral-7B-Instruct-v0.3",
+        "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        "mistralai/mistral-nemo"
+      ],
       "history": {},
-      "testBody": { "model": "{model}", "messages": [{ "role": "user", "content": "Hello" }] }
+      "testBody": {
+        "model": "{model}",
+        "messages": [{ "role": "user", "content": "Hello" }]
+      }
     },
     {
       "id": "perplexity",
       "name": "Perplexity",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.perplexity.ai/chat/completions",
       "docs": "https://docs.perplexity.ai/",
-      "models": [ "sonar-pro", "sonar" ],
+      "models": [
+        "sonar",
+        "sonar-pro",
+        "perplexity/sonar-reasoning",
+        "perplexity/sonar-pro"
+      ],
       "history": {},
-      "testBody": { "model": "{model}", "messages": [{ "role": "user", "content": "Hello" }] }
+      "testBody": {
+        "model": "{model}",
+        "messages": [{ "role": "user", "content": "Hello" }]
+      }
     },
     {
       "id": "alibaba",
-      "name": "Alibaba (Qwen)",
-      "key": "",
+      "name": "Alibaba Cloud (Qwen)",
       "authType": "bearer",
       "endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
       "docs": "https://www.alibabacloud.com/help/en/model-studio/getting-started/models",
-      "models": [ "qwen-max", "qwen-plus", "qwen-turbo" ],
+      "models": [
+        "qwen-max",
+        "qwen-plus",
+        "qwen-turbo",
+        "Qwen/Qwen2.5-72B-Instruct-Turbo",
+        "alibaba/qwen3-32b",
+        "alibaba/qwen3-max-instruct",
+        "alibaba/qwen3-vl-32b-instruct"
+      ],
       "history": {},
-      "testBody": { "model": "{model}", "messages": [{ "role": "user", "content": "Hello" }] }
+      "testBody": {
+        "model": "{model}",
+        "messages": [{ "role": "user", "content": "Hello" }]
+      }
+    },
+    {
+      "id": "aiml_aggregator",
+      "name": "AIML API (Aggregator)",
+      "authType": "bearer",
+      "endpoint": "https://api.aimlapi.com/chat/completions",
+      "docs": "https://docs.aimlapi.com/",
+      "models": [
+        "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        "meta-llama/Llama-3.2-3B-Instruct-Turbo",
+        "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+        "meta-llama/llama-4-scout",
+        "meta-llama/llama-4-maverick",
+        "nvidia/llama-3.1-nemotron-70b-instruct",
+        "nvidia/nemotron-nano-12b-v2-vl",
+        "gryphe/mythomax-l2-13b",
+        "nousresearch/hermes-4-405b",
+        "anthracite-org/magnum-v4-72b",
+        "minimax/m1",
+        "moonshot/kimi-k2-preview",
+        "zhipu/glm-4.5"
+      ],
+      "history": {},
+      "testBody": {
+        "model": "{model}",
+        "messages": [{ "role": "user", "content": "Hello" }]
+      }
     }
   ]
 }
