@@ -4,35 +4,39 @@
     <meta charset="UTF-8">
     <title>AI Pulse Dashboard</title>
     <style>
-        :root { --bg:#f8fafc; --surface:#ffffff; --text:#334155; --primary:#2563eb; --border:#e2e8f0; }
+        :root { --bg:#f1f5f9; --surface:#ffffff; --text:#334155; --primary:#2563eb; --border:#e2e8f0; --green-pastel:#f0fdf4; --green-border:#bbf7d0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 30px 40px; height: 100vh; box-sizing: border-box; overflow: hidden; }
         
         /* --- LAYOUT & HEADER --- */
         .container { max-width: 1400px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-shrink: 0; }
-        .header-left { display: flex; align-items: center; gap: 30px; }
+        /* Centered Header Layout */
+        .header { position: relative; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-shrink: 0; height: 50px; }
         
-        h1 { margin: 0; color: #1e293b; letter-spacing: -0.5px; font-size: 24px; line-height: 1.2; }
-        .subtitle { font-size: 13px; color: #64748b; font-weight: 500; }
+        .header-title h1 { margin: 0; color: #1e293b; letter-spacing: -0.5px; font-size: 24px; line-height: 1.2; }
+        .header-title .subtitle { font-size: 13px; color: #64748b; font-weight: 500; }
 
-        /* Filter Controls */
-        .filter-area { display: flex; gap: 10px; align-items: center; background: white; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        /* Centered Filter Bar */
+        .filter-container { position: absolute; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; background: white; padding: 6px 12px; border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-right: 5px; }
-        .filter-select { padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; color: #334155; outline: none; background: #f8fafc; cursor: pointer; }
-        .filter-select:focus { border-color: var(--primary); background: white; }
+        .filter-select { padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; color: #334155; outline: none; background: #f8fafc; cursor: pointer; transition: 0.2s; }
+        .filter-select:hover { background: #fff; border-color: #94a3b8; }
+        .filter-select:focus { border-color: var(--primary); }
 
         /* --- TABLE --- */
-        .card { background: white; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f1f5f9; flex: 1; display: flex; flex-direction: column; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0; flex: 1; display: flex; flex-direction: column; }
         .table-scroll { overflow-y: auto; flex: 1; }
         table { width: 100%; border-collapse: collapse; }
         
-        th { background: #f8fafc; font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 20px 24px; text-align: left; cursor: pointer; user-select: none; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 10; white-space: nowrap; }
+        th { background: #f8fafc; font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 18px 24px; text-align: left; cursor: pointer; user-select: none; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 10; white-space: nowrap; }
         th:hover { background: #e2e8f0; color: #334155; }
         th:after { content: ' ↕'; font-size: 11px; color: #94a3b8; margin-left: 5px; }
         
-        td { padding: 16px 24px; text-align: left; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        tr:hover td { background-color: #fcfcfc; }
+        td { padding: 14px 24px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        
+        /* Alternating Rows (Zebra Striping) */
+        tbody tr:nth-child(even) { background-color: #f8fafc; }
+        tbody tr:hover { background-color: #f1f5f9; } /* Hover override */
         
         .provider-link { color: #0f172a; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 15px; }
         .provider-link:hover { color: var(--primary); text-decoration: underline; }
@@ -47,22 +51,27 @@
         .c-video { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
         .c-gen { background: #fffbeb; color: #b45309; border-color: #fde68a; } 
         .c-code { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
-        .c-other { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+        .c-other { background: #ffffff; color: #475569; border-color: #cbd5e1; }
 
         /* Last Tested Cell */
         .date-cell { display: flex; flex-direction: column; align-items: flex-start; }
         .date-main { font-weight: 600; color: #334155; font-size: 14px; }
-        .date-sub { font-size: 11px; color: #64748b; margin-top: 2px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
+        .date-sub { font-size: 11px; color: #64748b; margin-top: 2px; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; }
 
-        /* Modern Dropdown */
+        /* Modern Dropdown - PASTEL GREEN */
         .model-select {
-            width: 65%; padding: 10px 14px; padding-right: 35px; font-size: 14px; font-weight: 500; color: #334155;
-            background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; outline: none;
+            width: 70%; padding: 10px 14px; padding-right: 35px; 
+            font-size: 14px; font-weight: 600; color: #14532d; /* Dark Green Text */
+            background-color: var(--green-pastel); /* Pastel Green BG */
+            border: 1px solid var(--green-border);
+            border-radius: 8px; cursor: pointer; outline: none;
             appearance: none; -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315803d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
+            transition: 0.2s;
         }
-        .model-select:hover { border-color: #94a3b8; background-color: #f8fafc; }
+        .model-select:hover { background-color: #dcfce7; border-color: #86efac; }
+        .model-select:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1); }
 
         /* Buttons */
         .btn { padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; transition: 0.1s; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
@@ -72,7 +81,6 @@
         .btn-primary:hover { background: #1d4ed8; color: white; }
         .btn-code { background: #334155; color: white; border-color: #334155; }
         .btn-code:hover { background: #475569; color: white; }
-        
         .btn-nav { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 18px; color: #64748b; }
         .btn-close-x { border: none; background: transparent; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
         .btn-close-x:hover { color: #dc2626; }
@@ -81,19 +89,17 @@
         /* Modals */
         .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; backdrop-filter: blur(2px); justify-content: center; align-items: center; }
         .modal-aligner { display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; min-height: 100%; width: 100%; }
-        
         .modal-content { background: white; border-radius: 16px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); margin-bottom: 50px; }
         
         /* Sizes */
         .size-large { width: 1200px; max-width: 95%; height: 90vh; padding: 40px; }
         .size-medium { width: 1000px; max-width: 95%; height: 90vh; padding: 40px; }
-        /* Help specific size */
         .size-help { width: 800px; max-width: 95%; max-height: 85vh; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
 
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; flex-shrink: 0; }
         .modal-header h3 { margin: 0; font-size: 28px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* Help Content Styles */
+        /* Help Styles */
         .help-body { padding: 35px; overflow-y: auto; color: #334155; line-height: 1.6; font-size: 16px; }
         .help-section { margin-bottom: 30px; }
         .help-h2 { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
@@ -101,7 +107,6 @@
         .help-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
         .help-step { display: flex; gap: 15px; margin-bottom: 15px; }
         .step-num { background: #e0f2fe; color: #0369a1; width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; flex-shrink: 0; font-size: 14px; }
-        .step-content strong { color: #1e293b; }
 
         /* Test Modal Layout */
         .test-body { display: flex; flex-direction: column; height: 100%; gap: 15px; padding-top: 15px; overflow: hidden; }
@@ -130,30 +135,28 @@
 
 <div class="container">
     <div class="header">
-        <div class="header-left">
-            <div>
-                <h1>AI Pulse Dashboard</h1>
-                <div class="subtitle">Public Status Monitor</div>
-            </div>
+        <div class="header-title">
+            <h1>AI Pulse Dashboard</h1>
+            <div class="subtitle">Public Status Monitor</div>
+        </div>
+        
+        <div class="filter-container">
+            <label class="filter-label">Filter Status</label>
+            <select id="filterStatus" class="filter-select" onchange="applyFilters()">
+                <option value="all">All</option>
+                <option value="Operational">Operational</option>
+                <option value="Unknown">Unknown</option>
+            </select>
             
-            <div class="filter-area">
-                <label class="filter-label">Filter Status</label>
-                <select id="filterStatus" class="filter-select" onchange="applyFilters()">
-                    <option value="all">All</option>
-                    <option value="Operational">Operational</option>
-                    <option value="Unknown">Unknown</option>
-                </select>
-                
-                <div style="width:1px; height:20px; background:#e2e8f0; margin:0 5px;"></div>
-                
-                <label class="filter-label">Timeframe</label>
-                <select id="filterTime" class="filter-select" onchange="applyFilters()">
-                    <option value="7">Last Week</option>
-                    <option value="30">Last Month</option>
-                    <option value="365" selected>Last Year</option>
-                    <option value="all">All Time</option>
-                </select>
-            </div>
+            <div style="width:1px; height:20px; background:#e2e8f0; margin:0 5px;"></div>
+            
+            <label class="filter-label">Timeframe</label>
+            <select id="filterTime" class="filter-select" onchange="applyFilters()">
+                <option value="7">Last Week</option>
+                <option value="30">Last Month</option>
+                <option value="365" selected>Last Year</option>
+                <option value="all">All Time</option>
+            </select>
         </div>
 
         <button class="btn btn-help" onclick="document.getElementById('helpModal').style.display='flex'">
@@ -192,41 +195,29 @@
                 <div class="help-section">
                     <div class="help-h2">👋 Introduction</div>
                     <div class="help-p">
-                        Welcome to the <strong>AI Pulse Dashboard</strong>. This tool provides a real-time overview of the capabilities, limitations, and operational status of various Artificial Intelligence API providers. It helps developers quickly compare models and verify API availability.
+                        The <strong>AI Pulse Dashboard</strong> is a real-time monitor for AI API availability. It allows you to verify connectivity, view model lists, and check operational history before integrating into your applications.
                     </div>
                 </div>
 
                 <div class="help-section">
-                    <div class="help-h2">🛠️ How to Test Models</div>
+                    <div class="help-h2">🛠️ How to Test</div>
                     <div class="help-box">
                         <div class="help-step">
                             <div class="step-num">1</div>
-                            <div class="step-content"><strong>Select a Provider:</strong> Locate the AI service you wish to check in the main table. Use the filters at the top to narrow down by status or recent activity.</div>
+                            <div><strong>Select Provider:</strong> Find the service in the table. Use filters (Top Center) to narrow results.</div>
                         </div>
                         <div class="help-step">
                             <div class="step-num">2</div>
-                            <div class="step-content"><strong>Click "Test":</strong> Press the Test button in the Action column. This opens the testing interface.</div>
+                            <div><strong>Click "Test":</strong> This opens the testing interface for that specific provider.</div>
                         </div>
                         <div class="help-step">
                             <div class="step-num">3</div>
-                            <div class="step-content"><strong>Choose a Model:</strong> Use the dropdown to select the specific model variant (e.g., gpt-4o, claude-3-opus).</div>
+                            <div><strong>Enter Key:</strong> Paste your API Key. It is used locally in your browser and never saved.</div>
                         </div>
                         <div class="help-step">
                             <div class="step-num">4</div>
-                            <div class="step-content"><strong>Enter Your Key:</strong> Paste your personal API Key. <br><em style="font-size:13px; color:#64748b;">(Security Note: Your key is used strictly within your browser to send the request directly to the provider. It is never stored or sent to our servers.)</em></div>
+                            <div><strong>Run:</strong> Execute the test to view the live JSON response from the API.</div>
                         </div>
-                        <div class="help-step">
-                            <div class="step-num">5</div>
-                            <div class="step-content"><strong>Run:</strong> Click "Run Test" to see the live JSON response from the API.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-h2">📊 Understanding Status</div>
-                    <div class="help-p">
-                        <span style="color:#16a34a; font-weight:bold;">● Operational:</span> Indicates that at least one model from this provider has successfully passed a test recently.<br>
-                        <span style="color:#94a3b8; font-weight:bold;">● Unknown:</span> Indicates that no recent tests have been recorded for this provider.
                     </div>
                 </div>
             </div>
@@ -248,7 +239,6 @@
                 <button class="btn-close-x" onclick="document.getElementById('featuresModal').style.display='none'">×</button>
             </div>
         </div>
-        
         <div class="features-layout">
             <div class="features-left">
                 <div class="feature-box" style="background:#f8fafc;">
@@ -264,13 +254,11 @@
                         <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="width:100%; box-sizing: border-box; display:flex; justify-content:center;">📖 Open Official Docs</a>
                     </div>
                 </div>
-                
                 <div class="feature-box">
                     <h4>Available Models (<span id="featModelCount">0</span>)</h4>
                     <div id="featModelList" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
                 </div>
             </div>
-
             <div class="features-right">
                 <div class="feature-box">
                     <h4>Capabilities</h4>
@@ -291,7 +279,6 @@
                 <button class="btn-close-x" onclick="document.getElementById('testModal').style.display='none'">×</button>
             </div>
         </div>
-        
         <div class="test-body">
             <div class="input-group">
                 <div style="display:flex; gap:20px; margin-bottom:15px;">
@@ -304,20 +291,17 @@
                         <input type="password" id="userKey" placeholder="Paste your API Key (sk-...)">
                     </div>
                 </div>
-                
                 <div style="display:flex; gap:15px;">
                     <button class="btn btn-primary" style="padding:12px 24px;" onclick="runPublicTest()">▶ Run Test</button>
                     <button class="btn btn-code" style="padding:12px 24px;" onclick="toggleCode()"> { } Show Code</button>
                 </div>
             </div>
-            
             <div id="viewOutput" class="output-group">
                 <div class="output-header">
                     <label style="font-size:14px; font-weight:bold; color:#334155;">Response Output</label>
                 </div>
                 <pre id="modalOutput">Waiting for test run...</pre>
             </div>
-
             <div id="viewCode" class="output-group" style="display:none;">
                 <div class="output-header">
                     <label style="font-size:14px; font-weight:bold; color:#334155;">Integration Code</label>
@@ -397,7 +381,6 @@ function applyFilters() {
     const status = document.getElementById('filterStatus').value;
     const timeVal = document.getElementById('filterTime').value;
     
-    // Calculate cutoff
     let cutoffTs = 0;
     if (timeVal !== 'all') {
         const days = parseInt(timeVal);
@@ -407,12 +390,9 @@ function applyFilters() {
     filteredData = rawData.filter(p => {
         if (status !== 'all' && p._status !== status) return false;
         
-        // Time Filter logic:
-        // If "all" time selected, show everything.
-        // If specific time selected (e.g. 365 days), hide items older than that OR items with no tests (0)
         if (timeVal !== 'all') {
-            if (p._lastTs === 0) return false; // Never tested
-            if (p._lastTs < cutoffTs) return false; // Too old
+            if (p._lastTs === 0) return false; 
+            if (p._lastTs < cutoffTs) return false; 
         }
         
         return true;
@@ -441,13 +421,25 @@ function render() {
             ? `<div class="date-cell"><span class="date-main">${tData.date}</span><span class="date-sub">${tData.ago}</span></div>`
             : `<span style="color:#cbd5e1;">--</span>`;
 
+        // FIND DEFAULT MODEL (Most recent PASS)
+        let bestModel = "";
+        let latestPass = 0;
+        if (p.history) {
+            Object.entries(p.history).forEach(([m, h]) => {
+                if (h.status === 'PASS') {
+                    let ts = new Date(h.date).getTime();
+                    if (ts > latestPass) { latestPass = ts; bestModel = m; }
+                }
+            });
+        }
+
         tbody.innerHTML += `
             <tr data-idx="${idx}">
                 <td><strong class="provider-link" onclick="openFeaturesModal(${idx})">${p.name}</strong></td>
                 <td><div class="feat-cell" onclick="openFeaturesModal(${idx})">${caps} <span style="font-size:10px; color:#94a3b8;">+</span></div></td>
                 <td>
                     <select class="model-select">
-                        ${models.map(m => `<option>${m}</option>`).join('')}
+                        ${models.map(m => `<option ${m===bestModel?'selected':''}>${m}</option>`).join('')}
                     </select>
                 </td>
                 <td>${statusBadge}</td>
@@ -469,7 +461,7 @@ function sortTable(n) {
             x = rows[i].getElementsByTagName("TD")[n];
             y = rows[i + 1].getElementsByTagName("TD")[n];
             
-            if (n === 4) { // Date Column
+            if (n === 4) { 
                let xTime = x.innerText.trim() === '--' ? 0 : new Date(x.querySelector('.date-main').innerText).getTime();
                let yTime = y.innerText.trim() === '--' ? 0 : new Date(y.querySelector('.date-main').innerText).getTime();
                if (dir == "asc") { if (xTime > yTime) { shouldSwitch=true; break; } }
@@ -484,7 +476,7 @@ function sortTable(n) {
     }
 }
 
-// --- FEATURES MODAL ---
+/* --- FEATURES --- */
 function openFeaturesModal(idx) {
     currentFeatureIdx = idx;
     const p = filteredData[idx];
@@ -515,7 +507,7 @@ function navFeature(dir) {
     openFeaturesModal(newIdx);
 }
 
-// --- TEST MODAL ---
+/* --- TEST --- */
 function openTest(idx) {
     currentIdx = idx;
     const p = filteredData[idx];
@@ -523,6 +515,7 @@ function openTest(idx) {
     const sel = document.getElementById('modalSelector');
     sel.innerHTML = p.models.map(m => `<option>${m}</option>`).join('');
     document.getElementById('userKey').value = "";
+    
     document.getElementById('modalOutput').innerText = "Waiting for test run...";
     document.getElementById('viewOutput').style.display = "flex";
     document.getElementById('viewCode').style.display = "none";
