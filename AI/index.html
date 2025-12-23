@@ -2,51 +2,103 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI Pulse | Secure Admin</title>
+    <title>AI Pulse | Admin Panel</title>
     <style>
-        /* Same Styles as before */
         :root { --bg:#f1f5f9; --surface:#ffffff; --text:#334155; --primary:#2563eb; --success:#16a34a; --danger:#dc2626; --border:#cbd5e1; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 30px; }
-        .header { display: flex; justify-content: space-between; background: var(--surface); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .btn { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; background: white; }
-        .btn-primary { background: var(--primary); color: white; border: none; }
-        .status-pill { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; }
-        .pass { background: #dcfce7; color: #166534; } .fail { background: #fee2e2; color: #991b1b; } .idle { background: #f1f5f9; color: #64748b; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; width: 600px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; }
-        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; overflow: auto; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .header h1 { margin: 0; font-size: 20px; color: #1e293b; }
+        
+        /* Buttons */
+        .btn { padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; background: white; font-size: 13px; font-weight: 500; transition: 0.1s; }
+        .btn:hover { background: #f8fafc; border-color: #94a3b8; }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); } .btn-primary:hover { background: #1d4ed8; }
+        .btn-save { background: #0f172a; color: white; border-color: #0f172a; } .btn-save:hover { background: #334155; }
+        .btn-link { border: none; background: none; color: var(--primary); text-decoration: underline; padding: 0; font-size: 12px; }
+        
+        /* Status Pills */
+        .status-pill { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .pass { background: #dcfce7; color: #166534; } 
+        .fail { background: #fee2e2; color: #991b1b; } 
+        .idle { background: #f1f5f9; color: #94a3b8; }
+        
+        /* Table */
+        .card { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; }
+        tr:last-child td { border-bottom: none; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; width: 750px; max-width: 90%; padding: 25px; border-radius: 10px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 5px; }
+        .modal-header h3 { margin: 0; font-size: 18px; color: #0f172a; }
+        .modal-footer { display: flex; justify-content: flex-end; padding-top: 15px; border-top: 1px solid #e2e8f0; }
+        
+        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: monospace; font-size: 12px; margin: 0; height: 200px; }
+        select { padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100%; max-width: 300px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h2>AI Pulse (Secure Mode)</h2>
+    <h1>AI Pulse Admin</h1>
     <div style="display:flex; gap:10px; align-items:center;">
-        <span id="saveStatus" style="font-size:12px; color:gray;"></span>
-        <button class="btn" onclick="saveToServer()">💾 Save Changes</button>
+        <span id="saveStatus" style="font-size:12px; color:#64748b; font-weight:500;"></span>
+        <button class="btn btn-save" onclick="saveToServer()">💾 Save Changes</button>
     </div>
 </div>
 
-<table>
-    <thead><tr><th>Provider</th><th>Model</th><th>Status</th><th>Last Pass</th><th>Action</th></tr></thead>
-    <tbody id="tableBody"></tbody>
-</table>
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th width="15%">Provider</th>
+                <th width="25%">Model Selector</th>
+                <th width="10%">Status</th>
+                <th width="10%">Passing</th>
+                <th width="15%">Last Pass</th>
+                <th width="10%">Action</th>
+                <th width="15%">Ref</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
 
 <div id="testModal" class="modal">
     <div class="modal-content">
-        <h3>Test Model</h3>
-        <select id="modalInput" style="padding:8px; width:100%;"></select>
-        <button class="btn btn-primary" onclick="runSecureTest()">▶ Run Test via Proxy</button>
-        
-        <div id="modalActions" style="display:none; gap:10px;">
-            <button class="btn" style="color:green" onclick="markStatus('PASS')">✔ Mark Pass</button>
-            <button class="btn" style="color:red" onclick="markStatus('FAIL')">✖ Mark Fail</button>
+        <div class="modal-header">
+            <h3 id="modalTitle">Test Model</h3>
+            <button class="btn" style="padding:4px 8px; font-size:16px; line-height:1;" onclick="closeModal()">×</button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:12px; font-weight:600; color:#64748b;">Select Model to Test:</label>
+            <div style="display:flex; gap:10px;">
+                <select id="modalInput" style="flex:1;"></select>
+            </div>
         </div>
         
-        <pre id="modalOutput">Ready...</pre>
-        <button class="btn" onclick="document.getElementById('testModal').style.display='none'">Close</button>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn btn-primary" onclick="runSecureTest()">▶ Run Test via Proxy</button>
+            <div id="modalActions" style="display:none; gap:10px;">
+                <button class="btn" style="color:#16a34a; border-color:#16a34a;" onclick="markStatus('PASS')">✔ Mark Pass</button>
+                <button class="btn" style="color:#dc2626; border-color:#dc2626;" onclick="markStatus('FAIL')">✖ Mark Fail</button>
+            </div>
+        </div>
+        
+        <div style="display:flex; flex-direction:column; gap:5px;">
+             <label style="font-size:12px; font-weight:600; color:#64748b;">Response Output:</label>
+             <pre id="modalOutput">Ready...</pre>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal()">Close Window</button>
+        </div>
     </div>
 </div>
 
@@ -54,47 +106,86 @@
     let data = { providers: [] };
     let currentIdx = -1;
 
-    // Load sources.json (Public data only)
+    // Load Public Data
     fetch('sources.json').then(r => r.json()).then(d => { data = d; render(); });
 
     function render() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = "";
+        
         data.providers.forEach((p, idx) => {
             const history = p.history || {};
-            const selected = p.models[0] || ""; // Default first model
-            let status = "IDLE";
-            let lastPass = "--";
+            const models = p.models || [];
             
-            if (selected && history[selected]) {
-                status = history[selected].status;
-                if(status === 'PASS') lastPass = history[selected].date;
-            }
+            // Default selection: first model
+            const selected = models[0] || ""; 
+            
+            // Status of selected model
+            let status = "IDLE";
+            if (selected && history[selected]) status = history[selected].status;
+
+            // Stats Logic: Count Passing
+            const passCount = Object.values(history).filter(h => h.status === 'PASS').length;
+            
+            // Logic: Last Pass Date (of any model for this provider)
+            let lastPassDate = "--";
+            const passes = Object.values(history)
+                .filter(h => h.status === 'PASS')
+                .map(h => h.date)
+                .sort().reverse();
+            if(passes.length > 0) lastPassDate = passes[0];
 
             tbody.innerHTML += `
                 <tr>
                     <td><strong>${p.name}</strong></td>
                     <td>
-                        <select onchange="render()" id="sel-${idx}">
-                            ${p.models.map(m => `<option value="${m}" ${m===selected?'selected':''}>${m}</option>`).join('')}
+                        <select onchange="updateRowStatus(${idx}, this.value, this)">
+                            ${models.map(m => {
+                                // Add checkmark to dropdown if passed
+                                const s = history[m] ? history[m].status : '';
+                                const icon = s === 'PASS' ? '✅ ' : (s === 'FAIL' ? '❌ ' : '');
+                                return `<option value="${m}" ${m===selected?'selected':''}>${icon}${m}</option>`;
+                            }).join('')}
                         </select>
                     </td>
-                    <td><span class="status-pill ${status.toLowerCase()}">${status}</span></td>
-                    <td>${lastPass}</td>
+                    <td><span class="status-pill ${status.toLowerCase()}" id="status-pill-${idx}">${status}</span></td>
+                    <td><strong>${passCount}</strong> / ${models.length}</td>
+                    <td style="font-size:12px; color:#64748b;">${lastPassDate}</td>
                     <td><button class="btn" onclick="openModal(${idx})">Test</button></td>
+                    <td><a href="${p.docs}" target="_blank" class="btn-link">Docs ↗</a></td>
                 </tr>
             `;
         });
     }
 
+    function updateRowStatus(idx, model, selectEl) {
+        // Just updates the visual status pill without re-rendering whole table
+        const history = data.providers[idx].history || {};
+        const status = (history[model] && history[model].status) ? history[model].status : "IDLE";
+        const pill = document.getElementById(`status-pill-${idx}`);
+        pill.className = `status-pill ${status.toLowerCase()}`;
+        pill.innerText = status;
+    }
+
     function openModal(idx) {
         currentIdx = idx;
         const p = data.providers[idx];
+        
+        // Set Title
+        document.getElementById('modalTitle').innerText = `Test Provider: ${p.name}`;
+        
+        // Fill Dropdown
         const dl = document.getElementById('modalInput');
-        dl.innerHTML = p.models.map(m => `<option value="${m}"> ${m} </option>`).join('');
+        dl.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join('');
+        
+        // Reset State
         document.getElementById('modalActions').style.display = "none";
-        document.getElementById('modalOutput').innerText = "Ready...";
+        document.getElementById('modalOutput').innerText = "Ready to test...";
         document.getElementById('testModal').style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById('testModal').style.display = 'none';
     }
 
     async function runSecureTest() {
@@ -102,10 +193,9 @@
         const model = document.getElementById('modalInput').value;
         const output = document.getElementById('modalOutput');
         
-        output.innerText = "Sending request to server proxy...";
+        output.innerText = "Requesting via proxy...";
         
-        // Prepare body for proxy (we do NOT send key or endpoint, just ID and body)
-        // We replace {model} placeholder locally for the body content
+        // Prepare payload (Client-side replacer)
         let bodyPayload = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
 
         try {
@@ -123,7 +213,7 @@
             output.innerText = JSON.stringify(json, null, 2);
             document.getElementById('modalActions').style.display = "flex";
         } catch(e) {
-            output.innerText = "Proxy Error: " + e.message;
+            output.innerText = "Error: " + e.message;
         }
     }
 
@@ -131,21 +221,32 @@
         const p = data.providers[currentIdx];
         const model = document.getElementById('modalInput').value;
         if(!p.history) p.history = {};
-        p.history[model] = { status: status, date: new Date().toISOString().slice(0, 16).replace('T', ' ') };
-        render();
-        document.getElementById('testModal').style.display = 'none';
+        
+        p.history[model] = { 
+            status: status, 
+            date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString() 
+        };
+        
+        // Refresh entire table to update counts and pills
+        render(); 
+        closeModal();
     }
 
     async function saveToServer() {
         const statusEl = document.getElementById('saveStatus');
         statusEl.innerText = "Saving...";
-        await fetch('save_data.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        statusEl.innerText = "Saved ✔";
-        setTimeout(() => statusEl.innerText = "", 2000);
+        try {
+            await fetch('save_data.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            statusEl.innerText = "Saved ✔";
+            setTimeout(() => statusEl.innerText = "", 2000);
+        } catch(e) {
+            statusEl.innerText = "Error Saving";
+            alert("Failed to save: " + e.message);
+        }
     }
 </script>
 </body>
