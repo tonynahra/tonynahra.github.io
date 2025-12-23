@@ -5,28 +5,29 @@
     <title>AI Pulse Dashboard</title>
     <style>
         :root { --bg:#f8fafc; --surface:#ffffff; --text:#334155; --primary:#2563eb; --border:#e2e8f0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 40px; height: 100vh; box-sizing: border-box; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 30px 40px; height: 100vh; box-sizing: border-box; overflow: hidden; }
         
-        /* Layout */
+        /* --- LAYOUT & HEADER --- */
         .container { max-width: 1400px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
-        h1 { margin: 0; color: #1e293b; letter-spacing: -0.5px; }
         
-        /* --- FILTER BAR --- */
-        .filter-bar { display: flex; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; align-items: center; flex-shrink: 0; }
-        .filter-group { display: flex; flex-direction: column; gap: 5px; }
-        .filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; }
-        .filter-input { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; color: #334155; outline: none; }
-        .filter-input:focus { border-color: var(--primary); }
-        .btn-reset { margin-left: auto; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
-        .btn-reset:hover { background: #e2e8f0; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-shrink: 0; }
+        .header-left { display: flex; align-items: center; gap: 30px; }
+        
+        h1 { margin: 0; color: #1e293b; letter-spacing: -0.5px; font-size: 24px; line-height: 1.2; }
+        .subtitle { font-size: 13px; color: #64748b; font-weight: 500; }
 
-        /* Card & Table */
+        /* Filter Controls */
+        .filter-area { display: flex; gap: 10px; align-items: center; background: white; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-right: 5px; }
+        .filter-select { padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; color: #334155; outline: none; background: #f8fafc; cursor: pointer; }
+        .filter-select:focus { border-color: var(--primary); background: white; }
+
+        /* --- TABLE --- */
         .card { background: white; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f1f5f9; flex: 1; display: flex; flex-direction: column; }
         .table-scroll { overflow-y: auto; flex: 1; }
         table { width: 100%; border-collapse: collapse; }
         
-        th { background: #f8fafc; font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 20px 24px; text-align: left; cursor: pointer; user-select: none; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 10; }
+        th { background: #f8fafc; font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 20px 24px; text-align: left; cursor: pointer; user-select: none; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 10; white-space: nowrap; }
         th:hover { background: #e2e8f0; color: #334155; }
         th:after { content: ' ↕'; font-size: 11px; color: #94a3b8; margin-left: 5px; }
         
@@ -53,9 +54,9 @@
         .date-main { font-weight: 600; color: #334155; font-size: 14px; }
         .date-sub { font-size: 11px; color: #64748b; margin-top: 2px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
 
-        /* Dropdown */
+        /* Modern Dropdown */
         .model-select {
-            width: 70%; padding: 10px 14px; padding-right: 35px; font-size: 14px; font-weight: 500; color: #334155;
+            width: 65%; padding: 10px 14px; padding-right: 35px; font-size: 14px; font-weight: 500; color: #334155;
             background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; outline: none;
             appearance: none; -webkit-appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -71,24 +72,38 @@
         .btn-primary:hover { background: #1d4ed8; color: white; }
         .btn-code { background: #334155; color: white; border-color: #334155; }
         .btn-code:hover { background: #475569; color: white; }
+        
         .btn-nav { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 18px; color: #64748b; }
         .btn-close-x { border: none; background: transparent; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
         .btn-close-x:hover { color: #dc2626; }
         .btn-copy { padding: 4px 10px; font-size: 12px; background: #475569; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        
+
         /* Modals */
         .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; backdrop-filter: blur(2px); justify-content: center; align-items: center; }
         .modal-aligner { display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; min-height: 100%; width: 100%; }
+        
         .modal-content { background: white; border-radius: 16px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); margin-bottom: 50px; }
         
         /* Sizes */
         .size-large { width: 1200px; max-width: 95%; height: 90vh; padding: 40px; }
         .size-medium { width: 1000px; max-width: 95%; height: 90vh; padding: 40px; }
+        /* Help specific size */
+        .size-help { width: 800px; max-width: 95%; max-height: 85vh; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
 
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; flex-shrink: 0; }
         .modal-header h3 { margin: 0; font-size: 28px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* Test Modal */
+        /* Help Content Styles */
+        .help-body { padding: 35px; overflow-y: auto; color: #334155; line-height: 1.6; font-size: 16px; }
+        .help-section { margin-bottom: 30px; }
+        .help-h2 { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .help-p { margin-bottom: 15px; color: #475569; }
+        .help-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+        .help-step { display: flex; gap: 15px; margin-bottom: 15px; }
+        .step-num { background: #e0f2fe; color: #0369a1; width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; flex-shrink: 0; font-size: 14px; }
+        .step-content strong { color: #1e293b; }
+
+        /* Test Modal Layout */
         .test-body { display: flex; flex-direction: column; height: 100%; gap: 15px; padding-top: 15px; overflow: hidden; }
         .input-group { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; flex-shrink: 0; }
         .output-group { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
@@ -106,7 +121,7 @@
         .endpoint-link { color: #2563eb; text-decoration: none; word-break: break-all; font-family: monospace; font-size: 15px; }
 
         /* Inputs */
-        select, input[type="text"], input[type="password"], input[type="date"] { padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; transition: 0.2s; }
+        select, input[type="text"], input[type="password"] { padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; transition: 0.2s; }
         .modal-input-select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 16px; background-color:white; }
         
     </style>
@@ -115,33 +130,35 @@
 
 <div class="container">
     <div class="header">
-        <div>
-            <h1>AI Pulse Dashboard</h1>
-            <div style="font-size:15px; color:#64748b; margin-top:5px; font-weight:500;">Public Status Monitor</div>
+        <div class="header-left">
+            <div>
+                <h1>AI Pulse Dashboard</h1>
+                <div class="subtitle">Public Status Monitor</div>
+            </div>
+            
+            <div class="filter-area">
+                <label class="filter-label">Filter Status</label>
+                <select id="filterStatus" class="filter-select" onchange="applyFilters()">
+                    <option value="all">All</option>
+                    <option value="Operational">Operational</option>
+                    <option value="Unknown">Unknown</option>
+                </select>
+                
+                <div style="width:1px; height:20px; background:#e2e8f0; margin:0 5px;"></div>
+                
+                <label class="filter-label">Timeframe</label>
+                <select id="filterTime" class="filter-select" onchange="applyFilters()">
+                    <option value="7">Last Week</option>
+                    <option value="30">Last Month</option>
+                    <option value="365" selected>Last Year</option>
+                    <option value="all">All Time</option>
+                </select>
+            </div>
         </div>
+
         <button class="btn btn-help" onclick="document.getElementById('helpModal').style.display='flex'">
             ❓ Help & Guide
         </button>
-    </div>
-
-    <div class="filter-bar">
-        <div class="filter-group">
-            <span class="filter-label">Status</span>
-            <select id="filterStatus" class="filter-input" style="padding:8px; width:150px;">
-                <option value="all">All Statuses</option>
-                <option value="Operational">Operational</option>
-                <option value="Unknown">Unknown</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <span class="filter-label">From Date</span>
-            <input type="date" id="filterStart" class="filter-input" style="padding:8px; width:150px;">
-        </div>
-        <div class="filter-group">
-            <span class="filter-label">To Date</span>
-            <input type="date" id="filterEnd" class="filter-input" style="padding:8px; width:150px;">
-        </div>
-        <button class="btn-reset" onclick="resetFilters()">Reset Filters</button>
     </div>
 
     <div class="card">
@@ -151,9 +168,9 @@
                     <tr>
                         <th onclick="sortTable(0)" width="20%">Provider</th>
                         <th onclick="sortTable(1)" width="25%">Features</th>
-                        <th onclick="sortTable(2)" width="30%">Available Models</th>
+                        <th onclick="sortTable(2)" width="30%">Available&nbsp;Models</th>
                         <th onclick="sortTable(3)" width="10%">Status</th>
-                        <th onclick="sortTable(4)" width="10%">Last Tested</th>
+                        <th onclick="sortTable(4)" width="10%">Last&nbsp;Tested</th>
                         <th width="5%">Action</th>
                     </tr>
                 </thead>
@@ -164,18 +181,59 @@
 </div>
 
 <div id="helpModal" class="modal">
-    <div class="modal-content" style="width: 700px; height: auto; max-height: 90vh;">
-        <div class="modal-header">
-            <h3>Dashboard Guide</h3>
-            <button class="btn-close-x" onclick="document.getElementById('helpModal').style.display='none'">×</button>
-        </div>
-        <div style="font-size: 16px; line-height: 1.6; color:#334155; padding-bottom: 20px;">
-            <p>This dashboard monitors the status of various AI API providers.</p>
-            <strong>Testing:</strong>
-            <ul>
-                <li>Select a model and enter your own API key to test connectivity.</li>
-                <li>Your API key is used directly by your browser. It is NOT saved.</li>
-            </ul>
+    <div class="modal-aligner">
+        <div class="modal-content size-help">
+            <div style="padding: 25px; border-bottom: 1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:24px; color:#0f172a;">Dashboard Guide</h3>
+                <button class="btn-close-x" onclick="document.getElementById('helpModal').style.display='none'">×</button>
+            </div>
+            
+            <div class="help-body">
+                <div class="help-section">
+                    <div class="help-h2">👋 Introduction</div>
+                    <div class="help-p">
+                        Welcome to the <strong>AI Pulse Dashboard</strong>. This tool provides a real-time overview of the capabilities, limitations, and operational status of various Artificial Intelligence API providers. It helps developers quickly compare models and verify API availability.
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <div class="help-h2">🛠️ How to Test Models</div>
+                    <div class="help-box">
+                        <div class="help-step">
+                            <div class="step-num">1</div>
+                            <div class="step-content"><strong>Select a Provider:</strong> Locate the AI service you wish to check in the main table. Use the filters at the top to narrow down by status or recent activity.</div>
+                        </div>
+                        <div class="help-step">
+                            <div class="step-num">2</div>
+                            <div class="step-content"><strong>Click "Test":</strong> Press the Test button in the Action column. This opens the testing interface.</div>
+                        </div>
+                        <div class="help-step">
+                            <div class="step-num">3</div>
+                            <div class="step-content"><strong>Choose a Model:</strong> Use the dropdown to select the specific model variant (e.g., gpt-4o, claude-3-opus).</div>
+                        </div>
+                        <div class="help-step">
+                            <div class="step-num">4</div>
+                            <div class="step-content"><strong>Enter Your Key:</strong> Paste your personal API Key. <br><em style="font-size:13px; color:#64748b;">(Security Note: Your key is used strictly within your browser to send the request directly to the provider. It is never stored or sent to our servers.)</em></div>
+                        </div>
+                        <div class="help-step">
+                            <div class="step-num">5</div>
+                            <div class="step-content"><strong>Run:</strong> Click "Run Test" to see the live JSON response from the API.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <div class="help-h2">📊 Understanding Status</div>
+                    <div class="help-p">
+                        <span style="color:#16a34a; font-weight:bold;">● Operational:</span> Indicates that at least one model from this provider has successfully passed a test recently.<br>
+                        <span style="color:#94a3b8; font-weight:bold;">● Unknown:</span> Indicates that no recent tests have been recorded for this provider.
+                    </div>
+                </div>
+            </div>
+            
+            <div style="padding: 20px; border-top: 1px solid #e2e8f0; text-align:right; background:#f8fafc;">
+                <button class="btn btn-primary" onclick="document.getElementById('helpModal').style.display='none'">Close Guide</button>
+            </div>
         </div>
     </div>
 </div>
@@ -272,9 +330,9 @@
 </div>
 
 <script>
-let rawData = []; // Store original data
-let filteredData = []; // Store filtered data for rendering
-let currentIdx = -1; // Index relative to filteredData
+let rawData = [];
+let filteredData = [];
+let currentIdx = -1; 
 let currentFeatureIdx = -1;
 
 const CAP_CONFIG = {
@@ -298,7 +356,6 @@ const CAP_CONFIG = {
 };
 
 fetch('sources.json').then(r => r.json()).then(d => { 
-    // Process Data to add sortable fields
     rawData = d.providers.map(p => {
         const hist = p.history || {};
         const dates = Object.values(hist).map(h => new Date(h.date).getTime());
@@ -312,14 +369,13 @@ fetch('sources.json').then(r => r.json()).then(d => {
         };
     });
     
-    // Initial Sort: Newest Tested -> Oldest Tested -> Never Tested
+    // Initial Sort: Newest Tested First
     rawData.sort((a, b) => b._lastTs - a._lastTs);
     
     filteredData = [...rawData];
-    render(); 
+    applyFilters();
 });
 
-// --- HELPER: Time Ago ---
 function getTimeData(ts) {
     if (!ts) return { date: "--", ago: "" };
     const d = new Date(ts);
@@ -337,34 +393,26 @@ function getTimeData(ts) {
     };
 }
 
-// --- FILTERING ---
-document.getElementById('filterStatus').addEventListener('change', applyFilters);
-document.getElementById('filterStart').addEventListener('change', applyFilters);
-document.getElementById('filterEnd').addEventListener('change', applyFilters);
-
-function resetFilters() {
-    document.getElementById('filterStatus').value = 'all';
-    document.getElementById('filterStart').value = '';
-    document.getElementById('filterEnd').value = '';
-    applyFilters();
-}
-
 function applyFilters() {
     const status = document.getElementById('filterStatus').value;
-    const startStr = document.getElementById('filterStart').value;
-    const endStr = document.getElementById('filterEnd').value;
+    const timeVal = document.getElementById('filterTime').value;
     
-    const startTs = startStr ? new Date(startStr).getTime() : 0;
-    const endTs = endStr ? new Date(endStr).getTime() + 86400000 : Infinity; // End of day
+    // Calculate cutoff
+    let cutoffTs = 0;
+    if (timeVal !== 'all') {
+        const days = parseInt(timeVal);
+        cutoffTs = Date.now() - (days * 24 * 60 * 60 * 1000);
+    }
 
     filteredData = rawData.filter(p => {
-        // Status Filter
         if (status !== 'all' && p._status !== status) return false;
         
-        // Date Filter (If never tested, only show if no date filter applied)
-        if (startStr || endStr) {
-            if (p._lastTs === 0) return false;
-            if (p._lastTs < startTs || p._lastTs > endTs) return false;
+        // Time Filter logic:
+        // If "all" time selected, show everything.
+        // If specific time selected (e.g. 365 days), hide items older than that OR items with no tests (0)
+        if (timeVal !== 'all') {
+            if (p._lastTs === 0) return false; // Never tested
+            if (p._lastTs < cutoffTs) return false; // Too old
         }
         
         return true;
@@ -378,20 +426,16 @@ function render() {
     tbody.innerHTML = "";
     
     filteredData.forEach((p, idx) => {
-        // Badges
         const caps = (p.capabilities || []).slice(0,3).map(c => {
             const conf = CAP_CONFIG[c] || { icon: '•', cls: 'c-other' };
             return `<span class="cap-badge ${conf.cls}">${conf.icon} ${c}</span>`;
         }).join('');
         
         const models = p.models || [];
-        
-        // Status Badge
         const statusBadge = p._status === "Operational" 
             ? `<span style="color:#16a34a; font-weight:bold;">● Operational</span>` 
             : `<span style="color:#94a3b8;">● Unknown</span>`;
 
-        // Time Data
         const tData = getTimeData(p._lastTs);
         const timeHtml = p._lastTs > 0 
             ? `<div class="date-cell"><span class="date-main">${tData.date}</span><span class="date-sub">${tData.ago}</span></div>`
@@ -425,18 +469,14 @@ function sortTable(n) {
             x = rows[i].getElementsByTagName("TD")[n];
             y = rows[i + 1].getElementsByTagName("TD")[n];
             
-            // Handle Date Sort specifically (Column 4)
-            if (n === 4) {
-               // Use raw data sort if possible, but here we are sorting the DOM
-               // Better to re-sort filteredData array, but for quick DOM sort:
-               let xTime = x.textContent.trim() === '--' ? 0 : new Date(x.querySelector('.date-main').innerText).getTime();
-               let yTime = y.textContent.trim() === '--' ? 0 : new Date(y.querySelector('.date-main').innerText).getTime();
-               
+            if (n === 4) { // Date Column
+               let xTime = x.innerText.trim() === '--' ? 0 : new Date(x.querySelector('.date-main').innerText).getTime();
+               let yTime = y.innerText.trim() === '--' ? 0 : new Date(y.querySelector('.date-main').innerText).getTime();
                if (dir == "asc") { if (xTime > yTime) { shouldSwitch=true; break; } }
                else { if (xTime < yTime) { shouldSwitch=true; break; } }
             } else {
                 if (dir == "asc") { if (x.textContent.toLowerCase() > y.textContent.toLowerCase()) { shouldSwitch = true; break; } } 
-                else if (dir == "desc") { if (x.textContent.toLowerCase() < y.textContent.toLowerCase()) { shouldSwitch = true; break; } }
+                else { if (x.textContent.toLowerCase() < y.textContent.toLowerCase()) { shouldSwitch = true; break; } }
             }
         }
         if (shouldSwitch) { rows[i].parentNode.insertBefore(rows[i + 1], rows[i]); switching = true; switchcount++; } 
@@ -444,7 +484,7 @@ function sortTable(n) {
     }
 }
 
-/* --- FEATURES --- */
+// --- FEATURES MODAL ---
 function openFeaturesModal(idx) {
     currentFeatureIdx = idx;
     const p = filteredData[idx];
@@ -475,7 +515,7 @@ function navFeature(dir) {
     openFeaturesModal(newIdx);
 }
 
-/* --- TEST --- */
+// --- TEST MODAL ---
 function openTest(idx) {
     currentIdx = idx;
     const p = filteredData[idx];
@@ -483,7 +523,6 @@ function openTest(idx) {
     const sel = document.getElementById('modalSelector');
     sel.innerHTML = p.models.map(m => `<option>${m}</option>`).join('');
     document.getElementById('userKey').value = "";
-    
     document.getElementById('modalOutput').innerText = "Waiting for test run...";
     document.getElementById('viewOutput').style.display = "flex";
     document.getElementById('viewCode').style.display = "none";
@@ -501,12 +540,10 @@ function toggleCode() {
     const out = document.getElementById('viewOutput');
     const code = document.getElementById('viewCode');
     if (code.style.display === 'none') {
-        out.style.display = 'none';
-        code.style.display = 'flex';
+        out.style.display = 'none'; code.style.display = 'flex';
         generateCodeSnippet();
     } else {
-        code.style.display = 'none';
-        out.style.display = 'flex';
+        code.style.display = 'none'; out.style.display = 'flex';
     }
 }
 
