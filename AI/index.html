@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pulse v6 | External Config</title>
+    <title>AI Pulse v7 | Config Driven</title>
     <style>
         :root {
             --bg: #f8fafc;
@@ -36,7 +36,7 @@
         .btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
         .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
         .btn-primary:hover { background: #2563eb; }
-        .btn-link { border: none; background: none; color: var(--primary); text-decoration: underline; padding: 0; }
+        .btn-link { border: none; background: none; color: var(--primary); text-decoration: underline; padding: 0; cursor: pointer; }
 
         .card { background: var(--surface); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         
@@ -45,10 +45,11 @@
         td { padding: 14px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
 
-        /* Editable Dropdown Styling */
+        /* Editable Dropdown (Combo Box) */
         .input-combo {
-            width: 100%; max-width: 250px; padding: 8px; border: 1px solid var(--border);
+            width: 100%; max-width: 300px; padding: 8px; border: 1px solid var(--border);
             border-radius: 6px; font-size: 13px; font-family: monospace;
+            background: #fff;
         }
 
         .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
@@ -57,11 +58,11 @@
         .st-err { background: #fee2e2; color: #991b1b; }
         .st-load { background: #e0f2fe; color: #075985; }
 
-        /* Modal */
+        /* Code Modal */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
-        .modal { background: white; width: 600px; max-width: 90%; padding: 25px; border-radius: 12px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .modal { background: white; width: 700px; max-width: 90%; padding: 25px; border-radius: 12px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         
-        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 13px; font-family: monospace; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 13px; font-family: monospace; margin: 0; }
         
         .alert-box { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; display: none; }
     </style>
@@ -70,20 +71,20 @@
 
 <div class="header">
     <div style="display:flex; align-items:center; gap:10px;">
-        <h1>AI Pulse v6</h1>
-        <span style="font-size:11px; background:#e2e8f0; padding:2px 8px; border-radius:4px;">JSON Powered</span>
+        <h1>AI Pulse v7</h1>
+        <span style="font-size:11px; background:#e2e8f0; padding:2px 8px; border-radius:4px;">JSON Configured</span>
     </div>
     <div style="display:flex; gap:10px;">
         <input type="file" id="sourceFile" accept=".json" style="display:none" onchange="loadExternalSource(this)">
         <button id="btnLoadSource" class="btn" onclick="document.getElementById('sourceFile').click()" style="display:none;">⚠️ Load sources.json</button>
-        <button class="btn" onclick="openKeyModal()">🔑 API Keys</button>
-        <button class="btn btn-primary" onclick="runSystemCheck()">⚡ System Check</button>
+        <button class="btn btn-primary" onclick="runSystemCheck()">⚡ Run System Check</button>
     </div>
 </div>
 
 <div id="errorAlert" class="alert-box">
-    <strong>Cannot load sources.json automatically.</strong> Browsers often block reading local files directly. 
-    Please click the "Load sources.json" button above and select the file manually.
+    <strong>Configuration Missing.</strong> 
+    Due to browser security (CORS), we cannot read 'sources.json' automatically. 
+    Please click "Load sources.json" above and select your file.
 </div>
 
 <div class="card">
@@ -91,7 +92,7 @@
         <thead>
             <tr>
                 <th width="20%">Provider</th>
-                <th width="35%">Model Alias (Type or Select)</th>
+                <th width="35%">Model Alias (Editable)</th>
                 <th width="10%">Status</th>
                 <th width="10%">Latency</th>
                 <th width="15%">Action</th>
@@ -99,57 +100,50 @@
             </tr>
         </thead>
         <tbody id="tableBody">
-            <tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">Loading configuration...</td></tr>
+            <tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">Waiting for configuration...</td></tr>
         </tbody>
     </table>
 </div>
 
-<div id="keyModal" class="modal-overlay">
-    <div class="modal">
-        <h3 style="margin:0">API Keys</h3>
-        <p style="font-size:12px; color:#64748b; margin:0;">Keys are stored in browser LocalStorage, not in the JSON file.</p>
-        <div id="keyInputs"></div>
-        <div style="display:flex; justify-content:flex-end;">
-            <button class="btn btn-primary" onclick="saveKeys()">Save & Close</button>
-        </div>
-    </div>
-</div>
-
 <div id="codeModal" class="modal-overlay">
-    <div class="modal" style="width: 700px;">
+    <div class="modal">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0">Integration & Test</h3>
+            <h3 style="margin:0">Integration & Live Test</h3>
             <button class="btn" onclick="document.getElementById('codeModal').style.display='none'">Close</button>
         </div>
         
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button class="btn btn-primary" onclick="runSingleTestFromModal()">▶ Run Live Test</button>
-            <span id="modalStatus" style="align-self:center; font-weight:bold; font-size:13px;"></span>
+        <div style="display:flex; gap:10px; margin-top:5px; align-items: center;">
+            <button class="btn btn-primary" onclick="runSingleTestFromModal()">▶ Run Request</button>
+            <span id="modalStatus" style="font-weight:bold; font-size:13px;"></span>
         </div>
 
         <pre id="codeBlock"></pre>
-        <div style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0; min-height:100px; font-family:monospace; font-size:12px;" id="modalOutput">Response will appear here...</div>
+        
+        <div style="display:flex; flex-direction:column; gap:5px;">
+             <label style="font-size:12px; font-weight:600; color:#64748b;">Live Response:</label>
+             <div style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0; height:150px; overflow-y:auto; font-family:monospace; font-size:12px;" id="modalOutput">Click 'Run Request' to see output...</div>
+        </div>
     </div>
 </div>
 
 <script>
     let providersData = [];
-    let apiKeys = JSON.parse(localStorage.getItem("ai_pulse_keys") || "{}");
-    let savedModels = JSON.parse(localStorage.getItem("ai_pulse_models") || "{}");
+    let savedModels = JSON.parse(localStorage.getItem("ai_pulse_models_v7") || "{}");
     let currentModalIdx = -1;
 
     // --- 1. INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', async () => {
         try {
+            // Attempt auto-load (works if hosted on a web server)
             const response = await fetch('sources.json');
             if (!response.ok) throw new Error("Network error");
             const data = await response.json();
             loadProviders(data.providers);
         } catch (e) {
-            // If fetch fails (CORS on local file), show manual upload button
+            // Fallback for local file system opening
             document.getElementById("btnLoadSource").style.display = "inline-flex";
             document.getElementById("errorAlert").style.display = "block";
-            document.getElementById("tableBody").innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px;">Configuration not loaded.</td></tr>`;
+            document.getElementById("tableBody").innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">Please load sources.json</td></tr>`;
         }
     });
 
@@ -160,10 +154,11 @@
         reader.onload = (e) => {
             try {
                 const data = JSON.parse(e.target.result);
+                if(!data.providers) throw new Error("No providers found");
                 loadProviders(data.providers);
                 document.getElementById("errorAlert").style.display = "none";
                 document.getElementById("btnLoadSource").style.display = "none";
-            } catch (err) { alert("Invalid JSON file"); }
+            } catch (err) { alert("Invalid JSON format in sources.json"); }
         };
         reader.readAsText(file);
     }
@@ -174,23 +169,28 @@
         tbody.innerHTML = "";
 
         providers.forEach((p, idx) => {
-            const savedModel = savedModels[p.id] || (p.models && p.models[0]) || "";
+            // Use saved preference if available, else first model in list
+            const currentModel = savedModels[p.id] || (p.models && p.models[0]) || "";
             
-            // Datalist for combo box behavior
-            const dataListId = `list-${p.id}`;
-            const options = p.models.map(m => `<option value="${m}">`).join("");
+            // Create Datalist ID for this row
+            const dataListId = `list-${idx}`;
+            const options = (p.models || []).map(m => `<option value="${m}">`).join("");
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td><strong>${p.name}</strong></td>
                 <td>
-                    <input list="${dataListId}" id="model-${idx}" class="input-combo" value="${savedModel}" onchange="saveModelPreference('${p.id}', this.value)" placeholder="Select or type model ID...">
+                    <input list="${dataListId}" id="model-${idx}" class="input-combo" value="${currentModel}" 
+                           onchange="saveModelPreference('${p.id}', this.value)" 
+                           placeholder="Select or type model ID...">
                     <datalist id="${dataListId}">${options}</datalist>
                 </td>
                 <td><span id="status-${idx}" class="status-pill st-idle">Idle</span></td>
                 <td id="lat-${idx}" style="font-family:monospace;">--</td>
-                <td><button class="btn btn-sm" onclick="openCodeModal(${idx})">🛠️ Test</button></td>
-                <td><a href="${p.docs}" target="_blank" class="btn-link">Docs ↗</a></td>
+                <td><button class="btn btn-sm" onclick="openCodeModal(${idx})">🛠️ Code & Test</button></td>
+                <td>
+                    <a href="${p.docs}" target="_blank" class="btn-link" title="Open Official Docs">Docs ↗</a>
+                </td>
             `;
             tbody.appendChild(tr);
         });
@@ -199,7 +199,7 @@
     // --- 2. LOGIC ---
     function saveModelPreference(providerId, value) {
         savedModels[providerId] = value;
-        localStorage.setItem("ai_pulse_models", JSON.stringify(savedModels));
+        localStorage.setItem("ai_pulse_models_v7", JSON.stringify(savedModels));
     }
 
     async function runSystemCheck() {
@@ -217,14 +217,13 @@
         const statusEl = document.getElementById(`status-${idx}`);
         const latEl = document.getElementById(`lat-${idx}`);
         const model = document.getElementById(`model-${idx}`).value;
-        const key = apiKeys[p.id] || "";
+        const key = p.key || ""; 
 
         statusEl.className = "status-pill st-load"; statusEl.innerText = "Testing";
         
         const start = performance.now();
         try {
             const { url, headers, body } = buildRequest(p, model, key);
-            
             const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
             const duration = ((performance.now() - start) / 1000).toFixed(2);
 
@@ -242,20 +241,18 @@
 
     // --- 3. HELPER: Request Builder ---
     function buildRequest(p, model, key) {
-        // Interpolate Model and Key into Endpoint
+        // Simple interpolation
         let url = p.endpoint.replace("{model}", model).replace("{key}", key);
-        
         let headers = { "Content-Type": "application/json" };
         
         if (p.authType === "bearer" && key) headers["Authorization"] = `Bearer ${key}`;
         
         if (p.authType === "header-custom") {
             if (key) headers["x-api-key"] = key;
-            // Merge custom static headers from JSON
             if (p.customHeaders) Object.assign(headers, p.customHeaders);
         }
 
-        // Deep clone the body template and replace string placeholders
+        // Body interpolation
         let bodyStr = JSON.stringify(p.testBody);
         bodyStr = bodyStr.replace("{model}", model);
         const body = JSON.parse(bodyStr);
@@ -263,47 +260,25 @@
         return { url, headers, body };
     }
 
-    // --- 4. MODALS & UI ---
-    function openKeyModal() {
-        const div = document.getElementById("keyInputs");
-        div.innerHTML = "";
-        providersData.forEach(p => {
-            const row = document.createElement("div");
-            row.style.marginBottom = "10px";
-            row.innerHTML = `<label style="display:block;font-size:12px;font-weight:600;">${p.name}</label>
-                             <input type="password" id="key-${p.id}" value="${apiKeys[p.id]||''}" style="width:100%;padding:8px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;">`;
-            div.appendChild(row);
-        });
-        document.getElementById("keyModal").style.display = "flex";
-    }
-
-    function saveKeys() {
-        providersData.forEach(p => {
-            const val = document.getElementById(`key-${p.id}`).value.trim();
-            if (val) apiKeys[p.id] = val; else delete apiKeys[p.id];
-        });
-        localStorage.setItem("ai_pulse_keys", JSON.stringify(apiKeys));
-        document.getElementById("keyModal").style.display = "none";
-    }
-
+    // --- 4. MODAL ---
     function openCodeModal(idx) {
         currentModalIdx = idx;
         const p = providersData[idx];
         const model = document.getElementById(`model-${idx}`).value;
-        const key = apiKeys[p.id] || "YOUR_API_KEY";
         
-        const { url, headers, body } = buildRequest(p, model, key === "YOUR_API_KEY" ? key : "YOUR_API_KEY");
+        // We show "YOUR_KEY" in the snippet so you can copy-paste safely
+        // But the 'Run' button inside the modal uses the REAL key from json.
+        const { url, headers, body } = buildRequest(p, model, "YOUR_API_KEY");
 
-        // Code Generation
-        let code = `// ${p.name} Configuration\n`;
+        let code = `// ${p.name} JavaScript Snippet\n`;
         code += `const url = "${url}";\n`;
         code += `const headers = ${JSON.stringify(headers, null, 2)};\n`;
         code += `const body = ${JSON.stringify(body, null, 2)};\n\n`;
         code += `fetch(url, { method: "POST", headers, body: JSON.stringify(body) })\n`;
-        code += `.then(res => res.json())\n.then(data => console.log(data));`;
+        code += `.then(response => response.json())\n.then(data => console.log(data));`;
 
         document.getElementById("codeBlock").innerText = code;
-        document.getElementById("modalOutput").innerText = "Ready to test...";
+        document.getElementById("modalOutput").innerText = "Click 'Run Request' to test live...";
         document.getElementById("modalStatus").innerText = "";
         document.getElementById("codeModal").style.display = "flex";
     }
@@ -312,7 +287,7 @@
         if (currentModalIdx === -1) return;
         const p = providersData[currentModalIdx];
         const model = document.getElementById(`model-${currentModalIdx}`).value;
-        const key = apiKeys[p.id] || "";
+        const key = p.key || ""; // Use real key here
         const out = document.getElementById("modalOutput");
 
         out.innerText = "⏳ Sending request...";
@@ -326,6 +301,8 @@
             document.getElementById("modalStatus").style.color = res.ok ? "green" : "red";
         } catch (e) {
             out.innerText = "Error: " + e.message;
+            document.getElementById("modalStatus").innerText = "Failed";
+            document.getElementById("modalStatus").style.color = "red";
         }
     }
 </script>
