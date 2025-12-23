@@ -6,6 +6,9 @@
       "authType": "bearer",
       "endpoint": "https://api.openai.com/v1/chat/completions",
       "docs": "https://platform.openai.com/docs/models",
+      "cost": "Paid (approx $5-15/M tokens)",
+      "limits": "Tier-based rate limits (RPM)",
+      "capabilities": ["Text", "Vision", "Audio", "Embedding"],
       "models": [
         "gpt-4o",
         "gpt-4o-2024-08-06",
@@ -36,6 +39,9 @@
       "authType": "header-custom",
       "endpoint": "https://api.anthropic.com/v1/messages",
       "docs": "https://docs.anthropic.com/en/docs/about-claude/models",
+      "cost": "Paid ($3-15/M tokens)",
+      "limits": "Pre-paid credits required",
+      "capabilities": ["Text", "Vision"],
       "customHeaders": { 
         "x-api-version": "2023-06-01", 
         "anthropic-dangerously-allow-browser": "true" 
@@ -63,6 +69,9 @@
       "authType": "query",
       "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
       "docs": "https://ai.google.dev/gemini-api/docs/models/gemini",
+      "cost": "Free Tier Available",
+      "limits": "15 RPM (Free), 2M Context",
+      "capabilities": ["Text", "Vision", "Video", "Audio"],
       "models": [
         "gemini-2.0-flash",
         "gemini-2.0-flash-exp",
@@ -83,6 +92,9 @@
       "authType": "bearer",
       "endpoint": "https://api.deepseek.com/chat/completions",
       "docs": "https://api-docs.deepseek.com/",
+      "cost": "Very Low Cost ($0.14/M)",
+      "limits": "High throughput",
+      "capabilities": ["Text", "Reasoning"],
       "models": [
         "deepseek-chat",
         "deepseek-reasoner",
@@ -104,6 +116,9 @@
       "authType": "bearer",
       "endpoint": "https://api.x.ai/v1/chat/completions",
       "docs": "https://docs.x.ai/docs",
+      "cost": "Paid",
+      "limits": "Standard Beta limits",
+      "capabilities": ["Text", "Vision"],
       "models": [
         "grok-2-latest",
         "x-ai/grok-3-beta",
@@ -124,6 +139,9 @@
       "authType": "bearer",
       "endpoint": "https://api.mistral.ai/v1/chat/completions",
       "docs": "https://docs.mistral.ai/getting-started/models/",
+      "cost": "Paid (Free trial available)",
+      "limits": "Rate limited on trial",
+      "capabilities": ["Text", "Vision", "Coding"],
       "models": [
         "mistral-large-latest",
         "mistral-small-latest",
@@ -143,6 +161,9 @@
       "authType": "bearer",
       "endpoint": "https://api.perplexity.ai/chat/completions",
       "docs": "https://docs.perplexity.ai/",
+      "cost": "Paid",
+      "limits": "Depends on credit balance",
+      "capabilities": ["Text", "Online Search"],
       "models": [
         "sonar",
         "sonar-pro",
@@ -161,6 +182,9 @@
       "authType": "bearer",
       "endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
       "docs": "https://www.alibabacloud.com/help/en/model-studio/getting-started/models",
+      "cost": "Paid (Low cost)",
+      "limits": "High concurrency available",
+      "capabilities": ["Text", "Vision", "Mathematics"],
       "models": [
         "qwen-max",
         "qwen-plus",
@@ -182,6 +206,9 @@
       "authType": "bearer",
       "endpoint": "https://api.aimlapi.com/chat/completions",
       "docs": "https://docs.aimlapi.com/",
+      "cost": "Varies by model",
+      "limits": "10k+ requests/day",
+      "capabilities": ["Text", "Image", "Video", "Music", "Speech"],
       "models": [
         "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         "meta-llama/Llama-3.2-3B-Instruct-Turbo",
