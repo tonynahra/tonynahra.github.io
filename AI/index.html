@@ -5,69 +5,104 @@
     <title>AI Pulse Dashboard</title>
     <style>
         :root { --bg:#f8fafc; --surface:#ffffff; --text:#334155; --primary:#2563eb; --border:#e2e8f0; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 40px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 40px; }
         
         /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        h1 { margin: 0; color: #1e293b; }
+        h1 { margin: 0; color: #1e293b; letter-spacing: -0.5px; }
         
         /* Card & Table */
-        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f1f5f9; }
         table { width: 100%; border-collapse: collapse; }
         
-        th { background: #f1f5f9; font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 18px 24px; text-align: left; cursor: pointer; user-select: none; }
+        th { background: #f8fafc; font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 20px 24px; text-align: left; cursor: pointer; user-select: none; border-bottom: 1px solid #e2e8f0; letter-spacing: 0.05em; }
         th:hover { background: #e2e8f0; color: #334155; }
         th:after { content: ' ↕'; font-size: 11px; color: #94a3b8; margin-left: 5px; }
         
-        td { padding: 18px 24px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        td { padding: 16px 24px; text-align: left; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        tr:hover td { background-color: #fcfcfc; }
         
-        .provider-link { color: #2563eb; font-weight: bold; cursor: pointer; text-decoration: none; }
-        .provider-link:hover { text-decoration: underline; }
+        /* Provider Link */
+        .provider-link { color: #0f172a; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 15px; }
+        .provider-link:hover { color: var(--primary); text-decoration: underline; }
         
         /* Features Cell */
-        .feat-cell { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; cursor: pointer; }
-        .cap-badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .feat-cell { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; cursor: pointer; }
+        .cap-badge { background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; border: 1px solid #e2e8f0; }
         
+        /* --- MODERN DROPDOWN STYLE --- */
+        .model-select {
+            width: 65%; /* Reduced width */
+            padding: 10px 14px;
+            padding-right: 35px; /* Space for arrow */
+            font-size: 15px; /* Increased font */
+            font-weight: 500;
+            color: #334155;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+            
+            /* Custom Arrow */
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+        .model-select:hover { border-color: #94a3b8; background-color: #f8fafc; }
+        .model-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
         /* Buttons */
-        .btn { padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; transition: 0.1s; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
-        .btn:hover { background: #f8fafc; border-color: #94a3b8; }
+        .btn { padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; transition: 0.1s; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+        .btn:hover { background: #f8fafc; border-color: #94a3b8; transform: translateY(-1px); }
         .btn-help { background: #fff; color: #475569; border-color: #cbd5e1; }
         .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary:hover { background: #1d4ed8; color: white; }
         .btn-code { background: #334155; color: white; border-color: #334155; }
-        .btn-code:hover { background: #475569; }
+        .btn-code:hover { background: #475569; color: white; }
 
-        .btn-nav { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 18px; }
+        .btn-nav { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 18px; color: #64748b; }
         .btn-close-x { border: none; background: transparent; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
         .btn-close-x:hover { color: #dc2626; }
 
         /* Modals */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; }
-        .modal-aligner { display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; min-height: 100%; width: 100%; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; overflow-y: auto; backdrop-filter: blur(2px); }
+        .modal-aligner { display: flex; justify-content: center; align-items: flex-start; padding-top: 60px; min-height: 100%; width: 100%; }
         
-        .modal-content { background: white; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); margin-bottom: 50px; }
+        .modal-content { background: white; border-radius: 16px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); margin-bottom: 50px; }
         
-        /* SCALED UP SIZES (+25%) */
+        /* SCALED SIZES */
         .size-large { width: 1200px; max-width: 95%; padding: 40px; }
         .size-medium { width: 1000px; max-width: 95%; padding: 40px; }
 
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; }
-        .modal-header h3 { margin: 0; font-size: 28px; color: #0f172a; font-weight: 800; }
+        .modal-header h3 { margin: 0; font-size: 28px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
 
         /* Feature Modal Specifics */
         .features-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
-        .feature-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 30px; }
-        .feature-box h4 { margin: 0 0 20px 0; color: #334155; font-size: 18px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; letter-spacing: 0.05em; }
+        .feature-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; }
+        .feature-box h4 { margin: 0 0 20px 0; color: #334155; font-size: 18px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; letter-spacing: 0.05em; font-weight: 700; }
         
         .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
         .info-label { color: #64748b; font-weight: 500; }
         .info-val { font-weight: 600; color: #334155; text-align: right; }
         
-        .model-chip { display: inline-block; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; font-size: 16px; margin: 4px; color: #475569; border: 1px solid #e2e8f0; }
+        .model-chip { display: inline-block; background: #f8fafc; padding: 10px 14px; border-radius: 8px; font-size: 16px; margin: 4px; color: #334155; border: 1px solid #e2e8f0; font-weight: 500; }
         .endpoint-link { color: #2563eb; text-decoration: none; word-break: break-all; font-family: monospace; font-size: 15px; }
 
-        /* Inputs & Pre - Scaled */
-        select, input[type="text"], input[type="password"] { padding: 14px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; }
-        pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; height: 250px; overflow: auto; margin: 0; font-family: monospace; font-size: 15px; line-height: 1.5; }
+        /* Inputs & Pre */
+        input[type="text"], input[type="password"] { padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        /* Modal Select is slightly different from Table Select (Full width) */
+        .modal-input-select { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 16px; background-color:white; }
+
+        pre { background: #1e293b; color: #e2e8f0; padding: 25px; border-radius: 12px; height: 250px; overflow: auto; margin: 0; font-family: "Menlo", "Monaco", "Courier New", monospace; font-size: 15px; line-height: 1.6; }
         
     </style>
 </head>
@@ -76,7 +111,7 @@
 <div class="header">
     <div>
         <h1>AI Pulse Dashboard</h1>
-        <div style="font-size:14px; color:#64748b; margin-top:5px;">Public Status Monitor</div>
+        <div style="font-size:15px; color:#64748b; margin-top:5px; font-weight:500;">Public Status Monitor</div>
     </div>
     <button class="btn btn-help" onclick="document.getElementById('helpModal').style.display='flex'">
         ❓ Help & Guide
@@ -87,11 +122,11 @@
     <table id="dashTable">
         <thead>
             <tr>
-                <th onclick="sortTable(0)">Provider</th>
-                <th onclick="sortTable(1)">Features</th>
-                <th onclick="sortTable(2)">Available Models</th>
-                <th onclick="sortTable(3)">Status</th>
-                <th>Action</th>
+                <th onclick="sortTable(0)" width="20%">Provider</th>
+                <th onclick="sortTable(1)" width="20%">Features</th>
+                <th onclick="sortTable(2)" width="35%">Available Models</th>
+                <th onclick="sortTable(3)" width="15%">Status</th>
+                <th width="10%">Action</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -105,7 +140,7 @@
                 <h3>Dashboard Guide</h3>
                 <button class="btn-close-x" onclick="document.getElementById('helpModal').style.display='none'">×</button>
             </div>
-            <div style="font-size: 16px; line-height: 1.6;">
+            <div style="font-size: 16px; line-height: 1.6; color:#334155;">
                 <p>This dashboard monitors the status of various AI API providers. You can view capabilities, check limits, and test models.</p>
                 <strong>Testing:</strong>
                 <ul>
@@ -135,8 +170,8 @@
                     <div class="info-row"><span class="info-label">Cost Tier</span> <span class="info-val" id="featCost">--</span></div>
                     <div class="info-row"><span class="info-label">Limits</span> <span class="info-val" id="featLimits">--</span></div>
                     <div class="info-row"><span class="info-label">Auth</span> <span class="info-val" id="featAuth">--</span></div>
-                    <div style="margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
-                        <span class="info-label" style="display:block; margin-bottom:4px;">Endpoint URL</span>
+                    <div style="margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+                        <span class="info-label" style="display:block; margin-bottom:6px;">Endpoint URL</span>
                         <a href="#" target="_blank" id="featEndpoint" class="endpoint-link">--</a>
                     </div>
                     <div style="margin-top:25px; display:flex;">
@@ -168,17 +203,17 @@
                 </div>
             </div>
             
-            <div style="background:#f8fafc; padding:25px; border-radius:8px; display:flex; flex-direction:column; gap:15px;">
+            <div style="background:#f8fafc; padding:30px; border-radius:12px; display:flex; flex-direction:column; gap:20px; border:1px solid #e2e8f0;">
                 
                 <div>
-                    <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:5px; color:#475569;">1. Select Model</label>
-                    <select id="modalSelector"></select>
+                    <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px; color:#475569; text-transform:uppercase;">1. Select Model</label>
+                    <select id="modalSelector" class="modal-input-select"></select>
                 </div>
 
                 <div>
-                    <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:5px; color:#475569;">2. Enter Your API Key</label>
+                    <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:8px; color:#475569; text-transform:uppercase;">2. Enter Your API Key</label>
                     <input type="password" id="userKey" placeholder="Paste your API Key here (sk-...)">
-                    <div style="font-size:13px; color:#64748b; margin-top:5px;">Your key is used locally and never saved.</div>
+                    <div style="font-size:13px; color:#64748b; margin-top:8px;">Your key is used locally and never saved.</div>
                 </div>
 
                 <div style="display:flex; gap:15px; margin-top:10px;">
@@ -188,12 +223,12 @@
             </div>
             
             <div id="viewOutput">
-                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:5px; color:#334155;">Response Output:</label>
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:10px; color:#334155;">Response Output:</label>
                 <pre id="modalOutput">Waiting for input...</pre>
             </div>
 
             <div id="viewCode" style="display:none;">
-                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:5px; color:#334155;">Integration Code:</label>
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:10px; color:#334155;">Integration Code:</label>
                 <pre id="codeSnippet" style="background:#0f172a; color:#a5b4fc;"></pre>
             </div>
 
@@ -210,7 +245,8 @@ const CAP_ICONS = {
     "Text": "📝", "Vision": "👁️", "Image": "🖼️", "Video": "🎥", "Audio": "🎵",
     "Music": "🎼", "Speech": "🗣️", "Embedding": "🧠", "Reasoning": "🤔",
     "Mathematics": "🧮", "Coding": "💻", "Online Search": "🔍",
-    "Translation": "🌐", "Document Processing": "📄", "Generative AI": "✨"
+    "Translation": "🌐", "Document Processing": "📄", "Generative AI": "✨",
+    "Aggregator": "🔗", "Fast Inference": "⚡"
 };
 
 fetch('sources.json').then(r => r.json()).then(d => { data = d; render(); });
@@ -232,7 +268,11 @@ function render() {
             <tr data-idx="${idx}">
                 <td><strong class="provider-link" onclick="openFeaturesModal(${idx})">${p.name}</strong></td>
                 <td><div class="feat-cell" onclick="openFeaturesModal(${idx})">${caps} <span style="font-size:10px; color:#94a3b8;">+</span></div></td>
-                <td><select style="padding:10px; border-radius:4px; border:1px solid #e2e8f0;">${models.map(m => `<option>${m}</option>`).join('')}</select></td>
+                <td>
+                    <select class="model-select">
+                        ${models.map(m => `<option>${m}</option>`).join('')}
+                    </select>
+                </td>
                 <td>${statusBadge}</td>
                 <td><button class="btn" onclick="openTest(${idx})">Test</button></td>
             </tr>
@@ -262,7 +302,7 @@ function sortTable(n) {
 function openFeaturesModal(idx) {
     currentFeatureIdx = idx;
     const p = data.providers[idx];
-    document.getElementById('featModalTitle').innerText = p.name; // Just Name
+    document.getElementById('featModalTitle').innerText = p.name;
     document.getElementById('featCost').innerText = p.cost || "Unknown";
     document.getElementById('featLimits').innerText = p.limits || "Unknown";
     document.getElementById('featAuth').innerText = p.authType;
@@ -289,7 +329,7 @@ function navFeature(dir) {
 function openTest(idx) {
     currentIdx = idx;
     const p = data.providers[idx];
-    document.getElementById('modalTitle').innerText = p.name; // Title: Provider Name Only
+    document.getElementById('modalTitle').innerText = p.name; 
     const sel = document.getElementById('modalSelector');
     sel.innerHTML = p.models.map(m => `<option>${m}</option>`).join('');
     
@@ -324,7 +364,6 @@ function toggleCode() {
 function generateCodeSnippet() {
     const p = data.providers[currentIdx];
     const model = document.getElementById('modalSelector').value;
-    // Using Placeholder for code view
     const url = p.endpoint.replace('{model}', model).replace('{key}', 'PASTE_YOUR_OWN_KEY_HERE');
     let headers = { "Content-Type": "application/json" };
     if(p.authType === 'bearer') headers['Authorization'] = "Bearer PASTE_YOUR_OWN_KEY_HERE";
@@ -366,6 +405,21 @@ async function runTest() {
         out.innerText = "Network Error (Check Console/CORS): " + e.message;
     }
 }
+
+// Keyboard Navigation
+document.addEventListener('keydown', function(event) {
+    if (document.getElementById('featuresModal').style.display === 'flex') {
+        if (event.key === 'ArrowLeft') navFeature(-1);
+        if (event.key === 'ArrowRight') navFeature(1);
+        if (event.key === 'Escape') document.getElementById('featuresModal').style.display='none';
+    }
+    if (document.getElementById('testModal').style.display === 'flex') {
+        if (event.key === 'Escape') document.getElementById('testModal').style.display='none';
+    }
+    if (document.getElementById('helpModal').style.display === 'flex') {
+        if (event.key === 'Escape') document.getElementById('helpModal').style.display='none';
+    }
+});
 </script>
 </body>
 </html>
