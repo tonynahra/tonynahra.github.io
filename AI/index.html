@@ -104,7 +104,7 @@
             <button class="btn btn-primary" style="padding: 10px 20px; font-size:14px;" onclick="runSecureTest()">▶ Run Test</button>
             <button class="btn btn-code" style="padding: 10px 20px; font-size:14px;" onclick="toggleCodeView()"> { } Show Code</button>
             
-            <div id="modalActions" style="display:none; gap:10px; margin-left: auto;">
+            <div id="modalActions" style="display:none; gap:10px; margin-left: auto;" class="fade-in">
                 <button class="btn" style="color:#16a34a; border-color:#16a34a;" onclick="markStatus('PASS')">✔ Mark Pass</button>
                 <button class="btn" style="color:#dc2626; border-color:#dc2626;" onclick="markStatus('FAIL')">✖ Mark Fail</button>
             </div>
@@ -310,9 +310,15 @@
             
             const json = await res.json();
             output.innerText = JSON.stringify(json, null, 2);
+            
+            // SHOW BUTTONS NOW (Success)
             document.getElementById('modalActions').style.display = "flex";
+            
         } catch(e) {
             output.innerText = "Error: " + e.message;
+            
+            // SHOW BUTTONS NOW (Even on error, so you can mark fail)
+            document.getElementById('modalActions').style.display = "flex";
         }
     }
 
