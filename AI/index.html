@@ -3,465 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pulse v5 | Pulse & Playground</title>
+    <title>AI Pulse v6 | External Config</title>
     <style>
         :root {
-            --bg-body: #f3f4f6;
-            --bg-card: #ffffff;
-            --text-main: #111827;
-            --text-sub: #6b7280;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --border: #e5e7eb;
-            --code-bg: #1e1e1e;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #334155;
+            --primary: #3b82f6;
+            --border: #e2e8f0;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-body);
-            color: var(--text-main);
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             margin: 0;
-            padding: 20px;
+            padding: 30px;
         }
 
-        /* --- Header --- */
         .header {
             display: flex; justify-content: space-between; align-items: center;
-            background: var(--bg-card); padding: 15px 25px; border-radius: 12px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 25px;
+            background: var(--surface); padding: 15px 25px; border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 25px;
         }
-        .header h1 { margin: 0; font-size: 22px; font-weight: 700; color: #1f2937; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #1e293b; }
 
-        /* --- Buttons --- */
         .btn {
-            padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);
-            background: white; cursor: pointer; font-weight: 600; font-size: 13px;
-            transition: 0.15s; display: inline-flex; align-items: center; gap: 6px; color: #374151;
+            background: white; border: 1px solid var(--border); padding: 8px 14px;
+            border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;
+            transition: 0.15s; display: inline-flex; align-items: center; gap: 6px;
         }
-        .btn:hover { background: #f9fafb; border-color: #d1d5db; color: #111827; }
-        .btn-primary { background: var(--primary); color: white; border: 1px solid var(--primary); }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-sm { padding: 4px 10px; font-size: 12px; }
-        .btn-link { border: none; background: none; color: var(--primary); padding: 0; text-decoration: underline; font-size: 12px; }
+        .btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-link { border: none; background: none; color: var(--primary); text-decoration: underline; padding: 0; }
 
-        /* --- Table --- */
-        .card { background: var(--bg-card); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
+        .card { background: var(--surface); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { background: #f9fafb; padding: 12px 20px; text-align: left; color: var(--text-sub); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+        th { text-align: left; padding: 14px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; }
         td { padding: 14px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
-        tr:hover { background: #f9fafb; }
 
-        /* --- Inputs & Selects --- */
-        .model-select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; max-width: 220px; width: 100%; }
-        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .status-idle { background: #e5e7eb; color: #6b7280; }
-        .status-ok { background: #dcfce7; color: #15803d; }
-        .status-err { background: #fee2e2; color: #b91c1c; }
-        .status-load { background: #e0f2fe; color: #0369a1; }
+        /* Editable Dropdown Styling */
+        .input-combo {
+            width: 100%; max-width: 250px; padding: 8px; border: 1px solid var(--border);
+            border-radius: 6px; font-size: 13px; font-family: monospace;
+        }
 
-        /* --- Modal --- */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
-        .modal { background: white; width: 800px; max-width: 95%; height: 85vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f9fafb; }
-        .modal-body { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        
-        /* Modal Playground Areas */
-        .playground-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-        .control-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 5px; }
-        .modal-input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-family: monospace; font-size: 13px; box-sizing: border-box; }
-        
-        .code-area { flex: 1; display: flex; flex-direction: column; gap: 5px; min-height: 200px; }
-        .response-area { flex: 1; display: flex; flex-direction: column; gap: 5px; min-height: 150px; }
-        
-        pre { margin: 0; padding: 15px; border-radius: 8px; font-family: 'Menlo', 'Monaco', monospace; font-size: 12px; overflow: auto; height: 100%; box-sizing: border-box; }
-        .pre-dark { background: var(--code-bg); color: #e5e7eb; border: 1px solid #333; }
-        .pre-light { background: #f3f4f6; color: #1f2937; border: 1px solid var(--border); }
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .st-idle { background: #f1f5f9; color: #64748b; }
+        .st-ok { background: #dcfce7; color: #166534; }
+        .st-err { background: #fee2e2; color: #991b1b; }
+        .st-load { background: #e0f2fe; color: #075985; }
 
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
+        .modal { background: white; width: 600px; max-width: 90%; padding: 25px; border-radius: 12px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        
+        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 13px; font-family: monospace; }
+        
+        .alert-box { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <div style="display:flex; align-items:center; gap:10px;">
-        <h1>AI Pulse v5</h1>
-        <span style="font-size:11px; background:#e5e7eb; padding:2px 6px; border-radius:4px; font-weight:600;">Playground Edition</span>
+        <h1>AI Pulse v6</h1>
+        <span style="font-size:11px; background:#e2e8f0; padding:2px 8px; border-radius:4px;">JSON Powered</span>
     </div>
     <div style="display:flex; gap:10px;">
-        <input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleImport(this)">
-        <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Import</button>
+        <input type="file" id="sourceFile" accept=".json" style="display:none" onchange="loadExternalSource(this)">
+        <button id="btnLoadSource" class="btn" onclick="document.getElementById('sourceFile').click()" style="display:none;">⚠️ Load sources.json</button>
         <button class="btn" onclick="openKeyModal()">🔑 API Keys</button>
-        <button class="btn btn-primary" onclick="runGlobalTest()">⚡ Run System Check</button>
+        <button class="btn btn-primary" onclick="runSystemCheck()">⚡ System Check</button>
     </div>
+</div>
+
+<div id="errorAlert" class="alert-box">
+    <strong>Cannot load sources.json automatically.</strong> Browsers often block reading local files directly. 
+    Please click the "Load sources.json" button above and select the file manually.
 </div>
 
 <div class="card">
     <table id="mainTable">
         <thead>
             <tr>
-                <th width="15%">Provider</th>
-                <th width="30%">Model Alias (Stable Pointer)</th>
-                <th width="15%">Docs</th>
+                <th width="20%">Provider</th>
+                <th width="35%">Model Alias (Type or Select)</th>
                 <th width="10%">Status</th>
                 <th width="10%">Latency</th>
-                <th width="20%">Actions</th>
+                <th width="15%">Action</th>
+                <th width="10%">Docs</th>
             </tr>
         </thead>
-        <tbody id="tableBody"></tbody>
+        <tbody id="tableBody">
+            <tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">Loading configuration...</td></tr>
+        </tbody>
     </table>
 </div>
 
 <div id="keyModal" class="modal-overlay">
-    <div class="modal" style="height: auto; max-height: 80vh; width: 500px;">
-        <div class="modal-header">
-            <h3 style="margin:0">🔐 API Key Vault</h3>
-            <button class="btn btn-sm" onclick="closeModal('keyModal')">✖</button>
-        </div>
-        <div class="modal-body" id="keyInputs"></div>
-        <div style="padding: 15px 20px; border-top: 1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; background:#f9fafb;">
-            <button class="btn" onclick="exportConfig()">💾 Export JSON</button>
-            <button class="btn btn-primary" onclick="saveKeys()">Save Keys</button>
+    <div class="modal">
+        <h3 style="margin:0">API Keys</h3>
+        <p style="font-size:12px; color:#64748b; margin:0;">Keys are stored in browser LocalStorage, not in the JSON file.</p>
+        <div id="keyInputs"></div>
+        <div style="display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" onclick="saveKeys()">Save & Close</button>
         </div>
     </div>
 </div>
 
-<div id="playgroundModal" class="modal-overlay">
-    <div class="modal">
-        <div class="modal-header">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <h3 style="margin:0" id="pgTitle">Playground</h3>
-                <span class="status-badge status-idle" id="pgBadge">Ready</span>
-            </div>
-            <button class="btn btn-sm" onclick="closeModal('playgroundModal')">✖</button>
+<div id="codeModal" class="modal-overlay">
+    <div class="modal" style="width: 700px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0">Integration & Test</h3>
+            <button class="btn" onclick="document.getElementById('codeModal').style.display='none'">Close</button>
         </div>
         
-        <div class="modal-body">
-            <div class="playground-controls">
-                <div class="control-group">
-                    <label>Provider</label>
-                    <input type="text" id="pgProvider" class="modal-input" disabled style="background:#f3f4f6;">
-                </div>
-                <div class="control-group">
-                    <label>Model ID (Edit to test new models)</label>
-                    <input type="text" id="pgModel" class="modal-input" placeholder="e.g. gpt-4o" oninput="updateSnippet()">
-                </div>
-            </div>
-
-            <div class="code-area">
-                <label style="font-size:12px; font-weight:600; color:var(--text-sub);">JavaScript Snippet (Auto-updates)</label>
-                <pre id="pgCode" class="pre-dark">// Code will appear here...</pre>
-            </div>
-
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button class="btn" onclick="copyCode()">📋 Copy Code</button>
-                <button class="btn btn-primary" onclick="runPlaygroundTest()">▶ Run Live Request</button>
-            </div>
-
-            <div class="response-area">
-                <label style="font-size:12px; font-weight:600; color:var(--text-sub);">Live Response</label>
-                <pre id="pgResponse" class="pre-light">Click 'Run Live Request' to test.</pre>
-            </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn btn-primary" onclick="runSingleTestFromModal()">▶ Run Live Test</button>
+            <span id="modalStatus" style="align-self:center; font-weight:bold; font-size:13px;"></span>
         </div>
+
+        <pre id="codeBlock"></pre>
+        <div style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0; min-height:100px; font-family:monospace; font-size:12px;" id="modalOutput">Response will appear here...</div>
     </div>
 </div>
 
 <script>
-// --- CONFIGURATION ---
-const providers = [
-    {
-        id: "gemini",
-        name: "Google Gemini",
-        docs: "https://ai.google.dev/gemini-api/docs/models/gemini",
-        pointers: ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"],
-        endpoint: "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
-        testBody: (m) => ({ contents: [{ parts: [{ text: "Hello" }] }] })
-    },
-    {
-        id: "groq",
-        name: "Groq",
-        docs: "https://console.groq.com/docs/models",
-        pointers: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"],
-        endpoint: "https://api.groq.com/openai/v1/chat/completions",
-        testBody: (m) => ({ model: m, messages: [{ role: "user", content: "Hi" }] })
-    },
-    {
-        id: "openai",
-        name: "OpenAI",
-        docs: "https://platform.openai.com/docs/models",
-        pointers: ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
-        endpoint: "https://api.openai.com/v1/chat/completions",
-        testBody: (m) => ({ model: m, messages: [{ role: "user", content: "Hi" }] })
-    },
-    {
-        id: "anthropic",
-        name: "Anthropic",
-        docs: "https://docs.anthropic.com/en/docs/about-claude/models",
-        pointers: ["claude-3-5-sonnet-latest", "claude-3-5-haiku-latest"],
-        endpoint: "https://api.anthropic.com/v1/messages",
-        headers: { "x-api-version": "2023-06-01", "anthropic-dangerously-allow-browser": "true" },
-        testBody: (m) => ({ model: m, max_tokens: 50, messages: [{ role: "user", content: "Hi" }] })
-    },
-    {
-        id: "deepseek",
-        name: "DeepSeek",
-        docs: "https://api-docs.deepseek.com/",
-        pointers: ["deepseek-chat"], 
-        endpoint: "https://api.deepseek.com/chat/completions",
-        testBody: (m) => ({ model: m, messages: [{ role: "user", content: "Hi" }] })
-    },
-    {
-        id: "openrouter",
-        name: "OpenRouter",
-        docs: "https://openrouter.ai/models",
-        pointers: ["google/gemini-2.0-flash-exp:free", "openai/gpt-4o"],
-        endpoint: "https://openrouter.ai/api/v1/chat/completions",
-        testBody: (m) => ({ model: m, messages: [{ role: "user", content: "Hi" }] })
-    }
-];
+    let providersData = [];
+    let apiKeys = JSON.parse(localStorage.getItem("ai_pulse_keys") || "{}");
+    let savedModels = JSON.parse(localStorage.getItem("ai_pulse_models") || "{}");
+    let currentModalIdx = -1;
 
-// --- STATE ---
-let appState = {
-    keys: {},
-    customModels: {},
-    selectedModels: {}
-};
-
-let currentPlaygroundIdx = -1; // Tracks which provider is open in modal
-
-// --- INITIALIZATION ---
-document.addEventListener("DOMContentLoaded", () => {
-    loadState();
-    renderTable();
-});
-
-// --- RENDER TABLE ---
-function renderTable() {
-    const tbody = document.getElementById("tableBody");
-    tbody.innerHTML = "";
-
-    providers.forEach((p, idx) => {
-        // Models: Default + Custom
-        const customs = appState.customModels[p.id] || [];
-        const allModels = [...new Set([...p.pointers, ...customs])];
-        
-        // Selection Logic
-        const selected = appState.selectedModels[p.id] || allModels[0];
-        const options = allModels.map(m => `<option value="${m}" ${m===selected?"selected":""}>${m}</option>`).join("");
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td style="font-weight:600;">${p.name}</td>
-            <td>
-                <div style="display:flex; gap:5px;">
-                    <select id="sel-${idx}" class="model-select" onchange="updateSelection('${p.id}', this.value)">${options}</select>
-                </div>
-            </td>
-            <td>
-                <a href="${p.docs}" target="_blank" class="btn-link">View Models ↗</a>
-            </td>
-            <td><span id="status-${idx}" class="status-badge status-idle">Idle</span></td>
-            <td id="lat-${idx}" style="font-family:monospace; font-size:12px;">--</td>
-            <td>
-                <button class="btn btn-sm" onclick="openPlayground(${idx})">🛠️ Code & Test</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-// --- GLOBAL TEST LOGIC ---
-async function runGlobalTest() {
-    const btn = document.querySelector('.btn-primary');
-    const oldTxt = btn.innerText;
-    btn.innerText = "⏳ Testing...";
-    await Promise.all(providers.map((p, idx) => testProviderSingle(p, idx)));
-    btn.innerText = oldTxt;
-}
-
-async function testProviderSingle(p, idx) {
-    const statusEl = document.getElementById(`status-${idx}`);
-    const latEl = document.getElementById(`lat-${idx}`);
-    const model = document.getElementById(`sel-${idx}`).value;
-    const key = appState.keys[p.id] || "";
-
-    statusEl.className = "status-badge status-load"; statusEl.innerText = "Running";
-    const start = performance.now();
-
-    try {
-        const { url, headers, body } = prepareRequest(p, model, key);
-        const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
-        
-        const duration = ((performance.now() - start) / 1000).toFixed(2);
-        if(res.ok) {
-            statusEl.className = "status-badge status-ok"; statusEl.innerText = "Online";
-            latEl.innerText = duration + "s"; latEl.style.color = "green";
-        } else {
-            throw new Error(res.status);
-        }
-    } catch(e) {
-        statusEl.className = "status-badge status-err"; statusEl.innerText = "Error";
-        latEl.innerText = "Fail"; latEl.style.color = "red";
-    }
-}
-
-// --- PLAYGROUND MODAL LOGIC ---
-function openPlayground(idx) {
-    currentPlaygroundIdx = idx;
-    const p = providers[idx];
-    const currentModel = document.getElementById(`sel-${idx}`).value;
-
-    document.getElementById("pgTitle").innerText = `${p.name} Playground`;
-    document.getElementById("pgProvider").value = p.name;
-    document.getElementById("pgModel").value = currentModel;
-    document.getElementById("pgResponse").innerText = "Ready to test...";
-    document.getElementById("pgBadge").className = "status-badge status-idle";
-    document.getElementById("pgBadge").innerText = "Idle";
-    
-    updateSnippet();
-    openModal("playgroundModal");
-}
-
-function updateSnippet() {
-    if(currentPlaygroundIdx === -1) return;
-    const p = providers[currentPlaygroundIdx];
-    const model = document.getElementById("pgModel").value;
-    const key = appState.keys[p.id] || "YOUR_API_KEY";
-
-    // Build visual snippet
-    const { url, headers, body } = prepareRequest(p, model, key === "YOUR_API_KEY" ? "YOUR_API_KEY" : "${apiKey}");
-    
-    // Mask key in URL if gemini
-    let displayUrl = url; 
-    if(p.id === 'gemini') displayUrl = p.endpoint.replace("{model}", model).replace("{key}", "YOUR_API_KEY");
-
-    let code = `// ${p.name} JavaScript Integration\n`;
-    code += `const url = "${displayUrl}";\n`;
-    code += `const headers = ${JSON.stringify(headers, null, 2)};\n`;
-    code += `const body = ${JSON.stringify(body, null, 2)};\n\n`;
-    code += `fetch(url, {\n  method: "POST",\n  headers: headers,\n  body: JSON.stringify(body)\n})\n`;
-    code += `.then(response => response.json())\n.then(data => console.log(data));`;
-
-    document.getElementById("pgCode").innerText = code;
-}
-
-async function runPlaygroundTest() {
-    const p = providers[currentPlaygroundIdx];
-    const model = document.getElementById("pgModel").value; // Use input value, not table value
-    const key = appState.keys[p.id] || "";
-    const badge = document.getElementById("pgBadge");
-    const output = document.getElementById("pgResponse");
-
-    output.innerText = "⏳ Sending request...";
-    badge.className = "status-badge status-load"; badge.innerText = "Sending";
-
-    try {
-        const { url, headers, body } = prepareRequest(p, model, key);
-        const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
-        const json = await res.json();
-        
-        output.innerText = JSON.stringify(json, null, 2);
-        
-        if(res.ok) {
-            badge.className = "status-badge status-ok"; badge.innerText = "Success";
-            // If this was a new model that succeeded, let's save it to custom models implicitly? 
-            // Optional: User can manually add it later, but for now we just test.
-        } else {
-            badge.className = "status-badge status-err"; badge.innerText = "HTTP " + res.status;
-        }
-    } catch(e) {
-        output.innerText = "Error: " + e.message;
-        badge.className = "status-badge status-err"; badge.innerText = "Failed";
-    }
-}
-
-// --- HELPER: Request Builder ---
-function prepareRequest(p, model, key) {
-    let url = p.endpoint.replace("{model}", model).replace("{key}", key);
-    let headers = { "Content-Type": "application/json" };
-    
-    if(p.id !== 'gemini' && !url.includes("key=")) {
-        if(key) headers["Authorization"] = `Bearer ${key}`;
-    }
-    
-    if(p.id === 'anthropic') {
-        if(key) headers["x-api-key"] = key;
-        delete headers["Authorization"];
-        Object.assign(headers, p.headers);
-    }
-    
-    const body = p.testBody(model);
-    return { url, headers, body };
-}
-
-// --- DATA MANAGEMENT ---
-function loadState() {
-    const raw = localStorage.getItem("ai_pulse_v5_cfg");
-    if(raw) {
-        const d = JSON.parse(raw);
-        appState = { keys: d.keys||{}, customModels: d.customModels||{}, selectedModels: d.selectedModels||{} };
-    }
-}
-
-function saveState() {
-    localStorage.setItem("ai_pulse_v5_cfg", JSON.stringify(appState));
-}
-
-function updateSelection(pid, val) {
-    appState.selectedModels[pid] = val;
-    saveState();
-}
-
-function saveKeys() {
-    providers.forEach(p => {
-        const val = document.getElementById(`k-${p.id}`).value.trim();
-        if(val) appState.keys[p.id] = val; else delete appState.keys[p.id];
-    });
-    saveState();
-    closeModal("keyModal");
-}
-
-function handleImport(input) {
-    const f = input.files[0];
-    if(!f) return;
-    const r = new FileReader();
-    r.onload = (e) => {
+    // --- 1. INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', async () => {
         try {
-            const d = JSON.parse(e.target.result);
-            if(d.keys) appState.keys = { ...appState.keys, ...d.keys };
-            if(d.customModels) appState.customModels = { ...appState.customModels, ...d.customModels };
-            saveState();
-            renderTable();
-        } catch(e) { alert("Invalid JSON"); }
-    };
-    r.readAsText(f);
-}
-
-function exportConfig() {
-    const blob = new Blob([JSON.stringify(appState, null, 2)], {type:'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'ai_pulse_config.json';
-    a.click();
-}
-
-// --- UI UTILS ---
-function openModal(id) { document.getElementById(id).style.display = "flex"; }
-function closeModal(id) { document.getElementById(id).style.display = "none"; }
-function openKeyModal() {
-    const c = document.getElementById("keyInputs"); c.innerHTML = "";
-    providers.forEach(p => {
-        const div = document.createElement("div");
-        div.style.marginBottom = "10px";
-        div.innerHTML = `<label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">${p.name}</label>
-                         <input type="password" id="k-${p.id}" value="${appState.keys[p.id]||''}" class="modal-input" placeholder="sk-...">`;
-        c.appendChild(div);
+            const response = await fetch('sources.json');
+            if (!response.ok) throw new Error("Network error");
+            const data = await response.json();
+            loadProviders(data.providers);
+        } catch (e) {
+            // If fetch fails (CORS on local file), show manual upload button
+            document.getElementById("btnLoadSource").style.display = "inline-flex";
+            document.getElementById("errorAlert").style.display = "block";
+            document.getElementById("tableBody").innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px;">Configuration not loaded.</td></tr>`;
+        }
     });
-    openModal("keyModal");
-}
-function copyCode() {
-    navigator.clipboard.writeText(document.getElementById("pgCode").innerText);
-    alert("Copied to clipboard!");
-}
+
+    function loadExternalSource(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                loadProviders(data.providers);
+                document.getElementById("errorAlert").style.display = "none";
+                document.getElementById("btnLoadSource").style.display = "none";
+            } catch (err) { alert("Invalid JSON file"); }
+        };
+        reader.readAsText(file);
+    }
+
+    function loadProviders(providers) {
+        providersData = providers;
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+
+        providers.forEach((p, idx) => {
+            const savedModel = savedModels[p.id] || (p.models && p.models[0]) || "";
+            
+            // Datalist for combo box behavior
+            const dataListId = `list-${p.id}`;
+            const options = p.models.map(m => `<option value="${m}">`).join("");
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${p.name}</strong></td>
+                <td>
+                    <input list="${dataListId}" id="model-${idx}" class="input-combo" value="${savedModel}" onchange="saveModelPreference('${p.id}', this.value)" placeholder="Select or type model ID...">
+                    <datalist id="${dataListId}">${options}</datalist>
+                </td>
+                <td><span id="status-${idx}" class="status-pill st-idle">Idle</span></td>
+                <td id="lat-${idx}" style="font-family:monospace;">--</td>
+                <td><button class="btn btn-sm" onclick="openCodeModal(${idx})">🛠️ Test</button></td>
+                <td><a href="${p.docs}" target="_blank" class="btn-link">Docs ↗</a></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // --- 2. LOGIC ---
+    function saveModelPreference(providerId, value) {
+        savedModels[providerId] = value;
+        localStorage.setItem("ai_pulse_models", JSON.stringify(savedModels));
+    }
+
+    async function runSystemCheck() {
+        const btn = document.querySelector('.btn-primary');
+        const oldText = btn.innerText;
+        btn.innerText = "⏳ Running...";
+        
+        await Promise.all(providersData.map((_, idx) => runTest(idx)));
+        
+        btn.innerText = oldText;
+    }
+
+    async function runTest(idx) {
+        const p = providersData[idx];
+        const statusEl = document.getElementById(`status-${idx}`);
+        const latEl = document.getElementById(`lat-${idx}`);
+        const model = document.getElementById(`model-${idx}`).value;
+        const key = apiKeys[p.id] || "";
+
+        statusEl.className = "status-pill st-load"; statusEl.innerText = "Testing";
+        
+        const start = performance.now();
+        try {
+            const { url, headers, body } = buildRequest(p, model, key);
+            
+            const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+            const duration = ((performance.now() - start) / 1000).toFixed(2);
+
+            if (res.ok) {
+                statusEl.className = "status-pill st-ok"; statusEl.innerText = "Online";
+                latEl.innerText = duration + "s"; latEl.style.color = "green";
+            } else {
+                throw new Error(res.status);
+            }
+        } catch (e) {
+            statusEl.className = "status-pill st-err"; statusEl.innerText = "Error";
+            latEl.innerText = "Fail"; latEl.style.color = "red";
+        }
+    }
+
+    // --- 3. HELPER: Request Builder ---
+    function buildRequest(p, model, key) {
+        // Interpolate Model and Key into Endpoint
+        let url = p.endpoint.replace("{model}", model).replace("{key}", key);
+        
+        let headers = { "Content-Type": "application/json" };
+        
+        if (p.authType === "bearer" && key) headers["Authorization"] = `Bearer ${key}`;
+        
+        if (p.authType === "header-custom") {
+            if (key) headers["x-api-key"] = key;
+            // Merge custom static headers from JSON
+            if (p.customHeaders) Object.assign(headers, p.customHeaders);
+        }
+
+        // Deep clone the body template and replace string placeholders
+        let bodyStr = JSON.stringify(p.testBody);
+        bodyStr = bodyStr.replace("{model}", model);
+        const body = JSON.parse(bodyStr);
+
+        return { url, headers, body };
+    }
+
+    // --- 4. MODALS & UI ---
+    function openKeyModal() {
+        const div = document.getElementById("keyInputs");
+        div.innerHTML = "";
+        providersData.forEach(p => {
+            const row = document.createElement("div");
+            row.style.marginBottom = "10px";
+            row.innerHTML = `<label style="display:block;font-size:12px;font-weight:600;">${p.name}</label>
+                             <input type="password" id="key-${p.id}" value="${apiKeys[p.id]||''}" style="width:100%;padding:8px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;">`;
+            div.appendChild(row);
+        });
+        document.getElementById("keyModal").style.display = "flex";
+    }
+
+    function saveKeys() {
+        providersData.forEach(p => {
+            const val = document.getElementById(`key-${p.id}`).value.trim();
+            if (val) apiKeys[p.id] = val; else delete apiKeys[p.id];
+        });
+        localStorage.setItem("ai_pulse_keys", JSON.stringify(apiKeys));
+        document.getElementById("keyModal").style.display = "none";
+    }
+
+    function openCodeModal(idx) {
+        currentModalIdx = idx;
+        const p = providersData[idx];
+        const model = document.getElementById(`model-${idx}`).value;
+        const key = apiKeys[p.id] || "YOUR_API_KEY";
+        
+        const { url, headers, body } = buildRequest(p, model, key === "YOUR_API_KEY" ? key : "YOUR_API_KEY");
+
+        // Code Generation
+        let code = `// ${p.name} Configuration\n`;
+        code += `const url = "${url}";\n`;
+        code += `const headers = ${JSON.stringify(headers, null, 2)};\n`;
+        code += `const body = ${JSON.stringify(body, null, 2)};\n\n`;
+        code += `fetch(url, { method: "POST", headers, body: JSON.stringify(body) })\n`;
+        code += `.then(res => res.json())\n.then(data => console.log(data));`;
+
+        document.getElementById("codeBlock").innerText = code;
+        document.getElementById("modalOutput").innerText = "Ready to test...";
+        document.getElementById("modalStatus").innerText = "";
+        document.getElementById("codeModal").style.display = "flex";
+    }
+
+    async function runSingleTestFromModal() {
+        if (currentModalIdx === -1) return;
+        const p = providersData[currentModalIdx];
+        const model = document.getElementById(`model-${currentModalIdx}`).value;
+        const key = apiKeys[p.id] || "";
+        const out = document.getElementById("modalOutput");
+
+        out.innerText = "⏳ Sending request...";
+        try {
+            const { url, headers, body } = buildRequest(p, model, key);
+            const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+            const json = await res.json();
+            
+            out.innerText = JSON.stringify(json, null, 2);
+            document.getElementById("modalStatus").innerText = res.ok ? "✅ Success" : "❌ Error";
+            document.getElementById("modalStatus").style.color = res.ok ? "green" : "red";
+        } catch (e) {
+            out.innerText = "Error: " + e.message;
+        }
+    }
 </script>
 </body>
 </html>
