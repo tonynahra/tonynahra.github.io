@@ -32,12 +32,11 @@
         .feat-cell { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; cursor: pointer; }
         .cap-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 4px; text-transform: uppercase; }
         
-        /* Badge Colors */
         .c-text { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
         .c-vision { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; }
         .c-audio { background: #fff1f2; color: #be123c; border-color: #fecdd3; }
         .c-video { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-        .c-gen { background: #fffbeb; color: #b45309; border-color: #fde68a; } /* Gold/Amber */
+        .c-gen { background: #fffbeb; color: #b45309; border-color: #fde68a; } 
         .c-code { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
         .c-other { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
 
@@ -59,6 +58,7 @@
         .btn-primary:hover { background: #1d4ed8; color: white; }
         .btn-code { background: #334155; color: white; border-color: #334155; }
         .btn-code:hover { background: #475569; color: white; }
+        
         .btn-nav { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 18px; color: #64748b; }
         .btn-close-x { border: none; background: transparent; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
         .btn-close-x:hover { color: #dc2626; }
@@ -69,24 +69,20 @@
         /* Modals */
         .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; backdrop-filter: blur(2px); justify-content: center; align-items: center; }
         
-        /* Modal Content - Fixed Height Logic */
-        .modal-content { background: white; border-radius: 16px; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-content { background: white; border-radius: 16px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); margin-bottom: 50px; }
         
         /* Sizes */
-        .size-large { width: 1200px; max-width: 95%; height: 90vh; padding: 30px; }
-        .size-medium { width: 1000px; max-width: 95%; height: 90vh; padding: 30px; }
+        .size-large { width: 1200px; max-width: 95%; height: 90vh; padding: 40px; }
+        .size-medium { width: 1000px; max-width: 95%; height: 90vh; padding: 40px; }
 
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; flex-shrink: 0; }
-        .modal-header h3 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; flex-shrink: 0; }
+        .modal-header h3 { margin: 0; font-size: 28px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
 
         /* Test Modal Layout */
         .test-body { display: flex; flex-direction: column; height: 100%; gap: 15px; padding-top: 15px; overflow: hidden; }
-        
         .input-group { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; flex-shrink: 0; }
-        
         .output-group { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
         .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        
         pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 12px; flex: 1; overflow: auto; margin: 0; font-family: "Menlo", "Monaco", "Courier New", monospace; font-size: 14px; line-height: 1.6; border: 1px solid #0f172a; }
 
         /* Feature Modal Specifics */
@@ -96,10 +92,30 @@
         
         .feature-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; }
         .feature-box h4 { margin: 0 0 15px 0; color: #334155; font-size: 16px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; font-weight: 700; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
         
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .info-label { color: #64748b; font-weight: 500; }
+        .info-val { font-weight: 600; color: #334155; text-align: right; }
+        
+        /* UPDATED: Model Chip Style 
+           Increased font size to 20px (+50% from 13px)
+        */
+        .model-chip { 
+            display: inline-block; 
+            background: #f8fafc; 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            font-size: 20px; /* INCREASED FONT */
+            margin: 4px; 
+            color: #334155; 
+            border: 1px solid #e2e8f0; 
+            font-weight: 500; 
+        }
+        
+        .endpoint-link { color: #2563eb; text-decoration: none; word-break: break-all; font-family: monospace; font-size: 15px; }
+
         /* Inputs */
-        input[type="password"] { padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; }
+        select, input[type="text"], input[type="password"] { padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; transition: 0.2s; }
         .modal-input-select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 16px; background-color:white; }
         
     </style>
@@ -172,10 +188,11 @@
                     <div class="info-row"><span style="color:#64748b;">Auth</span> <span style="font-weight:600;" id="featAuth">--</span></div>
                     <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:15px;">
                         <span style="display:block; margin-bottom:5px; font-size:14px; font-weight:600; color:#64748b;">Endpoint URL</span>
-                        <a href="#" target="_blank" id="featEndpoint" style="color:#2563eb; word-break:break-all; font-family:monospace;">--</a>
+                        <a href="#" target="_blank" id="featEndpoint" class="endpoint-link">--</a>
                     </div>
-                    <div style="margin-top:20px;">
-                        <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="width:100%; justify-content:center;">📖 Open Official Docs</a>
+                    
+                    <div style="margin-top:20px; width: 100%;">
+                        <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="width:100%; box-sizing: border-box; display:flex; justify-content:center;">📖 Open Official Docs</a>
                     </div>
                 </div>
                 
@@ -273,7 +290,6 @@ function render() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = "";
     data.providers.forEach((p, idx) => {
-        // Badges
         const caps = (p.capabilities || []).slice(0,3).map(c => {
             const conf = CAP_CONFIG[c] || { icon: '•', cls: 'c-other' };
             return `<span class="cap-badge ${conf.cls}">${conf.icon} ${c}</span>`;
@@ -339,7 +355,7 @@ function openFeaturesModal(idx) {
 
     document.getElementById('featModelCount').innerText = p.models.length;
     document.getElementById('featModelList').innerHTML = p.models.map(m => 
-        `<span style="background:#f1f5f9; padding:6px 12px; border-radius:4px; border:1px solid #e2e8f0; font-size:13px; color:#475569;">${m}</span>`
+        `<span class="model-chip">${m}</span>`
     ).join('');
     
     document.getElementById('featuresModal').style.display = 'flex';
@@ -437,7 +453,6 @@ async function runPublicTest() {
     }
 }
 
-/* KEYBOARD SUPPORT */
 document.addEventListener('keydown', function(event) {
     if (document.getElementById('featuresModal').style.display === 'flex') {
         if (event.key === 'ArrowLeft') navFeature(-1);
