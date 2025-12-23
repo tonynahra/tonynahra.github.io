@@ -15,67 +15,60 @@
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         
-        /* Sortable Headers */
-        th { background: #f1f5f9; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 16px 24px; text-align: left; cursor: pointer; user-select: none; transition: background 0.2s; }
+        th { background: #f1f5f9; font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 18px 24px; text-align: left; cursor: pointer; user-select: none; }
         th:hover { background: #e2e8f0; color: #334155; }
-        th:after { content: ' ↕'; font-size: 10px; color: #94a3b8; margin-left: 5px; }
+        th:after { content: ' ↕'; font-size: 11px; color: #94a3b8; margin-left: 5px; }
         
-        td { padding: 16px 24px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        td { padding: 18px 24px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
         
-        /* Clickable Links in Table */
         .provider-link { color: #2563eb; font-weight: bold; cursor: pointer; text-decoration: none; }
         .provider-link:hover { text-decoration: underline; }
         
         /* Features Cell */
         .feat-cell { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; cursor: pointer; }
-        .cap-badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .cap-badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
         
         /* Buttons */
-        .btn { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 500; transition: 0.1s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn { padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; transition: 0.1s; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
         .btn:hover { background: #f8fafc; border-color: #94a3b8; }
         .btn-help { background: #fff; color: #475569; border-color: #cbd5e1; }
-        .btn-help:hover { background: #f1f5f9; color: #1e293b; }
         .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        .btn-nav { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; }
-        .btn-close-x { border: none; background: transparent; font-size: 24px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
+        .btn-code { background: #334155; color: white; border-color: #334155; }
+        .btn-code:hover { background: #475569; }
+
+        .btn-nav { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 18px; }
+        .btn-close-x { border: none; background: transparent; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
         .btn-close-x:hover { color: #dc2626; }
 
-        /* Modals Generic */
+        /* Modals */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; }
         .modal-aligner { display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; min-height: 100%; width: 100%; }
         
         .modal-content { background: white; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); margin-bottom: 50px; }
         
-        /* Sizes */
-        .size-large { width: 1100px; max-width: 95%; padding: 35px; }
-        .size-medium { width: 700px; max-width: 95%; padding: 30px; }
+        /* SCALED UP SIZES (+25%) */
+        .size-large { width: 1200px; max-width: 95%; padding: 40px; }
+        .size-medium { width: 1000px; max-width: 95%; padding: 40px; }
 
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
-        .modal-header h3 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; }
+        .modal-header h3 { margin: 0; font-size: 28px; color: #0f172a; font-weight: 800; }
 
         /* Feature Modal Specifics */
-        .features-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 25px; }
-        .feature-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; }
-        .feature-box h4 { margin: 0 0 20px 0; color: #334155; font-size: 16px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; letter-spacing: 0.05em; }
+        .features-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
+        .feature-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 30px; }
+        .feature-box h4 { margin: 0 0 20px 0; color: #334155; font-size: 18px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; letter-spacing: 0.05em; }
         
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
         .info-label { color: #64748b; font-weight: 500; }
         .info-val { font-weight: 600; color: #334155; text-align: right; }
         
-        .model-chip { display: inline-block; background: #f1f5f9; padding: 6px 10px; border-radius: 4px; font-size: 14px; margin: 3px; color: #475569; border: 1px solid #e2e8f0; }
-        .endpoint-link { color: #2563eb; text-decoration: none; word-break: break-all; font-family: monospace; font-size: 13px; }
+        .model-chip { display: inline-block; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; font-size: 16px; margin: 4px; color: #475569; border: 1px solid #e2e8f0; }
+        .endpoint-link { color: #2563eb; text-decoration: none; word-break: break-all; font-family: monospace; font-size: 15px; }
 
-        /* Help Box Styles */
-        .help-section { margin-bottom: 15px; }
-        .help-title { font-weight: 700; color: #1e293b; margin-bottom: 8px; font-size: 15px; }
-        .help-text { font-size: 14px; color: #475569; line-height: 1.6; }
-        .step-list { margin: 0; padding-left: 20px; font-size: 14px; color: #475569; }
-        .step-list li { margin-bottom: 6px; }
-
-        /* Utils */
-        select, input[type="password"] { padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; }
-        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; height: 200px; overflow: auto; margin: 0; font-family: monospace; font-size: 13px; }
+        /* Inputs & Pre - Scaled */
+        select, input[type="text"], input[type="password"] { padding: 14px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; height: 250px; overflow: auto; margin: 0; font-family: monospace; font-size: 15px; line-height: 1.5; }
+        
     </style>
 </head>
 <body>
@@ -107,32 +100,18 @@
 
 <div id="helpModal" class="modal">
     <div class="modal-aligner">
-        <div class="modal-content size-medium">
+        <div class="modal-content size-medium" style="width: 700px;">
             <div class="modal-header">
                 <h3>Dashboard Guide</h3>
                 <button class="btn-close-x" onclick="document.getElementById('helpModal').style.display='none'">×</button>
             </div>
-            
-            <div class="help-section">
-                <div class="help-title">What is this?</div>
-                <div class="help-text">
-                    The AI Pulse Dashboard is a centralized status monitor for various AI API providers. It tracks availability, supported features, and model lists for major providers like OpenAI, Anthropic, Google Gemini, and many others.
-                </div>
-            </div>
-            
-            <div class="help-section" style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0;">
-                <div class="help-title">How to Test an API</div>
-                <ul class="step-list">
-                    <li><strong>Step 1:</strong> Find a provider in the list. Use headers to sort.</li>
-                    <li><strong>Step 2:</strong> Click <strong>"Test"</strong> on the right.</li>
-                    <li><strong>Step 3:</strong> Select the <strong>Model</strong> you want to query.</li>
-                    <li><strong>Step 4:</strong> Enter your own <strong>API Key</strong>. (Processed locally, never saved).</li>
-                    <li><strong>Step 5:</strong> Click "Run Test".</li>
+            <div style="font-size: 16px; line-height: 1.6;">
+                <p>This dashboard monitors the status of various AI API providers. You can view capabilities, check limits, and test models.</p>
+                <strong>Testing:</strong>
+                <ul>
+                    <li>Select a model and enter your own API key to test connectivity.</li>
+                    <li>Your API key is used directly by your browser to communicate with the provider. It is NOT saved or sent to our servers.</li>
                 </ul>
-            </div>
-            
-            <div style="text-align:right;">
-                <button class="btn btn-primary" onclick="document.getElementById('helpModal').style.display='none'">Got it!</button>
             </div>
         </div>
     </div>
@@ -142,10 +121,10 @@
     <div class="modal-aligner">
         <div class="modal-content size-large">
             <div class="modal-header">
-                <h3 id="featModalTitle">Provider Features</h3>
+                <h3 id="featModalTitle">Features</h3>
                 <div style="display:flex; align-items:center;">
-                    <button class="btn-nav" onclick="navFeature(-1)" title="Previous">‹</button>
-                    <button class="btn-nav" style="margin-left:5px;" onclick="navFeature(1)" title="Next">›</button>
+                    <button class="btn-nav" onclick="navFeature(-1)">‹</button>
+                    <button class="btn-nav" style="margin-left:5px;" onclick="navFeature(1)">›</button>
                     <button class="btn-close-x" onclick="document.getElementById('featuresModal').style.display='none'">×</button>
                 </div>
             </div>
@@ -154,28 +133,24 @@
                 <div class="feature-box" style="background:#f8fafc;">
                     <h4>Configuration & Limits</h4>
                     <div class="info-row"><span class="info-label">Cost Tier</span> <span class="info-val" id="featCost">--</span></div>
-                    <div class="info-row"><span class="info-label">Rate Limits</span> <span class="info-val" id="featLimits">--</span></div>
-                    <div class="info-row"><span class="info-label">Auth Type</span> <span class="info-val" id="featAuth">--</span></div>
-                    
+                    <div class="info-row"><span class="info-label">Limits</span> <span class="info-val" id="featLimits">--</span></div>
+                    <div class="info-row"><span class="info-label">Auth</span> <span class="info-val" id="featAuth">--</span></div>
                     <div style="margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
                         <span class="info-label" style="display:block; margin-bottom:4px;">Endpoint URL</span>
                         <a href="#" target="_blank" id="featEndpoint" class="endpoint-link">--</a>
                     </div>
-                    
                     <div style="margin-top:25px; display:flex;">
-                        <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; padding:12px;">📖 Open Official Docs</a>
+                        <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; padding:15px; font-size:16px;">📖 Open Docs</a>
                     </div>
                 </div>
-
                 <div class="feature-box">
                     <h4>Capabilities</h4>
-                    <div id="featCapsContainer" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+                    <div id="featCapsContainer" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
                 </div>
             </div>
-
             <div class="feature-box">
                 <h4>Available Models (<span id="featModelCount">0</span>)</h4>
-                <div id="featModelList" style="max-height: 250px; overflow-y: auto;"></div>
+                <div id="featModelList" style="max-height: 300px; overflow-y: auto;"></div>
             </div>
         </div>
     </div>
@@ -185,29 +160,43 @@
     <div class="modal-aligner">
         <div class="modal-content size-medium">
             <div class="modal-header">
-                <h3 id="modalTitle">Test Provider</h3>
+                <h3 id="modalTitle">Provider Name</h3>
                 <div style="display:flex; align-items:center;">
-                    <button class="btn-nav" onclick="navTest(-1)" title="Previous">‹</button>
-                    <button class="btn-nav" style="margin-left:5px;" onclick="navTest(1)" title="Next">›</button>
+                    <button class="btn-nav" onclick="navTest(-1)">‹</button>
+                    <button class="btn-nav" style="margin-left:5px;" onclick="navTest(1)">›</button>
                     <button class="btn-close-x" onclick="document.getElementById('testModal').style.display='none'">×</button>
                 </div>
             </div>
             
-            <p style="font-size:13px; color:#64748b;">This is a public dashboard. To test, please enter your own API key. It is not saved.</p>
-            
-            <div style="background:#f8fafc; padding:20px; border-radius:8px; display:flex; flex-direction:column; gap:15px;">
+            <div style="background:#f8fafc; padding:25px; border-radius:8px; display:flex; flex-direction:column; gap:15px;">
+                
                 <div>
-                    <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">1. Select Model</label>
+                    <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:5px; color:#475569;">1. Select Model</label>
                     <select id="modalSelector"></select>
                 </div>
+
                 <div>
-                    <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">2. Enter Your API Key</label>
-                    <input type="password" id="userKey" placeholder="sk-...">
+                    <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:5px; color:#475569;">2. Enter Your API Key</label>
+                    <input type="password" id="userKey" placeholder="Paste your API Key here (sk-...)">
+                    <div style="font-size:13px; color:#64748b; margin-top:5px;">Your key is used locally and never saved.</div>
                 </div>
-                <button class="btn btn-primary" style="align-self:flex-start;" onclick="runPublicTest()">▶ Run Test</button>
+
+                <div style="display:flex; gap:15px; margin-top:10px;">
+                    <button class="btn btn-primary" style="font-size:16px; padding:12px 24px;" onclick="runTest()">▶ Run Test</button>
+                    <button class="btn btn-code" style="font-size:16px; padding:12px 24px;" onclick="toggleCode()"> { } Show Code</button>
+                </div>
             </div>
             
-            <pre id="modalOutput">Waiting for input...</pre>
+            <div id="viewOutput">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:5px; color:#334155;">Response Output:</label>
+                <pre id="modalOutput">Waiting for input...</pre>
+            </div>
+
+            <div id="viewCode" style="display:none;">
+                <label style="font-size:14px; font-weight:bold; display:block; margin-bottom:5px; color:#334155;">Integration Code:</label>
+                <pre id="codeSnippet" style="background:#0f172a; color:#a5b4fc;"></pre>
+            </div>
+
         </div>
     </div>
 </div>
@@ -230,14 +219,8 @@ function render() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = "";
     data.providers.forEach((p, idx) => {
-        // Feature Badges
-        const caps = (p.capabilities || []).slice(0,3).map(c => 
-            `<span class="cap-badge">${CAP_ICONS[c] || ''} ${c}</span>`
-        ).join('');
-        
+        const caps = (p.capabilities || []).slice(0,3).map(c => `<span class="cap-badge">${CAP_ICONS[c] || ''} ${c}</span>`).join('');
         const models = p.models || [];
-        
-        // Status Check
         const hist = p.history || {};
         const passedCount = Object.values(hist).filter(h => h.status === 'PASS').length;
         const statusText = passedCount > 0 ? "Operational" : "Unknown"; 
@@ -249,7 +232,7 @@ function render() {
             <tr data-idx="${idx}">
                 <td><strong class="provider-link" onclick="openFeaturesModal(${idx})">${p.name}</strong></td>
                 <td><div class="feat-cell" onclick="openFeaturesModal(${idx})">${caps} <span style="font-size:10px; color:#94a3b8;">+</span></div></td>
-                <td><select style="padding:6px; border-radius:4px; border:1px solid #e2e8f0;">${models.map(m => `<option>${m}</option>`).join('')}</select></td>
+                <td><select style="padding:10px; border-radius:4px; border:1px solid #e2e8f0;">${models.map(m => `<option>${m}</option>`).join('')}</select></td>
                 <td>${statusBadge}</td>
                 <td><button class="btn" onclick="openTest(${idx})">Test</button></td>
             </tr>
@@ -257,35 +240,21 @@ function render() {
     });
 }
 
-// --- SORTING ---
 function sortTable(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
     table = document.getElementById("dashTable");
-    switching = true;
-    dir = "asc"; 
-    
+    switching = true; dir = "asc"; 
     while (switching) {
-        switching = false;
-        rows = table.rows;
+        switching = false; rows = table.rows;
         for (i = 1; i < (rows.length - 1); i++) {
             shouldSwitch = false;
             x = rows[i].getElementsByTagName("TD")[n];
             y = rows[i + 1].getElementsByTagName("TD")[n];
-            // Compare text
-            let xVal = x.textContent || x.innerText;
-            let yVal = y.textContent || y.innerText;
-            if (dir == "asc") {
-                if (xVal.toLowerCase() > yVal.toLowerCase()) { shouldSwitch = true; break; }
-            } else if (dir == "desc") {
-                if (xVal.toLowerCase() < yVal.toLowerCase()) { shouldSwitch = true; break; }
-            }
+            if (dir == "asc") { if (x.textContent.toLowerCase() > y.textContent.toLowerCase()) { shouldSwitch = true; break; } } 
+            else if (dir == "desc") { if (x.textContent.toLowerCase() < y.textContent.toLowerCase()) { shouldSwitch = true; break; } }
         }
-        if (shouldSwitch) {
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true; switchcount++; 
-        } else {
-            if (switchcount == 0 && dir == "asc") { dir = "desc"; switching = true; }
-        }
+        if (shouldSwitch) { rows[i].parentNode.insertBefore(rows[i + 1], rows[i]); switching = true; switchcount++; } 
+        else { if (switchcount == 0 && dir == "asc") { dir = "desc"; switching = true; } }
     }
 }
 
@@ -293,7 +262,7 @@ function sortTable(n) {
 function openFeaturesModal(idx) {
     currentFeatureIdx = idx;
     const p = data.providers[idx];
-    document.getElementById('featModalTitle').innerText = p.name;
+    document.getElementById('featModalTitle').innerText = p.name; // Just Name
     document.getElementById('featCost').innerText = p.cost || "Unknown";
     document.getElementById('featLimits').innerText = p.limits || "Unknown";
     document.getElementById('featAuth').innerText = p.authType;
@@ -302,19 +271,17 @@ function openFeaturesModal(idx) {
     document.getElementById('featDocs').href = p.docs;
     
     document.getElementById('featCapsContainer').innerHTML = (p.capabilities || []).map(c => 
-        `<span class="cap-badge" style="font-size:13px; padding:6px 10px;">${CAP_ICONS[c] || ''} ${c}</span>`
+        `<span class="cap-badge" style="font-size:14px; padding:6px 10px;">${CAP_ICONS[c] || ''} ${c}</span>`
     ).join('');
 
     document.getElementById('featModelCount').innerText = p.models.length;
     document.getElementById('featModelList').innerHTML = p.models.map(m => `<span class="model-chip">${m}</span>`).join('');
-
     document.getElementById('featuresModal').style.display = 'flex';
 }
-
-function navFeature(direction) {
-    let newIdx = currentFeatureIdx + direction;
-    if (newIdx < 0) newIdx = data.providers.length - 1;
-    if (newIdx >= data.providers.length) newIdx = 0;
+function navFeature(dir) {
+    let newIdx = currentFeatureIdx + dir;
+    if(newIdx < 0) newIdx = data.providers.length - 1;
+    if(newIdx >= data.providers.length) newIdx = 0;
     openFeaturesModal(newIdx);
 }
 
@@ -322,11 +289,15 @@ function navFeature(direction) {
 function openTest(idx) {
     currentIdx = idx;
     const p = data.providers[idx];
-    document.getElementById('modalTitle').innerText = "Test " + p.name;
+    document.getElementById('modalTitle').innerText = p.name; // Title: Provider Name Only
     const sel = document.getElementById('modalSelector');
     sel.innerHTML = p.models.map(m => `<option>${m}</option>`).join('');
-    document.getElementById('userKey').value = ""; 
+    
+    document.getElementById('userKey').value = "";
     document.getElementById('modalOutput').innerText = "Waiting for input...";
+    document.getElementById('viewOutput').style.display = "block";
+    document.getElementById('viewCode').style.display = "none";
+    
     document.getElementById('testModal').style.display = "flex";
 }
 
@@ -337,49 +308,64 @@ function navTest(dir) {
     openTest(newIdx);
 }
 
-async function runPublicTest() {
+function toggleCode() {
+    const out = document.getElementById('viewOutput');
+    const code = document.getElementById('viewCode');
+    if (code.style.display === 'none') {
+        out.style.display = 'none';
+        code.style.display = 'block';
+        generateCodeSnippet();
+    } else {
+        code.style.display = 'none';
+        out.style.display = 'block';
+    }
+}
+
+function generateCodeSnippet() {
     const p = data.providers[currentIdx];
     const model = document.getElementById('modalSelector').value;
-    const key = document.getElementById('userKey').value;
+    // Using Placeholder for code view
+    const url = p.endpoint.replace('{model}', model).replace('{key}', 'PASTE_YOUR_OWN_KEY_HERE');
+    let headers = { "Content-Type": "application/json" };
+    if(p.authType === 'bearer') headers['Authorization'] = "Bearer PASTE_YOUR_OWN_KEY_HERE";
+    if(p.authType === 'header-custom') {
+        headers['x-api-key'] = "PASTE_YOUR_OWN_KEY_HERE";
+        if(p.customHeaders) Object.assign(headers, p.customHeaders);
+    }
+    let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
+    let snippet = `// API Call for ${p.name} (${model})\nconst url = "${url}";\nconst headers = ${JSON.stringify(headers, null, 2)};\nconst body = ${JSON.stringify(body, null, 2)};\n\nfetch(url, { method: "POST", headers, body: JSON.stringify(body) })\n.then(res => res.json()).then(console.log);`;
+    document.getElementById('codeSnippet').innerText = snippet;
+}
+
+async function runTest() {
+    document.getElementById('viewOutput').style.display = 'block';
+    document.getElementById('viewCode').style.display = 'none';
     const out = document.getElementById('modalOutput');
-    
-    if(!key) return alert("Please enter a key to test.");
-    out.innerText = "Sending request...";
+    const p = data.providers[currentIdx];
+    const model = document.getElementById('modalSelector').value;
+    let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
+
+    out.innerText = "Processing...";
+
+    const key = document.getElementById('userKey').value;
+    if(!key) return alert("Please enter your API Key.");
     
     let url = p.endpoint.replace('{model}', model).replace('{key}', key);
     let headers = {'Content-Type': 'application/json'};
-    
     if(p.authType === 'bearer') headers['Authorization'] = `Bearer ${key}`;
     if(p.authType === 'header-custom') {
         headers['x-api-key'] = key;
         if(p.customHeaders) Object.assign(headers, p.customHeaders);
     }
     
-    let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
-
     try {
         const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body) });
         const json = await res.json();
         out.innerText = JSON.stringify(json, null, 2);
     } catch(e) {
-        out.innerText = "Error (CORS or Network): " + e.message;
+        out.innerText = "Network Error (Check Console/CORS): " + e.message;
     }
 }
-
-// Keyboard Navigation
-document.addEventListener('keydown', function(event) {
-    if (document.getElementById('featuresModal').style.display === 'flex') {
-        if (event.key === 'ArrowLeft') navFeature(-1);
-        if (event.key === 'ArrowRight') navFeature(1);
-        if (event.key === 'Escape') document.getElementById('featuresModal').style.display='none';
-    }
-    if (document.getElementById('testModal').style.display === 'flex') {
-        if (event.key === 'Escape') document.getElementById('testModal').style.display='none';
-    }
-    if (document.getElementById('helpModal').style.display === 'flex') {
-        if (event.key === 'Escape') document.getElementById('helpModal').style.display='none';
-    }
-});
 </script>
 </body>
 </html>
