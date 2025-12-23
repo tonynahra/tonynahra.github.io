@@ -3,7 +3,6 @@
     {
       "id": "openai",
       "name": "OpenAI",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.openai.com/v1/chat/completions",
       "docs": "https://platform.openai.com/docs/models",
@@ -25,6 +24,7 @@
         "openai/gpt-5-2025-08-07",
         "openai/gpt-5-chat-latest"
       ],
+      "history": {},
       "testBody": {
         "model": "{model}",
         "messages": [{ "role": "user", "content": "Hello" }]
@@ -33,7 +33,6 @@
     {
       "id": "anthropic",
       "name": "Anthropic",
-      "key": "",
       "authType": "header-custom",
       "endpoint": "https://api.anthropic.com/v1/messages",
       "docs": "https://docs.anthropic.com/en/docs/about-claude/models",
@@ -51,6 +50,7 @@
         "anthropic/claude-sonnet-4.5",
         "anthropic/claude-haiku-4.5"
       ],
+      "history": {},
       "testBody": {
         "model": "{model}",
         "max_tokens": 100,
@@ -60,7 +60,6 @@
     {
       "id": "gemini",
       "name": "Google Gemini",
-      "key": "",
       "authType": "query",
       "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
       "docs": "https://ai.google.dev/gemini-api/docs/models/gemini",
@@ -73,6 +72,7 @@
         "google/gemini-3-flash-preview",
         "google/gemma-3-27b-it"
       ],
+      "history": {},
       "testBody": {
         "contents": [{ "parts": [{ "text": "Hello" }] }]
       }
@@ -80,7 +80,6 @@
     {
       "id": "deepseek",
       "name": "DeepSeek",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.deepseek.com/chat/completions",
       "docs": "https://api-docs.deepseek.com/",
@@ -93,6 +92,7 @@
         "deepseek/deepseek-reasoner-v3.1",
         "deepseek/deepseek-thinking-v3.2-exp"
       ],
+      "history": {},
       "testBody": {
         "model": "{model}",
         "messages": [{ "role": "user", "content": "Hello" }]
@@ -101,7 +101,6 @@
     {
       "id": "xai",
       "name": "xAI (Grok)",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.x.ai/v1/chat/completions",
       "docs": "https://docs.x.ai/docs",
@@ -113,6 +112,7 @@
         "x-ai/grok-4-fast-reasoning",
         "x-ai/grok-4-1-fast-reasoning"
       ],
+      "history": {},
       "testBody": {
         "model": "{model}",
         "messages": [{ "role": "user", "content": "Hello" }]
@@ -121,7 +121,6 @@
     {
       "id": "mistral",
       "name": "Mistral AI",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.mistral.ai/v1/chat/completions",
       "docs": "https://docs.mistral.ai/getting-started/models/",
@@ -132,6 +131,7 @@
         "mistralai/Mixtral-8x7B-Instruct-v0.1",
         "mistralai/mistral-nemo"
       ],
+      "history": {},
       "testBody": {
         "model": "{model}",
         "messages": [{ "role": "user", "content": "Hello" }]
@@ -140,7 +140,6 @@
     {
       "id": "perplexity",
       "name": "Perplexity",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.perplexity.ai/chat/completions",
       "docs": "https://docs.perplexity.ai/",
@@ -150,6 +149,7 @@
         "perplexity/sonar-reasoning",
         "perplexity/sonar-pro"
       ],
+      "history": {},
       "testBody": {
         "model": "{model}",
         "messages": [{ "role": "user", "content": "Hello" }]
@@ -158,7 +158,6 @@
     {
       "id": "alibaba",
       "name": "Alibaba Cloud (Qwen)",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
       "docs": "https://www.alibabacloud.com/help/en/model-studio/getting-started/models",
@@ -171,6 +170,7 @@
         "alibaba/qwen3-max-instruct",
         "alibaba/qwen3-vl-32b-instruct"
       ],
+      "history": {},
       "testBody": {
         "model": "{model}",
         "messages": [{ "role": "user", "content": "Hello" }]
@@ -179,7 +179,6 @@
     {
       "id": "aiml_aggregator",
       "name": "AIML API (Aggregator)",
-      "key": "",
       "authType": "bearer",
       "endpoint": "https://api.aimlapi.com/chat/completions",
       "docs": "https://docs.aimlapi.com/",
@@ -198,6 +197,7 @@
         "moonshot/kimi-k2-preview",
         "zhipu/glm-4.5"
       ],
+      "history": {},
       "testBody": {
         "model": "{model}",
         "messages": [{ "role": "user", "content": "Hello" }]
