@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pulse | Enterprise Monitor</title>
+    <title>AI Pulse | v3.0 Enterprise</title>
     <style>
         :root {
             --bg-body: #f8f9fa;
@@ -26,7 +26,7 @@
             padding: 20px;
         }
 
-        /* --- Header & Layout --- */
+        /* --- Layout --- */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -38,18 +38,10 @@
             margin-bottom: 25px;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
         .brand h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-        .brand span { font-size: 13px; color: var(--text-secondary); background: #e9ecef; padding: 4px 8px; border-radius: 6px; }
+        .brand span { font-size: 13px; color: var(--text-secondary); background: #e9ecef; padding: 4px 8px; border-radius: 6px; margin-left: 10px; }
 
-        .actions {
-            display: flex;
-            gap: 12px;
-        }
+        .actions { display: flex; gap: 12px; }
 
         /* --- Buttons --- */
         .btn {
@@ -61,15 +53,16 @@
             font-weight: 600;
             font-size: 14px;
             transition: all 0.2s;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
         }
         .btn:hover { background: #f8f9fa; border-color: #adb5bd; }
         .btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
         .btn-primary:hover { background: var(--accent-hover); }
-        .btn-test-all { background: var(--text-primary); color: white; border-color: var(--text-primary); }
-        .btn-test-all:hover { background: black; }
+        .btn-sm { padding: 4px 10px; font-size: 12px; }
+        .btn-test-all { background: #212529; color: white; border-color: #212529; }
+        .btn-test-all:hover { background: #000; }
 
         /* --- Main Table --- */
         .dashboard {
@@ -83,33 +76,18 @@
         th { text-align: left; padding: 18px 25px; background: #f8f9fa; color: var(--text-secondary); font-size: 13px; text-transform: uppercase; font-weight: 600; }
         td { padding: 16px 25px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
-        tr:hover { background-color: #fcfcfc; }
-
-        /* --- Table Components --- */
+        
         .provider-name { font-weight: 600; font-size: 15px; display: block; }
-        .provider-meta { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; margin-top: 4px; }
-        .badge-free { color: var(--success); background: #d1e7dd; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
-        .badge-paid { color: #856404; background: #fff3cd; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
-
+        .provider-meta { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+        
         .model-selector {
-            width: 100%;
-            max-width: 250px;
-            padding: 8px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 13px;
+            width: 100%; max-width: 250px; padding: 8px;
+            border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
         }
 
         .status-pill {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            width: 90px;
-            justify-content: center;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; width: 80px;
         }
         .status-idle { background: #e9ecef; color: var(--text-secondary); }
         .status-success { background: #d1e7dd; color: var(--success); }
@@ -118,51 +96,71 @@
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* --- Modal for Keys --- */
+        /* --- Modals --- */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(2px);
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            justify-content: center; align-items: center; backdrop-filter: blur(2px);
         }
         .modal {
-            background: white;
-            width: 500px;
-            max-width: 90%;
-            border-radius: 12px;
-            padding: 25px;
+            background: white; width: 700px; max-width: 90%;
+            border-radius: 12px; padding: 25px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            max-height: 80vh;
-            overflow-y: auto;
+            max-height: 85vh; overflow-y: auto;
         }
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; }
-        .key-row { margin-bottom: 15px; }
-        .key-row label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; }
-        .key-input { width: 95%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: monospace; }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         
-        .code-snippet { font-family: monospace; font-size: 12px; color: #666; background: #f1f1f1; padding: 2px 5px; border-radius: 4px; }
+        /* Code Block Styling */
+        pre {
+            background: #2d2d2d; color: #ccc;
+            padding: 15px; border-radius: 8px;
+            font-size: 13px; overflow-x: auto;
+            border: 1px solid #444;
+        }
+        .code-keyword { color: #cc99cd; }
+        .code-string { color: #7ec699; }
+        .code-func { color: #f08d49; }
+        
+        .key-input { width: 95%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 10px; font-family: monospace; }
     </style>
 </head>
 <body>
 
 <div id="keyModal" class="modal-overlay">
-    <div class="modal">
+    <div class="modal" style="width: 500px;">
         <div class="modal-header">
             <h2 style="margin:0">🔐 Secure Vault</h2>
-            <button class="btn" onclick="toggleModal(false)">Close</button>
+            <button class="btn btn-sm" onclick="toggleModal('keyModal', false)">✖</button>
         </div>
         <p style="font-size: 13px; color: #666; margin-bottom: 20px;">
-            API keys are stored securely in your browser's Local Storage. They are never sent to our servers.
+            Keys are stored in your browser's LocalStorage.
         </p>
-        <div id="keyInputsContainer">
-            </div>
+        <div id="keyInputsContainer"></div>
         <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
-            <button class="btn" onclick="exportKeys()">💾 Backup to JSON</button>
-            <button class="btn btn-primary" onclick="saveKeysAndClose()">Save & Close</button>
+            <button class="btn" onclick="exportKeys()">💾 Backup</button>
+            <button class="btn btn-primary" onclick="saveKeysAndClose()">Save Keys</button>
+        </div>
+    </div>
+</div>
+
+<div id="codeModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 style="margin:0" id="codeModalTitle">Integration</h2>
+            <button class="btn btn-sm" onclick="toggleModal('codeModal', false)">✖</button>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="btn btn-primary" id="modalTestBtn" onclick="runSingleTestFromModal()">▶ Run Live Test</button>
+            <span id="modalStatus" style="align-self: center; font-weight: bold; font-size: 14px;"></span>
+        </div>
+
+        <h4 style="margin: 0 0 10px 0;">Generated JavaScript Code</h4>
+        <pre id="codeBlock"></pre>
+
+        <h4 style="margin: 15px 0 5px 0;">Response Output</h4>
+        <div id="modalOutput" style="background: #f8f9fa; padding: 10px; border-radius: 6px; height: 100px; overflow-y: auto; font-family: monospace; font-size: 12px; border: 1px solid var(--border);">
+            Click 'Run Live Test' to see response here...
         </div>
     </div>
 </div>
@@ -170,12 +168,12 @@
 <div class="header-bar">
     <div class="brand">
         <h1>AI Pulse</h1>
-        <span>v2.0</span>
+        <span>v3.0</span>
     </div>
     <div class="actions">
         <input type="file" id="fileInput" accept=".json" style="display:none" onchange="importKeys(this)">
-        <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Import Config</button>
-        <button class="btn" onclick="toggleModal(true)">🔑 Manage API Keys</button>
+        <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Import</button>
+        <button class="btn" onclick="toggleModal('keyModal', true)">🔑 API Keys</button>
         <button class="btn btn-test-all" onclick="runGlobalTest()">⚡ Run System Check</button>
     </div>
 </div>
@@ -184,187 +182,133 @@
     <table id="mainTable">
         <thead>
             <tr>
-                <th width="25%">Provider Details</th>
-                <th width="25%">Model Pointer (Alias)</th>
-                <th width="30%">Service Limits</th>
+                <th width="20%">Provider</th>
+                <th width="25%">Model Alias</th>
+                <th width="25%">Limits</th>
                 <th width="10%">Status</th>
                 <th width="10%">Latency</th>
+                <th width="10%">Integration</th>
             </tr>
         </thead>
-        <tbody id="tableBody">
-            </tbody>
+        <tbody id="tableBody"></tbody>
     </table>
 </div>
 
-<div style="margin-top: 20px; color: #999; font-size: 12px; text-align: center;">
-    AI Pulse runs 100% client-side. No data is collected.
-</div>
-
 <script>
-    // --- 1. CONFIGURATION: Providers & Smart Pointers ---
+    // --- 1. DATA DEFINITIONS ---
     const providers = [
         {
             id: "gemini",
             name: "Google Gemini",
-            freeTier: true,
-            limits: "15 RPM (Free), 2M tokens context",
-            // Smart Pointers: These automatically point to latest stable versions
-            pointers: ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"], 
+            limits: "Free: 15 RPM",
+            pointers: ["gemini-1.5-flash", "gemini-1.5-pro"],
             endpoint: "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
             method: "POST",
-            testBody: (model) => JSON.stringify({ contents: [{ parts: [{ text: "Hello" }] }] })
+            authType: "query", // key in url
+            testBody: (m) => ({ contents: [{ parts: [{ text: "Hello" }] }] })
         },
         {
             id: "groq",
             name: "Groq",
-            freeTier: true,
-            limits: "30 RPM, 14.4k req/day (Free)",
+            limits: "Free: 30 RPM",
             pointers: ["llama-3.3-70b-versatile", "mixtral-8x7b-32768"],
             endpoint: "https://api.groq.com/openai/v1/chat/completions",
             method: "POST",
-            testBody: (model) => JSON.stringify({ model: model, messages: [{ role: "user", content: "Hi" }] })
+            authType: "bearer",
+            testBody: (m) => ({ model: m, messages: [{ role: "user", content: "Hi" }] })
         },
         {
             id: "openai",
             name: "OpenAI",
-            freeTier: false,
-            limits: "Paid/Pre-paid Only",
-            pointers: ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"], // Aliases
+            limits: "Paid Only",
+            pointers: ["gpt-4o", "gpt-4o-mini"],
             endpoint: "https://api.openai.com/v1/chat/completions",
             method: "POST",
-            testBody: (model) => JSON.stringify({ model: model, messages: [{ role: "user", content: "Hi" }] })
-        },
-        {
-            id: "deepseek",
-            name: "DeepSeek",
-            freeTier: true,
-            limits: "Very low cost, Compatible API",
-            pointers: ["deepseek-chat", "deepseek-coder"], // Points to V3
-            endpoint: "https://api.deepseek.com/chat/completions",
-            method: "POST",
-            testBody: (model) => JSON.stringify({ model: model, messages: [{ role: "user", content: "Hi" }] })
+            authType: "bearer",
+            testBody: (m) => ({ model: m, messages: [{ role: "user", content: "Hi" }] })
         },
         {
             id: "anthropic",
             name: "Anthropic",
-            freeTier: false,
-            limits: "Pre-paid credits ($5 min)",
-            pointers: ["claude-3-5-sonnet-latest", "claude-3-5-haiku-latest"], // Use 'latest' pointers
+            limits: "Paid Only",
+            pointers: ["claude-3-5-sonnet-latest"],
             endpoint: "https://api.anthropic.com/v1/messages",
             method: "POST",
+            authType: "header-custom",
             headers: { "x-api-version": "2023-06-01", "anthropic-dangerously-allow-browser": "true" },
-            testBody: (model) => JSON.stringify({ model: model, max_tokens: 50, messages: [{ role: "user", content: "Hi" }] })
+            testBody: (m) => ({ model: m, max_tokens: 50, messages: [{ role: "user", content: "Hi" }] })
+        },
+        {
+            id: "deepseek",
+            name: "DeepSeek",
+            limits: "Cheap",
+            pointers: ["deepseek-chat"],
+            endpoint: "https://api.deepseek.com/chat/completions",
+            method: "POST",
+            authType: "bearer",
+            testBody: (m) => ({ model: m, messages: [{ role: "user", content: "Hi" }] })
         },
         {
             id: "openrouter",
             name: "OpenRouter",
-            freeTier: true,
-            limits: "Aggregator (Access to 100+ models)",
+            limits: "Varies",
             pointers: ["google/gemini-2.0-flash-exp:free", "meta-llama/llama-3.2-11b-vision-instruct:free"],
             endpoint: "https://openrouter.ai/api/v1/chat/completions",
             method: "POST",
-            testBody: (model) => JSON.stringify({ model: model, messages: [{ role: "user", content: "Hi" }] })
-        },
-        {
-            id: "sambanova",
-            name: "SambaNova",
-            freeTier: true,
-            limits: "High Speed Inference (Free Tier Avail)",
-            pointers: ["Meta-Llama-3.1-70B-Instruct", "Meta-Llama-3.1-8B-Instruct"],
-            endpoint: "https://api.sambanova.ai/v1/chat/completions",
-            method: "POST",
-            testBody: (model) => JSON.stringify({ model: model, messages: [{ role: "user", content: "Hi" }] })
-        },
-        {
-            id: "together",
-            name: "Together AI",
-            freeTier: true,
-            limits: "Trial credits ($5)",
-            pointers: ["meta-llama/Llama-3.3-70B-Instruct-Turbo", "mistralai/Mixtral-8x7B-Instruct-v0.1"],
-            endpoint: "https://api.together.xyz/v1/chat/completions",
-            method: "POST",
-            testBody: (model) => JSON.stringify({ model: model, messages: [{ role: "user", content: "Hi" }] })
-        },
-        {
-            id: "cohere",
-            name: "Cohere",
-            freeTier: true,
-            limits: "Trial keys: 5 calls/min",
-            pointers: ["command-r-plus", "command-r"],
-            endpoint: "https://api.cohere.com/v1/chat",
-            method: "POST",
-            testBody: (model) => JSON.stringify({ model: model, message: "Hi" })
-        },
-        {
-            id: "mistral",
-            name: "Mistral",
-            freeTier: true,
-            limits: "Rate limited on free tier",
-            pointers: ["mistral-large-latest", "mistral-small-latest"],
-            endpoint: "https://api.mistral.ai/v1/chat/completions",
-            method: "POST",
-            testBody: (model) => JSON.stringify({ model: model, messages: [{ role: "user", content: "Hi" }] })
+            authType: "bearer",
+            testBody: (m) => ({ model: m, messages: [{ role: "user", content: "Hi" }] })
         }
     ];
 
-    // Global Key Storage
     let apiKeys = {};
+    let currentModalProviderIndex = -1;
 
-    // --- 2. INITIALIZATION ---
+    // --- 2. INIT ---
     document.addEventListener("DOMContentLoaded", () => {
-        loadKeys();
+        const storedKeys = localStorage.getItem("ai_pulse_keys");
+        if (storedKeys) apiKeys = JSON.parse(storedKeys);
         renderTable();
         renderKeyInputs();
     });
 
-    // --- 3. RENDERING ---
+    // --- 3. RENDER LOGIC ---
     function renderTable() {
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
+        
+        // Load saved model selections
+        const savedSelections = JSON.parse(localStorage.getItem("ai_pulse_selections") || "{}");
 
         providers.forEach((p, index) => {
             const tr = document.createElement("tr");
             
-            // Badge Logic
-            const tierBadge = p.freeTier 
-                ? `<span class="badge-free">FREE TIER</span>` 
-                : `<span class="badge-paid">PAID/TRIAL</span>`;
-
-            // Pointer Selector
+            // Pointers Dropdown
             const options = p.pointers.map(ptr => `<option value="${ptr}">${ptr}</option>`).join("");
             
             tr.innerHTML = `
                 <td>
                     <span class="provider-name">${p.name}</span>
-                    <div class="provider-meta">${tierBadge}</div>
                 </td>
                 <td>
-                    <select id="model-${index}" class="model-selector" onchange="saveConfig()">${options}</select>
+                    <select id="model-${index}" class="model-selector" onchange="saveSelections()">${options}</select>
                 </td>
-                <td style="font-size: 13px; color: #555;">
-                    ${p.limits}
-                </td>
+                <td style="font-size:13px; color:#666;">${p.limits}</td>
+                <td><div id="status-${index}" class="status-pill status-idle">Idle</div></td>
+                <td id="latency-${index}" style="font-family:monospace;">--</td>
                 <td>
-                    <div id="status-${index}" class="status-pill status-idle">Idle</div>
-                </td>
-                <td id="latency-${index}" style="font-family:monospace; font-weight:bold;">
-                    --
+                    <button class="btn btn-sm" onclick="openCodeModal(${index})">
+                        &lt;/&gt; Code & Test
+                    </button>
                 </td>
             `;
             tbody.appendChild(tr);
+
+            // Restore selection
+            if(savedSelections[p.id]) {
+                const sel = document.getElementById(`model-${index}`);
+                if(sel) sel.value = savedSelections[p.id];
+            }
         });
-        
-        // Restore previous model selections if they exist
-        const savedConfig = localStorage.getItem("ai_pulse_model_selections");
-        if(savedConfig) {
-            const selections = JSON.parse(savedConfig);
-            providers.forEach((p, idx) => {
-                if(selections[p.id]) {
-                    const select = document.getElementById(`model-${idx}`);
-                    if(select) select.value = selections[p.id];
-                }
-            });
-        }
     }
 
     function renderKeyInputs() {
@@ -372,44 +316,32 @@
         container.innerHTML = "";
         providers.forEach(p => {
             const div = document.createElement("div");
-            div.className = "key-row";
             div.innerHTML = `
-                <label>${p.name} API Key</label>
+                <label style="font-size:12px; font-weight:600;">${p.name}</label>
                 <input type="password" id="key-input-${p.id}" class="key-input" placeholder="sk-..." value="${apiKeys[p.id] || ''}">
             `;
             container.appendChild(div);
         });
     }
 
-    // --- 4. LOGIC & TESTING ---
+    // --- 4. TESTING LOGIC ---
     async function runGlobalTest() {
-        // Disable button during test
         const btn = document.querySelector('.btn-test-all');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = "⏳ Testing...";
+        btn.innerHTML = "⏳ Running...";
         btn.disabled = true;
 
-        const promises = providers.map((p, index) => testProvider(index));
-        await Promise.all(promises);
+        await Promise.all(providers.map((p, idx) => runTest(idx)));
 
-        btn.innerHTML = originalText;
+        btn.innerHTML = "⚡ Run System Check";
         btn.disabled = false;
     }
 
-    async function testProvider(index) {
+    async function runTest(index) {
         const p = providers[index];
-        const key = apiKeys[p.id];
+        const key = apiKeys[p.id] || ""; // Allow empty key
         const model = document.getElementById(`model-${index}`).value;
         const statusEl = document.getElementById(`status-${index}`);
         const latencyEl = document.getElementById(`latency-${index}`);
-
-        if (!key) {
-            statusEl.className = "status-pill status-idle";
-            statusEl.innerText = "No Key";
-            statusEl.style.background = "#e9ecef";
-            statusEl.style.color = "#999";
-            return;
-        }
 
         statusEl.className = "status-pill status-loading";
         statusEl.innerText = "Testing";
@@ -417,22 +349,20 @@
         const start = performance.now();
 
         try {
+            // Build Request
             let url = p.endpoint.replace("{model}", model).replace("{key}", key);
+            let headers = { "Content-Type": "application/json" };
             
-            const headers = { "Content-Type": "application/json" };
-            
-            // Authorization Logic
-            if (p.id !== 'gemini') headers["Authorization"] = `Bearer ${key}`;
-            if (p.id === 'anthropic') {
-                headers["x-api-key"] = key;
-                delete headers["Authorization"];
-                Object.assign(headers, p.headers);
+            if (p.authType === "bearer" && key) headers["Authorization"] = `Bearer ${key}`;
+            if (p.authType === "header-custom") {
+                if(key) headers["x-api-key"] = key;
+                Object.assign(headers, p.headers || {});
             }
 
             const response = await fetch(url, {
                 method: p.method,
                 headers: headers,
-                body: p.testBody(model)
+                body: JSON.stringify(p.testBody(model))
             });
 
             const duration = ((performance.now() - start) / 1000).toFixed(2);
@@ -441,61 +371,132 @@
                 statusEl.className = "status-pill status-success";
                 statusEl.innerText = "ONLINE";
                 latencyEl.innerText = duration + "s";
-                latencyEl.style.color = "#198754";
+                latencyEl.style.color = "green";
+                return { success: true, msg: "OK", duration };
             } else {
                 throw new Error(response.status);
             }
         } catch (e) {
             statusEl.className = "status-pill status-error";
-            statusEl.innerText = "ERROR";
+            statusEl.innerText = e.message || "ERR";
             latencyEl.innerText = "Fail";
-            latencyEl.style.color = "#dc3545";
-            console.error(`${p.name} failed:`, e);
+            latencyEl.style.color = "red";
+            return { success: false, msg: e.message };
         }
     }
 
-    // --- 5. KEY & CONFIG MANAGEMENT ---
-    function toggleModal(show) {
-        document.getElementById("keyModal").style.display = show ? "flex" : "none";
-        if (show) renderKeyInputs(); // Refresh inputs when opening
+    // --- 5. MODAL & CODE GENERATION ---
+    function openCodeModal(index) {
+        currentModalProviderIndex = index;
+        const p = providers[index];
+        const model = document.getElementById(`model-${index}`).value;
+        const key = apiKeys[p.id] || "YOUR_API_KEY";
+
+        document.getElementById("codeModalTitle").innerText = `${p.name} Integration`;
+        document.getElementById("modalOutput").innerText = "Click 'Run Live Test' to see response here...";
+        document.getElementById("modalStatus").innerText = "";
+
+        // Generate Code String
+        let code = `// ${p.name} Javascript Example\nconst url = "${p.endpoint.replace("{model}", model).replace("{key}", "${key}")}";\n`;
+        
+        let headerObj = { "Content-Type": "application/json" };
+        if(p.authType === "bearer") headerObj["Authorization"] = "Bearer " + (key === "YOUR_API_KEY" ? key : "${key}");
+        if(p.authType === "header-custom") {
+            headerObj["x-api-key"] = (key === "YOUR_API_KEY" ? key : "${key}");
+            Object.assign(headerObj, p.headers || {});
+        }
+
+        code += `const headers = ${JSON.stringify(headerObj, null, 2)};\n`;
+        code += `const body = ${JSON.stringify(p.testBody(model), null, 2)};\n\n`;
+        code += `fetch(url, { method: "POST", headers, body: JSON.stringify(body) })\n`;
+        code += `  .then(response => response.json())\n`;
+        code += `  .then(data => console.log(data));`;
+
+        // Syntax Highlighting (Basic)
+        // Note: For real highlighting we'd use a library, here we do simple regex replacement
+        code = code.replace(/const|let|var|function|return/g, '<span class="code-keyword">$&</span>');
+        code = code.replace(/"[^"]*"/g, '<span class="code-string">$&</span>');
+        code = code.replace(/fetch|console\.log/g, '<span class="code-func">$&</span>');
+
+        document.getElementById("codeBlock").innerHTML = code;
+        toggleModal('codeModal', true);
+    }
+
+    async function runSingleTestFromModal() {
+        if(currentModalProviderIndex === -1) return;
+        
+        const outputDiv = document.getElementById("modalOutput");
+        outputDiv.innerHTML = "⏳ Sending request...";
+        
+        // Reuse logic but capture full response text
+        const p = providers[currentModalProviderIndex];
+        const index = currentModalProviderIndex;
+        const key = apiKeys[p.id] || "";
+        const model = document.getElementById(`model-${index}`).value;
+
+        try {
+            let url = p.endpoint.replace("{model}", model).replace("{key}", key);
+            let headers = { "Content-Type": "application/json" };
+            if (p.authType === "bearer" && key) headers["Authorization"] = `Bearer ${key}`;
+            if (p.authType === "header-custom") {
+                if(key) headers["x-api-key"] = key;
+                Object.assign(headers, p.headers || {});
+            }
+
+            const response = await fetch(url, {
+                method: p.method,
+                headers: headers,
+                body: JSON.stringify(p.testBody(model))
+            });
+            
+            const data = await response.json();
+            
+            // Show result
+            outputDiv.innerText = JSON.stringify(data, null, 2);
+            document.getElementById("modalStatus").innerText = response.ok ? "✅ Success" : "❌ Error";
+            document.getElementById("modalStatus").style.color = response.ok ? "green" : "red";
+            
+            // Update main table too
+            const statusEl = document.getElementById(`status-${index}`);
+            if(response.ok) {
+                statusEl.className = "status-pill status-success";
+                statusEl.innerText = "ONLINE";
+            } else {
+                statusEl.className = "status-pill status-error";
+                statusEl.innerText = response.status;
+            }
+
+        } catch (e) {
+            outputDiv.innerText = "Error: " + e.message;
+        }
+    }
+
+    // --- 6. UTILS ---
+    function toggleModal(id, show) {
+        document.getElementById(id).style.display = show ? "flex" : "none";
     }
 
     function saveKeysAndClose() {
         providers.forEach(p => {
             const val = document.getElementById(`key-input-${p.id}`).value.trim();
-            if (val) apiKeys[p.id] = val;
+            if(val) apiKeys[p.id] = val;
             else delete apiKeys[p.id];
         });
         localStorage.setItem("ai_pulse_keys", JSON.stringify(apiKeys));
-        toggleModal(false);
-        // Also save model selections
-        saveConfig();
-        alert("Keys saved to browser storage.");
+        toggleModal('keyModal', false);
     }
 
-    function saveConfig() {
-        // Save currently selected models
-        const selections = {};
-        providers.forEach((p, idx) => {
-            selections[p.id] = document.getElementById(`model-${idx}`).value;
-        });
-        localStorage.setItem("ai_pulse_model_selections", JSON.stringify(selections));
-    }
-
-    function loadKeys() {
-        const stored = localStorage.getItem("ai_pulse_keys");
-        if (stored) apiKeys = JSON.parse(stored);
+    function saveSelections() {
+        const sels = {};
+        providers.forEach((p, i) => sels[p.id] = document.getElementById(`model-${i}`).value);
+        localStorage.setItem("ai_pulse_selections", JSON.stringify(sels));
     }
 
     function exportKeys() {
-        const data = {
-            keys: apiKeys,
-            config: JSON.parse(localStorage.getItem("ai_pulse_model_selections") || "{}")
-        };
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(apiKeys));
         const dl = document.createElement('a');
         dl.setAttribute("href", dataStr);
-        dl.setAttribute("download", "ai_pulse_config.json");
+        dl.setAttribute("download", "ai_pulse_keys.json");
         document.body.appendChild(dl);
         dl.click();
         dl.remove();
@@ -503,26 +504,17 @@
 
     function importKeys(input) {
         const file = input.files[0];
-        if (!file) return;
+        if(!file) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = (e) => {
             try {
-                const data = JSON.parse(e.target.result);
-                if (data.keys) {
-                    apiKeys = data.keys;
-                    localStorage.setItem("ai_pulse_keys", JSON.stringify(apiKeys));
-                }
-                if (data.config) {
-                    localStorage.setItem("ai_pulse_model_selections", JSON.stringify(data.config));
-                }
-                location.reload(); // Reload to apply
-            } catch (err) {
-                alert("Error reading JSON file");
-            }
+                apiKeys = JSON.parse(e.target.result);
+                localStorage.setItem("ai_pulse_keys", JSON.stringify(apiKeys));
+                location.reload();
+            } catch(e) { alert("Invalid JSON"); }
         };
         reader.readAsText(file);
     }
 </script>
-
 </body>
 </html>
