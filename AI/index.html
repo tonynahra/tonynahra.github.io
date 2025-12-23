@@ -3,455 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pulse v9 | Dynamic Manager</title>
+    <title>AI Pulse | Admin Panel</title>
     <style>
-        :root {
-            --bg: #f8fafc;
-            --surface: #ffffff;
-            --text: #334155;
-            --primary: #3b82f6;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --border: #e2e8f0;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 30px;
-        }
-
-        /* --- Header --- */
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--surface); padding: 15px 25px; border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 25px;
-        }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #1e293b; }
-
-        /* --- Buttons --- */
-        .btn {
-            background: white; border: 1px solid var(--border); padding: 8px 14px;
-            border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;
-            transition: 0.1s; display: inline-flex; align-items: center; gap: 6px;
-        }
-        .btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
-        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
-        .btn-primary:hover { background: #2563eb; }
-        .btn-success { background: var(--success); color: white; border-color: var(--success); }
-        .btn-success:hover { background: #16a34a; }
-        .btn-danger { background: var(--danger); color: white; border-color: var(--danger); }
-        .btn-danger:hover { background: #dc2626; }
-        .btn-link { border: none; background: none; color: var(--primary); text-decoration: underline; padding: 0; cursor: pointer; }
-
-        /* --- Table --- */
-        .card { background: var(--surface); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        :root { --bg:#f1f5f9; --surface:#ffffff; --text:#334155; --primary:#2563eb; --success:#16a34a; --danger:#dc2626; --border:#cbd5e1; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 30px; margin: 0; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .btn { background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn:hover { background: #e2e8f0; }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); } .btn-primary:hover { background: #1d4ed8; }
+        .btn-save { background: #0f172a; color: white; border-color: #0f172a; } .btn-save:hover { background: #334155; }
+        .card { background: var(--surface); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { text-align: left; padding: 14px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; }
-        td { padding: 14px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
-        
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-
-        /* --- Combobox --- */
-        .combo-container { position: relative; width: 100%; max-width: 320px; }
-        .input-combo { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: monospace; box-sizing: border-box; }
-
-        /* --- Status Pills --- */
+        th, td { padding: 12px 20px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: #f8fafc; font-weight: 600; color: #64748b; text-transform: uppercase; font-size: 12px; }
         .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .st-idle { background: #f1f5f9; color: #64748b; }
-        .st-ok { background: #dcfce7; color: #166534; }
-        .st-err { background: #fee2e2; color: #991b1b; }
-        .st-load { background: #e0f2fe; color: #075985; }
-
-        /* --- Modal --- */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
-        .modal { background: white; width: 800px; max-width: 90%; padding: 25px; border-radius: 12px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        
-        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 13px; font-family: monospace; margin: 0; }
-        .alert-box { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; display: none; }
-        
-        .stat-pass { color: var(--success); font-weight: 700; }
-        .stat-date { color: #64748b; font-size: 12px; }
-
-        /* Animation for appearance */
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .pass { background: #dcfce7; color: #166534; } .fail { background: #fee2e2; color: #991b1b; } .idle { background: #f1f5f9; color: #64748b; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 600px; padding: 25px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; overflow-x: auto; }
+        .input-combo { padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 250px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div style="display:flex; align-items:center; gap:10px;">
-        <h1>AI Pulse v9</h1>
-        <span style="font-size:11px; background:#e2e8f0; padding:2px 8px; border-radius:4px;">Dynamic Manager</span>
-    </div>
+    <h1>AI Pulse Admin</h1>
     <div style="display:flex; gap:10px;">
-        <input type="file" id="sourceFile" accept=".json" style="display:none" onchange="loadExternalSource(this)">
-        <button id="btnLoadSource" class="btn" onclick="document.getElementById('sourceFile').click()" style="display:none;">⚠️ Load sources.json</button>
-        <button class="btn btn-primary" onclick="runSystemCheck()">⚡ System Check</button>
+        <span id="saveStatus" style="font-size:12px; color:#64748b; align-self:center;"></span>
+        <button class="btn btn-save" onclick="saveToServer()">💾 Save Changes to Server</button>
+        <button class="btn btn-primary" onclick="runGlobalCheck()">⚡ Run All Tests</button>
     </div>
-</div>
-
-<div id="errorAlert" class="alert-box">
-    <strong>Configuration Missing.</strong> Click "Load sources.json" above to load your provider list.
 </div>
 
 <div class="card">
     <table id="mainTable">
         <thead>
             <tr>
-                <th width="15%">Provider</th>
-                <th width="30%">Model Selector</th>
-                <th width="10%">Status</th>
-                <th width="10%">Latency</th>
-                <th width="10%" class="text-right">Total Models</th>
-                <th width="10%" class="text-right">Passing</th>
-                <th width="15%" class="text-right">Last Pass</th>
-                <th width="10%" class="text-center">Action</th>
+                <th>Provider</th>
+                <th>Model</th>
+                <th>Status</th>
+                <th>Last Pass</th>
+                <th>Action</th>
             </tr>
         </thead>
-        <tbody id="tableBody">
-            <tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">Waiting for configuration...</td></tr>
-        </tbody>
+        <tbody id="tableBody"></tbody>
     </table>
 </div>
 
-<div id="codeModal" class="modal-overlay">
-    <div class="modal">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0">Model Tester</h3>
-            <button class="btn" onclick="document.getElementById('codeModal').style.display='none'">Close</button>
+<div id="testModal" class="modal">
+    <div class="modal-content">
+        <h3>Test Model</h3>
+        <div style="display:flex; gap:10px;">
+            <input id="modalInput" class="input-combo" list="modalList">
+            <datalist id="modalList"></datalist>
+            <button class="btn" onclick="addModel()">Add New</button>
         </div>
-        
-        <div style="background:#f1f5f9; padding:15px; border-radius:8px; display:flex; gap:10px; flex-direction: column;">
-            <label style="font-size:12px; font-weight:600; color:#64748b;">Select or Type Model ID:</label>
-            <div style="display:flex; gap:10px;">
-                <input list="modalModelList" id="modalModelInput" class="input-combo" placeholder="Type model ID..." onchange="updateSnippetFromInput()">
-                <datalist id="modalModelList"></datalist>
-                <button class="btn btn-primary" onclick="addNewModelFromModal()">ADD</button>
-            </div>
-            <div style="font-size:11px; color:#64748b;">Click ADD to save new model IDs to your local list.</div>
+        <button class="btn btn-primary" onclick="runModalTest()">▶ Run Live Test</button>
+        <div id="modalActions" style="display:none; gap:10px;">
+            <button class="btn" style="color:green; border-color:green;" onclick="markStatus('PASS')">✔ Mark Pass</button>
+            <button class="btn" style="color:red; border-color:red;" onclick="markStatus('FAIL')">✖ Mark Fail</button>
         </div>
-
-        <div style="display:flex; gap:15px; align-items: center; margin-top:5px;">
-            <button class="btn btn-primary" style="padding: 10px 20px;" onclick="runSingleTestFromModal()">▶ Run Live Request</button>
-            <span id="modalStatus" style="font-weight:bold; font-size:14px;"></span>
-        </div>
-
-        <div id="actionButtons" style="display:none; gap:10px; margin-top:0px;" class="fade-in">
-            <button class="btn btn-success" onclick="markModelStatus('PASS')">✔ Mark Pass</button>
-            <button class="btn btn-danger" onclick="markModelStatus('FAIL')">✖ Mark Fail</button>
-        </div>
-
-        <pre id="codeBlock"></pre>
-        
-        <div style="display:flex; flex-direction:column; gap:5px;">
-             <label style="font-size:12px; font-weight:600; color:#64748b;">Live Response:</label>
-             <div style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0; height:150px; overflow-y:auto; font-family:monospace; font-size:12px;" id="modalOutput">Click 'Run Live Request' to see output...</div>
-        </div>
+        <pre id="modalOutput">Ready...</pre>
+        <button class="btn" onclick="document.getElementById('testModal').style.display='none'">Close</button>
     </div>
 </div>
 
 <script>
-    let providersData = [];
-    
-    // STORAGE KEYS
-    const STORAGE_HISTORY = "ai_pulse_history_v9";
-    const STORAGE_SELECTION = "ai_pulse_selection_v9";
-    const STORAGE_CUSTOM = "ai_pulse_custom_models_v9";
+    let data = { providers: [] };
+    let currentIdx = -1;
 
-    // LOAD DATA
-    let testHistory = JSON.parse(localStorage.getItem(STORAGE_HISTORY) || "{}");
-    let savedSelection = JSON.parse(localStorage.getItem(STORAGE_SELECTION) || "{}");
-    let customModels = JSON.parse(localStorage.getItem(STORAGE_CUSTOM) || "{}");
-    
-    let currentModalIdx = -1;
+    // Load data on start
+    fetch('sources.json').then(r => r.json()).then(d => { data = d; render(); });
 
-    // --- 1. INITIALIZATION ---
-    window.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const response = await fetch('sources.json');
-            if (!response.ok) throw new Error("Network error");
-            const data = await response.json();
-            loadProviders(data.providers);
-        } catch (e) {
-            document.getElementById("btnLoadSource").style.display = "inline-flex";
-            document.getElementById("errorAlert").style.display = "block";
-            document.getElementById("tableBody").innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">Please load sources.json</td></tr>`;
-        }
-    });
-
-    function loadExternalSource(input) {
-        const file = input.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                if(!data.providers) throw new Error("No providers");
-                loadProviders(data.providers);
-                document.getElementById("errorAlert").style.display = "none";
-                document.getElementById("btnLoadSource").style.display = "none";
-            } catch (err) { alert("Invalid JSON"); }
-        };
-        reader.readAsText(file);
-    }
-
-    // --- 2. RENDER TABLE ---
-    function loadProviders(providers) {
-        providersData = providers;
-        const tbody = document.getElementById("tableBody");
+    function render() {
+        const tbody = document.getElementById('tableBody');
         tbody.innerHTML = "";
-
-        providers.forEach((p, idx) => {
-            const pid = p.id;
-            const history = testHistory[pid] || {};
+        data.providers.forEach((p, idx) => {
+            const models = p.models || [];
+            const history = p.history || {};
+            // Default to first model or one with history
+            let selected = models[0] || "";
             
-            // Merge JSON models with Custom Models
-            const userModels = customModels[pid] || [];
-            const allModels = [...new Set([...(p.models || []), ...userModels])];
-            
-            // Store merged list back in provider object for easier access
-            p._allModels = allModels; 
+            // Calc stats
+            let status = "IDLE";
+            let lastPass = "--";
+            if (selected && history[selected]) {
+                status = history[selected].status;
+                if(status === 'PASS') lastPass = history[selected].date;
+            }
 
-            // Stats
-            const passingCount = Object.values(history).filter(h => h.status === 'PASS').length;
-            
-            let lastPassDate = "--";
-            const passes = Object.values(history).filter(h => h.status === 'PASS').map(h => h.date).sort().reverse();
-            if (passes.length > 0) lastPassDate = passes[0];
-
-            // Current Selection
-            const currentModel = savedSelection[pid] || allModels[0] || "";
-
-            // Datalist
-            const dataListId = `list-${idx}`;
-            const options = allModels.map(m => {
-                const status = history[m] ? history[m].status : "NEVER";
-                let icon = "⚪"; 
-                if (status === "PASS") icon = "✅";
-                if (status === "FAIL") icon = "❌";
-                return `<option value="${m}">${icon} ${m}</option>`;
-            }).join("");
-
-            const tr = document.createElement("tr");
+            const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${p.name}</strong></td>
                 <td>
-                    <div class="combo-container">
-                        <input list="${dataListId}" id="model-${idx}" class="input-combo" value="${currentModel}" 
-                               onchange="saveSelection('${pid}', this.value)" 
-                               placeholder="Select model...">
-                        <datalist id="${dataListId}">${options}</datalist>
-                    </div>
+                    <select class="input-combo" onchange="changeSelection(${idx}, this.value)">
+                        ${models.map(m => `<option value="${m}" ${m===selected?'selected':''}>${m}</option>`).join('')}
+                    </select>
                 </td>
-                <td><span id="status-${idx}" class="status-pill st-idle">Idle</span></td>
-                <td id="lat-${idx}" style="font-family:monospace;">--</td>
-                
-                <td class="text-right"><strong>${allModels.length}</strong></td>
-                <td class="text-right"><span class="stat-pass">${passingCount}</span></td>
-                <td class="text-right"><span class="stat-date">${lastPassDate}</span></td>
-                
-                <td class="text-center">
-                    <button class="btn btn-sm" onclick="openCodeModal(${idx})">🛠️ Test</button>
-                </td>
+                <td><span class="status-pill ${status.toLowerCase()}">${status}</span></td>
+                <td>${lastPass}</td>
+                <td><button class="btn" onclick="openModal(${idx})">Test</button></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    // --- 3. STATE MANAGEMENT ---
-    function saveSelection(pid, val) {
-        savedSelection[pid] = val;
-        localStorage.setItem(STORAGE_SELECTION, JSON.stringify(savedSelection));
+    function changeSelection(idx, val) {
+        // Just triggers re-render to update the status column for the newly selected model
+        // In a real app, you might want to store 'selectedModel' in a separate state object
+        render(); 
     }
 
-    function recordTestResult(pid, model, status) {
-        if (!testHistory[pid]) testHistory[pid] = {};
-        testHistory[pid][model] = {
-            status: status,
-            date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-        };
-        localStorage.setItem(STORAGE_HISTORY, JSON.stringify(testHistory));
-        loadProviders(providersData); // Refresh UI
+    function openModal(idx) {
+        currentIdx = idx;
+        const p = data.providers[idx];
+        const dl = document.getElementById('modalList');
+        dl.innerHTML = p.models.map(m => `<option value="${m}">`).join('');
+        // Default value: first model in list
+        document.getElementById('modalInput').value = p.models[0] || ""; 
+        document.getElementById('modalActions').style.display = "none";
+        document.getElementById('modalOutput').innerText = "Ready...";
+        document.getElementById('testModal').style.display = "flex";
     }
 
-    function addNewModelFromModal() {
-        if(currentModalIdx === -1) return;
-        const p = providersData[currentModalIdx];
-        const newVal = document.getElementById("modalModelInput").value.trim();
-        
-        if(!newVal) return alert("Please type a model ID.");
-        
-        // Save to Custom Models
-        if(!customModels[p.id]) customModels[p.id] = [];
-        if(!customModels[p.id].includes(newVal)) {
-            customModels[p.id].push(newVal);
-            localStorage.setItem(STORAGE_CUSTOM, JSON.stringify(customModels));
-            alert(`Added "${newVal}" to ${p.name}`);
-            
-            // Reload everything to reflect changes
-            loadProviders(providersData);
-            
-            // Update the modal's dropdown list immediately
-            openCodeModal(currentModalIdx); 
-            // Keep the value in input
-            document.getElementById("modalModelInput").value = newVal;
-        } else {
-            alert("Model already exists in list.");
+    function addModel() {
+        const val = document.getElementById('modalInput').value;
+        if(val && !data.providers[currentIdx].models.includes(val)) {
+            data.providers[currentIdx].models.push(val);
+            render();
+            alert("Added!");
         }
     }
 
-    // --- 4. SYSTEM CHECK ---
-    async function runSystemCheck() {
-        const btn = document.querySelector('.btn-primary');
-        const oldText = btn.innerText;
-        btn.innerText = "⏳ Running...";
-        await Promise.all(providersData.map((_, idx) => runTest(idx)));
-        btn.innerText = oldText;
-    }
-
-    async function runTest(idx) {
-        const p = providersData[idx];
-        const statusEl = document.getElementById(`status-${idx}`);
-        const latEl = document.getElementById(`lat-${idx}`);
-        const model = document.getElementById(`model-${idx}`).value;
-        const key = p.key || ""; 
-
-        if(!model) return;
-
-        statusEl.className = "status-pill st-load"; statusEl.innerText = "Testing";
-        const start = performance.now();
-        try {
-            const { url, headers, body } = buildRequest(p, model, key);
-            const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
-            const duration = ((performance.now() - start) / 1000).toFixed(2);
-
-            if (res.ok) {
-                statusEl.className = "status-pill st-ok"; statusEl.innerText = "Online";
-                latEl.innerText = duration + "s"; latEl.style.color = "green";
-                recordTestResult(p.id, model, "PASS");
-            } else {
-                throw new Error(res.status);
-            }
-        } catch (e) {
-            statusEl.className = "status-pill st-err"; statusEl.innerText = "Error";
-            latEl.innerText = "Fail"; latEl.style.color = "red";
-            recordTestResult(p.id, model, "FAIL");
-        }
-    }
-
-    // --- 5. HELPER ---
-    function buildRequest(p, model, key) {
-        let url = p.endpoint.replace("{model}", model).replace("{key}", key);
+    async function runModalTest() {
+        const p = data.providers[currentIdx];
+        const model = document.getElementById('modalInput').value;
+        const output = document.getElementById('modalOutput');
+        
+        output.innerText = "Testing...";
+        
+        // Simple interpolation
+        let url = p.endpoint.replace('{model}', model).replace('{key}', p.key);
         let headers = { "Content-Type": "application/json" };
-        if (p.authType === "bearer" && key) headers["Authorization"] = `Bearer ${key}`;
-        if (p.authType === "header-custom") {
-            if (key) headers["x-api-key"] = key;
-            if (p.customHeaders) Object.assign(headers, p.customHeaders);
+        if(p.authType === 'bearer') headers['Authorization'] = `Bearer ${p.key}`;
+        if(p.authType === 'header-custom') {
+            headers['x-api-key'] = p.key;
+            Object.assign(headers, p.customHeaders);
         }
-        let bStr = JSON.stringify(p.testBody).replace("{model}", model);
-        return { url, headers, body: JSON.parse(bStr) };
-    }
+        
+        let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
 
-    // --- 6. MODAL & INTERACTION ---
-    function openCodeModal(idx) {
-        currentModalIdx = idx;
-        const p = providersData[idx];
-        
-        // Use the model currently selected in the main table as default
-        const currentSelection = document.getElementById(`model-${idx}`).value;
-        
-        // 1. Reset UI
-        document.getElementById("modalOutput").innerText = "Click 'Run Live Request' to see output...";
-        document.getElementById("modalStatus").innerText = "";
-        document.getElementById("actionButtons").style.display = "none"; // HIDE BUTTONS INITIALLY
-        
-        // 2. Populate Dropdown
-        const dataList = document.getElementById("modalModelList");
-        dataList.innerHTML = "";
-        p._allModels.forEach(m => {
-            const opt = document.createElement("option");
-            opt.value = m;
-            dataList.appendChild(opt);
-        });
-        
-        document.getElementById("modalModelInput").value = currentSelection;
-        
-        // 3. Generate Code Snippet
-        updateSnippetFromInput();
-
-        document.getElementById("codeModal").style.display = "flex";
-    }
-
-    function updateSnippetFromInput() {
-        if(currentModalIdx === -1) return;
-        const p = providersData[currentModalIdx];
-        const model = document.getElementById("modalModelInput").value || "{model}";
-        const { url, headers, body } = buildRequest(p, model, "YOUR_API_KEY");
-
-        let code = `// ${p.name} - ${model}\n`;
-        code += `const url = "${url}";\n`;
-        code += `const headers = ${JSON.stringify(headers, null, 2)};\n`;
-        code += `const body = ${JSON.stringify(body, null, 2)};\n\n`;
-        code += `fetch(url, { method: "POST", headers, body: JSON.stringify(body) })\n`;
-        code += `.then(res => res.json()).then(console.log);`;
-        
-        document.getElementById("codeBlock").innerText = code;
-    }
-
-    function markModelStatus(status) {
-        if (currentModalIdx === -1) return;
-        const p = providersData[currentModalIdx];
-        const model = document.getElementById("modalModelInput").value;
-        
-        recordTestResult(p.id, model, status);
-        
-        // Feedback
-        const color = status === 'PASS' ? 'green' : 'red';
-        document.getElementById("modalStatus").innerText = `Marked as ${status}`;
-        document.getElementById("modalStatus").style.color = color;
-    }
-
-    async function runSingleTestFromModal() {
-        if (currentModalIdx === -1) return;
-        
-        // Reset state
-        document.getElementById("actionButtons").style.display = "none";
-        document.getElementById("modalStatus").innerText = "";
-        
-        const p = providersData[currentModalIdx];
-        const model = document.getElementById("modalModelInput").value;
-        if(!model) return alert("Please select a model");
-        
-        const key = p.key || "";
-        const out = document.getElementById("modalOutput");
-
-        out.innerText = "⏳ Sending request...";
         try {
-            const { url, headers, body } = buildRequest(p, model, key);
-            const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+            const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
             const json = await res.json();
-            
-            out.innerText = JSON.stringify(json, null, 2);
-            const isSuccess = res.ok;
-            
-            document.getElementById("modalStatus").innerText = isSuccess ? "✅ Response Received" : "❌ Error Response";
-            document.getElementById("modalStatus").style.color = isSuccess ? "green" : "red";
-            
-            // SHOW BUTTONS NOW
-            document.getElementById("actionButtons").style.display = "flex";
+            output.innerText = JSON.stringify(json, null, 2);
+            document.getElementById('modalActions').style.display = "flex";
+        } catch(e) {
+            output.innerText = e.message;
+            document.getElementById('modalActions').style.display = "flex";
+        }
+    }
 
-        } catch (e) {
-            out.innerText = "Error: " + e.message;
-            document.getElementById("modalStatus").innerText = "Network Failed";
-            document.getElementById("modalStatus").style.color = "red";
-            // Even on fail, user might want to mark fail explicitly
-            document.getElementById("actionButtons").style.display = "flex";
+    function markStatus(status) {
+        const p = data.providers[currentIdx];
+        const model = document.getElementById('modalInput').value;
+        if(!p.history) p.history = {};
+        
+        p.history[model] = {
+            status: status,
+            date: new Date().toISOString().slice(0, 16).replace('T', ' ')
+        };
+        render();
+        document.getElementById('testModal').style.display = 'none';
+    }
+
+    async function saveToServer() {
+        const statusEl = document.getElementById('saveStatus');
+        statusEl.innerText = "Saving...";
+        try {
+            const res = await fetch('save_data.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if(result.status === 'success') {
+                statusEl.innerText = "Saved ✔";
+                setTimeout(() => statusEl.innerText = "", 2000);
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch(e) {
+            alert("Network Error: " + e.message);
         }
     }
 </script>
