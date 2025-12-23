@@ -4,6 +4,15 @@ header('Content-Type: application/json');
 
 // 1. INPUT VALIDATION
 $input = json_decode(file_get_contents('php://input'), true);
+
+// SECURITY GATE: Check Password
+$userPass = $input['password'] ?? '';
+if ($userPass !== 'MM') {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized: Invalid or missing Password. Click "Insert Key" to authenticate.']);
+    exit;
+}
+
 if (!$input || !isset($input['provider_id']) || !isset($input['model'])) {
     http_response_code(400);
     echo json_encode(['error' => 'Missing provider_id or model']);
@@ -28,7 +37,7 @@ foreach ($sources['providers'] as $p) {
 }
 
 if (!$providerConfig) {
-    echo json_encode(['error' => 'Provider not found in sources.json']);
+    echo json_encode(['error' => 'Provider not found']);
     exit;
 }
 
@@ -43,7 +52,6 @@ $apiKey = $keys[$pid];
 $url = str_replace('{model}', $model, $providerConfig['endpoint']);
 $headers = ['Content-Type: application/json'];
 
-// Handle Auth Types
 if ($providerConfig['authType'] === 'bearer') {
     $headers[] = "Authorization: Bearer $apiKey";
 } 
@@ -51,7 +59,6 @@ elseif ($providerConfig['authType'] === 'query') {
     $url = str_replace('{key}', $apiKey, $url);
 } 
 elseif ($providerConfig['authType'] === 'header-custom') {
-    // Anthropic specific
     $headers[] = "x-api-key: $apiKey";
     if (isset($providerConfig['customHeaders'])) {
         foreach ($providerConfig['customHeaders'] as $k => $v) {
