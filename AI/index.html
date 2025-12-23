@@ -6,38 +6,106 @@
     <style>
         :root { --bg:#f8fafc; --surface:#ffffff; --text:#334155; --primary:#2563eb; --border:#e2e8f0; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 40px; }
+        
+        /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         h1 { margin: 0; color: #1e293b; }
         
+        /* Card & Table */
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 16px 24px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-        th { background: #f1f5f9; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; }
         
-        /* Fixed Height for Features to ensure alignment */
-        .feat-cell { height: 40px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        /* Sortable Headers */
+        th { background: #f1f5f9; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; padding: 16px 24px; text-align: left; cursor: pointer; user-select: none; transition: background 0.2s; }
+        th:hover { background: #e2e8f0; color: #334155; }
+        th:after { content: ' ↕'; font-size: 10px; color: #94a3b8; margin-left: 5px; }
+        
+        td { padding: 16px 24px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        
+        /* Features Cell */
+        .feat-cell { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
         .cap-badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
         
-        .btn { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 500; transition: 0.1s; }
+        /* Buttons */
+        .btn { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 500; transition: 0.1s; display: inline-flex; align-items: center; gap: 6px; }
         .btn:hover { background: #f8fafc; border-color: #94a3b8; }
+        .btn-help { background: #fff; color: #475569; border-color: #cbd5e1; }
+        .btn-help:hover { background: #f1f5f9; color: #1e293b; }
+        
         .btn-nav { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; }
 
+        /* Modals */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: white; width: 700px; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; }
+        .modal-content { background: white; width: 700px; max-width: 90%; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 5px; }
+        .modal-header h3 { margin: 0; font-size: 20px; color: #0f172a; }
+
+        /* Help Box Styles */
+        .help-section { margin-bottom: 15px; }
+        .help-title { font-weight: 700; color: #1e293b; margin-bottom: 8px; font-size: 15px; }
+        .help-text { font-size: 14px; color: #475569; line-height: 1.6; }
+        .step-list { margin: 0; padding-left: 20px; font-size: 14px; color: #475569; }
+        .step-list li { margin-bottom: 6px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>AI Pulse Dashboard</h1>
-    <div style="font-size:14px; color:#64748b;">Public Status Monitor</div>
+    <div>
+        <h1>AI Pulse Dashboard</h1>
+        <div style="font-size:14px; color:#64748b; margin-top:5px;">Public Status Monitor</div>
+    </div>
+    <button class="btn btn-help" onclick="document.getElementById('helpModal').style.display='flex'">
+        ❓ Help & Guide
+    </button>
 </div>
 
 <div class="card">
-    <table>
-        <thead><tr><th>Provider</th><th>Features</th><th>Available Models</th><th>Status</th><th>Action</th></tr></thead>
+    <table id="dashTable">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">Provider</th>
+                <th onclick="sortTable(1)">Features</th>
+                <th onclick="sortTable(2)">Available Models</th>
+                <th onclick="sortTable(3)">Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
         <tbody id="tableBody"></tbody>
     </table>
+</div>
+
+<div id="helpModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Dashboard Guide</h3>
+            <button class="btn" style="border:none; font-size:20px; padding:0;" onclick="document.getElementById('helpModal').style.display='none'">×</button>
+        </div>
+        
+        <div class="help-section">
+            <div class="help-title">What is this?</div>
+            <div class="help-text">
+                The AI Pulse Dashboard is a centralized status monitor for various Artificial Intelligence API providers. It tracks availability, supported features, and model lists for major providers like OpenAI, Anthropic, Google Gemini, and many others.
+            </div>
+        </div>
+        
+        <div class="help-section" style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0;">
+            <div class="help-title">How to Test an API</div>
+            <ul class="step-list">
+                <li><strong>Step 1:</strong> Find a provider in the list below. Use the column headers to sort by name or status.</li>
+                <li><strong>Step 2:</strong> Click the <strong>"Test"</strong> button on the right side of the row.</li>
+                <li><strong>Step 3:</strong> In the popup, select the specific <strong>Model</strong> you want to query.</li>
+                <li><strong>Step 4:</strong> Enter your own <strong>API Key</strong>. 
+                    <br><em>(Note: Your key is processed locally in your browser to send the request. It is NOT saved or sent to our server.)</em>
+                </li>
+                <li><strong>Step 5:</strong> Click "Run Test" to verify if the model is online and responding.</li>
+            </ul>
+        </div>
+        
+        <div style="text-align:right;">
+            <button class="btn btn-primary" onclick="document.getElementById('helpModal').style.display='none'">Got it!</button>
+        </div>
+    </div>
 </div>
 
 <div id="testModal" class="modal">
@@ -84,12 +152,15 @@ function render() {
         // Status Check
         const hist = p.history || {};
         const passedCount = Object.values(hist).filter(h => h.status === 'PASS').length;
+        // Used text content for sorting:
+        const statusText = passedCount > 0 ? "Operational" : "Unknown"; 
         const statusBadge = passedCount > 0 
-            ? `<span style="color:#16a34a; font-weight:bold;">● Operational</span>` 
-            : `<span style="color:#94a3b8;">● Unknown</span>`;
+            ? `<span style="color:#16a34a; font-weight:bold;">● ${statusText}</span>` 
+            : `<span style="color:#94a3b8;">● ${statusText}</span>`;
 
+        // We embed the original Index in a data attribute to keep track for the "Test" button
         tbody.innerHTML += `
-            <tr>
+            <tr data-idx="${idx}">
                 <td><strong>${p.name}</strong></td>
                 <td><div class="feat-cell">${caps}</div></td>
                 <td><select style="padding:6px; border-radius:4px; border:1px solid #e2e8f0;">${models.map(m => `<option>${m}</option>`).join('')}</select></td>
@@ -98,6 +169,50 @@ function render() {
             </tr>
         `;
     });
+}
+
+function sortTable(n) {
+    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    table = document.getElementById("dashTable");
+    switching = true;
+    dir = "asc"; 
+    
+    while (switching) {
+        switching = false;
+        rows = table.rows;
+        // Loop through all table rows (except the first, which contains table headers)
+        for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i + 1].getElementsByTagName("TD")[n];
+            
+            // Compare text content
+            let xVal = x.textContent || x.innerText;
+            let yVal = y.textContent || y.innerText;
+
+            if (dir == "asc") {
+                if (xVal.toLowerCase() > yVal.toLowerCase()) {
+                    shouldSwitch = true;
+                    break;
+                }
+            } else if (dir == "desc") {
+                if (xVal.toLowerCase() < yVal.toLowerCase()) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+        }
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            switchcount ++; 
+        } else {
+            if (switchcount == 0 && dir == "asc") {
+                dir = "desc";
+                switching = true;
+            }
+        }
+    }
 }
 
 function openTest(idx) {
