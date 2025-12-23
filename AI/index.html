@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Pulse | Multi-Provider Monitor</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-light: #718096;
+            --border-color: #e2e8f0;
+            --primary: #3b82f6;
+            --success: #48bb78;
+            --error: #f56565;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 { margin: 0; font-size: 24px; }
+        p.subtitle { color: var(--text-light); margin: 5px 0 0 0; }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:hover { background-color: #ebf4ff; border-color: var(--primary); color: var(--primary); }
+        button.primary { background-color: var(--primary); color: white; border: none; }
+        button.primary:hover { background-color: #2563eb; }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-key {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-ready { background: #e2e8f0; color: #4a5568; }
+        .status-success { background: #c6f6d5; color: #22543d; }
+        .status-error { background: #fed7d7; color: #822727; }
+
+        .limits-info {
+            font-size: 12px;
+            color: var(--text-light);
+            line-height: 1.4;
+        }
+
+        .model-select {
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            font-size: 13px;
+        }
+
+        #fileInput { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>AI Pulse</h1>
+            <p class="subtitle">Provider Status & Configuration Manager</p>
+        </div>
+        <div class="controls">
+            <button onclick="document.getElementById('fileInput').click()">📂 Import JSON</button>
+            <input type="file" id="fileInput" accept=".json" onchange="importKeys(this)">
+            <button onclick="exportKeys()">💾 Export JSON</button>
+            <button class="primary" onclick="saveToLocalStorage()">Save Keys (Local)</button>
+        </div>
+    </header>
+
+    <div class="card">
+        <table id="providerTable">
+            <thead>
+                <tr>
+                    <th style="width: 15%">Provider</th>
+                    <th style="width: 25%">Model & Limits (Free Tier)</th>
+                    <th style="width: 35%">API Key</th>
+                    <th style="width: 10%">Action</th>
+                    <th style="width: 15%">Status</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="card" style="padding: 20px;">
+        <h3>Event Log</h3>
+        <div id="logArea" style="height: 150px; overflow-y: auto; font-family: monospace; font-size: 13px; color: #444;">
+            <div>System ready...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. DATA CONFIGURATION ---
+    const providers = [
+        {
+            id: "gemini",
+            name: "Google Gemini",
+            freeTier: true,
+            limits: "15 RPM, ~1,500 req/day",
+            models: ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"],
+            endpoint: "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
+            method: "POST",
+            testBody: (model) => JSON.stringify({ contents: [{ parts: [{ text: "Hello" }] }] })
+        },
+        {
+            id: "groq",
+            name: "Groq",
+            freeTier: true,
+            limits: "30 RPM, 14,400 req/day",
+            models: ["llama-3.3-70b-versatile", "llama3-8b-8192", "mixtral-8x7b-32768"],
+            endpoint: "https://api.groq.com/openai/v1/chat/completions",
+            method: "POST",
+            testBody: (model) => JSON.stringify({
+                model: model,
+                messages: [{ role: "user", content: "Hello" }]
+            })
+        },
+        {
+            id: "openai",
+            name: "OpenAI",
+            freeTier: false,
+            limits: "No permanent free API tier. (Trial credits only)",
+            models: ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
+            endpoint: "https://api.openai.com/v1/chat/completions",
+            method: "POST",
+            testBody: (model) => JSON.stringify({
+                model: model,
+                messages: [{ role: "user", content: "Hello" }]
+            })
+        },
+        {
+            id: "anthropic",
+            name: "Anthropic",
+            freeTier: false,
+            limits: "Trial credits only ($5). No permanent free tier.",
+            models: ["claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"],
+            endpoint: "https://api.anthropic.com/v1/messages",
+            method: "POST",
+            headers: { "x-api-version": "2023-06-01" },
+            testBody: (model) => JSON.stringify({
+                model: model,
+                max_tokens: 100,
+                messages: [{ role: "user", content: "Hello" }]
+            })
+        },
+        {
+            id: "mistral",
+            name: "Mistral AI",
+            freeTier: true,
+            limits: "Strict rate limits on Free evaluation tier.",
+            models: ["mistral-tiny", "mistral-small", "mistral-medium"],
+            endpoint: "https://api.mistral.ai/v1/chat/completions",
+            method: "POST",
+            testBody: (model) => JSON.stringify({
+                model: model,
+                messages: [{ role: "user", content: "Hello" }]
+            })
+        },
+         {
+            id: "cohere",
+            name: "Cohere",
+            freeTier: true,
+            limits: "Trial Key: 5 RPM, 1k calls/month",
+            models: ["command-r-plus", "command-light"],
+            endpoint: "https://api.cohere.com/v1/chat",
+            method: "POST",
+            testBody: (model) => JSON.stringify({
+                message: "Hello",
+                model: model
+            })
+        }
+    ];
+
+    // --- 2. INITIALIZATION ---
+    document.addEventListener("DOMContentLoaded", () => {
+        renderTable();
+        loadFromLocalStorage();
+    });
+
+    function renderTable() {
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+
+        providers.forEach((p, index) => {
+            const tr = document.createElement("tr");
+
+            // Build Model Options
+            const modelOptions = p.models.map(m => `<option value="${m}">${m}</option>`).join("");
+
+            // Free Tier Badge Logic
+            const freeTierBadge = p.freeTier 
+                ? `<span style="color:green; font-weight:bold; font-size:10px;">✔ FREE TIER</span>` 
+                : `<span style="color:orange; font-weight:bold; font-size:10px;">⚠ PAID/TRIAL</span>`;
+
+            tr.innerHTML = `
+                <td>
+                    <strong>${p.name}</strong><br>
+                    ${freeTierBadge}
+                </td>
+                <td>
+                    <select id="model-${index}" class="model-select">${modelOptions}</select>
+                    <div class="limits-info">Limits: ${p.limits}</div>
+                </td>
+                <td>
+                    <input type="password" id="key-${index}" class="input-key" placeholder="sk-..." onchange="markUnsaved()">
+                </td>
+                <td>
+                    <button onclick="testProvider(${index})">Test</button>
+                </td>
+                <td>
+                    <span id="status-${index}" class="status-badge status-ready">Ready</span>
+                    <div id="time-${index}" style="font-size:10px; color:#666;"></div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // --- 3. CORE FUNCTIONS ---
+
+    async function testProvider(index) {
+        const p = providers[index];
+        const key = document.getElementById(`key-${index}`).value.trim();
+        const model = document.getElementById(`model-${index}`).value;
+        const statusSpan = document.getElementById(`status-${index}`);
+        const timeDiv = document.getElementById(`time-${index}`);
+
+        if (!key) {
+            alert(`Please enter an API key for ${p.name}`);
+            return;
+        }
+
+        // Update UI to loading
+        statusSpan.className = "status-badge status-ready";
+        statusSpan.innerText = "Testing...";
+        statusSpan.style.background = "#fff3cd"; 
+        
+        log(`Testing ${p.name} (${model})...`);
+        const startTime = performance.now();
+
+        try {
+            let url = p.endpoint.replace("{model}", model).replace("{key}", key);
+            
+            // Prepare Headers
+            const headers = {
+                "Content-Type": "application/json"
+            };
+            
+            // Different auth headers for different providers
+            if (p.id !== 'gemini') { // Gemini passes key in URL
+                headers["Authorization"] = `Bearer ${key}`;
+            }
+            if (p.id === 'anthropic') {
+                headers["x-api-key"] = key; // Anthropic uses x-api-key
+                delete headers["Authorization"];
+                headers["x-api-version"] = "2023-06-01";
+                // Note: Anthropic needs a proxy server usually due to CORS, but we try direct here.
+                // If it fails due to CORS, user needs a backend. 
+                // However, most other providers (Groq, Gemini, OpenAI) work fine or support CORS in certain modes.
+                headers["anthropic-dangerously-allow-browser"] = "true"; // Special flag for client-side testing
+            }
+            if(p.id === 'cohere') {
+                 headers["Authorization"] = `Bearer ${key}`;
+            }
+
+            const response = await fetch(url, {
+                method: p.method,
+                headers: headers,
+                body: p.testBody(model)
+            });
+
+            const endTime = performance.now();
+            const duration = ((endTime - startTime) / 1000).toFixed(2);
+
+            if (response.ok) {
+                const data = await response.json();
+                statusSpan.className = "status-badge status-success";
+                statusSpan.innerText = "SUCCESS";
+                timeDiv.innerText = `${duration}s`;
+                log(`✅ ${p.name}: Success in ${duration}s`);
+            } else {
+                const errText = await response.text();
+                throw new Error(response.status + " " + errText.substring(0, 100));
+            }
+
+        } catch (error) {
+            console.error(error);
+            statusSpan.className = "status-badge status-error";
+            statusSpan.innerText = "FAILED";
+            timeDiv.innerText = "See Log";
+            log(`❌ ${p.name} Error: ${error.message}`);
+            
+            if(error.message.includes("Failed to fetch") && p.id === 'anthropic') {
+                 log(`⚠️ Note: Anthropic often blocks direct browser calls (CORS). You may need a backend proxy.`);
+            }
+        }
+    }
+
+    // --- 4. STORAGE LOGIC ---
+
+    function getPayload() {
+        const payload = [];
+        providers.forEach((p, index) => {
+            payload.push({
+                id: p.id,
+                key: document.getElementById(`key-${index}`).value,
+                model: document.getElementById(`model-${index}`).value
+            });
+        });
+        return payload;
+    }
+
+    function saveToLocalStorage() {
+        const data = getPayload();
+        localStorage.setItem("ai_pulse_config", JSON.stringify(data));
+        log("💾 Configuration saved to browser storage.");
+        alert("Saved to browser storage!");
+    }
+
+    function loadFromLocalStorage() {
+        const raw = localStorage.getItem("ai_pulse_config");
+        if (raw) {
+            const data = JSON.parse(raw);
+            applyData(data);
+            log("📂 Loaded configuration from storage.");
+        }
+    }
+
+    function exportKeys() {
+        const data = getPayload();
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "ai_providers_config.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        log("⬇️ Config exported to JSON file.");
+    }
+
+    function importKeys(input) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                applyData(data);
+                log("⬆️ Config imported from JSON file.");
+            } catch (err) {
+                log("❌ Error reading JSON file.");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function applyData(data) {
+        data.forEach(item => {
+            // Find provider index by ID
+            const index = providers.findIndex(p => p.id === item.id);
+            if (index !== -1) {
+                if (item.key) document.getElementById(`key-${index}`).value = item.key;
+                if (item.model) document.getElementById(`model-${index}`).value = item.model;
+            }
+        });
+    }
+
+    function log(msg) {
+        const logArea = document.getElementById("logArea");
+        const entry = document.createElement("div");
+        entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        logArea.prepend(entry);
+    }
+
+    function markUnsaved() {
+        // Optional: Visual indicator that changes are unsaved
+    }
+
+</script>
+
+</body>
+</html>
