@@ -7,11 +7,9 @@
         :root { --bg:#f1f5f9; --surface:#ffffff; --text:#334155; --primary:#2563eb; --success:#16a34a; --danger:#dc2626; --border:#cbd5e1; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 30px; }
         
-        /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .header h1 { margin: 0; font-size: 20px; color: #1e293b; }
         
-        /* Buttons */
         .btn { padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; background: white; font-size: 13px; font-weight: 500; transition: 0.1s; }
         .btn:hover { background: #f8fafc; border-color: #94a3b8; }
         .btn-primary { background: var(--primary); color: white; border-color: var(--primary); } .btn-primary:hover { background: #1d4ed8; }
@@ -20,37 +18,27 @@
         .btn-link { border: none; background: none; color: var(--primary); text-decoration: underline; padding: 0; font-size: 12px; }
         .btn-close-x { border: none; background: transparent; font-size: 24px; color: #64748b; cursor: pointer; line-height: 1; padding: 0; }
         .btn-close-x:hover { color: #dc2626; }
+        .btn-auth { background: #f59e0b; color: white; border-color: #f59e0b; } .btn-auth:hover { background: #d97706; }
 
-        /* Status Pills */
         .status-pill { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .pass { background: #dcfce7; color: #166534; } 
-        .fail { background: #fee2e2; color: #991b1b; } 
-        .idle { background: #f1f5f9; color: #94a3b8; }
+        .pass { background: #dcfce7; color: #166534; } .fail { background: #fee2e2; color: #991b1b; } .idle { background: #f1f5f9; color: #94a3b8; }
         
-        /* Table */
         .card { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; }
         th { background: #f8fafc; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; }
         tr:last-child td { border-bottom: none; }
-        
-        /* Zebra Striping */
         tbody tr:nth-child(even) { background-color: #f8fafc; }
         tbody tr:hover { background-color: #f1f5f9; }
 
-        /* Modal */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; width: 900px; max-width: 95%; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); max-height: 95vh; }
-        
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 5px; }
         .modal-header h3 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; }
-        
         .modal-label { font-size: 15px; font-weight: 700; color: #334155; display: block; margin-bottom: 8px; }
 
         pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 14px; margin: 0; height: 300px; line-height: 1.5; }
         select, input[type="text"] { padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; }
-        
-        /* Animation */
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
@@ -93,6 +81,7 @@
             <label class="modal-label">Select Existing or Add New Model:</label>
             <div style="display:flex; gap:10px; margin-bottom: 10px;">
                 <select id="modalSelector" style="flex:1;" onchange="syncInput()"></select>
+                <button id="btnAuth" class="btn btn-auth" onclick="requestAuth()">🔑 Insert Key</button>
             </div>
             <div style="display:flex; gap:10px;">
                 <input type="text" id="modalNewInput" placeholder="Type new model ID..." style="flex:1; font-family:monospace;">
@@ -108,6 +97,10 @@
                 <button class="btn" style="color:#16a34a; border-color:#16a34a;" onclick="markStatus('PASS')">✔ Mark Pass</button>
                 <button class="btn" style="color:#dc2626; border-color:#dc2626;" onclick="markStatus('FAIL')">✖ Mark Fail</button>
             </div>
+            
+            <div id="copyAction" style="display:none; margin-left: auto;" class="fade-in">
+                <button class="btn" onclick="copyCode()">📋 Copy Code to Clipboard</button>
+            </div>
         </div>
         
         <div id="viewOutput" class="fade-in" style="display:flex; flex-direction:column;">
@@ -116,7 +109,7 @@
         </div>
 
         <div id="viewCode" class="fade-in" style="display:none; flex-direction:column;">
-            <label class="modal-label">Client-Side Integration Code (Direct API):</label>
+            <label class="modal-label">Client-Side Integration Code:</label>
             <pre id="codeSnippet" style="background: #0f172a; color: #a5b4fc;"></pre>
        </div>
 
@@ -126,6 +119,7 @@
 <script>
     let data = { providers: [] };
     let currentIdx = -1;
+    let sessionAuth = ""; // Stores the "MM" password
 
     // Load Public Data
     fetch('sources.json').then(r => r.json()).then(d => { data = d; render(); });
@@ -137,23 +131,15 @@
         data.providers.forEach((p, idx) => {
             const history = p.history || {};
             const models = p.models || [];
-            
-            // Default selection
             const selected = models[0] || ""; 
             
-            // Status of selected
             let status = "IDLE";
             if (selected && history[selected]) status = history[selected].status;
 
-            // Stats
             const passCount = Object.values(history).filter(h => h.status === 'PASS').length;
             
-            // Last Pass Date
             let lastPassDate = "--";
-            const passes = Object.values(history)
-                .filter(h => h.status === 'PASS')
-                .map(h => h.date)
-                .sort().reverse();
+            const passes = Object.values(history).filter(h => h.status === 'PASS').map(h => h.date).sort().reverse();
             if(passes.length > 0) lastPassDate = passes[0];
 
             tbody.innerHTML += `
@@ -186,23 +172,46 @@
         pill.innerText = status;
     }
 
-    // --- MODAL LOGIC ---
+    // --- AUTH LOGIC ---
+    function requestAuth() {
+        const pass = prompt("Enter Password to enable live testing:");
+        if (pass === "MM") {
+            sessionAuth = pass;
+            const btn = document.getElementById("btnAuth");
+            btn.innerText = "🔓 Key Ready";
+            btn.style.backgroundColor = "#10b981"; // Green
+            btn.style.borderColor = "#10b981";
+        } else {
+            alert("Incorrect password.");
+        }
+    }
 
+    // --- MODAL LOGIC ---
     function openModal(idx) {
         currentIdx = idx;
         const p = data.providers[idx];
         
         document.getElementById('modalTitle').innerText = `Test Provider: ${p.name}`;
         
-        // Populate Dropdown
         const dl = document.getElementById('modalSelector');
         dl.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join('');
-        
-        // Sync Text Input
         syncInput();
+
+        // Check Auth Status visuals
+        const btnAuth = document.getElementById("btnAuth");
+        if(sessionAuth === "MM") {
+            btnAuth.innerText = "🔓 Key Ready";
+            btnAuth.style.backgroundColor = "#10b981";
+            btnAuth.style.borderColor = "#10b981";
+        } else {
+            btnAuth.innerText = "🔑 Insert Key";
+            btnAuth.style.backgroundColor = "#f59e0b";
+            btnAuth.style.borderColor = "#f59e0b";
+        }
 
         // Reset Views
         document.getElementById('modalActions').style.display = "none";
+        document.getElementById('copyAction').style.display = "none";
         document.getElementById('modalOutput').innerText = "Ready to test...";
         document.getElementById('viewOutput').style.display = "flex";
         document.getElementById('viewCode').style.display = "none";
@@ -218,22 +227,15 @@
     function addNewModel() {
         const p = data.providers[currentIdx];
         const val = document.getElementById('modalNewInput').value.trim();
-        
         if (!val) return alert("Please enter a model ID");
         
         if (!p.models.includes(val)) {
-            // Add to local data
-            p.models.unshift(val); // Add to top
-            
-            // Re-render Modal Dropdown
+            p.models.unshift(val);
             const dl = document.getElementById('modalSelector');
             dl.innerHTML = p.models.map(m => `<option value="${m}">${m}</option>`).join('');
             dl.value = val;
-            
-            // Re-render Main Table
             render();
-            
-            alert(`Added ${val}. Click 'Save Changes' to keep permanently.`);
+            alert(`Added ${val}.`);
         } else {
             alert("Model already exists.");
             document.getElementById('modalSelector').value = val;
@@ -247,22 +249,34 @@
     function toggleCodeView() {
         const output = document.getElementById('viewOutput');
         const code = document.getElementById('viewCode');
+        const actions = document.getElementById('modalActions');
+        const copyBtn = document.getElementById('copyAction');
         
+        // SWITCH TO CODE VIEW
         if (code.style.display === 'none') {
             output.style.display = 'none';
             code.style.display = 'flex';
             generateCodeSnippet();
-        } else {
+            
+            // Hide Pass/Fail, Show Copy
+            actions.style.display = 'none';
+            copyBtn.style.display = 'flex';
+        } 
+        // SWITCH TO OUTPUT VIEW
+        else {
             code.style.display = 'none';
             output.style.display = 'flex';
+            
+            // Hide Copy, Show Pass/Fail (if available)
+            copyBtn.style.display = 'none';
+            // Only show pass/fail if we actually have output, but simplest is to just show them if user switches back
+            actions.style.display = 'flex'; 
         }
     }
 
     function generateCodeSnippet() {
         const p = data.providers[currentIdx];
         const model = document.getElementById('modalNewInput').value;
-        
-        // We use "YOUR_API_KEY" because the browser doesn't know the real key (it's in config.php)
         const url = p.endpoint.replace('{model}', model).replace('{key}', 'YOUR_API_KEY');
         
         let headers = { "Content-Type": "application/json" };
@@ -271,7 +285,6 @@
             headers['x-api-key'] = "YOUR_API_KEY";
             if(p.customHeaders) Object.assign(headers, p.customHeaders);
         }
-        
         let body = JSON.parse(JSON.stringify(p.testBody).replace('{model}', model));
 
         let snippet = `// Direct API Call for ${p.name} (${model})\n`;
@@ -284,10 +297,18 @@
         document.getElementById('codeSnippet').innerText = snippet;
     }
 
+    function copyCode() {
+        const text = document.getElementById('codeSnippet').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Code copied to clipboard!");
+        });
+    }
+
     async function runSecureTest() {
-        // Ensure we are viewing output, not code
+        // Switch to Output View
         document.getElementById('viewOutput').style.display = 'flex';
         document.getElementById('viewCode').style.display = 'none';
+        document.getElementById('copyAction').style.display = 'none';
 
         const p = data.providers[currentIdx];
         const model = document.getElementById('modalNewInput').value;
@@ -302,6 +323,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    password: sessionAuth, // SEND PASSWORD "MM"
                     provider_id: p.id,
                     model: model,
                     body: bodyPayload
@@ -310,14 +332,9 @@
             
             const json = await res.json();
             output.innerText = JSON.stringify(json, null, 2);
-            
-            // SHOW BUTTONS NOW (Success)
             document.getElementById('modalActions').style.display = "flex";
-            
         } catch(e) {
             output.innerText = "Error: " + e.message;
-            
-            // SHOW BUTTONS NOW (Even on error, so you can mark fail)
             document.getElementById('modalActions').style.display = "flex";
         }
     }
@@ -326,31 +343,18 @@
         const p = data.providers[currentIdx];
         const model = document.getElementById('modalNewInput').value;
         if(!p.history) p.history = {};
-        
-        p.history[model] = { 
-            status: status, 
-            date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString() 
-        };
-        
-        render(); 
-        closeModal();
+        p.history[model] = { status: status, date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString() };
+        render(); closeModal();
     }
 
     async function saveToServer() {
         const statusEl = document.getElementById('saveStatus');
         statusEl.innerText = "Saving...";
         try {
-            await fetch('save_data.php', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
+            await fetch('save_data.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
             statusEl.innerText = "Saved ✔";
             setTimeout(() => statusEl.innerText = "", 2000);
-        } catch(e) {
-            statusEl.innerText = "Error Saving";
-            alert("Failed to save: " + e.message);
-        }
+        } catch(e) { statusEl.innerText = "Error"; alert("Failed: " + e.message); }
     }
 </script>
 </body>
