@@ -7,7 +7,7 @@
         :root { --bg:#f1f5f9; --surface:#ffffff; --text:#334155; --primary:#2563eb; --success:#16a34a; --danger:#dc2626; --border:#cbd5e1; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 30px; }
         
-        /* Layout & Header */
+        /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .header h1 { margin: 0; font-size: 20px; color: #1e293b; }
         
@@ -21,9 +21,9 @@
         
         /* Modal Controls */
         .modal-controls { display: flex; align-items: center; gap: 10px; }
-        .btn-nav { border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 16px; transition: 0.2s; }
+        .btn-nav { border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; transition: 0.2s; }
         .btn-nav:hover { background: #e2e8f0; color: #334155; }
-        .btn-close-x { border: none; background: transparent; font-size: 24px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
+        .btn-close-x { border: none; background: transparent; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
         .btn-close-x:hover { color: #dc2626; }
         
         .btn-auth { background: #f59e0b; color: white; border-color: #f59e0b; }
@@ -32,7 +32,7 @@
         .status-pill { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
         .pass { background: #dcfce7; color: #166534; } .fail { background: #fee2e2; color: #991b1b; } .idle { background: #f1f5f9; color: #94a3b8; }
         
-        .cap-badge { display: inline-flex; align-items: center; padding: 4px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: 600; margin: 2px; }
+        .cap-badge { display: inline-flex; align-items: center; padding: 6px 10px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 13px; font-weight: 600; margin: 3px; }
         .cap-icons { font-size: 16px; cursor: pointer; display: flex; gap: 4px; }
         
         /* Table */
@@ -44,24 +44,45 @@
         tbody tr:nth-child(even) { background-color: #f8fafc; }
         tbody tr:hover { background-color: #f1f5f9; }
 
-        /* Modals */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; width: 900px; max-width: 95%; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); max-height: 95vh; overflow-y: auto; }
+        /* Modals Generic */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; }
+        
+        /* FIXED POSITIONING: 
+           Using align-items: flex-start and padding-top ensures the modal 
+           stays at the top and doesn't jump around when content height changes.
+        */
+        .modal-aligner { display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; min-height: 100%; width: 100%; }
+
+        .modal-content { background: white; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); margin-bottom: 50px; }
+        
+        /* Specific Sizes */
+        .size-large { width: 1100px; max-width: 95%; padding: 35px; } /* Increased Size */
+        .size-medium { width: 800px; max-width: 95%; padding: 30px; }
+
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
-        .modal-header h3 { margin: 0; font-size: 22px; color: #0f172a; font-weight: 800; }
+        .modal-header h3 { margin: 0; font-size: 26px; color: #0f172a; font-weight: 800; }
         
         /* Provider Info Box (Summary) */
         .provider-summary { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 15px; display: flex; gap: 30px; font-size: 13px; color: #0c4a6e; }
         .summary-item strong { display: block; font-size: 11px; text-transform: uppercase; color: #0369a1; margin-bottom: 4px; }
 
         /* Feature Modal Specifics */
-        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .feature-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; }
-        .feature-box h4 { margin: 0 0 15px 0; color: #334155; font-size: 14px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+        /* GRID: 60% Left, 40% Right */
+        .features-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 25px; }
+        
+        .feature-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; }
+        .feature-box h4 { margin: 0 0 20px 0; color: #334155; font-size: 16px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; letter-spacing: 0.05em; }
+        
+        /* Bigger Fonts for Features */
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
         .info-label { color: #64748b; font-weight: 500; }
-        .info-val { font-weight: 600; color: #334155; }
-        .model-chip { display: inline-block; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 13px; margin: 2px; color: #475569; border: 1px solid #e2e8f0; }
+        .info-val { font-weight: 600; color: #334155; text-align: right; }
+        
+        .model-chip { display: inline-block; background: #f1f5f9; padding: 6px 10px; border-radius: 4px; font-size: 14px; margin: 3px; color: #475569; border: 1px solid #e2e8f0; }
+
+        /* Clickable Link Style */
+        .endpoint-link { color: #2563eb; text-decoration: none; word-break: break-all; font-family: monospace; font-size: 13px; }
+        .endpoint-link:hover { text-decoration: underline; }
 
         pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: monospace; font-size: 14px; margin: 0; height: 300px; line-height: 1.5; }
         select, input[type="text"] { padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; }
@@ -98,90 +119,98 @@
 </div>
 
 <div id="featuresModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 id="featModalTitle">Provider Features</h3>
-            <div class="modal-controls">
-                <button class="btn-nav" onclick="navFeature(-1)" title="Previous">‹</button>
-                <button class="btn-nav" onclick="navFeature(1)" title="Next">›</button>
-                <button class="btn-close-x" onclick="closeModal('featuresModal')">×</button>
+    <div class="modal-aligner">
+        <div class="modal-content size-large">
+            <div class="modal-header">
+                <h3 id="featModalTitle">Provider Features</h3>
+                <div class="modal-controls">
+                    <button class="btn-nav" onclick="navFeature(-1)" title="Previous (Left Arrow)">‹</button>
+                    <button class="btn-nav" onclick="navFeature(1)" title="Next (Right Arrow)">›</button>
+                    <button class="btn-close-x" onclick="closeModal('featuresModal')">×</button>
+                </div>
             </div>
-        </div>
-        
-        <div class="features-grid">
-            <div class="feature-box" style="background:#f8fafc;">
-                <h4>Configuration & Limits</h4>
-                <div class="info-row"><span class="info-label">Cost Tier</span> <span class="info-val" id="featCost">--</span></div>
-                <div class="info-row"><span class="info-label">Rate Limits</span> <span class="info-val" id="featLimits">--</span></div>
-                <div class="info-row"><span class="info-label">Auth Type</span> <span class="info-val" id="featAuth">--</span></div>
-                <div class="info-row"><span class="info-label">Endpoint</span> <span class="info-val" id="featEndpoint" style="font-size:11px; max-width:200px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">--</span></div>
-                
-                <div style="margin-top:20px; display:flex;">
-                    <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📖 Open Official Docs</a>
+            
+            <div class="features-grid">
+                <div class="feature-box" style="background:#f8fafc;">
+                    <h4>Configuration & Limits</h4>
+                    <div class="info-row"><span class="info-label">Cost Tier</span> <span class="info-val" id="featCost">--</span></div>
+                    <div class="info-row"><span class="info-label">Rate Limits</span> <span class="info-val" id="featLimits">--</span></div>
+                    <div class="info-row"><span class="info-label">Auth Type</span> <span class="info-val" id="featAuth">--</span></div>
+                    
+                    <div style="margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
+                        <span class="info-label" style="display:block; margin-bottom:4px;">Endpoint URL</span>
+                        <a href="#" target="_blank" id="featEndpoint" class="endpoint-link">--</a>
+                    </div>
+                    
+                    <div style="margin-top:25px; display:flex;">
+                        <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; padding: 12px; font-size:15px;">📖 Open Official Docs</a>
+                    </div>
+                </div>
+
+                <div class="feature-box">
+                    <h4>Capabilities</h4>
+                    <div id="featCapsContainer" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
                 </div>
             </div>
 
             <div class="feature-box">
-                <h4>Capabilities</h4>
-                <div id="featCapsContainer" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
+                <h4>Available Models (<span id="featModelCount">0</span>)</h4>
+                <div id="featModelList" style="max-height: 250px; overflow-y: auto;"></div>
             </div>
-        </div>
-
-        <div class="feature-box">
-            <h4>Available Models (<span id="featModelCount">0</span>)</h4>
-            <div id="featModelList" style="max-height: 200px; overflow-y: auto;"></div>
         </div>
     </div>
 </div>
 
 <div id="testModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 id="testModalTitle">Test Provider</h3>
-            <button class="btn-close-x" onclick="closeModal('testModal')">×</button>
-        </div>
-
-        <div class="provider-summary" id="testSummary">
-            <div class="summary-item"><strong>Cost</strong> <span id="tsCost">--</span></div>
-            <div class="summary-item"><strong>Limits</strong> <span id="tsLimits">--</span></div>
-            <div class="summary-item" style="flex:1;"><strong>Capabilities</strong> <span id="tsCaps">--</span></div>
-        </div>
-
-        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <label style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:5px; display:block;">Select or Add Model:</label>
-            <div style="display:flex; gap:10px; margin-bottom: 10px;">
-                <select id="modalSelector" style="flex:1;" onchange="syncInput()"></select>
-                <button id="btnAuth" class="btn btn-auth" onclick="requestAuth()">🔑 Insert Key</button>
+    <div class="modal-aligner">
+        <div class="modal-content size-medium">
+            <div class="modal-header">
+                <h3 id="testModalTitle">Test Provider</h3>
+                <button class="btn-close-x" onclick="closeModal('testModal')">×</button>
             </div>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="modalNewInput" placeholder="Type new model ID..." style="flex:1; font-family:monospace;">
-                <button class="btn" onclick="addNewModel()">+ Add & Select</button>
+
+            <div class="provider-summary" id="testSummary">
+                <div class="summary-item"><strong>Cost</strong> <span id="tsCost">--</span></div>
+                <div class="summary-item"><strong>Limits</strong> <span id="tsLimits">--</span></div>
+                <div class="summary-item" style="flex:1;"><strong>Capabilities</strong> <span id="tsCaps">--</span></div>
             </div>
-        </div>
-        
-        <div style="display:flex; gap:10px; align-items:center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
-            <button class="btn btn-primary" style="padding: 10px 20px; font-size:14px;" onclick="runSecureTest()">▶ Run Test</button>
-            <button class="btn btn-code" style="padding: 10px 20px; font-size:14px;" onclick="toggleCodeView()"> { } Show Code</button>
-            
-            <div id="modalActions" style="display:none; gap:10px; margin-left: auto;" class="fade-in">
-                <button class="btn" style="color:#16a34a; border-color:#16a34a;" onclick="markStatus('PASS')">✔ Mark Pass</button>
-                <button class="btn" style="color:#dc2626; border-color:#dc2626;" onclick="markStatus('FAIL')">✖ Mark Fail</button>
+
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <label style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:5px; display:block;">Select or Add Model:</label>
+                <div style="display:flex; gap:10px; margin-bottom: 10px;">
+                    <select id="modalSelector" style="flex:1;" onchange="syncInput()"></select>
+                    <button id="btnAuth" class="btn btn-auth" onclick="requestAuth()">🔑 Insert Key</button>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="modalNewInput" placeholder="Type new model ID..." style="flex:1; font-family:monospace;">
+                    <button class="btn" onclick="addNewModel()">+ Add & Select</button>
+                </div>
             </div>
             
-             <div id="copyAction" style="display:none; margin-left: auto;" class="fade-in">
-                <button class="btn" onclick="copyCode()">📋 Copy Code</button>
+            <div style="display:flex; gap:10px; align-items:center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
+                <button class="btn btn-primary" style="padding: 10px 20px; font-size:14px;" onclick="runSecureTest()">▶ Run Test</button>
+                <button class="btn btn-code" style="padding: 10px 20px; font-size:14px;" onclick="toggleCodeView()"> { } Show Code</button>
+                
+                <div id="modalActions" style="display:none; gap:10px; margin-left: auto;" class="fade-in">
+                    <button class="btn" style="color:#16a34a; border-color:#16a34a;" onclick="markStatus('PASS')">✔ Mark Pass</button>
+                    <button class="btn" style="color:#dc2626; border-color:#dc2626;" onclick="markStatus('FAIL')">✖ Mark Fail</button>
+                </div>
+                
+                 <div id="copyAction" style="display:none; margin-left: auto;" class="fade-in">
+                    <button class="btn" onclick="copyCode()">📋 Copy Code</button>
+                </div>
             </div>
-        </div>
-        
-        <div id="viewOutput" class="fade-in" style="display:flex; flex-direction:column;">
-             <label style="font-size:14px; font-weight:700; color:#334155; margin-bottom:5px;">Response Output:</label>
-             <pre id="modalOutput">Ready...</pre>
-        </div>
+            
+            <div id="viewOutput" class="fade-in" style="display:flex; flex-direction:column;">
+                 <label style="font-size:14px; font-weight:700; color:#334155; margin-bottom:5px;">Response Output:</label>
+                 <pre id="modalOutput">Ready...</pre>
+            </div>
 
-        <div id="viewCode" class="fade-in" style="display:none; flex-direction:column;">
-            <label style="font-size:14px; font-weight:700; color:#334155; margin-bottom:5px;">Integration Code:</label>
-            <pre id="codeSnippet" style="background: #0f172a; color: #a5b4fc;"></pre>
-       </div>
+            <div id="viewCode" class="fade-in" style="display:none; flex-direction:column;">
+                <label style="font-size:14px; font-weight:700; color:#334155; margin-bottom:5px;">Integration Code:</label>
+                <pre id="codeSnippet" style="background: #0f172a; color: #a5b4fc;"></pre>
+           </div>
+        </div>
     </div>
 </div>
 
@@ -252,6 +281,7 @@
         pill.innerText = status;
     }
 
+    // --- AUTH LOGIC ---
     function requestAuth() {
         const pass = prompt("Enter Password to enable live testing:");
         if (pass === "MM") { sessionAuth = pass; updateAuthBtn(); } else { alert("Incorrect password."); }
@@ -268,31 +298,50 @@
         }
     }
 
-    // --- FEATURES MODAL (NAVIGABLE) ---
+    // --- KEYBOARD LISTENERS ---
+    document.addEventListener('keydown', function(event) {
+        // Only active if features modal is showing
+        if (document.getElementById('featuresModal').style.display === 'block') {
+            if (event.key === 'ArrowLeft') navFeature(-1);
+            if (event.key === 'ArrowRight') navFeature(1);
+            if (event.key === 'Escape') closeModal('featuresModal');
+        }
+        // Close Test Modal on Escape
+        if (event.key === 'Escape' && document.getElementById('testModal').style.display === 'block') {
+            closeModal('testModal');
+        }
+    });
+
+    // --- FEATURES MODAL ---
     function openFeaturesModal(idx) {
         currentFeatureIdx = idx;
         const p = data.providers[idx];
-        document.getElementById('featModalTitle').innerText = p.name;
+        document.getElementById('featModalTitle').innerText = p.name + " Features";
         
         document.getElementById('featCost').innerText = p.cost || "Unknown";
         document.getElementById('featLimits').innerText = p.limits || "Unknown";
         document.getElementById('featAuth').innerText = p.authType;
-        document.getElementById('featEndpoint').innerText = p.endpoint;
+        
+        // Link logic
+        const el = document.getElementById('featEndpoint');
+        el.innerText = p.endpoint;
+        el.href = p.endpoint; // Basic link behavior, though POST endpoints often 404 in browser
+        
         document.getElementById('featDocs').href = p.docs;
         
-        document.getElementById('featCapsContainer').innerHTML = (p.capabilities || []).map(c => 
+        const capsContainer = document.getElementById('featCapsContainer');
+        capsContainer.innerHTML = (p.capabilities || []).map(c => 
             `<span class="cap-badge">${CAP_ICONS[c] || ''} ${c}</span>`
         ).join('');
 
         document.getElementById('featModelCount').innerText = p.models.length;
         document.getElementById('featModelList').innerHTML = p.models.map(m => `<span class="model-chip">${m}</span>`).join('');
 
-        document.getElementById('featuresModal').style.display = 'flex';
+        document.getElementById('featuresModal').style.display = 'block'; // Block used by modal-aligner logic
     }
 
     function navFeature(direction) {
         let newIdx = currentFeatureIdx + direction;
-        // Loop around
         if (newIdx < 0) newIdx = data.providers.length - 1;
         if (newIdx >= data.providers.length) newIdx = 0;
         openFeaturesModal(newIdx);
@@ -318,7 +367,7 @@
         document.getElementById('viewOutput').style.display = "flex";
         document.getElementById('viewCode').style.display = "none";
         
-        document.getElementById('testModal').style.display = "flex";
+        document.getElementById('testModal').style.display = 'block';
     }
 
     function syncInput() {
