@@ -1,0 +1,14 @@
+{
+  "keys": {
+    "gemini": "YOUR_GEMINI_KEY_HERE",
+    "groq": "YOUR_GROQ_KEY_HERE",
+    "openai": "YOUR_OPENAI_KEY_HERE",
+    "anthropic": "YOUR_ANTHROPIC_KEY_HERE"
+  },
+  "custom_models": {
+    "gemini": ["gemini-2.0-flash-exp", "gemini-1.5-pro-002"],
+    "groq": ["llama-3.2-11b-vision-preview", "mixtral-8x7b-32768"],
+    "openai": ["o1-preview", "gpt-4-turbo"],
+    "deepseek": ["deepseek-coder"]
+  }
+}
