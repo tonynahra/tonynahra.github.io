@@ -3,9 +3,10 @@
     {
       "id": "gemini",
       "name": "Google Gemini",
-      "docs": "https://ai.google.dev/gemini-api/docs/models/gemini",
-      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
+      "key": "YOUR_GEMINI_KEY_HERE",
       "authType": "query",
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
+      "docs": "https://ai.google.dev/gemini-api/docs/models/gemini",
       "models": ["gemini-2.5-flash","gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"],
       "testBody": {
         "contents": [{ "parts": [{ "text": "Hello" }] }]
@@ -14,9 +15,10 @@
     {
       "id": "groq",
       "name": "Groq",
-      "docs": "https://console.groq.com/docs/models",
-      "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+      "key": "YOUR_GROQ_KEY_HERE",
       "authType": "bearer",
+      "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+      "docs": "https://console.groq.com/docs/models",
       "models": ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"],
       "testBody": {
         "model": "{model}",
@@ -26,9 +28,10 @@
     {
       "id": "openai",
       "name": "OpenAI",
-      "docs": "https://platform.openai.com/docs/models",
-      "endpoint": "https://api.openai.com/v1/chat/completions",
+      "key": "YOUR_OPENAI_KEY_HERE",
       "authType": "bearer",
+      "endpoint": "https://api.openai.com/v1/chat/completions",
+      "docs": "https://platform.openai.com/docs/models",
       "models": ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
       "testBody": {
         "model": "{model}",
@@ -38,9 +41,10 @@
     {
       "id": "anthropic",
       "name": "Anthropic",
-      "docs": "https://docs.anthropic.com/en/docs/about-claude/models",
-      "endpoint": "https://api.anthropic.com/v1/messages",
+      "key": "YOUR_ANTHROPIC_KEY_HERE",
       "authType": "header-custom",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "docs": "https://docs.anthropic.com/en/docs/about-claude/models",
       "customHeaders": { 
         "x-api-version": "2023-06-01", 
         "anthropic-dangerously-allow-browser": "true" 
@@ -55,9 +59,10 @@
     {
       "id": "deepseek",
       "name": "DeepSeek",
-      "docs": "https://api-docs.deepseek.com/",
-      "endpoint": "https://api.deepseek.com/chat/completions",
+      "key": "",
       "authType": "bearer",
+      "endpoint": "https://api.deepseek.com/chat/completions",
+      "docs": "https://api-docs.deepseek.com/",
       "models": ["deepseek-chat", "deepseek-coder"],
       "testBody": {
         "model": "{model}",
@@ -67,9 +72,10 @@
     {
       "id": "openrouter",
       "name": "OpenRouter",
-      "docs": "https://openrouter.ai/models",
-      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "key": "",
       "authType": "bearer",
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "docs": "https://openrouter.ai/models",
       "models": ["google/gemini-2.0-flash-exp:free", "openai/gpt-4o", "meta-llama/llama-3.2-11b-vision-instruct:free"],
       "testBody": {
         "model": "{model}",
