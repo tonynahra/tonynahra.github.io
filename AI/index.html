@@ -12,6 +12,15 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
         h1 { margin: 0; color: #1e293b; letter-spacing: -0.5px; }
         
+        /* --- FILTER BAR --- */
+        .filter-bar { display: flex; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; align-items: center; flex-shrink: 0; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; }
+        .filter-input { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; color: #334155; outline: none; }
+        .filter-input:focus { border-color: var(--primary); }
+        .btn-reset { margin-left: auto; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-reset:hover { background: #e2e8f0; }
+
         /* Card & Table */
         .card { background: white; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f1f5f9; flex: 1; display: flex; flex-direction: column; }
         .table-scroll { overflow-y: auto; flex: 1; }
@@ -24,11 +33,10 @@
         td { padding: 16px 24px; text-align: left; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         tr:hover td { background-color: #fcfcfc; }
         
-        /* Provider Link */
         .provider-link { color: #0f172a; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 15px; }
         .provider-link:hover { color: var(--primary); text-decoration: underline; }
         
-        /* --- COLOR CODED BADGES --- */
+        /* Features Cell */
         .feat-cell { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; cursor: pointer; }
         .cap-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 4px; text-transform: uppercase; }
         
@@ -40,7 +48,12 @@
         .c-code { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
         .c-other { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
 
-        /* Modern Dropdown */
+        /* Last Tested Cell */
+        .date-cell { display: flex; flex-direction: column; align-items: flex-start; }
+        .date-main { font-weight: 600; color: #334155; font-size: 14px; }
+        .date-sub { font-size: 11px; color: #64748b; margin-top: 2px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
+
+        /* Dropdown */
         .model-select {
             width: 70%; padding: 10px 14px; padding-right: 35px; font-size: 14px; font-weight: 500; color: #334155;
             background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; outline: none;
@@ -58,17 +71,14 @@
         .btn-primary:hover { background: #1d4ed8; color: white; }
         .btn-code { background: #334155; color: white; border-color: #334155; }
         .btn-code:hover { background: #475569; color: white; }
-        
         .btn-nav { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 18px; color: #64748b; }
         .btn-close-x { border: none; background: transparent; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; margin-left: 10px; }
         .btn-close-x:hover { color: #dc2626; }
-        
         .btn-copy { padding: 4px 10px; font-size: 12px; background: #475569; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-copy:hover { background: #64748b; }
-
+        
         /* Modals */
         .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; backdrop-filter: blur(2px); justify-content: center; align-items: center; }
-        
+        .modal-aligner { display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; min-height: 100%; width: 100%; }
         .modal-content { background: white; border-radius: 16px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); margin-bottom: 50px; }
         
         /* Sizes */
@@ -78,44 +88,25 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; flex-shrink: 0; }
         .modal-header h3 { margin: 0; font-size: 28px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* Test Modal Layout */
+        /* Test Modal */
         .test-body { display: flex; flex-direction: column; height: 100%; gap: 15px; padding-top: 15px; overflow: hidden; }
         .input-group { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; flex-shrink: 0; }
         .output-group { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
         .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 12px; flex: 1; overflow: auto; margin: 0; font-family: "Menlo", "Monaco", "Courier New", monospace; font-size: 14px; line-height: 1.6; border: 1px solid #0f172a; }
 
-        /* Feature Modal Specifics */
+        /* Features */
         .features-layout { display: flex; height: 100%; gap: 20px; overflow: hidden; padding-top: 15px; }
         .features-left { width: 60%; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
         .features-right { width: 40%; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-        
         .feature-box { border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; }
         .feature-box h4 { margin: 0 0 15px 0; color: #334155; font-size: 16px; text-transform: uppercase; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; font-weight: 700; }
-        
         .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
-        .info-label { color: #64748b; font-weight: 500; }
-        .info-val { font-weight: 600; color: #334155; text-align: right; }
-        
-        /* UPDATED: Model Chip Style 
-           Increased font size to 20px (+50% from 13px)
-        */
-        .model-chip { 
-            display: inline-block; 
-            background: #f8fafc; 
-            padding: 8px 12px; 
-            border-radius: 6px; 
-            font-size: 20px; /* INCREASED FONT */
-            margin: 4px; 
-            color: #334155; 
-            border: 1px solid #e2e8f0; 
-            font-weight: 500; 
-        }
-        
+        .model-chip { display: inline-block; background: #f8fafc; padding: 8px 12px; border-radius: 6px; font-size: 20px; margin: 4px; color: #334155; border: 1px solid #e2e8f0; font-weight: 500; }
         .endpoint-link { color: #2563eb; text-decoration: none; word-break: break-all; font-family: monospace; font-size: 15px; }
 
         /* Inputs */
-        select, input[type="text"], input[type="password"] { padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; transition: 0.2s; }
+        select, input[type="text"], input[type="password"], input[type="date"] { padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 16px; transition: 0.2s; }
         .modal-input-select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 16px; background-color:white; }
         
     </style>
@@ -133,6 +124,26 @@
         </button>
     </div>
 
+    <div class="filter-bar">
+        <div class="filter-group">
+            <span class="filter-label">Status</span>
+            <select id="filterStatus" class="filter-input" style="padding:8px; width:150px;">
+                <option value="all">All Statuses</option>
+                <option value="Operational">Operational</option>
+                <option value="Unknown">Unknown</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <span class="filter-label">From Date</span>
+            <input type="date" id="filterStart" class="filter-input" style="padding:8px; width:150px;">
+        </div>
+        <div class="filter-group">
+            <span class="filter-label">To Date</span>
+            <input type="date" id="filterEnd" class="filter-input" style="padding:8px; width:150px;">
+        </div>
+        <button class="btn-reset" onclick="resetFilters()">Reset Filters</button>
+    </div>
+
     <div class="card">
         <div class="table-scroll">
             <table id="dashTable">
@@ -141,8 +152,9 @@
                         <th onclick="sortTable(0)" width="20%">Provider</th>
                         <th onclick="sortTable(1)" width="25%">Features</th>
                         <th onclick="sortTable(2)" width="30%">Available Models</th>
-                        <th onclick="sortTable(3)" width="15%">Status</th>
-                        <th width="10%">Action</th>
+                        <th onclick="sortTable(3)" width="10%">Status</th>
+                        <th onclick="sortTable(4)" width="10%">Last Tested</th>
+                        <th width="5%">Action</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -190,7 +202,6 @@
                         <span style="display:block; margin-bottom:5px; font-size:14px; font-weight:600; color:#64748b;">Endpoint URL</span>
                         <a href="#" target="_blank" id="featEndpoint" class="endpoint-link">--</a>
                     </div>
-                    
                     <div style="margin-top:20px; width: 100%;">
                         <a href="#" id="featDocs" target="_blank" class="btn btn-primary" style="width:100%; box-sizing: border-box; display:flex; justify-content:center;">📖 Open Official Docs</a>
                     </div>
@@ -261,8 +272,9 @@
 </div>
 
 <script>
-let data = { providers: [] };
-let currentIdx = -1;
+let rawData = []; // Store original data
+let filteredData = []; // Store filtered data for rendering
+let currentIdx = -1; // Index relative to filteredData
 let currentFeatureIdx = -1;
 
 const CAP_CONFIG = {
@@ -281,26 +293,109 @@ const CAP_CONFIG = {
     "Translation": { icon: "🌐", cls: "c-text" },
     "Document Processing": { icon: "📄", cls: "c-text" },
     "Generative AI": { icon: "✨", cls: "c-gen" },
-    "Fast Inference": { icon: "⚡", cls: "c-gen" }
+    "Fast Inference": { icon: "⚡", cls: "c-gen" },
+    "Aggregator": { icon: "🔗", cls: "c-other" }
 };
 
-fetch('sources.json').then(r => r.json()).then(d => { data = d; render(); });
+fetch('sources.json').then(r => r.json()).then(d => { 
+    // Process Data to add sortable fields
+    rawData = d.providers.map(p => {
+        const hist = p.history || {};
+        const dates = Object.values(hist).map(h => new Date(h.date).getTime());
+        const lastTs = dates.length > 0 ? Math.max(...dates) : 0;
+        const passCount = Object.values(hist).filter(h => h.status === 'PASS').length;
+        
+        return {
+            ...p,
+            _lastTs: lastTs,
+            _status: passCount > 0 ? "Operational" : "Unknown"
+        };
+    });
+    
+    // Initial Sort: Newest Tested -> Oldest Tested -> Never Tested
+    rawData.sort((a, b) => b._lastTs - a._lastTs);
+    
+    filteredData = [...rawData];
+    render(); 
+});
+
+// --- HELPER: Time Ago ---
+function getTimeData(ts) {
+    if (!ts) return { date: "--", ago: "" };
+    const d = new Date(ts);
+    const now = new Date();
+    const diffTime = now - d;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    let ago = "Today";
+    if (diffDays === 1) ago = "Yesterday";
+    if (diffDays > 1) ago = `${diffDays} days ago`;
+    
+    return {
+        date: d.toLocaleDateString('en-US', { month:'2-digit', day:'2-digit', year:'numeric'}),
+        ago: ago
+    };
+}
+
+// --- FILTERING ---
+document.getElementById('filterStatus').addEventListener('change', applyFilters);
+document.getElementById('filterStart').addEventListener('change', applyFilters);
+document.getElementById('filterEnd').addEventListener('change', applyFilters);
+
+function resetFilters() {
+    document.getElementById('filterStatus').value = 'all';
+    document.getElementById('filterStart').value = '';
+    document.getElementById('filterEnd').value = '';
+    applyFilters();
+}
+
+function applyFilters() {
+    const status = document.getElementById('filterStatus').value;
+    const startStr = document.getElementById('filterStart').value;
+    const endStr = document.getElementById('filterEnd').value;
+    
+    const startTs = startStr ? new Date(startStr).getTime() : 0;
+    const endTs = endStr ? new Date(endStr).getTime() + 86400000 : Infinity; // End of day
+
+    filteredData = rawData.filter(p => {
+        // Status Filter
+        if (status !== 'all' && p._status !== status) return false;
+        
+        // Date Filter (If never tested, only show if no date filter applied)
+        if (startStr || endStr) {
+            if (p._lastTs === 0) return false;
+            if (p._lastTs < startTs || p._lastTs > endTs) return false;
+        }
+        
+        return true;
+    });
+    
+    render();
+}
 
 function render() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = "";
-    data.providers.forEach((p, idx) => {
+    
+    filteredData.forEach((p, idx) => {
+        // Badges
         const caps = (p.capabilities || []).slice(0,3).map(c => {
             const conf = CAP_CONFIG[c] || { icon: '•', cls: 'c-other' };
             return `<span class="cap-badge ${conf.cls}">${conf.icon} ${c}</span>`;
         }).join('');
         
         const models = p.models || [];
-        const hist = p.history || {};
-        const passedCount = Object.values(hist).filter(h => h.status === 'PASS').length;
-        const statusBadge = passedCount > 0 
+        
+        // Status Badge
+        const statusBadge = p._status === "Operational" 
             ? `<span style="color:#16a34a; font-weight:bold;">● Operational</span>` 
             : `<span style="color:#94a3b8;">● Unknown</span>`;
+
+        // Time Data
+        const tData = getTimeData(p._lastTs);
+        const timeHtml = p._lastTs > 0 
+            ? `<div class="date-cell"><span class="date-main">${tData.date}</span><span class="date-sub">${tData.ago}</span></div>`
+            : `<span style="color:#cbd5e1;">--</span>`;
 
         tbody.innerHTML += `
             <tr data-idx="${idx}">
@@ -312,6 +407,7 @@ function render() {
                     </select>
                 </td>
                 <td>${statusBadge}</td>
+                <td>${timeHtml}</td>
                 <td><button class="btn" onclick="openTest(${idx})">Test</button></td>
             </tr>
         `;
@@ -328,8 +424,20 @@ function sortTable(n) {
             shouldSwitch = false;
             x = rows[i].getElementsByTagName("TD")[n];
             y = rows[i + 1].getElementsByTagName("TD")[n];
-            if (dir == "asc") { if (x.textContent.toLowerCase() > y.textContent.toLowerCase()) { shouldSwitch = true; break; } } 
-            else if (dir == "desc") { if (x.textContent.toLowerCase() < y.textContent.toLowerCase()) { shouldSwitch = true; break; } }
+            
+            // Handle Date Sort specifically (Column 4)
+            if (n === 4) {
+               // Use raw data sort if possible, but here we are sorting the DOM
+               // Better to re-sort filteredData array, but for quick DOM sort:
+               let xTime = x.textContent.trim() === '--' ? 0 : new Date(x.querySelector('.date-main').innerText).getTime();
+               let yTime = y.textContent.trim() === '--' ? 0 : new Date(y.querySelector('.date-main').innerText).getTime();
+               
+               if (dir == "asc") { if (xTime > yTime) { shouldSwitch=true; break; } }
+               else { if (xTime < yTime) { shouldSwitch=true; break; } }
+            } else {
+                if (dir == "asc") { if (x.textContent.toLowerCase() > y.textContent.toLowerCase()) { shouldSwitch = true; break; } } 
+                else if (dir == "desc") { if (x.textContent.toLowerCase() < y.textContent.toLowerCase()) { shouldSwitch = true; break; } }
+            }
         }
         if (shouldSwitch) { rows[i].parentNode.insertBefore(rows[i + 1], rows[i]); switching = true; switchcount++; } 
         else { if (switchcount == 0 && dir == "asc") { dir = "desc"; switching = true; } }
@@ -339,7 +447,7 @@ function sortTable(n) {
 /* --- FEATURES --- */
 function openFeaturesModal(idx) {
     currentFeatureIdx = idx;
-    const p = data.providers[idx];
+    const p = filteredData[idx];
     document.getElementById('featModalTitle').innerText = p.name;
     document.getElementById('featCost').innerText = p.cost || "Unknown";
     document.getElementById('featLimits').innerText = p.limits || "Unknown";
@@ -362,15 +470,15 @@ function openFeaturesModal(idx) {
 }
 function navFeature(dir) {
     let newIdx = currentFeatureIdx + dir;
-    if(newIdx < 0) newIdx = data.providers.length - 1;
-    if(newIdx >= data.providers.length) newIdx = 0;
+    if(newIdx < 0) newIdx = filteredData.length - 1;
+    if(newIdx >= filteredData.length) newIdx = 0;
     openFeaturesModal(newIdx);
 }
 
 /* --- TEST --- */
 function openTest(idx) {
     currentIdx = idx;
-    const p = data.providers[idx];
+    const p = filteredData[idx];
     document.getElementById('modalTitle').innerText = p.name;
     const sel = document.getElementById('modalSelector');
     sel.innerHTML = p.models.map(m => `<option>${m}</option>`).join('');
@@ -384,8 +492,8 @@ function openTest(idx) {
 
 function navTest(dir) {
     let newIdx = currentIdx + dir;
-    if(newIdx < 0) newIdx = data.providers.length - 1;
-    if(newIdx >= data.providers.length) newIdx = 0;
+    if(newIdx < 0) newIdx = filteredData.length - 1;
+    if(newIdx >= filteredData.length) newIdx = 0;
     openTest(newIdx);
 }
 
@@ -403,7 +511,7 @@ function toggleCode() {
 }
 
 function generateCodeSnippet() {
-    const p = data.providers[currentIdx];
+    const p = filteredData[currentIdx];
     const model = document.getElementById('modalSelector').value;
     const url = p.endpoint.replace('{model}', model).replace('{key}', 'PASTE_YOUR_OWN_KEY_HERE');
     let headers = { "Content-Type": "application/json" };
@@ -426,7 +534,7 @@ async function runPublicTest() {
     document.getElementById('viewOutput').style.display = 'flex';
     document.getElementById('viewCode').style.display = 'none';
     const out = document.getElementById('modalOutput');
-    const p = data.providers[currentIdx];
+    const p = filteredData[currentIdx];
     const model = document.getElementById('modalSelector').value;
     const key = document.getElementById('userKey').value;
     
