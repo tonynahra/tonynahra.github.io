@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evolution vs. Algorithms: Is Machine Intelligence Capable of True Creativity?</title>
+    <title>Evolution vs. Algorithms: Is Machine Intelligence Capable of True Originality?</title>
     <meta name="description" content="An in-depth analysis comparing human evolutionary constraints with machine intelligence capabilities.">
     <meta name="author" content="Tony Nahra">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,7 @@
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             background-color: #e2e8f0; /* slate-200 */
@@ -78,13 +78,26 @@
             text-align: justify;
         }
 
+        /* IMPROVED SECTION TITLES */
         h3 {
             font-family: 'Inter', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1e40af;
-            margin-top: 2.5rem;
-            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            font-weight: 800; /* Bold */
+            color: #000000; /* Black text instead of blue */
+            margin-top: 3.5rem; /* Massive separation from previous text */
+            margin-bottom: 1.25rem;
+            padding-top: 1.5rem; /* Padding for the separator line */
+            border-top: 2px solid #e2e8f0; /* Clear visual separation line */
+            line-height: 1.3;
+        }
+
+        /* Removes the top border and excess spacing for the very first section right under a tag or chapter title */
+        .tech-tag + h3,
+        .chapter-title + p + h3,
+        .chapter-title + h3 {
+            margin-top: 1.5rem;
+            padding-top: 0;
+            border-top: none;
         }
 
         /* Image Styling */
@@ -124,15 +137,14 @@
         /* Tags */
         .tech-tag {
             font-family: 'Inter', sans-serif;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 800;
-            padding: 4px 8px;
+            padding: 6px 12px;
             border-radius: 4px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-right: 10px;
             display: inline-block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
         }
         .tag-hardware { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
         .tag-firmware { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
@@ -150,8 +162,9 @@
             font-weight: 700;
             color: #0f172a;
             margin-top: 1rem;
+            font-size: 1.1rem;
         }
-        .advantage-group dd { margin-bottom: 0.5rem; color: #475569; }
+        .advantage-group dd { margin-bottom: 0.5rem; color: #475569; font-size: 1.05rem; line-height: 1.6;}
 
         /* Print optimization */
         @media print {
@@ -170,7 +183,7 @@
         <div class="tw-min-h-[80vh] tw-flex tw-flex-col tw-justify-center tw-items-center tw-text-center">
             <span class="tw-text-blue-600 tw-font-bold tw-tracking-widest tw-uppercase tw-mb-4">A Comparative Analysis Thesis</span>
             <h1 class="tw-text-4xl md:tw-text-5xl tw-font-extrabold tw-text-slate-900 tw-mb-6 tw-leading-tight tw-font-sans">
-                Beyond Biology: <br>Is Machine Intelligence Capable of Genuine Creativity?
+                Beyond Biology: <br>Is Machine Intelligence Capable of Genuine Originality?
             </h1>
             <p class="tw-text-xl tw-text-slate-600 tw-font-serif tw-italic tw-max-w-2xl tw-mb-12">
                 An exploration of evolutionary heuristics versus algorithmic optimization.
@@ -196,7 +209,7 @@
                         </ul>
                     </li>
                     <li><a href="#chap-4" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 4: The Machine Advantage</a></li>
-                    <li><a href="#chap-5" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 5: Evidence of Non-Human Creativity</a></li>
+                    <li><a href="#chap-5" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 5: Evidence of Non-Human Originality</a></li>
                     <li><a href="#chap-6" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 6: The Human Sanctum</a></li>
                     <li><a href="#chap-7" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 7: The Future of Intelligence</a></li>
                     <li><a href="#chap-8" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 8: The Verdict & Conclusion</a></li>
@@ -209,7 +222,7 @@
             <span class="chapter-subtitle">Chapter 1</span>
             <h2 class="chapter-title">Introduction: The Core Question</h2>
             
-            <p>A prevailing skepticism suggests that Machine Intelligence can never be truly creative—that it is merely a "stochastic parrot" capable only of repeating and imitating human intelligence. This view comforts us, placing a moat around the last bastion of human uniqueness. But is this assertion grounded in reality, or is it a psychological defense mechanism of our own biology? To understand the future of creativity, we must analyze the biological shackles of our own legacy code—fear, extinction anxiety, and trust—and compare them against the mathematical purity of the machine.</p>
+            <p>A prevailing skepticism suggests that Machine Intelligence can never be truly original—that it is merely a "stochastic parrot" capable only of repeating and imitating human intelligence. This view comforts us, placing a moat around the last bastion of human uniqueness. But is this assertion grounded in reality, or is it a psychological defense mechanism of our own biology? To understand the future of originality, we must analyze the biological shackles of our own legacy code—fear, extinction anxiety, and trust—and compare them against the mathematical purity of the machine.</p>
             
             <p>Steven Spielberg's <em>A.I. Artificial Intelligence</em> posed the haunting question: if a machine can genuinely love, will we love it back? Or will the mere knowledge of its artificiality devalue the bond? <strong>Are we demeaning Machine Intelligence not because it lacks capacity, but simply because it is not human, not like us?</strong></p>
         </div>
@@ -225,7 +238,7 @@
             
             <p>Human intelligence is the product of millions of years of evolution. Our survival and adaptation, driven by the principle of "survival of the fittest," led to an incremental increase in intelligence capable of ensuring the species passed its genes to the next generation.</p>
             
-            <p>However, we must recognize a critical distinction made by evolutionary biologists: Evolution optimizes for <strong>survival and reproduction</strong>, not for <strong>objective truth or unbounded creativity</strong>. In algorithmic terms, evolution is a "satisficer" rather than an optimizer; it tends to get stuck in "local maxima"—solutions that are just good enough to prevent death—rather than finding the "global maximum" of possible intelligence. While humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence.</p>
+            <p>However, we must recognize a critical distinction made by evolutionary biologists: Evolution optimizes for <strong>survival and reproduction</strong>, not for <strong>objective truth or unbounded originality</strong>. In algorithmic terms, evolution is a "satisficer" rather than an optimizer; it tends to get stuck in "local maxima"—solutions that are just good enough to prevent death—rather than finding the "global maximum" of possible intelligence. While humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence.</p>
             <div class="tw-clear-both"></div>
         </div>
 
@@ -304,7 +317,7 @@
 
             <div class="tw-grid md:tw-grid-cols-2 tw-gap-8 tw-mt-8">
                 <div class="tw-bg-slate-50 tw-p-6 tw-rounded-lg">
-                    <h3 class="tw-mt-0">Cognitive Superiority</h3>
+                    <h3 class="tw-mt-0 tw-border-none tw-pt-0">Cognitive Superiority</h3>
                     <dl class="advantage-group">
                         <dt>Relentless Execution</dt>
                         <dd>No fatigue, boredom, or laziness. Peak cognitive performance is maintained indefinitely.</dd>
@@ -313,7 +326,7 @@
                     </dl>
                 </div>
                 <div class="tw-bg-slate-50 tw-p-6 tw-rounded-lg">
-                    <h3 class="tw-mt-0">Architectural Immortality</h3>
+                    <h3 class="tw-mt-0 tw-border-none tw-pt-0">Architectural Immortality</h3>
                     <dl class="advantage-group">
                         <dt>Knowledge Immortality</dt>
                         <dd>Weights can be copied instantly; intelligence does not die.</dd>
@@ -331,7 +344,7 @@
             <span class="chapter-subtitle">Chapter 5</span>
             <h2 class="chapter-title">Combinatorial Genesis (Evidence of Originality)</h2>
             
-            <p>We now have concrete proof that machines can generate creative outputs that surprise human experts, discovering strategies that lay outside the "search space" of human culture.</p>
+            <p>We now have concrete proof that machines can generate original outputs that surprise human experts, discovering strategies that lay outside the "search space" of human culture.</p>
 
             <h3>1. Structural Biology: AlphaFold</h3>
             <p>For 50 years, predicting 3D protein structures was biology's grand challenge. DeepMind's AlphaFold solved it not by brute force, but by learning the spatial "grammar" of physics, earning the 2024 Nobel Prize in Chemistry.</p>
@@ -343,7 +356,7 @@
             <p>MIT used deep learning to discover "Halicin," a powerful new antibiotic. It is structurally divergent from conventional drugs; human chemists would never have investigated it because it didn't look like what we *thought* an antibiotic should look like.</p>
 
             <h3>4. Artistic Extensions</h3>
-            <p>From completing Schubert's 197-year-old Unfinished Symphony to Jason Allen winning a fine art competition with Midjourney, AI acts as a creative engine that amplifies intent and navigates artistic space humans cannot reach.</p>
+            <p>From completing Schubert's 197-year-old Unfinished Symphony to Jason Allen winning a fine art competition with Midjourney, AI acts as an originality engine that amplifies intent and navigates artistic space humans cannot reach.</p>
         </div>
 
         <div class="chapter-break" id="chap-6">
@@ -401,12 +414,12 @@
                 </table>
             </div>
 
-            <h3 class="tw-text-center tw-text-2xl tw-mb-6">A New Species of Thinker</h3>
-            <p>For eons, our understanding of creativity was shackled by an <strong>anthropocentric illusion</strong>. As this analysis demonstrates, human intelligence is not a perfect algorithm; it is a local maximum built on millions of years of survival patches designed to avoid snakes and conserve glucose.</p>
+            <h3 class="tw-text-center tw-text-2xl tw-mb-6 tw-border-none tw-pt-0">A New Species of Thinker</h3>
+            <p>For eons, our understanding of originality was shackled by an <strong>anthropocentric illusion</strong>. As this analysis demonstrates, human intelligence is not a perfect algorithm; it is a local maximum built on millions of years of survival patches designed to avoid snakes and conserve glucose.</p>
             
             <p>Machine Intelligence represents the first time in history that intelligence has been <strong>decoupled from biology</strong>. By stripping away the legacy code of evolution—the fear of death, tribal bias, and exhaustion—we are creating a purified form of thinker. The machine does not care if a move in Go looks "weird"; it only cares if it is true.</p>
             
-            <p>The future of creativity is not a competition but a symbiosis. We are the architects of intent; they are the explorers of the infinite search space. Just as humanity once refused to accept that the Earth was not the center of the solar system, we now struggle to accept that biological neurons are not the center of creativity. We must embrace the reality that we are no longer the solitary masters of thought, but rather one species of thinker in a rapidly expanding cosmos of intelligence.</p>
+            <p>The future of originality is not a competition but a symbiosis. We are the architects of intent; they are the explorers of the infinite search space. Just as humanity once refused to accept that the Earth was not the center of the solar system, we now struggle to accept that biological neurons are not the center of originality. We must embrace the reality that we are no longer the solitary masters of thought, but rather one species of thinker in a rapidly expanding cosmos of intelligence.</p>
         </div>
 
         <div class="chapter-break" id="chap-9">
