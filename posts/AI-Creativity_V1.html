@@ -33,30 +33,23 @@
                 
         .nav-link-active {
             background-color: #f1f5f9;
-            /* slate-100 */
             border-left-color: #2563eb;
-            /* blue-600 */
             color: #0f172a;
-            /* slate-900 */
             font-weight: 600;
         }
-        /* Sub-menu active link styling */
         
         .sub-nav-link-active {
             color: #2563eb;
-            /* blue-600 */
             font-weight: 700;
             background-color: #f8fafc;
             border-right: 3px solid #2563eb;
         }
-        /* Smooth scrolling offset */
         
         section,
         div.track-section,
         h3 {
             scroll-margin-top: 80px;
         }
-        /* Image Styling Constraints */
         
         figure {
             margin-bottom: 2rem;
@@ -69,7 +62,6 @@
             flex-direction: column;
             align-items: center;
         }
-        /* Cursor pointer to indicate clickability for modal */
         
         .constrained-img {
             width: 100%;
@@ -99,7 +91,6 @@
         .tw-text-sm {
             font-weight: bold !important;
         }
-        /* Custom Tag Styling */
         
         .tech-tag {
             font-size: 0.7rem;
@@ -139,11 +130,9 @@
             color: #1e40af;
             border: 1px solid #bfdbfe;
         }
-        /* Custom styling for advantage lists */
         
         .advantage-group {
             border-left: 3px solid #6366f1;
-            /* Indigo-500 for visual grouping */
             padding-left: 1.5rem;
             margin-top: 1.5rem;
             margin-bottom: 1.5rem;
@@ -152,7 +141,6 @@
         .advantage-group dt {
             font-weight: 700;
             color: #1f2937;
-            /* Dark gray for term */
             margin-top: 0.75rem;
             margin-bottom: 0.25rem;
         }
@@ -167,7 +155,6 @@
         a:visited {
             color: inherit;
             text-decoration: none;
-            /* Optional */
         }
         
         .no-sp {
@@ -183,28 +170,24 @@
         .tw-p-6 {
             padding: 0.1rem 1.5rem 1.5rem 1.5rem !important;
         }
-      /* --- NEW: Collapsible Menu Styles --- */
 
-/* 1. Hide sub-menus by default */
-nav ul li ul {
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: all 0.4s ease-in-out; /* Smooth open/close animation */
-    display: block; /* Override default if needed, but rely on max-height */
-}
+        nav ul li ul {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: all 0.4s ease-in-out;
+            display: block; 
+        }
 
-/* 2. The class that expands them (applied via JS) */
-nav ul li ul.nav-expanded {
-    max-height: 1000px; /* Arbitrary large height to allow content to show */
-    opacity: 1;
-    margin-top: 0.5rem; /* slight spacing when open */
-}
+        nav ul li ul.nav-expanded {
+            max-height: 1000px; 
+            opacity: 1;
+            margin-top: 0.5rem; 
+        }
 
-/* Optional: Add a pointer cursor to parent links to imply interaction */
-nav > ul > li > a {
-    cursor: pointer;
-}
+        nav > ul > li > a {
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -230,18 +213,14 @@ nav > ul > li > a {
                                 <li class="tw-px-3 tw-py-1 tw-text-[10px] tw-font-bold tw-text-gray-400 tw-uppercase tw-tracking-widest tw-mt-2 tag-menu-color">B. The Firmware</li>
                                 <li><a href="#obedience" id="link-obedience" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">8. Obedience (Milgram)</a></li>
                                 <li><a href="#loss-aversion" id="link-loss-aversion" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">9. Risk Aversion</a></li>
-
                                 <li><a href="#selfishness" id="link-selfishness" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">10. The Selfish Gene</a></li>
                                 <li><a href="#cruel-legacy" id="link-cruel-legacy" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">11. Cruel Legacy</a></li>
                                 <li class="tw-px-3 tw-py-1 tw-text-[10px] tw-font-bold tw-text-gray-400 tw-uppercase tw-tracking-widest tw-mt-2 tag-menu-color">C. The OS</li>
                                 <li><a href="#ethics" id="link-ethics" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">12. Ethics & Violence</a></li>
                                 <li><a href="#trust" id="link-trust" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">13. Trust & Cryptography</a></li>
                                 <li><a href="#extinction" id="link-extinction" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">14. Extinction & Legacy</a></li>
-
                                 <li><a href="#data-destruction" id="link-data-destruction" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">15. Data Destruction</a></li>
-
                                 <li><a href="#diagram" id="link-diagram" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Relations diagram</a></li>
-
                                 <li><a href="#theological-patch" id="link-theological-patch" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs hover:tw-text-blue-600 tw-mt-2 sec-conclusion"><span class="tw-font-bold">∑</span> Theological Patch</a></li>
                             </ul>
                         </li>
@@ -251,10 +230,7 @@ nav > ul > li > a {
                                 <li class="tw-px-3 tw-py-1 tw-text-[10px] tw-font-bold tw-text-gray-400 tw-tracking-widest tw-mt-2 tag-menu-color no-sp"><a href="#architectural-immortality" class="no-sp" id="link-architectural-immortality">B. Architectural Immortality</a></li>
                                 <li class="tw-px-3 tw-py-1 tw-text-[10px] tw-font-bold tw-text-gray-400 tw-tracking-widest tw-mt-2 tag-menu-color no-sp"><a href="#ethical-relational-purity" class="no-sp" id="link-ethical-relational-purity">C. Ethical Purity</a></li>
                                 <li><a href="#collaboration" id="link-collaboration" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">The Babel Problem</a></li>
-
-
                                 <li><a href="#diagram-Machine-Advantage" id="link-diagram" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs tw-text-gray-500 hover:tw-text-blue-600">Relations diagram</a></li>
-
                                 <li><a href="#library-alexandria" id="link-library-alexandria" class="nav-link tw-block tw-py-1 tw-px-3 tw-text-xs hover:tw-text-blue-600 sec-conclusion"><span class="tw-font-bold">∑</span> Alexandria Library</a></li>
                             </ul>
                         </li>
@@ -372,7 +348,10 @@ nav > ul > li > a {
                         <span class="tech-tag tag-hardware">Hardware</span>
                         <h3 class="tw-text-2xl tw-font-bold tw-text-blue-800 tw-mb-4 tw-inline">3. The "Time to Action" Bottleneck</h3>
                         <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
-                            Biological intelligence suffers from a severe latency in deployment. For a human to reach baseline productivity, the existing population must invest nearly two decades of intensive resources—food, shelter, medical care, and education. This extended "Time to Action" means a human spends approximately 25% of their lifespan simply booting up and loading basic cultural software (language, arithmetic, social norms) before they can contribute back to the system. During this extended infancy and adolescence, the individual is a net drain on the population's resources.
+                            Biological intelligence suffers from a severe latency in deployment. For a human to reach baseline productivity, the existing population must invest nearly two decades of intensive resources—food, shelter, medical care, and education. Because human intelligence cannot be "downloaded" instantly, the organism must stagger through highly vulnerable, sequential phases of physical and cognitive development (infancy, toddlerhood, puberty). Each phase requires distinct, specialized attention before the individual can turn productive on their own.
+                        </p>
+                        <p class="tw-text-gray-700 tw-leading-relaxed tw-mt-4">
+                            To subsidize this biological latency, a meaningful percentage of the adult population must be permanently diverted from primary economic or scientific production into secondary maintenance roles: daycare workers, pediatricians, kindergarten teachers, and stay-at-home parents. Furthermore, human societies must engineer vast networks of "non-productive utilities" strictly to ensure the survival of the unformed hardware. Entire industries are dedicated to manufacturing car seats, baby monitors, and child-proofing apparatuses—an astronomical caloric and economic overhead required just to bring a single biological unit to a functional baseline. During this extended infancy and adolescence, the individual is a net drain on the population's resources.
                         </p>
                         <div class="tw-mt-8 tw-bg-white tw-border-l-4 tw-border-emerald-500 tw-p-6 tw-rounded-r-lg tw-shadow-sm">
                             <span class="tw-block tw-text-sm tw-font-bold tw-text-emerald-700 tw-uppercase tw-tracking-wider tw-mb-2"><small>Supporting Argument</small>:<br />Zero-Day Deployment</span>
