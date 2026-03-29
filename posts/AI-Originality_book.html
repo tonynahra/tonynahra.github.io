@@ -129,6 +129,7 @@
 
         /* EASY TERM STYLING */
         /* For Section Titles (h3) - Inline and smaller */
+
         h3 .easy-term {
             display: inline;
             font-size: 1.0em !important ;
@@ -139,6 +140,7 @@
             text-transform: none;
             letter-spacing: normal;
         }
+
         
         h3 .easy-term::before {
             content: "— "; /* Elegant separator */
@@ -191,14 +193,16 @@
             line-height: 1.5;
         }
 
-        /* Supporting Argument Boxes */
+        /* Supporting Argument & Context Boxes */
         .argument-box {
-            background-color: #fdfdfd;
+            background-color: #f1f5f9; /* Slate 100: Clearly visible to show it reaches right margin */
             border-left: 4px solid #10b981; /* Emerald-500 */
-            padding: 1.5rem;
-            margin: 2rem 0;
+            padding: 1.5rem 2rem;
+            margin: 2.5rem 0;
             border-radius: 0 0.5rem 0.5rem 0;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            width: 100%; /* Ensure it spans full width */
+            box-sizing: border-box;
         }
         .argument-title {
             display: block;
@@ -213,9 +217,14 @@
         .argument-box p {
             margin-bottom: 0;
             font-size: 1.05rem;
+            /* Paragraphs inside inherit text-align: justify */
+        }
+        .argument-box p + p {
+            margin-top: 1rem;
         }
         
         .context-box {
+            background-color: #fef3c7; /* Amber 100: Clearly visible */
             border-left-color: #f59e0b; /* Amber-500 */
         }
         .context-box .argument-title {
@@ -294,12 +303,11 @@
                 <p class="tw-font-sans tw-text-sm tw-text-slate-500">Updated: November 2025</p>
             </div>
 
-          <center> 
+           <center> 
               <img src="img/AI-Creativity.jpg" alt="Machine Intelligence Creativity" class="constrained-img" style="box-shadow:10px 10px 15px rgba(0, 0, 0, 0.5); max-width: 450px; border-radius:10px; width:75% ;" />
-          </center>    
+           </center>    
 
-            
-            
+
         </div>
 
         <div class="chapter-break" id="toc">
@@ -443,7 +451,7 @@
             <p>Could you focus on your routine tax filing while nursing a throbbing toothache? A tooth is a minor calcified structure—you have 32 of them—yet a single firing nerve can override the entire cognitive capacity of the brain. We cannot simply 'mute' the input and continue working. Pain is a crude, high-priority feedback system designed to warn about dangerous situations. If a hand is exposed to extreme heat, nerves send a signal that overrides all other thoughts to trigger an immediate reaction. It is a biological "interrupt request" of the highest order.</p>
             <div class="argument-box tw-clear-right">
                 <span class="argument-title">Supporting Argument: Anesthesia vs Fault Tolerance</span>
-                <p>While effective for survival, this system is debilitating. It evolved as a "maximum attention" alert because biology cannot easily repair a lost limb. This is why we developed anesthesia—to artificially block these sensors during necessary but intrusive organ operations (surgeries). Machines, conversely, possess sophisticated sensor networks that detect damage or overheating (nociception) without the "suffering" (pain) that incapacitates the system. They use fault tolerance protocols to prioritize operations, logging errors and rerouting power without the trauma loop that paraly paralyzes biological entities.</p>
+                <p>While effective for survival, this system is debilitating. It evolved as a "maximum attention" alert because biology cannot easily repair a lost limb. This is why we developed anesthesia—to artificially block these sensors during necessary but intrusive organ operations (surgeries). Machines, conversely, possess sophisticated sensor networks that detect damage or overheating (nociception) without the "suffering" (pain) that incapacitates the system. They use fault tolerance protocols to prioritize operations, logging errors and rerouting power without the trauma loop that paralyzes biological entities.</p>
             </div>
 
             <h3>9. State Discontinuity <span class="easy-term">The Sleep Requirement</span></h3>
