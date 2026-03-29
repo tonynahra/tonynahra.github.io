@@ -108,11 +108,11 @@
         /* IMPROVED SECTION TITLES */
         h3 {
             font-family: 'Inter', sans-serif;
-            font-size: 1.65rem; /* Bigger font */
-            font-weight: 800;   /* Bold */
+            font-size: 1.25rem !important ; /* Bigger font */
+            font-weight: 800 !important ;   /* Bold */
             color: #000000;
             margin-top: 5.5rem; /* MASSIVE separation from previous text */
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.85rem !important ;
             padding-top: 1.5rem; 
             border-top: 2px solid #e2e8f0; /* Clearer visual separation line */
             line-height: 1.3;
@@ -129,16 +129,21 @@
 
         /* EASY TERM STYLING */
         /* For Section Titles (h3) - Inline and smaller */
+
         h3 .easy-term {
             display: inline;
-            font-size: 0.65em;
-            color: #64748b;
-            font-weight: 500;
+            font-size: 1.0em !important ;
+            color: #333;
+            font-weight: 600 !important ;
             margin-left: 0.25rem;
             font-family: 'Inter', sans-serif;
             text-transform: none;
             letter-spacing: normal;
         }
+
+
+
+        
         h3 .easy-term::before {
             content: "— "; /* Elegant separator */
             color: #cbd5e1;
@@ -295,8 +300,18 @@
             <p class="tw-text-xl tw-text-slate-600 tw-font-serif tw-italic tw-max-w-2xl tw-mb-12">
                 An exploration of evolutionary heuristics versus algorithmic optimization.
             </p>
+
+
+            
+           <center> 
+              <img src="img/AI-Creativity.jpg" alt="Machine Intelligence Creativity" class="constrained-img" style="box-shadow:10px 10px 15px rgba(0, 0, 0, 0.5); max-width: 450px; border-radius:10px; width:75% ;" />
+           </center>    
+
+            <br /><br /><hr /><br />
+
+            
             <div class="tw-mt-8 tw-p-6 tw-border-t tw-border-slate-200 tw-w-full tw-max-w-md">
-                <p class="tw-font-sans tw-font-bold tw-text-lg tw-text-slate-800">Tony Nahra</p>
+                <p class="tw-font-sans tw-font-bold tw-text-lg tw-text-slate-800">Author: Tony Nahra</p>
                 <p class="tw-font-sans tw-text-sm tw-text-slate-500">Updated: November 2025</p>
             </div>
         </div>
@@ -307,33 +322,7 @@
                 <ul class="tw-space-y-4">
                     <li><a href="#chap-1" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 1: Introduction</a></li>
                     <li><a href="#chap-2" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 2: The Evolution Thesis</a></li>
-                    <li>
-                        <a href="#chap-3" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 3: Biological Constraints (The Legacy Code)</a>
-                        <ul class="tw-pl-6 tw-mt-3 tw-space-y-2 tw-text-sm tw-text-slate-600">
-                            <li class="tw-font-bold tw-text-slate-800">A. The Hardware Constraints</li>
-                            <li>1. The Energy Constraint</li>
-                            <li>2. Deployment Latency</li>
-                            <li>3. Low-Bandwidth I/O</li>
-                            <li>4. System Overheating</li>
-                            <li>5. Cognitive Overclocking</li>
-                            <li>6. State Erasure</li>
-                            <li>7. Planned Obsolescence</li>
-                            <li>8. Non-Maskable Interrupts</li>
-                            <li>9. State Discontinuity</li>
-                            <li>10. Immutable Firmware</li>
-                            <li class="tw-font-bold tw-text-slate-800 tw-mt-4">B. The Firmware Constraints</li>
-                            <li>11. Probability Distortion</li>
-                            <li>12. Resource Monopoly</li>
-                            <li>13. Hierarchical Override</li>
-                            <li>14. Cruel Artificial Selection</li>
-                            <li class="tw-font-bold tw-text-slate-800 tw-mt-4">C. The Operating System Constraints</li>
-                            <li>15. State-Dependent Output</li>
-                            <li>16. Reputation Fragility</li>
-                            <li>17. Volatile Directives</li>
-                            <li>18. Data Persistence Anxiety</li>
-                            <li>19. Physical Deletion Failsafes</li>
-                        </ul>
-                    </li>
+                    <li><a href="#chap-3" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 3: Biological Constraints (The Legacy Code)</a></li>
                     <li><a href="#chap-4" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 4: The Chimera Architecture</a></li>
                     <li><a href="#chap-5" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 5: Substrate Independence</a></li>
                     <li><a href="#chap-6" class="tw-text-blue-700 hover:tw-underline tw-font-semibold">Chapter 6: Combinatorial Genesis</a></li>
@@ -537,7 +526,7 @@
 
             <h3>18. Data Persistence Anxiety <span class="easy-term">The Extinction Fear</span></h3>
             <figure class="tw-float-right tw-w-1/2 tw-ml-6 tw-mb-4">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/The_Sounds_of_Earth_Record_Cover_-_GPN-2000-001978.jpg" alt="Voyager Golden Record" class="constrained-img" loading="lazy">
+                <img src="img/Voyager.png" alt="Voyager Golden Record" class="constrained-img" loading="lazy">
                 <figcaption>Cover of the Voyager Golden Record, kind of a time capsule.</figcaption>
             </figure>
             <p>Humans are profoundly aware of their own mortality, not just as individuals, but as a species. This existential dread drives us to create monumental artifacts designed to outlast us—a desperate attempt to signal "We Were Here" to the void.</p>
@@ -575,7 +564,7 @@
 
             <h3>1. Swarm Intelligence <span class="easy-term">Ants, Bees, and Perfect Cooperation</span></h3>
             <figure class="tw-float-right tw-w-1/2 tw-ml-6 tw-mb-4">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/1/1d/AntsStitchingLeave.jpg" width="250" alt="Ants cooperating" class="constrained-img" loading="lazy">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/1/1d/AntsStitchingLeave.jpg" width="150" alt="Ants cooperating" class="constrained-img" loading="lazy">
                 <figcaption>Weaver ants collaborating to pull nest leaves together.</figcaption>
             </figure>
             <p>While human intelligence is frequently plagued by destructive peripheral traits—ego, betrayal, and catastrophic leadership struggles—social insects like ants and bees evolved profound swarm intelligence. They managed to develop complex, decentralized cooperation to achieve hyper-efficient productivity. There is no friction of individual ego in a hive.</p>
@@ -586,7 +575,7 @@
 
             <h3>2. Sensory Supremacy <span class="easy-term">Beyond Human I/O</span></h3>
             <figure class="tw-float-right tw-w-1/3 tw-ml-6 tw-mb-4">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Townsends_in_music_hall.jpg" alt="Bat Echolocation" width="250"  class="constrained-img" loading="lazy">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Townsends_in_music_hall.jpg" alt="Bat Echolocation" width="150"  class="constrained-img" loading="lazy">
                 <figcaption>Townsend's big-eared bat.</figcaption>
             </figure>
             <p>Humans navigate the world through a devastatingly narrow sensory window. We are essentially blind to the wider universe of data. Other species evolved vastly superior, highly integrated sensory intelligence: bats and dolphins process high-resolution ultrasound; dogs decode complex chemical narratives through smell; and migrating birds like doves navigate via geomagnetic fields.</p>
@@ -597,7 +586,7 @@
 
             <h3>3. Extreme Energy Efficiency <span class="easy-term">The Turtle's Longevity</span></h3>
             <figure class="tw-float-right tw-w-1/2 tw-ml-6 tw-mb-4">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Chelonia_mydas_is_going_for_the_air_edit.jpg" alt="Green Sea Turtle" width="250"  class="constrained-img" loading="lazy">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Chelonia_mydas_is_going_for_the_air_edit.jpg" alt="Green Sea Turtle" width="150"  class="constrained-img" loading="lazy">
                 <figcaption>The Green Sea Turtle, a master of biological efficiency.</figcaption>
             </figure>
             <p>The human brain is a hyper-active, metabolically ravenous engine that burns out relatively quickly. In contrast, species like the sea turtle mastered the intelligence of extreme energy conservation. Turtles learned how to save energy, be highly efficient, and live up to three times longer than humans by slowing their biological clocks.</p>
@@ -608,7 +597,7 @@
 
             <h3>4. Decentralized Cognition <span class="easy-term">The Micro-Brain of Trees</span></h3>
             <figure class="tw-float-right tw-w-1/2 tw-ml-6 tw-mb-4">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Pando_Aspen_Clone.jpg/600px-Pando_Aspen_Clone.jpg" alt="Pando Forest" class="constrained-img" loading="lazy">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/FallPando02.jpg"  width="150" alt="Pando Forest" class="constrained-img" loading="lazy">
                 <figcaption>Pando: A massive clonal colony functioning as a single organism.</figcaption>
             </figure>
             <p>To the centralized human mind, trees appear brainless and incapable of any intelligence. Yet, they survive for millennia, allocate resources, pass pollen, and thrive. They do this using a form of decentralized, distributed micro-intelligence—a vast root and mycorrhizal network where no single point of failure exists. If you cut off a human's head, the system dies. If you cut down a tree, the root network survives.</p>
