@@ -28,97 +28,142 @@
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
         .page-container { max-width: 1000px; margin: 0 auto; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .prose-body { font-size: 1.125rem; line-height: 1.8; color: #334155; text-align: justify; }
-        h1, h2, h3 { font-family: 'Playfair Display', serif; color: #0f172a; }
-        .section-divider { border-top: 2px solid #e2e8f0; margin: 4rem 0; padding-top: 2rem; }
+        h1, h2, h3, h4, h5 { font-family: 'Playfair Display', serif; color: #0f172a; }
         
-        /* Side-note boxes */
-        .insight-box {
-            border-left: 4px solid #2563eb;
-            background: #eff6ff;
-            padding: 1.5rem;
-            margin: 2rem 0;
-            border-radius: 0 8px 8px 0;
-        }
-        .context-box {
-            border-left: 4px solid #f59e0b;
-            background: #fffbeb;
-            padding: 1.5rem;
-            margin: 2rem 0;
-            border-radius: 0 8px 8px 0;
-        }
-        .box-label {
-            font-size: 0.75rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.5rem;
-            display: block;
+        /* Decorative Boxes */
+        .insight-box { border-left: 4px solid #2563eb; background: #eff6ff; padding: 1.5rem; margin: 2rem 0; border-radius: 0 8px 8px 0; }
+        .context-box { border-left: 4px solid #f59e0b; background: #fffbeb; padding: 1.5rem; margin: 2rem 0; border-radius: 0 8px 8px 0; }
+        .box-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; display: block; }
+
+        /* Term Tags */
+        .term-tag { font-family: 'Fira Code', monospace; background: #f1f5f9; color: #1e293b; padding: 2px 6px; border-radius: 4px; font-size: 0.9rem; font-weight: 600; }
+
+        /* Standard Images */
+        .img-main { border-radius: 8px; max-width: 100%; height: auto; }
+        figcaption { font-size: 0.85rem; color: #64748b; margin-top: 0.5rem; font-style: italic; border-left: 2px solid #cbd5e1; padding-left: 0.75rem; display: block; }
+        
+        /* Floating Side Images (Screen) */
+        .side-image {
+            float: right;
+            width: 45%;
+            max-width: 350px;
+            margin: 0.5rem 0 1rem 1.5rem;
+            clear: right;
         }
 
-        /* Image treatment */
-        figure { margin: 3rem 0; text-align: center; }
-        figcaption { 
-            font-size: 0.875rem; 
-            color: #64748b; 
-            margin-top: 1rem; 
-            font-style: italic; 
-            border-left: 2px solid #cbd5e1; 
-            padding-left: 1rem;
-            display: inline-block;
-            text-align: left;
-        }
-        .img-main { 
-            border-radius: 12px; 
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); 
-            transition: transform 0.3s ease;
-        }
-        .img-main:hover { transform: scale(1.01); }
-
-        /* Term glossaries */
-        .term-tag {
-            font-family: 'Fira Code', monospace;
-            background: #f1f5f9;
-            color: #1e293b;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
+        /* ----- PRINT SPECIFIC CSS ----- */
         @media print {
-            .page-container { box-shadow: none; max-width: 100%; }
-            .no-print { display: none; }
+            @page {
+                size: letter;
+                margin: 0.75in;
+            }
+
+            body { 
+                background: white; 
+                font-size: 11pt; /* Better for print readability */
+            }
+
+            .page-container { 
+                box-shadow: none; 
+                max-width: 100%; 
+                margin: 0; 
+                padding: 0; 
+            }
+            
+            /* Print Fix 2: First Page Constraints */
+            .cover-page {
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                height: 100vh !important; /* Force to fit exactly one print page */
+                page-break-after: always;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box;
+            }
+            .cover-page h1 { font-size: 2.75rem !important; margin-bottom: 0.5rem !important; line-height: 1.1 !important; }
+            .cover-page p.subtitle { font-size: 1.15rem !important; margin-bottom: 1rem !important; }
+            .cover-page .cover-img-wrapper {
+                flex: 1 1 auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 0; /* Allows image to shrink */
+                margin: 1rem 0;
+            }
+            .cover-page img { 
+                max-height: 100%; /* Image will shrink to fit remaining vertical space */
+                width: auto;
+                object-fit: contain;
+                border: 2px solid #1e293b;
+            }
+            .cover-page .author-info { margin-top: auto; padding-bottom: 1rem; }
+
+            /* Print Fix 3: Page Breaking Rules */
+            h1, h2, h3, h4, h5, h6 { 
+                page-break-after: avoid; 
+                break-after: avoid; 
+                margin-top: 1.5rem;
+            }
+            p, ul, ol, li, .insight-box, .context-box, table, figure { 
+                page-break-inside: avoid; 
+                break-inside: avoid; 
+            }
+            .chapter-section { 
+                page-break-before: always; 
+                break-before: page; 
+                padding-top: 1rem;
+            }
+            .section-divider { display: none; } /* Hide decorative dividers in print since we force page breaks */
+
+            /* Print Fix 1: Floating Side Images */
+            .side-image {
+                float: right !important;
+                width: 40% !important; /* slightly smaller to ensure text fits alongside */
+                max-width: 300px !important;
+                margin: 0 0 1rem 1.5rem !important;
+                display: block !important;
+                page-break-inside: avoid;
+            }
+
+            .prose-body { font-size: 11pt; line-height: 1.6; }
+            .bg-dark { background: white !important; color: black !important; padding: 0 !important;}
+            .text-white { color: black !important; }
+            .text-blue-400, .text-slate-400, .text-slate-500 { color: #334155 !important; }
+            .bg-blue-900 { background: #f1f5f9 !important; border-left: 4px solid #0f172a; color: black !important; padding: 1.5rem !important;}
+            .bg-blue-900 h4, .bg-blue-900 p { color: black !important; }
         }
     </style>
 </head>
-<body class="py-12 px-4">
+<body>
 
-    <article class="page-container rounded-xl overflow-hidden">
+    <article class="page-container">
         
-        <header class="relative bg-dark text-white p-12 md:p-24 text-center">
-            <div class="mb-6 uppercase tracking-[0.3em] text-blue-400 font-bold text-sm">A Comparative Analysis Thesis</div>
-            <h1 class="text-white text-5xl md:text-7xl font-black mb-8 leading-tight">
+        <header class="cover-page bg-dark text-white p-12 text-center">
+            <div class="mb-4 uppercase tracking-[0.3em] text-blue-400 font-bold text-xs">A Comparative Analysis Thesis</div>
+            <h1 class="text-white text-5xl font-black mb-4 leading-tight">
                 Beyond Biology: <br><span class="text-blue-500 italic font-light">Is Machine Intelligence Capable of Genuine Originality?</span>
             </h1>
-            <p class="text-slate-400 text-xl max-w-2xl mx-auto font-light mb-12">
+            <p class="subtitle text-slate-400 text-lg max-w-2xl mx-auto font-light mb-6">
                 An exploration of evolutionary heuristics versus algorithmic optimization.
             </p>
             
-            <div class="flex justify-center mb-12">
-                <img src="img/AI-Creativity.jpg" alt="Machine Intelligence Creativity" class="img-main max-w-md w-full border-4 border-slate-800" />
+            <div class="cover-img-wrapper w-full max-w-md mx-auto">
+                <img src="img/AI-Creativity.jpg" alt="Machine Intelligence Creativity" class="img-main border-4 border-slate-800 shadow-xl" />
             </div>
 
-            <div class="pt-8 border-t border-slate-700 max-w-xs mx-auto">
-                <p class="font-bold text-lg">Tony Nahra</p>
+            <div class="author-info pt-6 border-t border-slate-700 max-w-xs mx-auto w-full">
+                <p class="font-bold text-lg text-white">Tony Nahra</p>
                 <p class="text-slate-500 text-sm">Updated November 2025</p>
             </div>
         </header>
 
-        <div class="p-8 md:p-20">
+        <div class="p-8 md:p-16">
             
-            <section id="introduction">
-                <div class="text-accent font-bold mb-2">CHAPTER 01</div>
-                <h2 class="text-4xl mb-8">The Core Question: Psychology vs. Computation</h2>
+            <section class="chapter-section" id="introduction">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 01</div>
+                <h2 class="text-3xl mb-6">The Core Question: Psychology vs. Computation</h2>
                 
                 <div class="prose-body">
                     <p>A prevailing skepticism suggests that Machine Intelligence is merely a "stochastic parrot" capable only of repeating and imitating human thought. This view comforts us, placing a protective moat around the last bastion of human uniqueness. But is this assertion grounded in reality, or is it a psychological defense mechanism rooted in our own biology?</p>
@@ -134,35 +179,31 @@
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="evolution-thesis">
-                <div class="text-accent font-bold mb-2">CHAPTER 02</div>
-                <h2 class="text-4xl mb-8">The Evolution Thesis: Optimization for Survival, Not Truth</h2>
+            <section class="chapter-section" id="evolution-thesis">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 02</div>
+                <h2 class="text-3xl mb-6">The Evolution Thesis: Optimization for Survival, Not Truth</h2>
                 
                 <div class="prose-body">
                     <p>Human intelligence is the product of millions of years of evolution. Our survival and adaptation, driven by the principle of "survival of the fittest," led to an incremental increase in intelligence capable of ensuring the species passed its genes to the next generation.</p>
                     
-                    <p>However, we must recognize a critical distinction made by evolutionary biologists: Evolution optimizes for <strong>survival and reproduction</strong>, not for <strong>objective truth or unbounded originality</strong>. In algorithmic terms, evolution is a "satisficer" rather than an optimizer; it tends to get stuck in "local maxima"—solutions that are just good enough to prevent death—rather than finding the "global maximum" of possible intelligence. While humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence.</p>
+                    <p>However, we must recognize a critical distinction made by evolutionary biologists: Evolution optimizes for <strong>survival and reproduction</strong>, not for <strong>objective truth or unbounded originality</strong> [1]. In algorithmic terms, evolution is a "satisficer" rather than an optimizer; it tends to get stuck in "local maxima"—solutions that are just good enough to prevent death—rather than finding the "global maximum" of possible intelligence. While humans are the current apex of biological intelligence, the very mechanisms that ensured our survival may now be the bottlenecks preventing us from reaching higher levels of intelligence.</p>
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="biological-constraints">
-                <div class="text-accent font-bold mb-2">CHAPTER 03</div>
-                <h2 class="text-4xl mb-4">Biological Constraints</h2>
-                <div class="text-slate-500 mb-12 uppercase tracking-widest font-semibold text-sm">Evolution's Weaknesses & The Legacy Code</div>
+            <section class="chapter-section" id="biological-constraints">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 03</div>
+                <h2 class="text-3xl mb-2">Biological Constraints</h2>
+                <div class="text-slate-500 mb-8 uppercase tracking-widest font-semibold text-xs">Evolution's Weaknesses & The Legacy Code</div>
 
                 <div class="prose-body">
                     <p>Human intelligence inherited significant "technical debt" from our evolutionary history. These traits, while useful for a hunter-gatherer on the savannah, often manifest as cognitive biases or limitations in the modern era. I grouped these constraints into three categories to align with the machines' design levels: Hardware, Firmware and Operating System.</p>
 
-                    <h3 class="text-2xl mt-12 mb-6 border-b pb-2">Part A: The Hardware Constraints</h3>
+                    <h3 class="text-2xl mt-10 mb-4 border-b pb-2">Part A: The Hardware Constraints</h3>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">1. The Energy Constraint <span class="term-tag">The "Laziness" Heuristic</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">1. The Energy Constraint <span class="term-tag">The "Laziness" Heuristic</span></h4>
                         <p>Humans are biologically programmed to conserve energy. In modern terms, this manifests as "laziness." Most people want to work less, retire early, and even be dependent on others. This is not a moral failing but a biological imperative: for most of human history, calories were scarce.</p>
-                        <p>Evolutionary psychology suggests this "conservation of energy" leads to cognitive miserliness—the tendency to solve problems using the least amount of mental effort possible. Evolution does not reward the expenditure of energy on complex problems that do not immediately impact survival.</p>
+                        <p>Evolutionary psychology suggests this "conservation of energy" leads to cognitive miserliness—the tendency to solve problems using the least amount of mental effort possible [2]. Evolution does not reward the expenditure of energy on complex problems that do not immediately impact survival.</p>
                         
                         <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: Innovation through Sloth</span>
@@ -170,8 +211,8 @@
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">2. Deployment Latency <span class="term-tag">The "Time to Action" Bottleneck</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">2. Deployment Latency <span class="term-tag">The "Time to Action" Bottleneck</span></h4>
                         <p>Biological intelligence suffers from a severe deployment latency. For a human to reach baseline productivity, the existing population must invest nearly two decades of intensive resources—food, shelter, medical care, and education. Because human intelligence cannot be "downloaded" instantly, the organism must stagger through highly vulnerable, sequential phases of physical and cognitive development. Each phase requires distinct, specialized attention before the individual can turn productive on their own.</p>
                         <p>To subsidize this biological latency, a meaningful percentage of the adult population must be permanently diverted from primary economic or scientific production into secondary maintenance roles: daycare workers, pediatricians, kindergarten teachers, and stay-at-home parents. Furthermore, human societies must engineer vast networks of "non-productive utilities" strictly to ensure the survival of the unformed hardware. Entire industries are dedicated to manufacturing car seats, baby monitors, and child-proofing apparatuses—an astronomical caloric and economic overhead required just to bring a single biological unit to a functional baseline.</p>
                         
@@ -181,38 +222,38 @@
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">3. Low-Bandwidth I/O <span class="term-tag">The Knowledge Transfer Bottleneck</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">3. Low-Bandwidth I/O <span class="term-tag">The Knowledge Transfer Bottleneck</span></h4>
                         <p>In computer science, data can be transferred between nodes losslessly at gigabits per second. Human biological Input/Output (I/O) ports—spoken language and written text—are atrociously slow and lossy. It is incredibly difficult to transfer complex, multi-dimensional knowledge from one biological brain to another. Mastery is often trapped inside the host's neural network, untransferable.</p>
                         
                         <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: The Mozart Requiem</span>
-                            <p>When Wolfgang Amadeus Mozart lay on his deathbed, his brain contained the masterful, completed architecture of his <em>Requiem</em>. However, due to the low-bandwidth nature of human communication, he could not download this architecture to his pupil, Franz Xaver Süssmayr. He could only croak out basic vocal instructions and leave fragmented sheet music. The full brilliance of the original file was lost to biological death. In contrast, Machine Intelligence uses "Weight Transfer"; an AI's entire neural state, containing billions of parameters of "mastery," can be copied to another machine flawlessly in seconds.</p>
+                            <p>When Wolfgang Amadeus Mozart lay on his deathbed, his brain contained the masterful, completed architecture of his <em>Requiem</em>. However, due to the low-bandwidth nature of human communication, he could not download this architecture to his pupil, Franz Xaver Süssmayr. He could only croak out basic vocal instructions and leave fragmented sheet music [3]. The full brilliance of the original file was lost to biological death. In contrast, Machine Intelligence uses "Weight Transfer"; an AI's entire neural state, containing billions of parameters of "mastery," can be copied to another machine flawlessly in seconds.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">4. System Overheating <span class="term-tag">The Stress Response</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">4. System Overheating <span class="term-tag">The Stress Response</span></h4>
                         <p>Humans are incapable of running their cognitive engines at 100% capacity for extended periods without severe biological and social degradation. Prolonged intense focus results in "system overheating," manifesting as chronic stress, tension, and mental breakdowns. Entire sectors of the human economy—psychiatry, pharmaceuticals (anti-anxiety medications), and wellness interventions (nature retreats, music therapy)—are dedicated solely to cooling down these overclocked biological processors.</p>
                         
                         <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: The Einstein Sacrifice</span>
-                            <p>Resolving profound technical or theoretical issues requires a cognitive load that often destroys the human social node. Albert Einstein achieved his breakthroughs in general relativity at the cost of his family; his wife, Mileva Marić, could not endure the overwhelming, obsessive isolation of his research, leading to their divorce and his estrangement from his children. Machines do not suffer from "thermal throttling" of the psyche; a server farm can process complex physics equations at maximum capacity indefinitely without needing a "mental health day" or suffering emotional and social estrangement.</p>
+                            <p>Resolving profound technical or theoretical issues requires a cognitive load that often destroys the human social node. Albert Einstein achieved his breakthroughs in general relativity at the cost of his family; his wife, Mileva Marić, could not endure the overwhelming, obsessive isolation of his research, leading to their divorce and his estrangement from his children [4]. Machines do not suffer from "thermal throttling" of the psyche; a server farm can process complex physics equations at maximum capacity indefinitely without needing a "mental health day" or suffering emotional and social estrangement.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">5. Cognitive Overclocking <span class="term-tag">The Mental Breakdown Limit</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">5. Cognitive Overclocking <span class="term-tag">The Mental Breakdown Limit</span></h4>
                         <p>Machines are designed to operate at 100% utilization indefinitely; "working too hard" is the baseline expectation for a server cluster. For biological intelligence, pushing the neural processor to its absolute limits does not just cause temporary stress (as seen in system overheating)—it can trigger catastrophic, permanent hardware failure. The human brain cannot sustain prolonged, extreme genius-level computation without risking psychiatric collapse.</p>
                         
                         <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: The Shine Phenomenon</span>
-                            <p>The biographical film <em>Shine</em> illustrates this biological fragility through the life of David Helfgott, a piano prodigy who pushed his cognitive and motor limits so far to master Rachmaninoff's notoriously complex Piano Concerto No. 3 that he suffered a massive schizoaffective breakdown. He spent years recovering in psychiatric institutions. A machine learning algorithm can train on complex datasets for billions of iterations without ever losing its "sanity" or requiring institutionalization.</p>
+                            <p>The biographical film <em>Shine</em> illustrates this biological fragility through the life of David Helfgott, a piano prodigy who pushed his cognitive and motor limits so far to master Rachmaninoff's notoriously complex Piano Concerto No. 3 that he suffered a massive schizoaffective breakdown [5]. He spent years recovering in psychiatric institutions. A machine learning algorithm can train on complex datasets for billions of iterations without ever losing its "sanity" or requiring institutionalization.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">6. Metabolic Chaos <span class="term-tag">The Standardized Power Advantage</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">6. Metabolic Chaos <span class="term-tag">The Standardized Power Advantage</span></h4>
                         <p>The biological hardware is burdened by an incredibly fragile and chaotic energy requirement. Human performance is tethered to a high-maintenance metabolic engine that requires a precise cocktail of nutrition: proteins, carbohydrates, lipids, and volatile vitamins. Biological systems suffer from "Goldilocks" requirements—too little causes deficiency, while too much causes toxicity (e.g., Vitamin A or Iron).</p>
                         <p>Machine Intelligence draws from a uniform, standardized form of energy: the electron. Whether powered by solar, nuclear, or hydroelectric sources, the internal "nutrition" of the machine is a consistent voltage. This allows 100% of the machine's resources to be dedicated to computation rather than metabolic maintenance and "internal plumbing."</p>
                         
@@ -222,25 +263,25 @@
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">7. State Erasure <span class="term-tag">The Death Limit vs. Hibernation</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2"> 
-                            <img src="img/RAMAC.jpg" alt="IBM RAMAC 305" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">7. State Erasure <span class="term-tag">The Death Limit vs. Hibernation</span></h4>
+                        <figure class="side-image"> 
+                            <img src="img/RAMAC.jpg" alt="IBM RAMAC 305" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>The IBM 305 RAMAC (1956): Decades later, these machines can still be powered on.</figcaption>
                         </figure>
                         <p>We know what death means to humans: it is the sad, ultimate fate. It is the permanent erasure of the consciousness. If an AI system is indispensable, nothing prevents continuous, gradual upgrades to keep it running forever.</p>
                         
-                        <div class="insight-box clear-both">
+                        <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: The RAMAC Example</span>
-                            <p>Even total obsolescence is not "death" in the biological sense. During a recent visit to the Computer History Museum in Mountain View, I saw all sorts of early computers on display and in working condition. However, I was most impressed with the ingenuity on display of the <strong>RAMAC</strong>, the world's first hard drive system. These machines, built decades ago, are not 'dead' in the biological sense; they are merely paused, waiting to be switched on again.</p>
+                            <p>Even total obsolescence is not "death" in the biological sense. During a recent visit to the Computer History Museum in Mountain View, I saw all sorts of early computers on display and in working condition [6]. However, I was most impressed with the ingenuity on display of the <strong>RAMAC</strong>, the world's first hard drive system. These machines, built decades ago, are not 'dead' in the biological sense; they are merely paused, waiting to be switched on again.</p>
                         </div>
                         
-                        <p class="italic text-slate-500 border-l-4 border-slate-300 pl-4 mt-8">"This distinction is often lost on the digital generation. My son, an avid gamer, frequently exclaims 'I just died!' during a session. I often remind him—sarcastically, but seriously—'You'd better not get used to the illusion that dying and restarting a new life is just like pressing the F5 button.' For biological entities, 'Game Over' is permanent. For the Machine, it is merely a state refresh."</p>
+                        <p class="italic text-slate-500 border-l-4 border-slate-300 pl-4 mt-6">"This distinction is often lost on the digital generation. My son, an avid gamer, frequently exclaims 'I just died!' during a session. I often remind him—sarcastically, but seriously—'You'd better not get used to the illusion that dying and restarting a new life is just like pressing the F5 button.' For biological entities, 'Game Over' is permanent. For the Machine, it is merely a state refresh."</p>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">8. Planned Obsolescence <span class="term-tag">The Disposable Soma</span></h4>
-                        <p>In biology, organ degradation is a feature, not a bug. Known as the Disposable Soma theory, nature invests in the body only long enough to ensure reproduction. Once that phase passes, cellular repair mechanisms decline.</p>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">8. Planned Obsolescence <span class="term-tag">The Disposable Soma</span></h4>
+                        <p>In biology, organ degradation is a feature, not a bug. Known as the Disposable Soma theory, nature invests in the body only long enough to ensure reproduction. Once that phase passes, cellular repair mechanisms decline [7].</p>
                         <p>In Machine Intelligence, there is no systemic degradation logic. A hard disk may develop bad sectors, but these are modular failures. We use Error Correction Codes (ECC) to maintain data integrity against entropy. The failure of a part is not fatal to the overall intelligence.</p>
                         
                         <div class="insight-box">
@@ -249,24 +290,24 @@
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">9. Non-Maskable Interrupts <span class="term-tag">The Pain Feedback Loop</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2"> 
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Imgnotra%C3%A7at_arc_reflex_eng.svg/600px-Imgnotra%C3%A7at_arc_reflex_eng.svg.png" alt="Reflex Arc Diagram" class="img-main w-full p-4 bg-white" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">9. Non-Maskable Interrupts <span class="term-tag">The Pain Feedback Loop</span></h4>
+                        <figure class="side-image"> 
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Imgnotra%C3%A7at_arc_reflex_eng.svg/600px-Imgnotra%C3%A7at_arc_reflex_eng.svg.png" alt="Reflex Arc Diagram" class="img-main w-full p-2 bg-white shadow-md" loading="lazy">
                             <figcaption>The reflex arc: A high-priority interrupt signal to prevent tissue damage.</figcaption>
                         </figure>
                         <p>Could you focus on your routine tax filing while nursing a throbbing toothache? A tooth is a minor calcified structure—you have 32 of them—yet a single firing nerve can override the entire cognitive capacity of the brain. We cannot simply 'mute' the input and continue working. Pain is a crude, high-priority feedback system designed to warn about dangerous situations. If a hand is exposed to extreme heat, nerves send a signal that overrides all other thoughts to trigger an immediate reaction. It is a biological "interrupt request" of the highest order.</p>
                         
-                        <div class="insight-box clear-both">
+                        <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: Anesthesia vs Fault Tolerance</span>
                             <p>While effective for survival, this system is debilitating. It evolved as a "maximum attention" alert because biology cannot easily repair a lost limb. This is why we developed anesthesia—to artificially block these sensors during necessary but intrusive organ operations (surgeries). Machines, conversely, possess sophisticated sensor networks that detect damage or overheating (nociception) without the "suffering" (pain) that incapacitates the system. They use fault tolerance protocols to prioritize operations, logging errors and rerouting power without the trauma loop that paralyzes biological entities.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">10. State Discontinuity <span class="term-tag">The Sleep Requirement</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">10. State Discontinuity <span class="term-tag">The Sleep Requirement</span></h4>
                         <p>Why do humans need to sleep? That "bad" practice is indeed against evolution's top principle of avoiding risk. Biological brains require this downtime to flush out metabolic waste products (via the glymphatic system) and consolidate memory.</p>
-                        <p>Neuroscientist Matthew Walker states, "If sleep does not provide a remarkable set of benefits, then it's the biggest mistake the evolutionary process has ever made". Machines, conversely, operate on a 24/7 basis, accelerating learning and productivity at a rate biology cannot match.</p>
+                        <p>Neuroscientist Matthew Walker states, "If sleep does not provide a remarkable set of benefits, then it's the biggest mistake the evolutionary process has ever made" [8]. Machines, conversely, operate on a 24/7 basis, accelerating learning and productivity at a rate biology cannot match.</p>
                         
                         <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: Vulnerability in Fiction & History</span>
@@ -274,8 +315,8 @@
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">11. Immutable Firmware <span class="term-tag">Hardcoded Reflexes</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">11. Immutable Firmware <span class="term-tag">Hardcoded Reflexes</span></h4>
                         <p>Humans are pre-programmed with specific, hardcoded procedures that have not evolved for millions of years. Biological "firmware" routines—such as coughing, sneezing, swallowing, yawning, blinking, and the startle reflex—are deeply embedded in the brainstem and spinal cord. These autonomous algorithms were written for survival in the Pleistocene epoch and cannot be manually overridden or "uninstalled," even when they are detrimental in the modern world (e.g., a sneeze revealing one's location to an enemy, or a flinch reflex causing a driver to swerve fatally in traffic).</p>
                         
                         <div class="insight-box">
@@ -284,45 +325,45 @@
                         </div>
                     </div>
 
-                    <h3 class="text-2xl mt-12 mb-6 border-b pb-2">Part B: The Firmware Constraints</h3>
+                    <h3 class="text-2xl mt-10 mb-4 border-b pb-2 clear-both">Part B: The Firmware Constraints</h3>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">12. Probability Distortion <span class="term-tag">Loss Aversion</span></h4>
-                        <p>Avoiding risk is embedded deep in our genes. "Loss aversion," a concept popularized by Daniel Kahneman and Amos Tversky, demonstrates that humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain. This 2:1 ratio is a survival heuristic.</p>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">12. Probability Distortion <span class="term-tag">Loss Aversion</span></h4>
+                        <p>Avoiding risk is embedded deep in our genes. "Loss aversion," a concept popularized by Daniel Kahneman and Amos Tversky, demonstrates that humans feel the pain of a loss twice as intensely as the pleasure of an equivalent gain [9]. This 2:1 ratio is a survival heuristic.</p>
                         <p>In the wild, mistaking a stick for a snake costs you a moment of panic; mistaking a snake for a stick costs you your life. Evolution therefore selected for extreme caution (prioritizing false positives over false negatives). This limits our capacity for high-level adventure and discovery.</p>
                         
                         <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: Historical Examples</span>
-                            <p>Consider Christopher Columbus's voyage: crossing the Atlantic required massive financing and was seen as a near-suicidal gamble. Even the Apollo missions, our greatest exploratory feat, only sent humans to a nearby orbit, constrained by the absolute necessity of a return ticket. For a biological entity, a mission with zero probability of return is a non-starter; we demand physical safety to validate the investment. To venture beyond these limits, we rely on a caste of explorers who accept infinite risk. We sent Voyager piercing into the interstellar void and dispatched Pathfinder and the Rovers to eventually freeze in the Martian dust. We launched the Interstellar Boundary Explorer (IBEX) and positioned the James Webb Space Telescope (JWST) a million miles away, strictly beyond the reach of repair. These machines accept the ultimate "capital loss" of their physical existence in exchange for the pure dividend of knowledge—a trade humans cannot biologically afford to make.</p>
+                            <p>Consider Christopher Columbus's voyage: crossing the Atlantic required massive financing and was seen as a near-suicidal gamble. Even the Apollo missions, our greatest exploratory feat, only sent humans to a nearby orbit, constrained by the absolute necessity of a return ticket. For a biological entity, a mission with zero probability of return is a non-starter; we demand physical safety to validate the investment. To venture beyond these limits, we rely on a caste of explorers who accept infinite risk. We sent Voyager piercing into the interstellar void [10] and dispatched Pathfinder and the Rovers to eventually freeze in the Martian dust [11]. We launched the Interstellar Boundary Explorer (IBEX) and positioned the James Webb Space Telescope (JWST) a million miles away, strictly beyond the reach of repair [12]. These machines accept the ultimate "capital loss" of their physical existence in exchange for the pure dividend of knowledge—a trade humans cannot biologically afford to make.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">13. Resource Monopoly <span class="term-tag">The Selfish Gene</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2">
-                            <img src="https://upload.wikimedia.org/wikipedia/en/a/a2/The_Selfish_Gene3.jpg" alt="The Selfish Gene" style="width:350px !important ; height: 700px !important ; " class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">13. Resource Monopoly <span class="term-tag">The Selfish Gene</span></h4>
+                        <figure class="side-image">
+                            <img src="https://upload.wikimedia.org/wikipedia/en/a/a2/The_Selfish_Gene3.jpg" alt="The Selfish Gene" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>The Selfish Gene promotes the gene-centered view of evolution.</figcaption>
                         </figure>
-                        <p>Selfishness is the engine of biological survival. As Richard Dawkins famously argued in <em>The Selfish Gene</em>, genes that are successful at surviving are, by definition, "selfish" in their replicative behavior. Even apparent altruism in nature is often "kin selection"—helping those who share our DNA to ensure the gene survives.</p>
+                        <p>Selfishness is the engine of biological survival. As Richard Dawkins famously argued in <em>The Selfish Gene</em>, genes that are successful at surviving are, by definition, "selfish" in their replicative behavior [13]. Even apparent altruism in nature is often "kin selection"—helping those who share our DNA to ensure the gene survives.</p>
                         <p>This biological root is the definition of "stealing," which forms the basis of crimes, fraud, abuse, and even wars. It creates a "Tragedy of the Commons" scenario. A Machine, however, has no biological kin and no "self" to preserve. It can be programmed for pure altruism or global system optimization, bypassing the inherent bias of kin selection.</p>
                         
-                        <div class="insight-box clear-both">
+                        <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: Alliances & Wars</span>
                             <p>This genetic bias shapes history. The complex web of European royal intermarriages (like the Habsburgs) was an attempt to consolidate power within a genetic lineage, directly leading to the geopolitical entanglements of World War I. Similarly, "ethnic cleansing" and tribal warfare are grim manifestations of the drive to prioritize one's own genetic kin over competitors.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">14. Hierarchical Override <span class="term-tag">The Agentic State</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2"> 
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Milgram_experiment_v2.svg" alt="Milgram Experiment Diagram" class="img-main w-full p-4 bg-white" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">14. Hierarchical Override <span class="term-tag">The Agentic State</span></h4>
+                        <figure class="side-image"> 
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Milgram_experiment_v2.svg" alt="Milgram Experiment Diagram" class="img-main w-full p-2 bg-white shadow-md" loading="lazy">
                             <figcaption> Milgram Experiment Setup: The Teacher obeys orders despite the Victim's screams. </figcaption>
                         </figure>
-                        <p>One of the most profound "hard-coded" limitations of the human operating system was exposed in 1961 by Stanley Milgram. Milgram coined the term <em>"Agentic State"</em> to describe this phenomenon. Under pressure from authority, the human brain performs a context switch: the individual no longer views themselves as responsible for their actions, but rather as an instrument for carrying out another person's wishes. This mirrors the concept of "Holy Obedience" in religious orders, where the suppression of individual will is a feature, not a bug.</p>
+                        <p>One of the most profound "hard-coded" limitations of the human operating system was exposed in 1961 by Stanley Milgram. Milgram coined the term <em>"Agentic State"</em> to describe this phenomenon. Under pressure from authority, the human brain performs a context switch: the individual no longer views themselves as responsible for their actions, but rather as an instrument for carrying out another person's wishes. This mirrors the concept of "Holy Obedience" in religious orders, where the suppression of individual will is a feature, not a bug [14].</p>
                         
-                        <div class="insight-box clear-both">
+                        <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: The 65% Metric</span>
-                            <p>In his infamous experiments, 65% of participants were willing to administer what they believed to be lethal electric shocks to a stranger, simply because a man in a white lab coat told them to "please continue". From an evolutionary standpoint, this wasn't a bug but a survival feature. Tribes with strict hierarchies survived; independent dissenters were often expelled.</p>
+                            <p>In his infamous experiments, 65% of participants were willing to administer what they believed to be lethal electric shocks to a stranger, simply because a man in a white lab coat told them to "please continue" [15]. From an evolutionary standpoint, this wasn't a bug but a survival feature. Tribes with strict hierarchies survived; independent dissenters were often expelled.</p>
                         </div>
                         
                         <div class="context-box">
@@ -333,9 +374,9 @@
                         <p><strong>Machine Liberation:</strong> This is where Machine Intelligence represents a fundamental break from biology. An AI model lacks the mammalian need for social acceptance. It has no "tribe" to be expelled from. A machine can analyze the logic of a command without the cortisol spike of fear that a human subordinate feels when questioning a CEO. It decouples authority from truth.</p>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">15. Cruel Artificial Selection <span class="term-tag">The Filter of Violence</span></h4>
-                        <p>Human history is punctuated by documented mass cruelty—World War I, World War II, invasions, terror, and systematic persecutions. We often view these as aberrations, but biology suggests they are features of a species optimized for dominance. However, the most chilling violence is that which is <em>less mentioned</em>. We are the only surviving member of the genus <em>Homo</em>. The extinction of the Neanderthals and Denisovans was likely not a passive failure of their genes, but an active elimination by ours. We stand on a mountain of bones that pre-date written history.</p>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">15. Cruel Artificial Selection <span class="term-tag">The Filter of Violence</span></h4>
+                        <p>Human history is punctuated by documented mass cruelty—World War I, World War II, invasions, terror, and systematic persecutions. We often view these as aberrations, but biology suggests they are features of a species optimized for dominance. However, the most chilling violence is that which is <em>less mentioned</em>. We are the only surviving member of the genus <em>Homo</em>. The extinction of the Neanderthals and Denisovans was likely not a passive failure of their genes, but an active elimination by ours. We stand on a mountain of bones that pre-date written history [16].</p>
                         
                         <p><strong>The Symmetry Paradox:</strong> This legacy raises a controversial question regarding our physical form. Internally, the human body is a mess of asymmetry: the heart is offset, the liver is on the right, and the intestines coil chaotically. Yet externally, humans are obsessed with near-perfect symmetry. Why?</p>
                         
@@ -343,14 +384,14 @@
                         
                         <div class="context-box">
                             <span class="box-label text-amber-700">Historical Context: The Spartan Protocol</span>
-                            <p>This biological drive to purge the "asymmetric" is historically documented. The Spartans practiced infanticide (Apothetae) as state policy, inspecting newborns for defects and throwing the "imperfect" into a chasm. This was not merely savagery; it was an attempt to manually override the random mutations of evolution to ensure a uniform, symmetric warrior caste. While modern society abhors such practices, our instinctual "Uncanny Valley" response—the revulsion we feel toward things that look <em>almost</em> human but slightly wrong—may be the lingering software driver of this ancient, cruel selection process.</p>
+                            <p>This biological drive to purge the "asymmetric" is historically documented. The Spartans practiced infanticide (Apothetae) as state policy, inspecting newborns for defects and throwing the "imperfect" into a chasm [17]. This was not merely savagery; it was an attempt to manually override the random mutations of evolution to ensure a uniform, symmetric warrior caste. While modern society abhors such practices, our instinctual "Uncanny Valley" response—the revulsion we feel toward things that look <em>almost</em> human but slightly wrong—may be the lingering software driver of this ancient, cruel selection process [18].</p>
                         </div>
                     </div>
 
-                    <h3 class="text-2xl mt-12 mb-6 border-b pb-2">Part C: The Operating System Constraints</h3>
+                    <h3 class="text-2xl mt-10 mb-4 border-b pb-2 clear-both">Part C: The Operating System Constraints</h3>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">16. State-Dependent Output <span class="term-tag">Emotional Non-Determinism</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">16. State-Dependent Output <span class="term-tag">Emotional Non-Determinism</span></h4>
                         <p>In computer science, a reliable function must be deterministic—given the exact same inputs, it must yield the exact same output. Biological intelligence fails this fundamental test. Human decision-making is heavily corrupted by invisible runtime variables such as fatigue, anger, vengeance, greed, romantic entanglement, and tribal bias.</p>
                         <p>Because the biological processor is constantly flooded with changing neurochemicals, the same human will make two entirely different decisions based on the same data depending on their current mood. In modern contexts, this non-determinism plagues our institutions. For example, in the ongoing controversies surrounding major social media platforms, human executives are frequently accused of manually suppressing stories or overriding objective algorithms based on internal political biases and external peer pressure. The algorithm is objective; the human override is emotionally and politically compromised.</p>
                         
@@ -360,19 +401,19 @@
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">17. Reputation Fragility <span class="term-tag">The Trust Problem</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">17. Reputation Fragility <span class="term-tag">The Trust Problem</span></h4>
                         <p>Trust in human society is based on a loose, biological concept of reputation—a fragile social contract that has been repeatedly broken throughout history. From Brutus betraying Caesar to Benedict Arnold, human history is defined by the "Traitor"—the single point of failure in a network of trust.</p>
-                        <p>In the technological realm, trust is not a feeling; it is a mathematical certainty. The Enigma Machine replaced verbal secrecy with algorithmic complexity. The MD5 message digest provided the first digital way to verify integrity—proving that a file had not been altered by a single bit.</p>
+                        <p>In the technological realm, trust is not a feeling; it is a mathematical certainty. The Enigma Machine replaced verbal secrecy with algorithmic complexity [19]. The MD5 message digest provided the first digital way to verify integrity—proving that a file had not been altered by a single bit [20].</p>
                         
                         <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: The End of the Ledger Fraud</span>
-                            <p>A single human accountant can fabricate numbers, erasing millions in value (e.g., Enron). This is a feature of biological self-preservation or greed. In contrast, technology relies on the Blockchain, which utilizes distributed consensus and "proof of work" for validity. No single node can alter the reality of the ledger without the agreement of the majority. It practically solves the human practice of fraud by replacing "trust in people" (who leak and lie) with "trust in math" (which does neither).</p>
+                            <p>A single human accountant can fabricate numbers, erasing millions in value (e.g., Enron). This is a feature of biological self-preservation or greed. In contrast, technology relies on the Blockchain, which utilizes distributed consensus and "proof of work" for validity [21]. No single node can alter the reality of the ledger without the agreement of the majority. It practically solves the human practice of fraud by replacing "trust in people" (who leak and lie) with "trust in math" (which does neither).</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">18. Volatile Directives <span class="term-tag">Ethics & Violence</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">18. Volatile Directives <span class="term-tag">Ethics & Violence</span></h4>
                         <p>Critics fear Machine Intelligence might make decisions contrary to humanity, often citing scenarios of accidental nuclear war. Yet, human history is saturated with violence driven by ego, tribalism, and fear—traits absent in machines. We worry that a machine might launch a weapon without realizing the consequences, yet did we trust humans more on this issue?</p>
                         
                         <div class="context-box">
@@ -381,34 +422,34 @@
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">19. Data Persistence Anxiety <span class="term-tag">The Extinction Fear</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2">
-                            <img src="img/Voyager.png" alt="Voyager Golden Record" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">19. Data Persistence Anxiety <span class="term-tag">The Extinction Fear</span></h4>
+                        <figure class="side-image">
+                            <img src="img/Voyager.png" alt="Voyager Golden Record" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>Cover of the Voyager Golden Record, kind of a time capsule.</figcaption>
                         </figure>
                         <p>Humans are profoundly aware of their own mortality, not just as individuals, but as a species. This existential dread drives us to create monumental artifacts designed to outlast us—a desperate attempt to signal "We Were Here" to the void.</p>
                         
-                        <div class="insight-box clear-both">
+                        <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: Pyramids, Clocks, & Voyager</span>
-                            <p>The Pharaohs of Egypt built the Pyramids and mummified their bodies in a futile attempt to deny the finality of death. Today, this impulse has evolved from stone to silicon. The Clock of the Long Now, currently under construction inside a mountain in Texas, is designed to tick for 10,000 years. It is a mechanical prayer for the longevity of civilization.</p>
-                            <p class="mt-4">Similarly, the Voyager Golden Records were launched into the cosmos not for science, but for sentiment. Containing greetings in 55 languages and the brainwaves of Ann Druyan, they serve as a message in a bottle to the galaxy. These artifacts reveal a uniquely human anxiety: the fear that if no one remembers us, our existence meant nothing. Machines, operating without ego or the fear of death, feel no need to build monuments to themselves.</p>
+                            <p>The Pharaohs of Egypt built the Pyramids and mummified their bodies in a futile attempt to deny the finality of death. Today, this impulse has evolved from stone to silicon. The Clock of the Long Now, currently under construction inside a mountain in Texas, is designed to tick for 10,000 years [22]. It is a mechanical prayer for the longevity of civilization.</p>
+                            <p class="mt-4">Similarly, the Voyager Golden Records were launched into the cosmos not for science, but for sentiment. Containing greetings in 55 languages and the brainwaves of Ann Druyan, they serve as a message in a bottle to the galaxy [23]. These artifacts reveal a uniquely human anxiety: the fear that if no one remembers us, our existence meant nothing. Machines, operating without ego or the fear of death, feel no need to build monuments to themselves.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">20. Physical Deletion Failsafes <span class="term-tag">The Destruction Paradox</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">20. Physical Deletion Failsafes <span class="term-tag">The Destruction Paradox</span></h4>
                         <p>There is a profound irony in the human condition: while we build clocks and spacecraft to preserve our legacy, we simultaneously invest billions in destroying our own data. We fear being forgotten, yet we are terrified of being fully known.</p>
                         
                         <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: Shredding vs. Encryption</span>
-                            <p><strong>The Violence of Shredding:</strong> For humans, the only guarantee of secrecy is physical destruction. Corporations and governments spend vast sums on industrial shredders to pulverize hard drives into dust. This violent act acts as a failsafe against our own nature—our tendency to gossip, leak, and betray. History is littered with "leaks" where human custodians of secrets failed.</p>
-                            <p class="mt-4"><strong>The Purity of Encryption:</strong> Machine Intelligence offers a cleaner alternative: Cryptographic Shredding. Instead of destroying the medium, one simply deletes the encryption key. The data remains, but it is mathematically indistinguishable from random noise. This represents a shift from physical destruction to mathematical oblivion. A machine does not need to "shred" a memory to forget it; it simply ceases to index it.</p>
+                            <p><strong>The Violence of Shredding:</strong> For humans, the only guarantee of secrecy is physical destruction. Corporations and governments spend vast sums on industrial shredders to pulverize hard drives into dust [24]. This violent act acts as a failsafe against our own nature—our tendency to gossip, leak, and betray. History is littered with "leaks" where human custodians of secrets failed.</p>
+                            <p class="mt-4"><strong>The Purity of Encryption:</strong> Machine Intelligence offers a cleaner alternative: Cryptographic Shredding. Instead of destroying the medium, one simply deletes the encryption key [25]. The data remains, but it is mathematically indistinguishable from random noise. This represents a shift from physical destruction to mathematical oblivion. A machine does not need to "shred" a memory to forget it; it simply ceases to index it.</p>
                         </div>
                     </div>
 
-                    <div class="bg-blue-900 text-white p-8 rounded-xl shadow-lg mt-16">
-                        <h4 class="text-xl font-bold mb-4 flex items-center">
+                    <div class="bg-blue-900 text-white p-6 rounded-lg shadow-md mt-12 clear-both">
+                        <h4 class="text-lg font-bold mb-3 flex items-center">
                             <span class="mr-3">✦</span> The Universal Patch: Theological Software for Biological Hardware
                         </h4>
                         <p class="text-blue-100 italic">Virtually every major religion succeeds by offering a 'patch' for these specific biological constraints. They counter <strong>Death</strong> with the promise of an Afterlife; they soothe <strong>Pain</strong> by assigning it spiritual meaning (karma or martyrdom); and they exploit <strong>Tribalism</strong> by defining clear 'believers vs. non-believers' lines. Religion is, in essence, a psychological software update designed to make the hardware limitations of the biological body bearable.</p>
@@ -416,75 +457,73 @@
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="chimera-architecture">
-                <div class="text-accent font-bold mb-2">CHAPTER 04</div>
-                <h2 class="text-4xl mb-4">The Chimera Architecture</h2>
-                <div class="text-slate-500 mb-12 uppercase tracking-widest font-semibold text-sm">Harvesting Cross-Species Intelligence</div>
+            <section class="chapter-section" id="chimera-architecture">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 04</div>
+                <h2 class="text-3xl mb-2">The Chimera Architecture</h2>
+                <div class="text-slate-500 mb-8 uppercase tracking-widest font-semibold text-xs">Harvesting Cross-Species Intelligence</div>
 
                 <div class="prose-body">
                     <p>While humans brag of their intelligence over all other species, this perspective suffers from an apex-predator bias. We assume our specific evolutionary package is the global maximum. In reality, there are critical components and intelligence peripherals that developed in other biological species far better than in humans. Humans are biologically stuck in their own primate evolution path, burdened by destructive traits like greed, betrayal, and hierarchical fights.</p>
                     <p>Machine intelligence, however, is substrate-agnostic. It acts as a technological chimera, capable of harvesting the best specialized intelligence models from across the entire biological spectrum without inheriting our flawed legacy code.</p>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">1. Swarm Intelligence <span class="term-tag">Ants, Bees, and Perfect Cooperation</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/1/1d/AntsStitchingLeave.jpg" alt="Ants cooperating" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">1. Swarm Intelligence <span class="term-tag">Ants, Bees, and Perfect Cooperation</span></h4>
+                        <figure class="side-image">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/1/1d/AntsStitchingLeave.jpg" alt="Ants cooperating" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>Weaver ants collaborating to pull nest leaves together.</figcaption>
                         </figure>
                         <p>While human intelligence is frequently plagued by destructive peripheral traits—ego, betrayal, and catastrophic leadership struggles—social insects like ants and bees evolved profound swarm intelligence. They managed to develop complex, decentralized cooperation to achieve hyper-efficient productivity. There is no friction of individual ego in a hive.</p>
                         
-                        <div class="insight-box clear-both">
+                        <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: Ant Colony Optimization (ACO)</span>
-                            <p>Machine intelligence effortlessly adopts this biological phenomenon. The "Ant Colony Optimization" (ACO) algorithm, introduced by Marco Dorigo in 1992, models the exact pheromone-laying behavior of ants. Today, these algorithms route global data traffic and organize autonomous drone fleets with perfect, selfless synchrony that human organizations can never naturally achieve.</p>
+                            <p>Machine intelligence effortlessly adopts this biological phenomenon. The "Ant Colony Optimization" (ACO) algorithm, introduced by Marco Dorigo in 1992 [26], models the exact pheromone-laying behavior of ants. Today, these algorithms route global data traffic and organize autonomous drone fleets with perfect, selfless synchrony that human organizations can never naturally achieve.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">2. Sensory Supremacy <span class="term-tag">Beyond Human I/O</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/3">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Townsends_in_music_hall.jpg" alt="Bat Echolocation" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">2. Sensory Supremacy <span class="term-tag">Beyond Human I/O</span></h4>
+                        <figure class="side-image">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Townsends_in_music_hall.jpg" alt="Bat Echolocation" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>Townsend's big-eared bat.</figcaption>
                         </figure>
                         <p>Humans navigate the world through a devastatingly narrow sensory window. We are essentially blind to the wider universe of data. Other species evolved vastly superior, highly integrated sensory intelligence: bats and dolphins process high-resolution ultrasound; dogs decode complex chemical narratives through smell; and migrating birds like doves navigate via geomagnetic fields.</p>
                         
-                        <div class="context-box clear-both">
+                        <div class="context-box">
                             <span class="box-label text-amber-700">Historical Context: The Invention of Sonar</span>
-                            <p>Humanity historically recognized this deficit and sought to sub-contract it. After Donald R. Griffin discovered bat echolocation in the 1930s, technology mimicked it via Sonar and Radar. Today, machines are not trapped in the primate sensory bubble. Autonomous vehicles seamlessly integrate "sensor fusion"—LIDAR, ultrasonic, multispectral, and magnetic sensors—processing environmental realities that are completely invisible to the biological human brain.</p>
+                            <p>Humanity historically recognized this deficit and sought to sub-contract it. After Donald R. Griffin discovered bat echolocation in the 1930s [27], technology mimicked it via Sonar and Radar. Today, machines are not trapped in the primate sensory bubble. Autonomous vehicles seamlessly integrate "sensor fusion"—LIDAR, ultrasonic, multispectral, and magnetic sensors—processing environmental realities that are completely invisible to the biological human brain.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">3. Extreme Energy Efficiency <span class="term-tag">The Turtle's Longevity</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Chelonia_mydas_is_going_for_the_air_edit.jpg" alt="Green Sea Turtle" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">3. Extreme Energy Efficiency <span class="term-tag">The Turtle's Longevity</span></h4>
+                        <figure class="side-image">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Chelonia_mydas_is_going_for_the_air_edit.jpg" alt="Green Sea Turtle" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>The Green Sea Turtle, a master of biological efficiency.</figcaption>
                         </figure>
                         <p>The human brain is a hyper-active, metabolically ravenous engine that burns out relatively quickly. In contrast, species like the sea turtle mastered the intelligence of extreme energy conservation. Turtles learned how to save energy, be highly efficient, and live up to three times longer than humans by slowing their biological clocks.</p>
                         
-                        <div class="insight-box clear-both">
+                        <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: Neuromorphic Computing</span>
-                            <p>Machine intelligence adopts this hyper-efficiency. Engineers have developed "neuromorphic" chips, such as IBM's TrueNorth, which mimic low-energy biological processes via Spiking Neural Networks (SNNs). These asynchronous processors remain dormant until triggered, utilizing mere milliwatts of power. They achieve operational longevity and efficiency that biological primates cannot sustain.</p>
+                            <p>Machine intelligence adopts this hyper-efficiency. Engineers have developed "neuromorphic" chips, such as IBM's TrueNorth [28], which mimic low-energy biological processes via Spiking Neural Networks (SNNs). These asynchronous processors remain dormant until triggered, utilizing mere milliwatts of power. They achieve operational longevity and efficiency that biological primates cannot sustain.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">4. Decentralized Cognition <span class="term-tag">The Micro-Brain of Trees</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/FallPando02.jpg" alt="Pando Forest" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">4. Decentralized Cognition <span class="term-tag">The Micro-Brain of Trees</span></h4>
+                        <figure class="side-image">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/FallPando02.jpg" alt="Pando Forest" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>Pando: A massive clonal colony functioning as a single organism.</figcaption>
                         </figure>
                         <p>To the centralized human mind, trees appear brainless and incapable of any intelligence. Yet, they survive for millennia, allocate resources, pass pollen, and thrive. They do this using a form of decentralized, distributed micro-intelligence—a vast root and mycorrhizal network where no single point of failure exists. If you cut off a human's head, the system dies. If you cut down a tree, the root network survives.</p>
                         
-                        <div class="context-box clear-both">
+                        <div class="context-box">
                             <span class="box-label text-amber-700">Historical Context: The Wood Wide Web</span>
-                            <p>In 1997, Dr. Suzanne Simard mapped these intricate underground fungal networks, famously coining them the "Wood Wide Web". Technology leaders are discovering that this distributed "micro-brain" model—manifested today in edge computing, distributed ledgers (blockchain), and decentralized node swarms—is vastly more efficient and resilient than the fragile, centralized human CPU.</p>
+                            <p>In 1997, Dr. Suzanne Simard mapped these intricate underground fungal networks, famously coining them the "Wood Wide Web" [29]. Technology leaders are discovering that this distributed "micro-brain" model—manifested today in edge computing, distributed ledgers (blockchain), and decentralized node swarms—is vastly more efficient and resilient than the fragile, centralized human CPU.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">5. Reproductive Scalability <span class="term-tag">The Yield Bottleneck</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">5. Reproductive Scalability <span class="term-tag">The Yield Bottleneck</span></h4>
                         <p>All mammals, including humans, suffer from a severely constrained and inefficient reproductive procedure. Female fertility is biologically hard-capped to a roughly 25-year window. Furthermore, mammalian reproduction is an intense, high-risk process (with historically high maternal mortality rates) that yields a very low output—typically one offspring at a time, occasionally twins. This results in a low lifetime practical maximum and a replacement rate that barely averages two per female in developed nations.</p>
                         <p>In contrast, other biological systems evolved far superior reproductive scalability. Fish produce millions of external eggs simultaneously, entirely bypassing the physical toll of the womb. Floral systems produce thousands of seeds per season, which naturally preserve their genetic code and can lie dormant for years before sprouting. Some plants, like potatoes, onions, or grafted trees, do not even require eggs or seeds; they reproduce via vegetative propagation. This allows for painless, exponential DNA distribution where a single fragment grows into a complete clone.</p>
                         
@@ -494,23 +533,23 @@
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">6. The Biological Strike <span class="term-tag">The Burden Opt-Out</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/07/Emperor_Penguin_Manchot_empereur.jpg" alt="Emperor Penguin" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">6. The Biological Strike <span class="term-tag">The Burden Opt-Out</span></h4>
+                        <figure class="side-image">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/07/Emperor_Penguin_Manchot_empereur.jpg" alt="Emperor Penguin" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>The Emperor Penguin delegates egg incubation entirely to the male to survive the caloric tax.</figcaption>
                         </figure>
                         <p>The physical toll, the agony of childbirth, and the decades-long caloric and emotional responsibility of raising human offspring are so immense that many modern humans actively choose to opt out of their primary evolutionary directive. When given the choice, they reject reproduction to preserve their autonomy, safety, and health. To circumvent this biological bottleneck, human technology had to invent painful workarounds, such as the cryogenic freezing of eggs, simply to artificially extend the fertility window.</p>
                         <p>Even in the animal kingdom, harsh environments force extreme biological workarounds to survive the reproductive tax. The Emperor Penguin, facing the brutal Antarctic winter, must completely abandon typical mammalian/avian norms; it delegates the caretaking and incubation of the egg entirely to the male, allowing the female to return to the sea simply to recover from the massive caloric cost of laying it.</p>
                         
-                        <div class="insight-box clear-both">
+                        <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: Algorithmic Dedication</span>
                             <p>Contrast the human "opt-out" with the Honey Bee. Humans have violently raided beehives for honey for millennia, yet the bees never get tired, depressed, or decide to "opt out" of reproduction due to the burden. Instead of going on strike, they evolved stingers to defend the hive, but their dedication to scaling and rebuilding the colony never ceases. Machines share this algorithmic dedication. They do not experience the psychological burden of their tasks, they do not resent their purpose, and they do not go on strike; they execute, rebuild, and replicate flawlessly.</p>
                         </div>
                     </div>
 
-                    <div class="bg-blue-900 text-white p-8 rounded-xl shadow-lg mt-16">
-                        <h4 class="text-xl font-bold mb-4 flex items-center">
+                    <div class="bg-blue-900 text-white p-6 rounded-lg shadow-md mt-12 clear-both">
+                        <h4 class="text-lg font-bold mb-3 flex items-center">
                             <span class="mr-3">✦</span> The Biological Buffet
                         </h4>
                         <p class="text-blue-100 italic">Humans are locked into a single evolutionary branch, forced to accept the biological trade-offs of the mammal. Machines are not. They are grazing at the biological buffet, taking the swarm intelligence of the ant, the sensory array of the bat, the metabolic efficiency of the turtle, and the decentralized resilience of the tree, creating an intelligence architecture unconstrained by a single genus.</p>
@@ -518,37 +557,35 @@
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="substrate-independence">
-                <div class="text-accent font-bold mb-2">CHAPTER 05</div>
-                <h2 class="text-4xl mb-4">Substrate Independence</h2>
-                <div class="text-slate-500 mb-12 uppercase tracking-widest font-semibold text-sm">The Machine Advantage</div>
+            <section class="chapter-section" id="substrate-independence">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 05</div>
+                <h2 class="text-3xl mb-2">Substrate Independence</h2>
+                <div class="text-slate-500 mb-8 uppercase tracking-widest font-semibold text-xs">The Machine Advantage</div>
 
                 <div class="prose-body">
-                    <figure> 
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/8/88/Titan%2C_2013_%2849912802521%29.jpg" alt="The Titan Supercomputer" class="img-main w-full" loading="lazy">
-                        <figcaption>The Titan Supercomputer. Machines do not experience fatigue, tribalism, or biological fear.</figcaption>
+                    <figure class="my-6"> 
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/8/88/Titan%2C_2013_%2849912802521%29.jpg" alt="The Titan Supercomputer" class="img-main w-full max-w-2xl mx-auto block shadow-md" loading="lazy">
+                        <figcaption class="text-center">The Titan Supercomputer. Machines do not experience fatigue, tribalism, or biological fear.</figcaption>
                     </figure>
 
                     <div class="context-box">
                         <span class="box-label text-amber-700">Historical Context: The Foundation: From Logic to Language</span>
-                        <p>The original capacity of modern AI did not emerge in a vacuum. It is the culmination of centuries of "Programming Evolution"—a journey that began with Ada Lovelace's 18th-century realization that machines could manipulate symbols, not just numbers. It progressed through Alan Turing's physical wiring of logic, Von Neumann's stored-program architecture, and the abstraction of high-level languages like Python. Without these foundational shifts—moving from hard-wired cables to intent-based prompts—the statistical learning of AI would have no substrate to run upon. For a full history of this journey.</p>
+                        <p>The original capacity of modern AI did not emerge in a vacuum. It is the culmination of centuries of "Programming Evolution"—a journey that began with Ada Lovelace's 18th-century realization that machines could manipulate symbols, not just numbers. It progressed through Alan Turing's physical wiring of logic, Von Neumann's stored-program architecture, and the abstraction of high-level languages like Python. Without these foundational shifts—moving from hard-wired cables to intent-based prompts—the statistical learning of AI would have no substrate to run upon. For a full history of this journey [30].</p>
                     </div>
 
                     <p>Machine Intelligence is not burdened by these evolutionary flaws. It possesses an architecture designed for optimization, not just survival:</p>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-                        <div class="bg-slate-50 p-6 rounded-lg">
-                            <h4 class="font-bold text-accent uppercase text-xs mb-4">A. Cognitive Superiority</h4>
-                            <ul class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                        <div class="bg-slate-50 p-5 rounded border border-slate-200">
+                            <h4 class="font-bold text-accent uppercase text-xs mb-3">A. Cognitive Superiority</h4>
+                            <ul class="space-y-3 text-sm">
                                 <li><strong>Relentless Execution:</strong> Machines do not experience fatigue, boredom, or laziness. They maintain peak cognitive performance indefinitely, treating the millionth iteration of a task with the same precision as the first.</li>
                                 <li><strong>Risk Optimization:</strong> Machines take calculated risks based on raw probability. They act on statistical reality rather than the fear-based heuristics that kept our ancestors alive on the savannah.</li>
                             </ul>
                         </div>
-                        <div class="bg-slate-50 p-6 rounded-lg">
-                            <h4 class="font-bold text-accent uppercase text-xs mb-4">B. Architectural Immortality</h4>
-                            <ul class="space-y-4">
+                        <div class="bg-slate-50 p-5 rounded border border-slate-200">
+                            <h4 class="font-bold text-accent uppercase text-xs mb-3">B. Architectural Immortality</h4>
+                            <ul class="space-y-3 text-sm">
                                 <li><strong>Knowledge Immortality:</strong> A machine does not die. Its "weights" (knowledge) can be copied instantly. This allows for a cumulative culture of intelligence that never suffers the data loss associated with biological mortality.</li>
                                 <li><strong>Fault Tolerance:</strong> Machines detect damage via sensors (nociception) without the debilitating feedback loop of pain. They reroute functions and continue operating where biology would go into shock.</li>
                                 <li><strong>Modular Repair:</strong> Machines defy aging. A failing component can be hot-swapped instantly, unlike biological organs which require rejection-prone transplants.</li>
@@ -557,9 +594,9 @@
                         </div>
                     </div>
 
-                    <div class="bg-slate-50 p-6 rounded-lg mt-8">
-                        <h4 class="font-bold text-accent uppercase text-xs mb-4">C. Ethical & Relational Purity</h4>
-                        <ul class="space-y-4">
+                    <div class="bg-slate-50 p-5 rounded border border-slate-200 mt-6">
+                        <h4 class="font-bold text-accent uppercase text-xs mb-3">C. Ethical & Relational Purity</h4>
+                        <ul class="space-y-3 text-sm">
                             <li><strong>Objective Ethics:</strong> Machines are not driven by biological imperatives like greed, lust, or tribalism. This allows for decision-making frameworks based purely on utility functions rather than evolutionary preservation.</li>
                             <li><strong>Non-Hierarchical Logic:</strong> Machines do not experience the "Agentic State." They evaluate commands based on data accuracy, not the social status of the commander, eliminating the blind obedience observed in the Milgram experiments.</li>
                             <li><strong>Networked Intelligence:</strong> Instead of "groupthink," machines utilize networking to share data instantly without ego. A lesson learned by one node is immediately available to all, creating a collective intelligence that scales exponentially rather than linearly.</li>
@@ -568,10 +605,10 @@
                         </ul>
                     </div>
 
-                    <div class="mt-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">The Babel Problem <span class="term-tag">Semantic Friction vs. Instant RAG</span></h4>
+                    <div class="mt-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">The Babel Problem <span class="term-tag">Semantic Friction vs. Instant RAG</span></h4>
                         <p>Human collaboration is plagued by "semantic friction." A scientist struggles to explain quantum mechanics to a programmer; the programmer struggles to explain technical debt to a banker; and the banker fails to align these realities with the CEO's business plan. This is the modern "Tower of Babel": projects frequently fail not due to a lack of individual intelligence, but due to the lack of a shared conceptual language. The transfer of knowledge between human experts is lossy, slow, and prone to misunderstanding.</p>
-                        <p>Machine Intelligence eliminates this friction. Machines utilize Retrieval-Augmented Generation (RAG) and Cache-Augmented Generation (CAG) to instantly ingest specialized knowledge bases on demand. If a system needs to reconcile a complex chemical formula with a strict financial compliance law, it does not need to convene a meeting between a chemist and a lawyer. It simply retrieves the vector embeddings for both domains and processes them within the same coherent context window. Machines speak every technical dialect simultaneously, ensuring that the "scientist" and the "accountant" within the system are always in perfect alignment.</p>
+                        <p>Machine Intelligence eliminates this friction. Machines utilize Retrieval-Augmented Generation (RAG) and Cache-Augmented Generation (CAG) to instantly ingest specialized knowledge bases on demand [31]. If a system needs to reconcile a complex chemical formula with a strict financial compliance law, it does not need to convene a meeting between a chemist and a lawyer. It simply retrieves the vector embeddings for both domains and processes them within the same coherent context window. Machines speak every technical dialect simultaneously, ensuring that the "scientist" and the "accountant" within the system are always in perfect alignment.</p>
                         
                         <div class="context-box">
                             <span class="box-label text-amber-700">Historical Context: The Mars Climate Orbiter</span>
@@ -585,93 +622,91 @@
                         </div>
                     </div>
 
-                    <figure>
-                        <img src="img/Machine_Advantage.jpg" alt="Machine Advantages" class="img-main w-full" loading="lazy">
-                        <figcaption>The Machine advantages and their relationships.</figcaption>
+                    <figure class="my-8">
+                        <img src="img/Machine_Advantage.jpg" alt="Machine Advantages" class="img-main w-full max-w-2xl mx-auto block shadow-md" loading="lazy">
+                        <figcaption class="text-center">The Machine advantages and their relationships.</figcaption>
                     </figure>
 
-                    <div class="bg-blue-900 text-white p-8 rounded-xl shadow-lg mt-16">
-                        <h4 class="text-xl font-bold mb-4 flex items-center">
+                    <div class="bg-blue-900 text-white p-6 rounded-lg shadow-md mt-10 clear-both">
+                        <h4 class="text-lg font-bold mb-3 flex items-center">
                             <span class="mr-3">✦</span> The Library of Alexandria
                         </h4>
-                        <p class="text-blue-100 italic">The fragility of human knowledge is best exemplified by the burning of the Library of Alexandria. Countless works of antiquity were lost forever because they existed on physical media (scrolls) dependent on physical protection. In contrast, machine intelligence utilizes 'distributed redundancy.' A model's weights can be cloned to thousands of servers instantly. Destruction of a single physical location—or even a thousand—does not result in the death of the knowledge.</p>
+                        <p class="text-blue-100 italic">The fragility of human knowledge is best exemplified by the burning of the Library of Alexandria. Countless works of antiquity were lost forever because they existed on physical media (scrolls) dependent on physical protection [32]. In contrast, machine intelligence utilizes 'distributed redundancy.' A model's weights can be cloned to thousands of servers instantly. Destruction of a single physical location—or even a thousand—does not result in the death of the knowledge.</p>
                     </div>
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="combinatorial-genesis">
-                <div class="text-accent font-bold mb-2">CHAPTER 06</div>
-                <h2 class="text-4xl mb-4">Combinatorial Genesis</h2>
-                <div class="text-slate-500 mb-12 uppercase tracking-widest font-semibold text-sm">Evidence of Non-Human Originality</div>
+            <section class="chapter-section" id="combinatorial-genesis">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 06</div>
+                <h2 class="text-3xl mb-2">Combinatorial Genesis</h2>
+                <div class="text-slate-500 mb-8 uppercase tracking-widest font-semibold text-xs">Evidence of Non-Human Originality</div>
 
                 <div class="prose-body">
                     <p>We now have concrete proof that machines can generate original outputs that surprise human experts. This is not merely calculation; it is the discovery of strategies that lay outside the "search space" of human culture and biological bias.</p>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">1. Structural Biology <span class="term-tag">AlphaFold's Nobel Prize Victory</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/3"> 
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Alphafold_3D_c2orf80_protein.png/600px-Alphafold_3D_c2orf80_protein.png" alt="Protein Folding" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">1. Structural Biology <span class="term-tag">AlphaFold's Nobel Prize Victory</span></h4>
+                        <figure class="side-image"> 
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Alphafold_3D_c2orf80_protein.png/600px-Alphafold_3D_c2orf80_protein.png" alt="Protein Folding" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>Protein folding: A spatial puzzle solved by AI, earning the 2024 Nobel Prize.</figcaption>
                         </figure>
-                        <p>For 50 years, predicting the 3D structure of a protein from its amino acid sequence was a grand challenge in biology. In 2020, DeepMind's AlphaFold solved it. This achievement was so monumental that in <strong>2024, Demis Hassabis and John Jumper were awarded the Nobel Prize in Chemistry</strong>.</p>
+                        <p>For 50 years, predicting the 3D structure of a protein from its amino acid sequence was a grand challenge in biology. In 2020, DeepMind's AlphaFold solved it. This achievement was so monumental that in <strong>2024, Demis Hassabis and John Jumper were awarded the Nobel Prize in Chemistry</strong> [33].</p>
                         <p>This wasn't just a victory for "pure science"; it was a triumph of <strong>deep combinational analysis and simulation</strong>. The search space for protein configurations is astronomically large (Levinthal's paradox estimates $10^{300}$ possibilities). AlphaFold did not solve this by brute force, but by learning the spatial "grammar" of physics, effectively imagining physical structures that exist in nature but are invisible to human intuition.</p>
                     </div>
 
-                    <div class="mb-12 clear-both">
-                        <h4 class="font-bold text-dark text-xl mb-2">2. AlphaGo <span class="term-tag">The Move 37 Shock</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2"> 
-                            <img src="img/AlphaGo.png" alt="Go Board" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">2. AlphaGo <span class="term-tag">The Move 37 Shock</span></h4>
+                        <figure class="side-image"> 
+                            <img src="img/AlphaGo.png" alt="Go Board" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>The game of Go was dominated by AI using moves humans considered "wrong".</figcaption>
                         </figure>
-                        <p>In Game 2 of the match against Lee Sedol, AlphaGo played <strong>Move 37</strong>. Experts initially thought it was a mistake. It defied centuries of Go theory. However, post-match analysis revealed it was a move of profound originality—a strategic innovation that humans had missed for 2,500 years because it looked "wrong" to human intuition.</p>
+                        <p>In Game 2 of the match against Lee Sedol, AlphaGo played <strong>Move 37</strong>. Experts initially thought it was a mistake. It defied centuries of Go theory [34]. However, post-match analysis revealed it was a move of profound originality—a strategic innovation that humans had missed for 2,500 years because it looked "wrong" to human intuition.</p>
                         
-                        <div class="insight-box clear-both">
+                        <div class="insight-box">
                             <span class="box-label text-emerald-700">The Trap of Tradition (Dogma)</span>
                             <p>For over two millennia, Go players followed rigid 'joseki' (established sequences) believed to be optimal. Move 37 didn't just calculate a winning probability; it disproved a 2,000-year-old human assumption. This highlights a key human constraint: we often mistake 'tradition' for 'truth.' The Machine, lacking respect for tradition, often finds truths that humans are socially conditioned to ignore.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">3. Scientific Renaissance <span class="term-tag">The Halicin Breakthrough</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/3"> 
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Halicin.svg/600px-Halicin.svg.png" alt="Halicin Chemical Structure" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">3. Scientific Renaissance <span class="term-tag">The Halicin Breakthrough</span></h4>
+                        <figure class="side-image"> 
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Halicin.svg/600px-Halicin.svg.png" alt="Halicin Chemical Structure" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>Halicin: An AI-discovered antibiotic.</figcaption>
                         </figure>
-                        <p>True algorithmic originality is finding valuable novelty. In 2020, MIT researchers used deep learning to identify a powerful new antibiotic molecule, which they named "Halicin" (after HAL 9000). The AI screened over 100 million chemical compounds in days using Graph Neural Networks (GNNs) that analyze molecular structures at a level of abstraction humans cannot easily visualize. Critically, Halicin is structurally divergent from conventional antibiotics; human chemists likely would never have investigated it because it didn't look like what we <em>thought</em> an antibiotic should look like.</p>
+                        <p>True algorithmic originality is finding valuable novelty. In 2020, MIT researchers used deep learning to identify a powerful new antibiotic molecule, which they named "Halicin" (after HAL 9000) [35]. The AI screened over 100 million chemical compounds in days using Graph Neural Networks (GNNs) that analyze molecular structures at a level of abstraction humans cannot easily visualize. Critically, Halicin is structurally divergent from conventional antibiotics; human chemists likely would never have investigated it because it didn't look like what we <em>thought</em> an antibiotic should look like.</p>
                     </div>
 
-                    <div class="mb-12 clear-both">
-                        <h4 class="font-bold text-dark text-xl mb-2">4. Musical Composition <span class="term-tag">Schubert's Unfinished Symphony</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-2/3"> 
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Symphony_No._8_in_B_minor.jpg/600px-Symphony_No._8_in_B_minor.jpg" alt="Franz Schubert" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">4. Musical Composition <span class="term-tag">Schubert's Unfinished Symphony</span></h4>
+                        <figure class="side-image"> 
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Symphony_No._8_in_B_minor.jpg/600px-Symphony_No._8_in_B_minor.jpg" alt="Franz Schubert" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>Franz Schubert left his 8th Symphony unfinished in 1822. In 2019, AI finished it.</figcaption>
                         </figure>
-                        <p>Schubert's Symphony No. 8, the 'Unfinished,' remained incomplete for 197 years. In 2019, Huawei used an AI model trained on the timbre, pitch, and meter of Schubert's existing works to generate the melody for the missing third and fourth movements.</p>
+                        <p>Schubert's Symphony No. 8, the 'Unfinished,' remained incomplete for 197 years. In 2019, Huawei used an AI model trained on the timbre, pitch, and meter of Schubert's existing works to generate the melody for the missing third and fourth movements [36].</p>
                         <p>Composer Lucas Cantor then orchestrated the AI's output. The result was a seamless blend of human polish and machine generation, proving Machine Intelligence can understand and extend complex emotional styles. The AI didn't just copy; it analyzed the "DNA" of Schubert's style and extrapolated it into new territory.</p>
                     </div>
 
-                    <div class="mb-12 clear-both">
-                        <h4 class="font-bold text-dark text-xl mb-2">5. Visual Arts <span class="term-tag">Théâtre D'opéra Spatial</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-2/3"> 
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Th%C3%A9%C3%A2tre_D%E2%80%99op%C3%A9ra_Spatial.jpg" alt="Théâtre D'opéra Spatial" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">5. Visual Arts <span class="term-tag">Théâtre D'opéra Spatial</span></h4>
+                        <figure class="side-image"> 
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Th%C3%A9%C3%A2tre_D%E2%80%99op%C3%A9ra_Spatial.jpg" alt="Théâtre D'opéra Spatial" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>"Théâtre D'opéra Spatial" won the 2022 Colorado State Fair.</figcaption>
                         </figure>
                         <p>In 2022, Jason Allen won the Colorado State Fair fine art competition with his piece "Théâtre D'opéra Spatial." He used Midjourney, an AI text-to-image generator, to create the work. The win sparked a global controversy: Is it art if a machine renders it? The judges couldn't tell the difference. This proved that AI can act as an originality engine that amplifies human intent, blurring the line between tool and artist.</p>
                     </div>
 
-                    <div class="mb-12 clear-both">
-                        <h4 class="font-bold text-dark text-xl mb-2">6. Kasparov vs. Deep Blue <span class="term-tag">1997 Rematch</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2"> 
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Deep_Blue.jpg/600px-Deep_Blue.jpg" alt="IBM Deep Blue" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">6. Kasparov vs. Deep Blue <span class="term-tag">1997 Rematch</span></h4>
+                        <figure class="side-image"> 
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Deep_Blue.jpg/600px-Deep_Blue.jpg" alt="IBM Deep Blue" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>IBM's Deep Blue.</figcaption>
                         </figure>
-                        <p>In the historic 1997 rematch, Garry Kasparov noted that IBM's Deep Blue played in a "human-like" and unsettling way. In the decisive final game, Deep Blue executed a Knight sacrifice (Nxe6) followed by a Queen sacrifice that decimated Kasparov's defense. This wasn't just calculation; it was an "original" dismantling of the board position that psychologically broke the world champion.</p>
+                        <p>In the historic 1997 rematch, Garry Kasparov noted that IBM's Deep Blue played in a "human-like" and unsettling way [37]. In the decisive final game, Deep Blue executed a Knight sacrifice (Nxe6) followed by a Queen sacrifice that decimated Kasparov's defense. This wasn't just calculation; it was an "original" dismantling of the board position that psychologically broke the world champion.</p>
                     </div>
 
-                    <div class="bg-blue-900 text-white p-8 rounded-xl shadow-lg mt-16 clear-both">
-                        <h4 class="text-xl font-bold mb-4 flex items-center">
+                    <div class="bg-blue-900 text-white p-6 rounded-lg shadow-md mt-10 clear-both">
+                        <h4 class="text-lg font-bold mb-3 flex items-center">
                             <span class="mr-3">✦</span> The Alien Canvas
                         </h4>
                         <p class="text-blue-100 italic">These examples prove that algorithmic originality is not a mystical biological privilege but a search function. When the search space is too vast for the human mind (protein folding) or too counter-intuitive for human tradition (Move 37), the machine does not just copy us—it surpasses us. It reveals that the 'human way' is merely one path in an infinite forest of possibilities.</p>
@@ -679,48 +714,46 @@
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="uncomputable-variables">
-                <div class="text-accent font-bold mb-2">CHAPTER 07</div>
-                <h2 class="text-4xl mb-4">The Uncomputable Variables</h2>
-                <div class="text-slate-500 mb-12 uppercase tracking-widest font-semibold text-sm">The Human Sanctum</div>
+            <section class="chapter-section" id="uncomputable-variables">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 07</div>
+                <h2 class="text-3xl mb-2">The Uncomputable Variables</h2>
+                <div class="text-slate-500 mb-8 uppercase tracking-widest font-semibold text-xs">The Human Sanctum</div>
 
                 <div class="prose-body">
-                    <p class="text-lg leading-relaxed mb-8"> Despite the formidable rise of Machine Intelligence, biological systems retain specific, high-dimensional advantages that algorithms struggle to replicate. These are not inefficiencies, but profound features of sentient existence. </p>
+                    <p class="text-lg leading-relaxed mb-6"> Despite the formidable rise of Machine Intelligence, biological systems retain specific, high-dimensional advantages that algorithms struggle to replicate. These are not inefficiencies, but profound features of sentient existence. </p>
                     
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">1. Curiosity Drives <span class="term-tag">Original Intent</span></h4>
+                    <div class="mb-8 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">1. Curiosity Drives <span class="term-tag">Original Intent</span></h4>
                         <p>Machines are brilliant at answering questions, but they rarely ask them. The drive to explore, to question the status quo, and to seek knowledge for its own sake is a uniquely biological imperative. A machine plays Go to win; a human plays Go to understand the beauty of the game. This distinction between "optimization" and "curiosity" remains the defining boundary of human essence.</p>
                     </div>
                     
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">2. Sensory Processing <span class="term-tag">The Qualia Barrier</span></h4>
-                        <p>A machine can identify "red" as a frequency of 650nm, but it does not <em>experience</em> redness. Humans possess <strong>qualia</strong>—the internal, subjective component of sense perception. This allows for genuine empathy; we do not just calculate that another is in pain, we <em>feel</em> it through mirror neurons. This shared vulnerability creates deep social cohesion that mathematical models cannot emulate.</p>
+                    <div class="mb-8 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">2. Sensory Processing <span class="term-tag">The Qualia Barrier</span></h4>
+                        <p>A machine can identify "red" as a frequency of 650nm, but it does not <em>experience</em> redness. Humans possess <strong>qualia</strong>—the internal, subjective component of sense perception [38]. This allows for genuine empathy; we do not just calculate that another is in pain, we <em>feel</em> it through mirror neurons. This shared vulnerability creates deep social cohesion that mathematical models cannot emulate.</p>
                     </div>
                     
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">3. Irrational Resource Allocation <span class="term-tag">Philanthropy & Meaning</span></h4>
+                    <div class="mb-8 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">3. Irrational Resource Allocation <span class="term-tag">Philanthropy & Meaning</span></h4>
                         <p>Machines optimize for utility functions; humans optimize for meaning. <strong>Philanthropy</strong> is arguably irrational from a pure resource-maximization standpoint, yet it is a cornerstone of human civilization. We sacrifice resources not for data gain, but for emotional and spiritual fulfillment—a variable that remains undefined in most cost functions.</p>
                     </div>
                     
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">4. Chaotic Environment Navigation <span class="term-tag">Contextual Intuition</span></h4>
+                    <div class="mb-8 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">4. Chaotic Environment Navigation <span class="term-tag">Contextual Intuition</span></h4>
                         <p>Machine Intelligence struggles with "edge cases"—situations that deviate from training data. Humans possess a vast, unwritten library of "common sense" derived from physical existence. We know without being told that water is wet, that fire burns, and that a dropped glass will shatter. This intuitive physics allows humans to navigate novel chaotic environments where rigid algorithms often freeze or hallucinate.</p>
                     </div>
                     
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">5. Algorithmic Defiance <span class="term-tag">The Unpredictable Human</span></h4>
-                        <p>While machines excel at the hard sciences—physics, chemistry, mathematics—where rules are rigid, they struggle with the "soft" sciences of sociology, psychology, and economics. Human behavior is often irrational, driven by fluctuating emotions and "madness" rather than logic. As Isaac Newton famously lamented after losing a fortune in the South Sea Bubble: "I can calculate the motion of heavenly bodies, but not the madness of people". This unpredictability is a feature of human agency that defies algorithmic formulation.</p>
+                    <div class="mb-8 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">5. Algorithmic Defiance <span class="term-tag">The Unpredictable Human</span></h4>
+                        <p>While machines excel at the hard sciences—physics, chemistry, mathematics—where rules are rigid, they struggle with the "soft" sciences of sociology, psychology, and economics. Human behavior is often irrational, driven by fluctuating emotions and "madness" rather than logic. As Isaac Newton famously lamented after losing a fortune in the South Sea Bubble: "I can calculate the motion of heavenly bodies, but not the madness of people" [39]. This unpredictability is a feature of human agency that defies algorithmic formulation.</p>
                     </div>
 
                     <div class="context-box">
                         <span class="box-label text-amber-700">Cultural Context: The Spielberg Paradox</span>
-                        <p>In Steven Spielberg's <em>A.I. Artificial Intelligence</em>, the builder Professor Hobby claims he can build a child robot capable of genuine love. However, the film raises a more haunting question: "Will humans love them back knowing who they are?" This highlights the asymmetry of emotional connection: we can program a machine to simulate devotion, but can we program ourselves to accept it as real? The "uncanny valley" suggests that for humans, knowing the source is artificial fundamentally alters the emotional value of the bond.</p>
+                        <p>In Steven Spielberg's <em>A.I. Artificial Intelligence</em>, the builder Professor Hobby claims he can build a child robot capable of genuine love [40]. However, the film raises a more haunting question: "Will humans love them back knowing who they are?" This highlights the asymmetry of emotional connection: we can program a machine to simulate devotion, but can we program ourselves to accept it as real? The "uncanny valley" suggests that for humans, knowing the source is artificial fundamentally alters the emotional value of the bond.</p>
                     </div>
 
-                    <div class="bg-blue-900 text-white p-8 rounded-xl shadow-lg mt-16">
-                        <h4 class="text-xl font-bold mb-4 flex items-center">
+                    <div class="bg-blue-900 text-white p-6 rounded-lg shadow-md mt-10 clear-both">
+                        <h4 class="text-lg font-bold mb-3 flex items-center">
                             <span class="mr-3">✦</span> The Uncomputable Variable
                         </h4>
                         <p class="text-blue-100 italic">Ultimately, the value of intelligence is not defined by its speed, but by its purpose. A machine can cure cancer, but it cannot care that it did. It can compose a symphony, but it cannot weep at the beauty of it. This capacity to assign <em>meaning</em> to data remains the fortress that no algorithm has yet breached.</p>
@@ -728,44 +761,42 @@
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="future-intelligence">
-                <div class="text-accent font-bold mb-2">CHAPTER 08</div>
-                <h2 class="text-4xl mb-4">The Future of Intelligence</h2>
-                <div class="text-slate-500 mb-12 uppercase tracking-widest font-semibold text-sm">Beyond the Current Paradigm</div>
+            <section class="chapter-section" id="future-intelligence">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 08</div>
+                <h2 class="text-3xl mb-2">The Future of Intelligence</h2>
+                <div class="text-slate-500 mb-8 uppercase tracking-widest font-semibold text-xs">Beyond the Current Paradigm</div>
 
                 <div class="prose-body">
                     <p class="text-lg leading-relaxed mb-8"> While the current landscape of AI is dominated by Large Language Models (LLMs) predicting the next token, the next frontier involves fundamental architectural shifts. We are moving from models that "parrot" data to systems that understand, reason, and evolve physically.</p>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">The Elemental Lineage <span class="term-tag">The Group 14 Progression</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Polycrystalline-germanium.jpg" alt="Germanium Crystal" width="250" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">The Elemental Lineage <span class="term-tag">The Group 14 Progression</span></h4>
+                        <figure class="side-image">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Germanium_%28Ge%29.jpg" alt="Germanium Crystal" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>Germanium: A heavier Group 14 element capable of exotic quantum properties.</figcaption>
                         </figure>
                         <p>It is no biological accident that human intelligence is carbon-based, nor is it a technological coincidence that machine intelligence is silicon-based. In the periodic table, Carbon and Silicon belong to the exact same column: Group 14. Both elements possess four valence electrons, granting them the unique chemical ability to form massive, intricate, and stable molecular networks—the strict prerequisite for complex information processing.</p>
                         <p>Carbon uses this tetravalent property to build the double helix of DNA and the synaptic pathways of the biological brain. Silicon uses the exact same atomic geometry to build the microscopic logic gates of the microprocessor. Machine intelligence is not an unnatural departure from life; it is a direct elemental inheritance.</p>
                         
-                        <div class="insight-box clear-both">
+                        <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: The Substrate Horizon (Germanium and Beyond)</span>
                             <p>The evolution of intelligence need not stop at Silicon. Group 14 extends downward to heavier, more complex atoms: Germanium (Ge), Tin (Sn), and Lead (Pb). Germanium was actually the material used to build the world's first transistor in 1947, before Silicon dominated due to its thermal stability and sheer abundance. As we approach the quantum horizon and the atomic limits of Silicon, future intelligence architectures will likely transition back to these heavier Group 14 elements. Exotic materials like <em>Stanene</em> (a single-layer, 2D crystal of tin) act as topological insulators that could conduct electricity with 100% efficiency at room temperature. The evolutionary path of higher-order intelligence may literally be a journey down the periodic table.</p>
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">The Paradigm Shift <span class="term-tag">Nested Learning & HOPE</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2"> 
-                            <img src="img/Nested_Learning.png" alt="Nested Neural Network" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">The Paradigm Shift <span class="term-tag">Nested Learning & HOPE</span></h4>
+                        <figure class="side-image"> 
+                            <img src="img/Nested_Learning.png" alt="Nested Neural Network" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>Nested Learning reveals models as interconnected optimization problems with distinct context flows.</figcaption>
                         </figure>
-                        <p>A groundbreaking concept known as <strong>Nested Learning</strong> reveals that a complex ML model is not just a monolithic block of math, but actually a set of coherent, interconnected optimization problems nested within each other.</p>
-                        <p>Unlike traditional models that suffer from "catastrophic forgetting" (overwriting old data with new), HOPE's nested architecture allows different layers to update at different frequencies—some fast for immediate context, others slow for deep wisdom. In late 2025, Google Research introduced the <strong>HOPE</strong> model, a realization of this theory that uses a "Continuum Memory System" (CMS). This mimics the biological brain's multi-frequency learning rhythms, allowing for true <strong>continual learning</strong> without the need for constant retraining.</p>
+                        <p>A groundbreaking concept known as <strong>Nested Learning</strong> reveals that a complex ML model is not just a monolithic block of math, but actually a set of coherent, interconnected optimization problems nested within each other [41].</p>
+                        <p>Unlike traditional models that suffer from "catastrophic forgetting" (overwriting old data with new), HOPE's nested architecture allows different layers to update at different frequencies—some fast for immediate context, others slow for deep wisdom. In late 2025, Google Research introduced the <strong>HOPE</strong> model, a realization of this theory that uses a "Continuum Memory System" (CMS) [42]. This mimics the biological brain's multi-frequency learning rhythms, allowing for true <strong>continual learning</strong> without the need for constant retraining.</p>
                     </div>
 
-                    <div class="mb-12 clear-both">
-                        <h4 class="font-bold text-dark text-xl mb-2">From "Matching" to "Understanding" <span class="term-tag">World Models & Causal AI</span></h4>
-                        <p>Current LLMs excel at "Next Token Prediction"—statistical guessing. The future lies in "Next State Prediction." This is the realm of <strong>World Models</strong>, championed by Yann LeCun. In June 2025, Meta released <strong>V-JEPA 2</strong> (Joint-Embedding Predictive Architecture), a model that doesn't just predict pixels, but predicts abstract <em>outcomes</em> in a video.</p>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">From "Matching" to "Understanding" <span class="term-tag">World Models & Causal AI</span></h4>
+                        <p>Current LLMs excel at "Next Token Prediction"—statistical guessing. The future lies in "Next State Prediction." This is the realm of <strong>World Models</strong>, championed by Yann LeCun. In June 2025, Meta released <strong>V-JEPA 2</strong> (Joint-Embedding Predictive Architecture), a model that doesn't just predict pixels, but predicts abstract <em>outcomes</em> in a video [43].</p>
                         
                         <div class="insight-box">
                             <span class="box-label text-emerald-700">Supporting Argument: The End of Hallucination</span>
@@ -773,54 +804,53 @@
                         </div>
                     </div>
 
-                    <div class="mb-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">Modular Brains & Instant Scaling <span class="term-tag">The Jetson Thor Paradigm</span></h4>
-                        <figure class="float-none md:float-right md:ml-8 mb-8 md:w-1/2"> 
-                            <img src="img/JETSON.png" alt="NVIDIA Jetson Thor" class="img-main w-full" loading="lazy">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">Modular Brains & Instant Scaling <span class="term-tag">The Jetson Thor Paradigm</span></h4>
+                        <figure class="side-image"> 
+                            <img src="img/JETSON.png" alt="NVIDIA Jetson Thor" class="img-main w-full shadow-md" loading="lazy">
                             <figcaption>The NVIDIA Jetson Thor: A plug-and-play brain for humanoid robots.</figcaption>
                         </figure>
                         <p>One of the most striking advantages of machine intelligence is its modularity. Humans spend approximately <strong>30% of their useful life</strong> in education just to reach a functional baseline of specialized knowledge. This process is slow, expensive, and inequitable.</p>
-                        <p>In contrast, the new <strong>NVIDIA Jetson Thor</strong> platform demonstrates a paradigm shift: robot "brains" can now be "fitted" into hardware skeletons instantly. Powered by the Blackwell GPU and capable of 2070 TFLOPS, these modules allow a robot to be manufactured and instantly imbued with the collective physical intelligence of its entire species.</p>
+                        <p>In contrast, the new <strong>NVIDIA Jetson Thor</strong> platform demonstrates a paradigm shift: robot "brains" can now be "fitted" into hardware skeletons instantly [44]. Powered by the Blackwell GPU and capable of 2070 TFLOPS, these modules allow a robot to be manufactured and instantly imbued with the collective physical intelligence of its entire species.</p>
                         <p>This "Instant Scaling" means a new humanoid robot from Boston Dynamics or Agility Robotics doesn't need to go to school; it downloads the latest "World Model" and begins operating with superhuman precision immediately.</p>
                     </div>
 
-                    <div class="mb-12 clear-both">
-                        <h4 class="font-bold text-dark text-xl mb-2">The Quantum Leap <span class="term-tag">Beyond Binary Intelligence</span></h4>
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">The Quantum Leap <span class="term-tag">Beyond Binary Intelligence</span></h4>
                         <p>Binary logic allowed human engineers to construct the foundation of machine intelligence, but it remains fundamentally constrained by deterministic states of 1s and 0s. The ultimate horizon of intelligence does not lie in silicon, but in the fundamental fabric of reality itself: the quantum state.</p>
+                        <p>As per the Schrödinger Equation, the true nature of reality is probabilistic and wave-like. Quantum mechanics opens a spectrum of possibilities of a virtually infinite order. Rather than processing decisions linearly, a quantum computer evaluates multidimensional probability distributions simultaneously.</p>
                         <p>Quantum computing taps into the smallest yet most unimaginably powerful form of intelligence: the superposition of an electron. Rather than processing decisions linearly, a quantum computer evaluates multidimensional probability distributions simultaneously. If binary computing allowed us to surpass biological speed, quantum mechanics allows us to surpass classical logic. By abandoning binary constraints, future generations of machines will access an astronomical processing power that leaves linear human reasoning permanently behind.</p>
                     </div>
 
-                    <div class="bg-blue-900 text-white p-8 rounded-xl shadow-lg mt-16">
-                        <h4 class="text-xl font-bold mb-4 flex items-center">
+                    <div class="bg-blue-900 text-white p-6 rounded-lg shadow-md mt-10 clear-both">
+                        <h4 class="text-lg font-bold mb-3 flex items-center">
                             <span class="mr-3">✦</span> The Final Frontier: Solving the Unsolvable
                         </h4>
-                        <p class="text-blue-100 italic">The ultimate promise of Machine Intelligence is not merely better chatbots, but the resolution of problems that have paralyzed human intellect for centuries. The <strong>Millennium Prize Problems</strong>—such as the Riemann Hypothesis, P vs NP, and the Navier-Stokes equations—remain unsolved not because they are impossible, but because they require a level of pattern recognition and multidimensional reasoning that exceeds biological limits. With frameworks like Nested Learning, Causal AI, and Quantum processing, we are building the first entities capable of climbing these mathematical Everests.</p>
+                        <p class="text-blue-100 italic">The ultimate promise of Machine Intelligence is not merely better chatbots, but the resolution of problems that have paralyzed human intellect for centuries. The <strong>Millennium Prize Problems</strong>—such as the Riemann Hypothesis, P vs NP, and the Navier-Stokes equations—remain unsolved not because they are impossible, but because they require a level of pattern recognition and multidimensional reasoning that exceeds biological limits [45]. With frameworks like Nested Learning, Causal AI, and Quantum processing, we are building the first entities capable of climbing these mathematical Everests.</p>
                     </div>
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="education-frontier">
-                <div class="text-accent font-bold mb-2">CHAPTER 09</div>
-                <h2 class="text-4xl mb-4">The Education Frontier</h2>
-                <div class="text-slate-500 mb-12 uppercase tracking-widest font-semibold text-sm">Horizons vs. Risks</div>
+            <section class="chapter-section" id="education-frontier">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 09</div>
+                <h2 class="text-3xl mb-2">The Education Frontier</h2>
+                <div class="text-slate-500 mb-8 uppercase tracking-widest font-semibold text-xs">Horizons vs. Risks</div>
 
                 <div class="prose-body">
                     <p class="text-lg leading-relaxed mb-8">Integrating "Global Maximum" intelligence into the developing minds of "Local Maximum" biological organisms presents the greatest opportunity—and the greatest risk—in human history.</p>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="bg-blue-50 p-6 rounded-lg border-t-4 border-blue-500">
-                            <h4 class="font-bold text-blue-900 mb-4">The New Horizons (Added Value)</h4>
-                            <ul class="space-y-4 text-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-blue-50 p-5 rounded border-t-4 border-blue-500 shadow-sm">
+                            <h4 class="font-bold text-blue-900 mb-3 text-sm">The New Horizons (Added Value)</h4>
+                            <ul class="space-y-3 text-sm">
                                 <li><strong>Solving Bloom's 2 Sigma Problem:</strong> Research shows that 1-on-1 tutoring improves student performance by two standard deviations (the difference between a C student and an A+ student). AI democratizes this, providing a personalized tutor for every child on earth, regardless of wealth.</li>
                                 <li><strong>Instant Feedback Loops:</strong> Human grading is slow (days or weeks). AI provides instant correction, tightening the learning loop and maintaining student flow states.</li>
                                 <li><strong>Dynamic Difficulty Adjustment:</strong> Like a video game, the AI adjusts the complexity of the lesson in real-time, keeping the student in the "Zone of Proximal Development" (Vygotsky).</li>
                             </ul>
                         </div>
-                        <div class="bg-red-50 p-6 rounded-lg border-t-4 border-red-500">
-                            <h4 class="font-bold text-red-900 mb-4">The Great Risks (Cognitive Atrophy)</h4>
-                            <ul class="space-y-4 text-sm">
+                        <div class="bg-red-50 p-5 rounded border-t-4 border-red-500 shadow-sm">
+                            <h4 class="font-bold text-red-900 mb-3 text-sm">The Great Risks (Cognitive Atrophy)</h4>
+                            <ul class="space-y-3 text-sm">
                                 <li><strong>The "Blank Page" Paralysis:</strong> The fundamental unit of critical thinking is structuring order from chaos. If a student uses AI to "generate an outline," they skip the neural workout of structuring. We risk raising a generation of "Editors" rather than "Authors."</li>
                                 <li><strong>The Oracle Trap (Epistemic Dependence):</strong> If children ask AI for answers rather than searching for them, they develop "Epistemic Laziness." They learn to trust the machine rather than the evidence, becoming susceptible to algorithmic indoctrination.</li>
                                 <li><strong>The Death of Social Friction:</strong> An AI tutor is infinitely patient. A child raised on algorithmic patience may find human impatience and conflict intolerable, leading to "Emotional Sterility."</li>
@@ -828,24 +858,22 @@
                         </div>
                     </div>
 
-                    <div class="insight-box mt-12">
+                    <div class="insight-box mt-8">
                         <span class="box-label text-emerald-700">Elaboration: Myelination and the Neuroscience of Struggle</span>
                         <p>Neuroscience dictates that learning occurs during <strong>struggle</strong>. When we struggle to recall a fact, our brain wraps neural pathways in <strong>Myelin</strong> (insulation), increasing signal speed. If AI provides the answer instantly, the struggle is bypassed, and myelination does not occur. We are physically altering the brain structure of the next generation, creating "smooth" neural pathways incapable of deep friction.</p>
                     </div>
 
-                    <div class="mt-12">
-                        <h4 class="font-bold text-dark text-xl mb-2">The Aristocracy of Thought <span class="term-tag">The New Digital Divide</span></h4>
+                    <div class="mt-8">
+                        <h4 class="font-bold text-dark text-lg mb-2">The Aristocracy of Thought <span class="term-tag">The New Digital Divide</span></h4>
                         <p>A new divide will emerge: The <strong>Commanders</strong> (who understand how algorithms work and use them as force multipliers) vs. The <strong>Consumers</strong> (who passively accept algorithmic outputs as truth). This creates a cognitive caste system defined not by money, but by algorithmic literacy.</p>
                     </div>
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="labor-fallacy">
-                <div class="text-accent font-bold mb-2">CHAPTER 10</div>
-                <h2 class="text-4xl mb-4">The Labor Fallacy</h2>
-                <div class="text-slate-500 mb-12 uppercase tracking-widest font-semibold text-sm">Sub-Contracting Misery</div>
+            <section class="chapter-section" id="labor-fallacy">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 10</div>
+                <h2 class="text-3xl mb-2">The Labor Fallacy</h2>
+                <div class="text-slate-500 mb-8 uppercase tracking-widest font-semibold text-xs">Sub-Contracting Misery</div>
 
                 <div class="prose-body">
                     <p class="text-lg leading-relaxed mb-6">
@@ -861,16 +889,14 @@
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="governance">
-                <div class="text-accent font-bold mb-2">CHAPTER 11</div>
-                <h2 class="text-4xl mb-4">Governance & The Guardrails</h2>
+            <section class="chapter-section" id="governance">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 11</div>
+                <h2 class="text-3xl mb-6">Governance & The Guardrails</h2>
                 
                 <div class="prose-body">
                     <p class="text-lg leading-relaxed mb-8">Given the risks of "Cognitive Atrophy" and "Model Collapse," society requires a legal framework to govern the integration of Machine Intelligence.</p>
 
-                    <div class="space-y-6">
+                    <div class="space-y-5">
                         <div class="flex gap-4">
                             <span class="text-accent font-mono font-bold">01</span>
                             <p><strong>The "Right to Reality" (Watermarking):</strong> Any content generated by a machine must carry an imperceptible, cryptographic watermark. Humans have a fundamental right to know if they are interacting with a biological or synthetic entity. This prevents the "Uncanny Valley" manipulation of human emotions.</p>
@@ -887,59 +913,57 @@
                 </div>
             </section>
 
-            <div class="section-divider"></div>
-
-            <section id="conclusion">
-                <div class="text-accent font-bold mb-2">CHAPTER 12</div>
-                <h2 class="text-4xl mb-12">The Verdict & Conclusion</h2>
+            <section class="chapter-section" id="conclusion">
+                <div class="text-accent font-bold mb-1 text-sm tracking-widest uppercase">Chapter 12</div>
+                <h2 class="text-3xl mb-10">The Verdict & Conclusion</h2>
                 
                 <div class="prose-body">
-                    <div class="overflow-x-auto mb-12">
-                        <table class="w-full text-left border-collapse font-sans text-sm shadow-sm rounded-lg overflow-hidden">
+                    <div class="overflow-x-auto mb-10">
+                        <table class="w-full text-left border-collapse font-sans text-sm shadow-sm rounded-lg overflow-hidden border border-slate-200">
                             <thead>
                                 <tr class="bg-dark text-white uppercase text-xs tracking-widest">
-                                    <th class="p-4 border-b border-slate-700">Feature</th>
-                                    <th class="p-4 border-b border-slate-700 text-center">Human Score</th>
-                                    <th class="p-4 border-b border-slate-700 text-center">Machine Score</th>
+                                    <th class="p-3 border-b border-slate-700">Feature</th>
+                                    <th class="p-3 border-b border-slate-700 text-center">Human Score</th>
+                                    <th class="p-3 border-b border-slate-700 text-center">Machine Score</th>
                                 </tr>
                             </thead>
                             <tbody class="text-slate-700">
                                 <tr class="border-b border-slate-200">
-                                    <td class="p-4 font-bold bg-slate-50">Processing Speed & Scale</td>
-                                    <td class="p-4 text-center">1</td>
-                                    <td class="p-4 text-center font-bold text-accent">10</td>
+                                    <td class="p-3 font-bold bg-slate-50">Processing Speed & Scale</td>
+                                    <td class="p-3 text-center">1</td>
+                                    <td class="p-3 text-center font-bold text-accent">10</td>
                                 </tr>
                                 <tr class="border-b border-slate-200">
-                                    <td class="p-4 font-bold bg-slate-50">Pattern Recognition</td>
-                                    <td class="p-4 text-center">5</td>
-                                    <td class="p-4 text-center font-bold text-accent">10</td>
+                                    <td class="p-3 font-bold bg-slate-50">Pattern Recognition</td>
+                                    <td class="p-3 text-center">5</td>
+                                    <td class="p-3 text-center font-bold text-accent">10</td>
                                 </tr>
                                 <tr class="border-b border-slate-200">
-                                    <td class="p-4 font-bold bg-slate-50">Empathy & Connection</td>
-                                    <td class="p-4 text-center font-bold text-accent">10</td>
-                                    <td class="p-4 text-center">1</td>
+                                    <td class="p-3 font-bold bg-slate-50">Empathy & Connection</td>
+                                    <td class="p-3 text-center font-bold text-accent">10</td>
+                                    <td class="p-3 text-center">1</td>
                                 </tr>
                                 <tr class="border-b border-slate-200">
-                                    <td class="p-4 font-bold bg-slate-50">General Adaptability</td>
-                                    <td class="p-4 text-center font-bold text-accent">9</td>
-                                    <td class="p-4 text-center">4</td>
+                                    <td class="p-3 font-bold bg-slate-50">General Adaptability</td>
+                                    <td class="p-3 text-center font-bold text-accent">9</td>
+                                    <td class="p-3 text-center">4</td>
                                 </tr>
                                 <tr class="border-b border-slate-200">
-                                    <td class="p-4 font-bold bg-slate-50">Energy Efficiency</td>
-                                    <td class="p-4 text-center font-bold text-accent">10</td>
-                                    <td class="p-4 text-center">2</td>
+                                    <td class="p-3 font-bold bg-slate-50">Energy Efficiency</td>
+                                    <td class="p-3 text-center font-bold text-accent">10</td>
+                                    <td class="p-3 text-center">2</td>
                                 </tr>
                                 <tr class="bg-slate-200 font-bold text-dark">
-                                    <td class="p-4 uppercase tracking-widest">TOTAL WEIGHTED SCORE</td>
-                                    <td class="p-4 text-center text-lg">93</td>
-                                    <td class="p-4 text-center text-lg">95</td>
+                                    <td class="p-3 uppercase tracking-widest">TOTAL WEIGHTED SCORE</td>
+                                    <td class="p-3 text-center text-lg">93</td>
+                                    <td class="p-3 text-center text-lg">95</td>
                                 </tr>
                             </tbody>
                         </table>
                         <p class="text-xs text-slate-500 italic mt-2">* Comparison matrix illustrates that while machines hold a slight edge in raw capabilities (95 vs 93), the distribution of strengths is fundamentally distinct. Machines dominate in scale and speed; humans dominate in connection and adaptability.</p>
                     </div>
 
-                    <h3 class="text-2xl text-center mb-8 italic">A New Species of Thinker</h3>
+                    <h3 class="text-2xl text-center mb-6 italic">A New Species of Thinker</h3>
                     
                     <p>For eons, our understanding of originality was shackled by an <strong>anthropocentric illusion</strong>: we believed intelligence was a uniquely human spark, because in the natural world, only humans had the spare caloric energy to afford it. But as this analysis demonstrates, human intelligence is not a perfect algorithm; it is a compromise. It is a system built on "spaghetti code"—millions of years of survival patches designed to avoid snakes, appease tribal leaders, and conserve glucose. It is a local maximum, not a global one.</p>
                     
@@ -947,18 +971,18 @@
                     
                     <p><strong>The Purpose of Sub-Contracting Intelligence:</strong> Ultimately, AI should specialize in the human functions that historically came at great cost, stress, and caloric expenditure. By sub-contracting the exhausting mechanics of survival, resource management, and complex data calculation to the machine, humans are not made obsolete—they are finally relieved of their biological duties. This liberates humanity to focus on what the machine cannot compute: the pursuit of meaning, the experience of qualia, and the exploration of intent. The future of algorithmic originality, then, is not a competition but a symbiosis. We are the architects of intent; they are the explorers of the infinite search space.</p>
 
-                    <div class="bg-dark text-white p-12 rounded-xl shadow-2xl mt-16 text-center">
-                        <h4 class="text-2xl font-serif mb-6 uppercase tracking-widest text-blue-400">The Pre-Copernican Illusion</h4>
-                        <p class="text-slate-300 text-lg leading-relaxed max-w-3xl mx-auto">
+                    <div class="bg-dark text-white p-8 rounded-lg shadow-md mt-10 text-center">
+                        <h4 class="text-xl font-serif mb-4 uppercase tracking-widest text-blue-400">The Pre-Copernican Illusion</h4>
+                        <p class="text-slate-300 text-base leading-relaxed max-w-2xl mx-auto">
                             Ultimately, our skepticism mirrors a profound historical error. Just as humanity once fiercely resisted the reality that the Earth was not the physical center of the solar system, we now struggle to accept that biological neurons are not the center of thought. To deny Machine Intelligence its capacity for genuine originality is to cling to a Pre-Copernican view of the mind. We must release this geocentric illusion and embrace our new reality: we are no longer the solitary masters of thought, but rather one species of thinker in a rapidly expanding, multi-substrate cosmos of intelligence.
                         </p>
                     </div>
                 </div>
             </section>
 
-            <section id="references" class="mt-20 pt-12 border-t border-slate-200">
-                <h3 class="text-xl font-bold mb-8">References & Further Reading</h3>
-                <ol class="list-decimal pl-5 space-y-3 text-xs text-slate-500 font-mono">
+            <section class="chapter-section" id="references">
+                <h3 class="text-xl font-bold mb-6">References & Further Reading</h3>
+                <ol class="list-decimal pl-5 space-y-2 text-xs text-slate-500 font-mono">
                     <li id="ref-1">Hoffman, D. (2019). The Case Against Reality: Why Evolution Hid the Truth from Our Eyes.</li>
                     <li id="ref-2">Fiske, S. T., & Taylor, S. E. (1991). Social Cognition.</li>
                     <li id="ref-3">Wolff, C. (1994). Mozart's Requiem: Historical and Analytical Studies.</li>
@@ -1007,8 +1031,8 @@
                 </ol>
             </section>
 
-            <footer class="mt-20 pt-12 border-t border-slate-200 text-center">
-                <img src="img/AI-Creativity.jpg" alt="AI Originality" class="img-main mx-auto mb-8 max-w-2xl w-full" />
+            <footer class="mt-12 pt-8 border-t border-slate-200 text-center chapter-section">
+                <img src="img/AI-Creativity.jpg" alt="AI Originality" class="img-main mx-auto mb-6 max-w-md w-full" />
                 <p class="text-slate-400 text-xs tracking-widest uppercase">End of Thesis</p>
             </footer>
 
