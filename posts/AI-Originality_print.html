@@ -31,7 +31,7 @@
     </script>
     
     <style>
-        /* Base Styles */
+        /* Enforce white background to prevent gray edges in print */
         html, body { background-color: white !important; font-family: 'Inter', sans-serif; }
         .page-container { max-width: 1000px; margin: 0 auto; background: white; }
         
@@ -105,6 +105,7 @@
         /* ----- PAGED.JS & PRINT SPECIFIC CSS ----- */
         @page {
             size: A4;
+            /* Adjusted margins: Reduced bottom margin to push footer lower */
             margin: 0.8in 0.75in 0.5in 0.75in; 
             
             /* Dynamic Footers */
@@ -189,7 +190,7 @@
             padding: 2rem;
         }
 
-        /* Paged.js Screen rendering ONLY (Shadows and Gray Backgrounds) */
+        /* Paged.js Screen rendering adjustments */
         @media screen {
             .page-container {
                 box-shadow: 0 4px 20px rgba(0,0,0,0.05);
@@ -1186,6 +1187,21 @@
                 <div class="text-slate-500 mb-8 uppercase tracking-widest font-semibold text-xs">Sub-Contracting Misery</div>
 
                 <div class="prose-body">
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">The General-Purpose Technology Paradigm <span class="term-tag">Structural Capital</span></h4>
+                        <p>A prevailing skepticism often dismisses the rapid ascent of Machine Intelligence as a mere financial bubble. However, this fundamentally misreads the historical pattern of foundational innovation. Machine Intelligence is not a transient software feature; it is a <strong>General-Purpose Technology (GPT)</strong> [51]. Just as the steam engine created the integrated infrastructure of railroads, electricity enabled the vertical growth of cities, and the transistor birthed the internet economy, AI is an invention so profound that it demands the complete restructuring of global capital and the creation of entirely new economic ecosystems [51].</p>
+                    </div>
+
+                    <div class="mb-10 clear-both">
+                        <h4 class="font-bold text-dark text-lg mb-2">The Bubble Myth & The Infrastructure Legacy <span class="term-tag">Tectonic Shifts</span></h4>
+                        <p>Critics frequently point to market volatility and the rapid influx of capital as proof of AI's fragility. However, we must distinguish between the healthy correction of speculative capital and the collapse of foundational technology. During the Dot-Com crash of 2000, the market purged unprofitable, zero-revenue startups, but it left behind immense, undervalued physical assets—fiber-optic cables and server farms—that successfully powered the next two decades of digital growth [51].</p>
+                        
+                        <div class="insight-box tw-clear-right">
+                            <span class="box-label text-emerald-700">Supporting Argument: The Purging of Speculative Capital</span>
+                            <p>We can concede that there is a speculative frenzy among minor players—a "kitchen towel" effect where investors frantically buy into inferior companies falsely pretending to be in core AI businesses simply because the primary leaders are out of reach [51]. When the market corrects, this peripheral capital will vanish. However, the billions of dollars being deployed into actual AI chips, autonomous agents, and massive data centers constitute a permanent, structural foundation. The underlying computational infrastructure remains a tectonic, irreversible shift in civilizational capability [51].</p>
+                        </div>
+                    </div>
+
                     <p class="text-lg leading-relaxed mb-6">
                         A prevailing fear is that Machine Intelligence will replace humans in labor-intensive or complex cognitive jobs, rendering humanity obsolete. This completely ignores the entire trajectory of human civilization. We have been actively sub-contracting our misery to machines for millennia. We delegated physical transport to the wheel, agricultural backbreaking labor to the tractor, and mathematical calculation to the silicon chip.
                     </p>
@@ -1342,6 +1358,7 @@
                     <li>Dunbar, R. I. M. (1992). "Neocortex size as a constraint on group size in primates." Journal of Human Evolution.</li>
                     <li>Medzhitov, R. (2008). "Origin and physiological roles of inflammation." Nature.</li>
                     <li>Loftus, E. F. (2005). "Planting misinformation in the human mind: A 30-year investigation of the malleability of memory." Learning & Memory.</li>
+                    <li>Nahra, T. (2025). "AI is Not a Bubble: A Defense of Foundational Technology."</li>
                 </ol>
             </section>
 
