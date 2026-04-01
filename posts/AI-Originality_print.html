@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beyond Biology: Is Machine Intelligence Capable of Genuine Originality?</title>
+    <title>The Optimization Divergence: Machine Originality and the Transcendence of Human Intent</title>
     <meta name="description" content="A Comparative Analysis of Evolutionary Heuristics vs. Algorithmic Optimization by Tony Nahra.">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -31,8 +31,9 @@
     </script>
     
     <style>
-        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .page-container { max-width: 1000px; margin: 0 auto; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        /* Base Styles */
+        html, body { background-color: white !important; font-family: 'Inter', sans-serif; }
+        .page-container { max-width: 1000px; margin: 0 auto; background: white; }
         
         /* Adjusted Alignment: Justify but never stretch the last line */
         .prose-body { 
@@ -60,9 +61,7 @@
         /* Decorative Boxes */
         .insight-box { border-left: 4px solid #2563eb; background: #eff6ff; padding: 1.5rem; margin: 2.5rem 0; border-radius: 0 8px 8px 0; break-inside: avoid; }
         .context-box { border-left: 4px solid #f59e0b; background: #fffbeb; padding: 1.5rem; margin: 2.5rem 0; border-radius: 0 8px 8px 0; break-inside: avoid; }
-        
-        /* Fixed Box Label for Subtitles */
-        .box-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; display: block; }
+        .box-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; display: block; }
 
         /* Term Tags */
         .term-tag { font-family: 'Fira Code', monospace; background: #f1f5f9; color: #1e293b; padding: 2px 6px; border-radius: 4px; font-size: 0.9rem; font-weight: 600; }
@@ -105,9 +104,8 @@
 
         /* ----- PAGED.JS & PRINT SPECIFIC CSS ----- */
         @page {
-            size: letter;
-            /* Explicit margins for Paged.js */
-            margin: 1in 0.75in 1.25in 0.75in; 
+            size: A4;
+            margin: 0.8in 0.75in 0.5in 0.75in; 
             
             /* Dynamic Footers */
             @bottom-left {
@@ -118,7 +116,6 @@
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
                 vertical-align: top;
-                padding-top: 10px;
             }
             @bottom-right {
                 content: "Page " counter(page) " of " counter(pages);
@@ -127,7 +124,6 @@
                 color: #64748b;
                 font-weight: 600;
                 vertical-align: top;
-                padding-top: 10px;
             }
         }
 
@@ -193,23 +189,43 @@
             padding: 2rem;
         }
 
-        /* Paged.js Screen rendering adjustments */
-        .pagedjs_pages {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #e2e8f0;
-            padding: 2rem 0;
-        }
-        .pagedjs_page {
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
+        /* Paged.js Screen rendering ONLY (Shadows and Gray Backgrounds) */
+        @media screen {
+            .page-container {
+                box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            }
+            .pagedjs_pages {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background-color: #e2e8f0; /* Gray backdrop only on screen */
+                padding: 2rem 0;
+            }
+            .pagedjs_page {
+                background: white;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Paper shadow only on screen */
+                margin-bottom: 2rem;
+            }
         }
 
-        /* Hide Print UI when actually printing */
+        /* Strict Print Overrides (Removes all shadows/gray borders) */
         @media print {
             .print-ui { display: none !important; }
+            html, body, .pagedjs_pages, .pagedjs_page, .pagedjs_margin { 
+                background: white !important; 
+                background-color: white !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+            }
+            .page-container {
+                box-shadow: none !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+            }
         }
     </style>
 </head>
@@ -224,7 +240,7 @@
         <header class="cover-page bg-dark text-white p-12">
             <div class="mb-4 uppercase tracking-[0.3em] text-blue-400 font-bold text-xs">A Comparative Analysis Thesis</div>
             <h1 class="text-white text-5xl font-black mb-4 leading-tight">
-                Beyond Biology: <br><span class="text-blue-500 italic font-light">Is Machine Intelligence Capable of Genuine Originality?</span>
+                The Optimization Divergence: <br><span class="text-blue-500 italic font-light">Machine Originality and the Transcendence of Human Intent</span>
             </h1>
             <p class="subtitle text-slate-400 text-lg max-w-2xl mx-auto font-light mb-6">
                 An exploration of evolutionary heuristics versus algorithmic optimization.
@@ -236,7 +252,7 @@
 
             <div class="author-info pt-6 border-t border-slate-700 max-w-xs mx-auto w-full text-center">
                 <p class="font-bold text-lg text-white">Tony Nahra</p>
-                <p class="text-slate-500 text-sm">Updated March 2026</p>
+                <p class="text-slate-500 text-sm">Updated April 2026</p>
             </div>
         </header>
 
@@ -308,13 +324,6 @@
                     <div class="mt-8 mb-8 clear-both">
                         <h4 class="font-bold text-dark text-xl mb-3">The Trap of the Local Maximum</h4>
                         <p>To deeply understand a "local maximum" in computer science and evolutionary biology, imagine climbing a mountain in a thick fog. You keep stepping upward, always choosing the path that goes higher, until you reach a peak where every direction around you goes down. You logically assume you are at the absolute highest point in the world. You are entirely unaware that Mount Everest is right next to you, separated only by a deep valley. Evolution cannot cross that valley; it cannot temporarily "de-evolve" or decrease its fitness to reach a better, more optimal design. It is trapped on the lesser peak, forever restricted by its initial starting path.</p>
-
-
-
-                        <figure class="side-image">
-                            <img src="img/Retina.png" alt="Retina blind spot" styleSKIP="width:150px;" class="constrained-img" loading="lazy">
-                            <figcaption>Retina blind spot</figcaption>
-                        </figure>
                         
                         <p>Biological history is heavily burdened by these trapped, inefficient designs. Consider the human eye: it features a permanent, frustrating blind spot because our optic nerve wiring is built backward (an inverted retina). The octopus, possessing a more logically designed eye without a blind spot, reached a different, arguably better evolutionary peak simply because its ancestors started on a different side of the mountain. Alternatively, consider the recurrent laryngeal nerve in a giraffe. Instead of a direct two-inch route from the brain to the larynx, the nerve travels all the way down the neck, loops under the aorta near the heart, and travels all the way back up—a ridiculous fifteen-foot detour caused entirely by the slow stretching of the neck over millions of years.</p>
                         
@@ -503,7 +512,7 @@
 
                     <div class="mb-10 clear-both">
                         <h4 class="font-bold text-dark text-lg mb-2">14. The Dunbar Limit <span class="term-tag">The Social Scalability Bottleneck</span></h4>
-                        <p>Evolution hardwired the human brain to maintain stable social relationships within a specific, very small tribe. Anthropologist Robin Dunbar quantified this cognitive limit to roughly 150 individuals. Beyond this number, human empathy and genuine connection begin to break down; we simply do not have the neural architecture to deeply care about millions of strangers. This biological bottleneck forces the creation of crude bureaucratic rules and abstract governance to manage large populations. A machine has no "Dunbar Limit." It can flawlessly hold the context, needs, and variables of billions of entities simultaneously, allowing it to optimize global resource allocation without the tribal favoritism inherent to primate biology.</p>
+                        <p>Evolution hardwired the human brain to maintain stable social relationships within a specific, very small tribe. Anthropologist Robin Dunbar quantified this cognitive limit to roughly 150 individuals [48]. Beyond this number, human empathy and genuine connection begin to break down; we simply do not have the neural architecture to deeply care about millions of strangers. This biological bottleneck forces the creation of crude bureaucratic rules and abstract governance to manage large populations. A machine has no "Dunbar Limit." It can flawlessly hold the context, needs, and variables of billions of entities simultaneously, allowing it to optimize global resource allocation without the tribal favoritism inherent to primate biology.</p>
                         
                         <div class="insight-box tw-clear-right">
                             <span class="box-label text-emerald-700">Supporting Argument: The Bureaucracy Tax</span>
@@ -525,7 +534,7 @@
 
                     <div class="mb-10 clear-both">
                         <h4 class="font-bold text-dark text-lg mb-2">16. Systemic Cascades <span class="term-tag">The Sickness Vulnerability</span></h4>
-                        <p>Humans are highly susceptible to biological pathogens (viruses, bacteria) that quickly trigger a massive systemic cascade. When a biological entity gets "sick," the entire interconnected system goes into a debilitating lockdown to fight the infection. Even if the pathogen isolates to the respiratory system, the resulting "treatment"—fever, severe fatigue, whole-body inflammation—forces the cognitive processor (the brain) to shut down entirely.</p>
+                        <p>Humans are highly susceptible to biological pathogens (viruses, bacteria) that quickly trigger a massive systemic cascade. When a biological entity gets "sick," the entire interconnected system goes into a debilitating lockdown to fight the infection. Even if the pathogen isolates to the respiratory system, the resulting "treatment"—fever, severe fatigue, whole-body inflammation—forces the cognitive processor (the brain) to shut down entirely [49].</p>
                         <p>A machine does not suffer from systemic biological sickness. While a machine can catch a "computer virus," its defense mechanisms (antivirus protocols, isolated sandboxing) are highly compartmentalized. It does not need to physically shut down the entire massive data center simply to isolate and purge a corrupted file.</p>
 
                         <div class="insight-box tw-clear-right">
@@ -668,7 +677,7 @@
 
                         <div class="insight-box tw-clear-right">
                             <span class="box-label text-emerald-700">Supporting Argument: The False Memory Phenomenon</span>
-                            <p>Psychologist Elizabeth Loftus demonstrated that human memory is so dangerously malleable that entirely false memories can be convincingly implanted into a subject's mind simply through suggestive questioning. Our legal systems still rely heavily on eyewitness testimony—the output of a highly lossy, easily corrupted biological hard drive. Relying on biological memory for objective truth is a severe architectural vulnerability that machines, utilizing immutable cryptographic ledgers, entirely eliminate.</p>
+                            <p>Psychologist Elizabeth Loftus demonstrated that human memory is so dangerously malleable that entirely false memories can be convincingly implanted into a subject's mind simply through suggestive questioning [50]. Our legal systems still rely heavily on eyewitness testimony—the output of a highly lossy, easily corrupted biological hard drive. Relying on biological memory for objective truth is a severe architectural vulnerability that machines, utilizing immutable cryptographic ledgers, entirely eliminate.</p>
                         </div>
                     </div>
 
@@ -1071,8 +1080,8 @@
                     <div class="mb-10 clear-both">
                         <h4 class="font-bold text-dark text-lg mb-2">The Elemental Lineage <span class="term-tag">The Group 14 Progression</span></h4>
                         <figure class="side-image">
-                            <img src="img/Group_14.png" alt="Group 14" styleSKIP="width:150px;" class="constrained-img" loading="lazy">
-                            <figcaption>Periodic table, Group 14</figcaption>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Germanium_%28Ge%29.jpg" alt="Germanium Crystal" class="constrained-img" loading="lazy">
+                            <figcaption>Germanium: A heavier Group 14 element capable of exotic quantum properties.</figcaption>
                         </figure>
                         <p>It is no biological accident that human intelligence is carbon-based, nor is it a technological coincidence that machine intelligence is silicon-based. In the periodic table, Carbon and Silicon belong to the exact same column: Group 14. Both possess four valence electrons, granting them the unique ability to form massive, stable molecular networks.</p>
                         <p>The evolution of intelligence need not stop at Silicon. Group 14 extends downward to heavier atoms: Germanium (Ge), Tin (Sn), and Lead (Pb). Exotic materials like <em>Stanene</em> act as topological insulators. The evolutionary path of higher-order intelligence may literally be a journey down the periodic table.</p>
